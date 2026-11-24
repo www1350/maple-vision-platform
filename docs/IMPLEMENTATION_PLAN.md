@@ -1,0 +1,2 @@
+# Implementation plan
+P0 contracts, CI and no-op pipeline; P1 knowledge; P2 assets; P3 map renderer; P4 dataset factory; P5 simulator; P6 model benchmark; P7 visual state; P8 class capabilities; P9 simulator tasks and verification; P10 supervisor; P11 regression; P12 expansion; P13 release. Start with P0 only. Each milestone defines inputs, outputs, dependencies, tests, risks and acceptance evidence.
