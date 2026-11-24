@@ -1,0 +1,7 @@
+schema_version = 1
+
+[runtime]
+mode = "demo"
+frames = 3
+frame_interval_ms = 50
+max_observation_age_ms = 250

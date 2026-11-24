@@ -18,9 +18,7 @@ class Source:
 def test_noop_preserves_identity_and_unknown():
     result = run_once(Source(Frame(7, 100, b"")), NoOpPerception())
     assert result is not None
-    assert (result.sequence, result.timestamp_ms, result.status) == (
-        7, 100, Status.UNKNOWN
-    )
+    assert (result.sequence, result.timestamp_ms, result.status) == (7, 100, Status.UNKNOWN)
 
 
 def test_empty_source():
