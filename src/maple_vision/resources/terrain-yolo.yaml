@@ -1,0 +1,18 @@
+# Bounded synthetic-terrain experiment. Structural capacity is not trained accuracy.
+# Preserve the v0.2 backbone and add one stride16 stage; Detect uses strides4/8/16.
+# reg_max16 expands per-side DFL support; local model audit must verify actual heads.
+nc: 7
+depth_multiple: 1.0
+width_multiple: 1.0
+reg_max: 16
+end2end: false
+backbone:
+  - [-1, 1, Conv, [16, 3, 2]]
+  - [-1, 1, Conv, [32, 3, 2]]
+  - [-1, 1, C2f, [32, true]]
+  - [-1, 1, Conv, [64, 3, 2]]
+  - [-1, 1, C2f, [64, true]]
+  - [-1, 1, SPPF, [64, 5]]
+  - [-1, 1, Conv, [64, 3, 2]]
+head:
+  - [[2, 5, 6], 1, Detect, [nc]]

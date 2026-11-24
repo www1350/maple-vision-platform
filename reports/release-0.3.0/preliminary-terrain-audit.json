@@ -1,0 +1,265 @@
+{
+  "schema_version": 1,
+  "scope": "random_weight_architecture_probe_not_training",
+  "dataset": "v0.2 frozen validation split",
+  "dataset_manifest_sha256": "670f6dae181f0f4b3107ba6a47cb733f19cfbc216c4e8e8c23f96b756601b3ff",
+  "test_labels_used": false,
+  "gt_boxes": 768,
+  "versions": {
+    "torch": "2.15.0+cpu",
+    "ultralytics": "8.4.218",
+    "python": "3.12.14",
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41"
+  },
+  "models": [
+    {
+      "config": "configs/tiny-yolo.yaml",
+      "config_sha256": "122a5e4040cdf15f5acdd692974c55b1b3260794601b1f8d5756595866b81bf6",
+      "reg_max": 8,
+      "head_type": "Detect",
+      "dfl_bins": [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0
+      ],
+      "strides": [
+        4,
+        8
+      ],
+      "feature_shapes": [
+        [
+          1,
+          32,
+          80,
+          80
+        ],
+        [
+          1,
+          64,
+          40,
+          40
+        ]
+      ],
+      "parameters": 165798,
+      "trainable_parameters": 165790,
+      "output_shape": [
+        1,
+        11,
+        8000
+      ],
+      "cpu_forward_ms": {
+        "warmup_excluded": 3,
+        "iterations": 20,
+        "p50": 17.473624,
+        "p95": 39.20034495000004,
+        "min": 13.684847,
+        "mean": 22.22691085,
+        "threads": 2,
+        "timings": [
+          17.253248,
+          17.694,
+          27.461457,
+          13.684847,
+          16.923368,
+          17.699931,
+          15.164664,
+          22.307437,
+          19.022408,
+          14.870298,
+          14.659334,
+          17.98733,
+          15.793856,
+          36.790618,
+          84.985157,
+          26.585973,
+          14.187621,
+          22.050042,
+          14.845186,
+          14.571442
+        ]
+      },
+      "per_class": {
+        "platform": {
+          "gt": 576,
+          "with_eligible_anchor": 576,
+          "with_support_anchor": 104,
+          "with_training_unclipped_anchor": 104
+        },
+        "ladder": {
+          "gt": 192,
+          "with_eligible_anchor": 192,
+          "with_support_anchor": 192,
+          "with_training_unclipped_anchor": 192
+        }
+      },
+      "floor": {
+        "4": {
+          "eligible": 80,
+          "support": 0,
+          "training_unclipped": 0,
+          "eligible_y": [
+            234.0
+          ],
+          "unclipped_x": []
+        },
+        "8": {
+          "eligible": 40,
+          "support": 0,
+          "training_unclipped": 0,
+          "eligible_y": [
+            236.0
+          ],
+          "unclipped_x": []
+        }
+      },
+      "hypothetical_reg12_unclipped_floor_anchors": null
+    },
+    {
+      "config": "configs/terrain-yolo.yaml",
+      "config_sha256": "b4a42896b69b9a55d1fc2324e2c4b55cc12d8fdd4ac69ab26583957b00839111",
+      "reg_max": 16,
+      "head_type": "Detect",
+      "dfl_bins": [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0,
+        12.0,
+        13.0,
+        14.0,
+        15.0
+      ],
+      "strides": [
+        4,
+        8,
+        16
+      ],
+      "feature_shapes": [
+        [
+          1,
+          32,
+          80,
+          80
+        ],
+        [
+          1,
+          64,
+          40,
+          40
+        ],
+        [
+          1,
+          64,
+          20,
+          20
+        ]
+      ],
+      "parameters": 398357,
+      "trainable_parameters": 398341,
+      "output_shape": [
+        1,
+        11,
+        8400
+      ],
+      "cpu_forward_ms": {
+        "warmup_excluded": 3,
+        "iterations": 20,
+        "p50": 22.058882,
+        "p95": 29.536582650000003,
+        "min": 18.179555,
+        "mean": 23.5810595,
+        "threads": 2,
+        "timings": [
+          21.432007,
+          32.454881,
+          20.998934,
+          21.556966,
+          18.179555,
+          20.283676,
+          29.382988,
+          21.919961,
+          21.445611,
+          20.784477,
+          24.169495,
+          23.166751,
+          27.273634,
+          21.306999,
+          25.663973,
+          27.269769,
+          20.454231,
+          22.197803,
+          23.702072,
+          27.977407
+        ]
+      },
+      "per_class": {
+        "platform": {
+          "gt": 576,
+          "with_eligible_anchor": 576,
+          "with_support_anchor": 576,
+          "with_training_unclipped_anchor": 576
+        },
+        "ladder": {
+          "gt": 192,
+          "with_eligible_anchor": 192,
+          "with_support_anchor": 192,
+          "with_training_unclipped_anchor": 192
+        }
+      },
+      "floor": {
+        "4": {
+          "eligible": 80,
+          "support": 0,
+          "training_unclipped": 0,
+          "eligible_y": [
+            234.0
+          ],
+          "unclipped_x": []
+        },
+        "8": {
+          "eligible": 40,
+          "support": 0,
+          "training_unclipped": 0,
+          "eligible_y": [
+            236.0
+          ],
+          "unclipped_x": []
+        },
+        "16": {
+          "eligible": 20,
+          "support": 10,
+          "training_unclipped": 10,
+          "eligible_y": [
+            232.0
+          ],
+          "unclipped_x": [
+            88.0,
+            104.0,
+            120.0,
+            136.0,
+            152.0,
+            168.0,
+            184.0,
+            200.0,
+            216.0,
+            232.0
+          ]
+        }
+      },
+      "hypothetical_reg12_unclipped_floor_anchors": 2
+    }
+  ]
+}

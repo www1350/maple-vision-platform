@@ -1,13 +1,15 @@
-# 实施计划与 v0.2.0 离线实现
+# 实施计划与 v0.3 开发进度
 
 用户已于 2026-11-24 授权连续实施和测试，不再停在 P0。原 P0 已有独立验收，见 [P0_ACCEPTANCE.md](P0_ACCEPTANCE.md)；该历史记录和 [P0 合同](../engineering/p0-contract.yaml) 不因新版本而改写。
-当前目标是在 v0.1 离线合成平台上完成 v0.2.0 的数据覆盖、知识增量计划和模型验证补充。它覆盖 P1–P13 的若干工程工作，但不能称为全部 v8.0 真实场景验收完成。
+当前目标是在已验收的v0.2离线平台上完成v0.3地形研究与模型对象工具交付。唯一候选已完成40epoch并在val失败：平台召回0.819444低于0.98；模型不推广，test及候选推广suite/reinfer/soak不执行。工具本地完整回归823通过、0失败/跳过，原生审查与隔离wheel也通过，准确提交的远端CI仍待完成。它覆盖P6/P7/P11/P13增量，不能称为全部v8.0真实场景验收完成。
 
-依赖关系与状态见 [milestones.yaml](../engineering/milestones.yaml)，当前门禁见 [v02-contract.yaml](../engineering/v02-contract.yaml)，具体执行与验收补充见 [V0_2_PLAN.md](V0_2_PLAN.md)。v0.2 离线实现已验收：本地工程、新验证器、所选模型合成混合管线，以及源代码/模型/测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492` 的[跨平台 CI](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)均已通过。后续文档归档提交在 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3) 继续执行相同检查。[RELEASE_0_2_ACCEPTANCE.md](RELEASE_0_2_ACCEPTANCE.md) 统一记录准确提交与最终测试计数，测试计数、耗时和跳过原因以该证据记录为准。
+依赖关系与状态见 [milestones.yaml](../engineering/milestones.yaml)，当前门禁见 [v03-contract.yaml](../engineering/v03-contract.yaml)，具体执行和当前证据分别见 [V0_3_PLAN.md](V0_3_PLAN.md) 与 [RELEASE_0_3_ACCEPTANCE.md](RELEASE_0_3_ACCEPTANCE.md)。本轮基于 `d11e285f6ba648c34f3bcabb1c3d193f63350da1` 开发，新代码不能继承上一轮的通过状态。
+
+v0.2 离线实现已经验收：本地工程、新验证器、所选模型合成混合管线，以及源代码/模型/测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492` 的[跨平台 CI](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)均已通过。其准确提交、计数、初次失败与修复仍由 [RELEASE_0_2_ACCEPTANCE.md](RELEASE_0_2_ACCEPTANCE.md) 和 [v02-contract.yaml](../engineering/v02-contract.yaml) 记录，最终归档与合并历史见 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)，不回写成 v0.3 证据。
 
 v0.1 已通过的本地审查、Ubuntu/Windows 安装验证和原生训练 CI 保存在 [RELEASE_ACCEPTANCE.md](RELEASE_ACCEPTANCE.md) 与 [platform-contract.yaml](../engineering/platform-contract.yaml)，只覆盖其中标明的历史提交。旧证据不因版本前进而改写，也不自动授予新代码通过状态。
 
-## 阶段对应的实际交付
+## 已验收的 v0.2 基础
 
 | 阶段 | 当前已验收离线实现 | 命令或模块 | 尚缺的完整规格内容 |
 |---|---|---|---|
@@ -26,7 +28,7 @@ v0.1 已通过的本地审查、Ubuntu/Windows 安装验证和原生训练 CI �
 | P12 | 三职业、两地图组合运行 | `lab suite` | 任意第三方内容包和插件兼容性、更多地图/职业验收 |
 | P13 | 包、CLI、模型 suite/soak、有界资源测量；保留原始失败轮次一次已本地验证 | wheel、CI、`lab suite/soak --model ... --manifest ...` | 24 小时墙钟与真实域准入 |
 
-## v0.2 连续交付顺序
+## v0.2 已完成的交付顺序
 
 1. 保留 P0/v0.1 的 API、legacy 数据和历史证据；新增格式显式标版本。确认知识计划、生命周期样本、模型运行证据的合同。
 2. 验证知识计划的完整源字节/基线、差异、原子回滚与严格幂等；知识应用不热替换运行规则。
@@ -36,11 +38,36 @@ v0.1 已通过的本地审查、Ubuntu/Windows 安装验证和原生训练 CI �
 6. 运行全树测试、实际 CPU 训练/导出/推理、干净 wheel 安装和准确提交的 Ubuntu/Windows CI。针对真实缺陷补反例，不降低断言或排除失败样本。
 7. 所选 lifecycle 模型的本地推广仅覆盖合成混合管线，新样例与旧模型分目录保存。纯 YOLO 地形未通过；完整 v8、真实域与 24 小时长稳继续单列，本版实现提交的 CI 已通过；后续归档提交的检查由 PR #3 单独追踪。
 
-## 接下来可独立实施的工作
+## v0.3 本轮增量与当前状态
+
+| 工作 | 当前实现或证据 | 本轮尚待完成的验收 |
+|---|---|---|
+| 结构与成本审查 | `model audit-terrain`，仅train/val；实际DFL/stride、锚点、完整四边目标和恢复均通过本地回归 | 准确提交的远端原生CI |
+| 地形几何评分 | schema3同批预测与分层；本地完整回归通过，候选地板192/192及边界误差达标 | 远端CI；几何单项通过不能覆盖总体平台召回失败 |
+| 显式模型地形 | 来源身份与七类对象合同通过本地回归；HUD保留fixture | 远端CI；失败候选推广13场景/reinfer/soak按协议不执行 |
+| 新会话实验 | 18×48、7091对象；单候选40epoch实际1467.923792秒；导出并完成同新val门禁 | 模型结论已是失败而非待测；保留失败产物与未评分test，不加候选 |
+| 构建前分配保护 | 复用既有离线运行域，构建前预算、真实审查/训练导出及恢复通过本地验证 | 准确提交的远端原生CI |
+| 工程发布 | Ruff格式113文件、检查通过，mypy30文件通过，823测试与隔离wheel通过 | Ubuntu/Windows/native CI与准确提交归档 |
+
+这些实现与针对性证据不代表最终发布已经通过；本轮模型推广则已明确失败。构建前分配预算在首批结构审查后加入，不能倒推声称早期报告执行过新保护；训练入口本身独立，冻结训练源码未改、1730个源/副本文件一致。模型证据归档为 [terrain-model-validation.json](../reports/release-0.3.0/terrain-model-validation.json) 与 [validation-gates.json](../reports/release-0.3.0/validation-gates.json)，完整解释由 [RELEASE_0_3_ACCEPTANCE.md](RELEASE_0_3_ACCEPTANCE.md)统一维护。
+
+## v0.3 已执行分支与当前收尾顺序
+
+1. **保持冻结输入。** 数据manifest为 `f73d7390980fa6aedea3b3a12ada2f0a8f3658519e0ca435ca93414bbd02aac4`；候选配置SHA为 `b4a42896b69b9a55d1fc2324e2c4b55cc12d8fdd4ac69ab26583957b00839111`。[预注册](../reports/release-0.3.0/preregistration.json)已在候选训练和验证前冻结，基线新val在冻结前已查看。
+2. **保留已完成的唯一候选。** 40epoch、320px、batch8、seed42、Torch2线程；从零训练实际1467.923792秒，按既有val fitness选best。产物保留到 `examples/terrain-candidate`；不延长epoch、不增第二候选。
+3. **保留同新val的确定失败。** confidence0.25、NMS0.45、匹配IoU0.5下，AP50=0.964624510、microP=0.999315068、R=0.929891651；全宽地板192/192和边界误差达标，平台整体472/576低于0.98。ORT1线程p95=24.986154ms达标。14项阈值中唯一失败已足够拒绝推广，不修改门禁。
+4. **关闭失败候选的推广分支。** 不运行其13场景、三职业reinfer或soak来寻求替代性通过；工具模式身份和真实重新推理的工程回归仍可独立验证。当前策略无梯子驱动攀爬，检测分数也不表示导航交付。
+5. **保持新holdout未评分。** 按预注册，val失败后test不进行模型预测或评分。完整性校验和训练副本可读取test字节，不将该事实误写成模型评分。这个分支已经执行完毕，不是下一名AI应补做的任务。
+6. **保留本地证据并取得远端门禁。** 823项完整本地回归已通过，含实际原生训练/导出/审查；独立审查组合48项通过，二者覆盖重叠不能相加。隔离wheel在无Torch/ORT环境通过。当前继续准确提交的Ubuntu/Windows/native CI与归档。[本地证据](../reports/release-0.3.0/local-verification.json)
+7. **分别交付工具和失败研究结果。** 工程接口可独立验收，失败候选不能覆盖原 `examples/lifecycle-model` 已验收混合模型。归档原始结果、限制和CI，随后再进入后续扩展。
+
+本轮新test为4个会话的192帧，两张地图及机制与训练相同；无重复RGB和新会话种子不能证明未见地图或真实域泛化。更换数据或门禁的下一项研究必须另立合同，不能借“继续开发”悄悄增加本轮搜索预算。
+
+## 本轮完成后可独立实施的工作
 
 | 工作 | 前置证据 | 完成标准 |
 |---|---|---|
-| 纯 YOLO 地形研究 | 当前 reg_max=8、stride4/8，单框宽度上限112px；全宽地板IoU上界0.35 | 先验证候选头的回归范围与实际正样本锚点，再做独立数据/CPU成本实验；不把混合管线成果当成纯模型地形成果 |
+| 下一项视觉研究 | 先归档本轮单候选结果；保留所有已查看数据的用途记录 | 根据实际错误另立协议和独立留出集；不自动追加当前候选预算，不用相同地图成绩声明新地图泛化 |
 | 网络知识来源 | 已实现本地 SourceAdapter/plan/apply；需要获准上游导出或接口合同 | 捕获来源原字节、权限与版本，接入既有原子计划；不得静默抓取或覆盖冲突 |
 | 扩展知识驱动规则 | 已实现严格合成 ClassSpec 注入，需其它知识类型的已核实映射 | 逐项扩展地图、怪物、技能效果，未知或冲突拒绝加载 |
 | 扩展素材渲染 | 静态 RGBA sprite 已接入；需动画、锚点与图层定义 | 支持动画帧及准确锚点，保持可见标签和几何碰撞分离，有基准图像对照 |
@@ -58,4 +85,6 @@ v0.1 已通过的本地审查、Ubuntu/Windows 安装验证和原生训练 CI �
 - suite/soak 保留实际失败轮次一次，不能另跑一遍替代原失败；预检/文件变化边界与该保留行为已有独立本地回归，最终提交仍须保持这些门禁。
 - 资源值记录来源、单位、未知原因和采样范围；CPU/RSS 是进程数据，生命周期峰值与本轮最大采样值分别解释。
 - 基线和 ONNX 训练/测试数据哈希、阈值与模型哈希必须分别记录；参数或数据变化后重新验证。
+- `terrain_source` 是模型运行证据的一部分；默认fixture和显式model模式不能互换成绩。schema3几何评分只复用已有预测，不能筛掉漏检后只报告好看的误差。
+- 预注册不可在看到候选成绩后改写；结构预检、训练完成、val通过、一次test通过和工程发布分别记录。
 - 计划中列出的目标比例不是已有测量值，也不能替代样本数、误差类型和未覆盖范围。

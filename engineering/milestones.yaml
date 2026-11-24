@@ -1,4 +1,4 @@
-schema_version: 3
+schema_version: 4
 milestones:
   P0: []
   P1: [P0]
@@ -19,23 +19,24 @@ contracts:
   P0: engineering/p0-contract.yaml
   platform_v0_1: engineering/platform-contract.yaml
   platform_v0_2: engineering/v02-contract.yaml
+  platform_v0_3: engineering/v03-contract.yaml
 
 delivery:
   active_milestone: P13
-  scope: offline_synthetic_fixture_platform
-  release_version: "0.2.0"
-  release_status: accepted_offline_fixture_implementation
-  result_source: docs/RELEASE_0_2_ACCEPTANCE.md
-  execution_plan: docs/V0_2_PLAN.md
-  local_evidence: reports/release-0.2.0/local-verification.json
-  local_evidence_archive: reports/release-0.2.0
-  remote_evidence: reports/release-0.2.0/remote-ci.json
-  implementation_commit: f17e7487f5938acfaf312e05b8eecb242f06a492
-  implementation_tree: 96de98b2e95ccd8fef04b0052b11f60bee63fe35
-  implementation_commit_role: verified_source_model_and_tests_commit
-  evidence_archive_followups: require_same_ci_at_final_pull_request_head
-  final_head_checks: https://github.com/www1350/maple-vision-platform/pull/3
-  pending_gates: []
+  active_increment_phases: [P6, P7, P11, P13]
+  scope: bounded_offline_synthetic_terrain_research_and_model_object_pipeline
+  release_version: "0.3.0"
+  release_status: local_engineering_passed_remote_ci_pending_candidate_rejected
+  result_source: docs/RELEASE_0_3_ACCEPTANCE.md
+  execution_plan: docs/V0_3_PLAN.md
+  evidence_archive: reports/release-0.3.0
+  local_evidence: reports/release-0.3.0/local-verification.json
+  preregistration: reports/release-0.3.0/preregistration.json
+  base_commit: d11e285f6ba648c34f3bcabb1c3d193f63350da1
+  final_implementation_commit_status: pending
+  final_ci_status: pending
+  pending_gates:
+    - exact_commit_ubuntu_windows_native_ci
   p0_result_source: docs/P0_ACCEPTANCE.md
   p0_contract_is_historical: true
   user_authorization_date: "2026-11-24"
@@ -54,19 +55,83 @@ historical_releases:
     final_head_checks: https://github.com/www1350/maple-vision-platform/pull/2
     scope: offline_synthetic_fixture_platform
     full_v8_spec_acceptance: false
+  v0_2:
+    release_version: "0.2.0"
+    release_status: accepted_offline_fixture_implementation
+    result_source: docs/RELEASE_0_2_ACCEPTANCE.md
+    execution_plan: docs/V0_2_PLAN.md
+    local_evidence: reports/release-0.2.0/local-verification.json
+    remote_evidence: reports/release-0.2.0/remote-ci.json
+    implementation_commit: f17e7487f5938acfaf312e05b8eecb242f06a492
+    implementation_tree: 96de98b2e95ccd8fef04b0052b11f60bee63fe35
+    implementation_commit_role: verified_source_model_and_tests_commit
+    final_head_checks: https://github.com/www1350/maple-vision-platform/pull/3
+    remote_run_url: https://github.com/www1350/maple-vision-platform/actions/runs/45394348732
+    local_full_tree: passed_634_no_skips_216_97_seconds
+    remote_ubuntu_windows_and_native: passed_for_named_implementation_commit
+    initial_remote_windows_issue: resolved_original_v0_1_rgb_text_manifest_fingerprints_confirmed_on_windows
+    selected_model: examples/lifecycle-model
+    selected_model_sha256: 7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3
+    selected_model_promotion: accepted_local_synthetic_hybrid_pipeline
+    model_criteria_were_preregistered: false
+    pure_yolo_terrain_acceptance: false
+    verifier_preflight_and_evidence_changes: passed_local_review_and_regression
+    actual_failure_episode_retained_once: passed_local_review_and_regression
+    scope: offline_synthetic_fixture_platform
+    full_v8_spec_acceptance: false
 
 current_verification:
-  local_full_tree: passed_634_no_skips_216_97_seconds
-  remote_ubuntu_windows_and_native: passed_for_named_implementation_commit
-  remote_run_url: https://github.com/www1350/maple-vision-platform/actions/runs/45394348732
-  initial_remote_windows_issue: resolved_original_v0_1_rgb_text_manifest_fingerprints_confirmed_on_windows
-  selected_model_promotion: accepted_local_synthetic_hybrid_pipeline
-  selected_model: examples/lifecycle-model
-  selected_model_sha256: 7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3
-  model_criteria_were_preregistered: false
+  local_full_tree: passed_823_no_failures_no_skips_106_26_seconds
+  remote_ubuntu_windows_and_native: pending
+  clean_wheel_installation: passed_local_isolated_0_3_0_21_709_seconds
+  wheel_sha256: fe38f69f994d987168e9c74e3a3e94b8d697767842d721b0f798f4df7a9245d6
+  ruff_format_files: 113
+  ruff_check: passed
+  mypy_source_files_passed: 30
+  initial_full_tree: retained_821_passed_two_incorrect_test_expectation_failures
+  targeted_native_audit: passed_48_no_failures_or_skips_junit_8_634_seconds_overlaps_full_suite
+  audit_preallocation_guard: passed_local_nonnative_and_actual_native_with_restoration
+  audit_runtime: reuses_existing_training_offline_guard
+  frozen_training_sources_unchanged: true
+  source_and_actual_training_copy_identical_files: 1730
+  current_candidate_promotion: rejected_frozen_platform_recall_gate_failed
+  current_candidate_training: completed_single_40_epoch_run_1467_923792_seconds
+  current_candidate_budget: 1
+  current_candidate_config: configs/terrain-yolo.yaml
+  current_candidate_config_sha256: b4a42896b69b9a55d1fc2324e2c4b55cc12d8fdd4ac69ab26583957b00839111
+  model_criteria_were_preregistered: true
+  preregistration_sha256: 751baa9fae9832f4d76ef19ceef11f5c9d1371c368d8887d1f8be4b6976a6a47
+  preregistration_stage: before_candidate_training_and_validation_after_old_model_baseline
+  current_dataset_manifest_sha256: f73d7390980fa6aedea3b3a12ada2f0a8f3658519e0ca435ca93414bbd02aac4
+  input_isolation: new_sessions_no_decoded_rgb_duplicates_or_shared_session_seeds_against_prior_two_datasets
+  structural_preflight: actual_regmax16_strides4_8_16_and_ten_complete_ground_anchors_verified
+  geometry_review: 21_focused_tests_and_100_independent_general_evaluator_parity_cases_passed
+  explicit_model_terrain_source: passed_local_contract_regression_candidate_not_accepted_remote_ci_pending
+  current_candidate_validation:
+    evidence: reports/release-0.3.0/terrain-model-validation.json
+    gates_evidence: reports/release-0.3.0/validation-gates.json
+    threshold_checks: {passed: 13, failed: 1, total: 14}
+    platform_recall: 0.8194444444444444
+    platform_recall_required: 0.98
+    full_width_floor: {tp: 192, ground_truth: 192, recall: 1.0}
+    macro_ap50: 0.9646245103193939
+    micro_precision: 0.9993150684931507
+    micro_recall: 0.9298916507329509
+    tp: 1459
+    fp: 1
+    fn: 110
+    detect_p95_ms: 24.986153549999997
+  retained_failed_candidate: examples/terrain-candidate
+  retained_failed_candidate_sha256: be5cd99bce0f52b0cdfc7e033251f2c919e14d203c8b72d394a18d7a067751f0
+  holdout_model_scores: not_evaluated_due_to_validation_failure
+  candidate_promotion_suite_reinfer_soak: deliberately_not_executed_after_validation_failure
+  additional_candidate_budget: 0
+  accepted_model_from_previous_release: examples/lifecycle-model
   pure_yolo_terrain_acceptance: false
-  verifier_preflight_and_evidence_changes: passed_local_review_and_regression
-  actual_failure_episode_retained_once: passed_local_review_and_regression
+  same_two_builtin_maps: true
+  unseen_map_generalization: not_evaluated
+  real_domain_acceptance: false
+  ladder_driven_navigation: not_implemented
   wall_clock_24h_soak: not_completed
   historical_results_do_not_cover_current_changes: true
 
@@ -95,6 +160,8 @@ phase_status:
     implementation: legacy_v1_and_replay_verified_lifecycle_v2_session_split_datasets
     historical_v0_1_fixture_verification: integrity_and_declared_coverage_tests_passed_local
     v0_2_verification: frozen_864_frame_data_and_original_v0_1_content_fingerprints_passed_local_and_remote
+    v0_3_input_verification: fresh_seed_18_sessions_864_frames_7091_objects_replayed_and_duplicate_isolation_checked
+    v0_3_holdout_limit: four_new_sessions_on_same_maps_not_unseen_map_acceptance
     real_domain_gate: blocked_independent_real_recordings_and_labels
     remaining_engineering: [unseen_map_holdout, broader_occlusion_and_real_domain_coverage]
   P5:
@@ -106,12 +173,18 @@ phase_status:
     implementation: cpu_training_onnx_inference_aggregate_and_lifecycle_grouped_benchmarks
     historical_v0_1_fixture_verification: synthetic_tools_holdout_and_hybrid_missions_passed_local_no_general_model_promotion
     v0_2_verification: selected_model_validation_holdout_and_hybrid_local_promotion_passed
+    v0_3_implementation: actual_head_anchor_audit_and_optional_schema3_terrain_geometry_report
+    v0_3_verification: preflight_and_geometry_tools_verified_candidate_rejected_platform_recall_gate
+    v0_3_candidate_plan: preregistered_single_config_one_40_epoch_run
+    v0_3_failure_policy: preserve_failure_no_adaptive_candidate_or_test_peek
     pure_yolo_terrain_acceptance: false
     real_domain_gate: blocked_real_evaluation_corpus
-    remaining_engineering: [pure_yolo_terrain_geometry, model_family_comparison, two_stage_comparison]
+    remaining_engineering: [future_visual_research_requires_new_contract, model_family_comparison, two_stage_comparison]
   P7:
     implementation: pixel_or_onnx_objects_fixture_hud_and_local_tesseract_adapter
     historical_v0_1_fixture_verification: fixture_pixels_onnx_and_native_ocr_tests_passed_local
+    v0_3_implementation: explicit_model_source_for_all_seven_objects_fixture_hud_context_preserved
+    v0_3_verification: local_pipeline_contract_passed_remote_ci_pending_candidate_quality_rejected
     real_domain_gate: no_real_hud_or_ocr_acceptance
     remaining_engineering: [real_game_ui_ocr_calibration, tracking, belief_state_fusion]
   P8:
@@ -133,18 +206,23 @@ phase_status:
     implementation: action_replay_actual_perception_policy_reinference_and_local_recording_observation
     historical_v0_1_fixture_verification: passed_local_review_and_remote_native_adapters
     v0_2_verification: preflight_race_terminal_model_identity_and_actual_reinference_passed_local
+    v0_3_implementation: persist_and_verify_explicit_terrain_source_with_model_identity
+    v0_3_verification: current_mode_local_regression_passed_candidate_reinference_not_executed_after_val_failure
     real_domain_gate: no_real_golden_recordings
     remaining_engineering: [realtime_recording_capture, independent_real_golden_corpus]
   P12:
     implementation: builtin_three_class_two_map_matrix
     historical_v0_1_fixture_verification: nine_normal_matrix_missions_passed_local
     v0_2_verification: selected_model_13_expected_scenario_outcomes_passed_local
+    v0_3_verification: candidate_promotion_scenarios_not_executed_after_val_failure
     real_domain_gate: blocked_additional_verified_content
     remaining_engineering: [third_party_content_plugins, management_ui]
   P13:
     implementation: packaging_cli_ci_model_aware_wall_soak_and_bounded_process_resources
     historical_v0_1_fixture_verification: passed_local_and_remote_installation_plus_local_60_second_smoke
     v0_2_verification: passed_local_model_soak_resources_original_failure_and_remote_implementation_ci
+    v0_3_implementation: cli_contracts_packaging_and_audit_preallocation_guard_implemented
+    v0_3_verification: local_823_tests_native_and_wheel_passed_remote_exact_commit_ci_pending_candidate_soak_not_executed
     real_domain_gate: not_accepted
     wall_clock_24h_soak: not_completed
     remaining_engineering: [full_24_hour_wall_clock_endurance]

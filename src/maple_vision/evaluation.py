@@ -12,7 +12,7 @@ import os
 import platform
 import time
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -233,7 +233,7 @@ def _environment() -> dict[str, object]:
     }
 
 
-def _detector_metadata(detector: Detector) -> dict[str, object]:
+def _detector_metadata(detector: Detector, *, include_runtime: bool = False) -> dict[str, object]:
     metadata: dict[str, object] = {
         "implementation": f"{type(detector).__module__}.{type(detector).__qualname__}",
         "scope": "unspecified_custom_detector",
@@ -259,6 +259,16 @@ def _detector_metadata(detector: Detector) -> dict[str, object]:
                 "output_format": detector.manifest.output_format,
             }
         )
+        if include_runtime:
+            if detector.loaded_model_sha256 != detector.manifest.model_sha256:
+                raise ValueError("benchmark manifest is not bound to the loaded model hash")
+            metadata.update(
+                {
+                    "full_model_manifest": asdict(detector.manifest),
+                    "loaded_model_sha256": detector.loaded_model_sha256,
+                    "inference_runtime": detector.runtime_settings,
+                }
+            )
     return metadata
 
 
@@ -276,6 +286,14 @@ def _ground_truth(path: Path, width: int, height: int) -> tuple[Detection, ...]:
         y2 = min(float(height), (cy + h / 2) * height)
         objects.append(Detection(CLASS_NAMES[class_id], (x1, y1, x2, y2), 1.0))
     return tuple(objects)
+
+
+def _bounded_manifest_bytes(path: Path) -> bytes:
+    with path.open("rb") as stream:
+        data = stream.read(128 * 1024 * 1024 + 1)
+    if len(data) > 128 * 1024 * 1024:
+        raise ValueError("dataset manifest exceeds 128 MiB")
+    return data
 
 
 def _grouped_metrics(
@@ -351,10 +369,14 @@ def benchmark_dataset(
     split: str = "test",
     confidence_threshold: float = 0.25,
     iou_threshold: float = 0.5,
+    *,
+    terrain_metrics: bool = False,
 ) -> dict[str, object]:
     """Validate data, benchmark one detector, and exclusively save a JSON report."""
     confidence_threshold = _threshold(confidence_threshold, "confidence_threshold")
     iou_threshold = _threshold(iou_threshold, "iou_threshold", positive=True)
+    if type(terrain_metrics) is not bool:
+        raise ValueError("terrain_metrics must be boolean")
     if split not in {"train", "val", "test"}:
         raise ValueError("split must be train, val or test")
     dataset, output = Path(dataset).resolve(), Path(output).absolute()
@@ -364,13 +386,27 @@ def benchmark_dataset(
         output.resolve().is_relative_to(dataset / directory) for directory in ("images", "labels")
     ):
         raise ValueError("benchmark output cannot modify dataset images or labels")
+    manifest_path = dataset / "manifest.json"
+    before_validation = _bounded_manifest_bytes(manifest_path) if terrain_metrics else None
     dataset_summary = validate_dataset(dataset)
-    manifest_bytes = (dataset / "manifest.json").read_bytes()
+    manifest_bytes = (
+        _bounded_manifest_bytes(manifest_path) if terrain_metrics else manifest_path.read_bytes()
+    )
+    if terrain_metrics:
+        if manifest_bytes != before_validation:
+            raise ValueError("dataset manifest changed after validation")
+        dataset_summary = {
+            **dataset_summary,
+            "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+        }
     manifest: Any = json.loads(manifest_bytes)
     records = [sample for sample in manifest["samples"] if sample["split"] == split]
     if not records:
         raise ValueError("selected dataset split is empty")
     active_detector = detector if detector is not None else PixelPerception()
+    bound_metadata = (
+        _detector_metadata(active_detector, include_runtime=True) if terrain_metrics else None
+    )
     warmup_count = min(3, len(records))
     for record in records[:warmup_count]:
         active_detector.detect(ImageFrame.from_file(dataset / record["image"]))
@@ -391,6 +427,12 @@ def benchmark_dataset(
     metrics = evaluate_predictions(
         samples, confidence_threshold=confidence_threshold, iou_threshold=iou_threshold
     )
+    if terrain_metrics and bound_metadata != _detector_metadata(
+        active_detector, include_runtime=True
+    ):
+        raise ValueError("benchmark detector settings changed during evaluation")
+    if terrain_metrics and _bounded_manifest_bytes(manifest_path) != manifest_bytes:
+        raise ValueError("dataset manifest changed during evaluation")
     report: dict[str, object] = {
         "schema_version": 1,
         "scope": "synthetic_fixture",
@@ -401,7 +443,7 @@ def benchmark_dataset(
         "dataset_split_role": "held_out_test" if split == "test" else split,
         "model_training_overlap_verified": False,
         "dataset": dataset_summary,
-        "detector": _detector_metadata(active_detector),
+        "detector": bound_metadata if terrain_metrics else _detector_metadata(active_detector),
         "metrics": metrics,
         "latency_ms": {
             "samples": len(latency_ms),
@@ -428,6 +470,19 @@ def benchmark_dataset(
         report["schema_version"] = 2
         report["grouped_metrics"] = _grouped_metrics(
             records, samples, confidence_threshold, iou_threshold
+        )
+    if terrain_metrics:
+        from .terrain_metrics import evaluate_terrain_geometry
+
+        report["schema_version"] = 3
+        report["detector_binding_checked_before_and_after"] = isinstance(
+            active_detector, OnnxDetector
+        )
+        report["terrain_geometry"] = evaluate_terrain_geometry(
+            samples,
+            [(record["width"], record["height"]) for record in records],
+            confidence_threshold=confidence_threshold,
+            iou_threshold=iou_threshold,
         )
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("x", encoding="utf-8") as stream:

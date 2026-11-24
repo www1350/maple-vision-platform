@@ -1,0 +1,246 @@
+"""One additional validation-only diagnostic pass; never a model-selection score.
+
+Uses the exact OnnxDetector preprocess/native session/decode chain once per val
+image, retaining raw outputs in memory for geometry/score explanations. No test
+image or label is read, no threshold is changed, no timing is published.
+"""
+import hashlib
+import json
+import math
+from collections import Counter, defaultdict
+from dataclasses import asdict
+from datetime import UTC, datetime
+from pathlib import Path
+
+import numpy as np
+
+from maple_vision.evaluation import EvaluationSample, _ground_truth, _iou, evaluate_predictions
+from maple_vision.onnx_detector import OnnxDetector, decode, preprocess
+from maple_vision.scene import ImageFrame
+
+ROOT = Path(__file__).resolve().parents[2]
+BASE = ROOT / 'artifacts/v03-experiment'
+DATA = BASE / 'dataset'
+MODEL = BASE / 'export-terrain-320'
+EXPECTED_DATA = 'f73d7390980fa6aedea3b3a12ada2f0a8f3658519e0ca435ca93414bbd02aac4'
+EXPECTED_MODEL = 'be5cd99bce0f52b0cdfc7e033251f2c919e14d203c8b72d394a18d7a067751f0'
+OUTPUTS = [BASE / name for name in ('diagnosis-ground-truth-ledger.jsonl', 'diagnosis-val-platforms.json', 'diagnosis-first-miss.json')]
+if any(path.exists() for path in OUTPUTS):
+    raise FileExistsError('diagnostic artifacts already exist; never replace them')
+
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def write(path, value):
+    with path.open('x', encoding='utf-8', newline='\n') as stream:
+        json.dump(value, stream, ensure_ascii=True, sort_keys=True, indent=2, allow_nan=False)
+        stream.write('\n')
+
+
+def raw_rows(output, transform):
+    rows = np.asarray(output[0].T, dtype=np.float64)
+    assert rows.shape == (8400, 11)
+    valid = np.isfinite(rows).all(axis=1)
+    valid &= ((rows[:, 4:] >= 0) & (rows[:, 4:] <= 1)).all(axis=1)
+    valid &= (rows[:, 2] > 0) & (rows[:, 3] > 0)
+    boxes = np.empty((len(rows), 4), dtype=np.float64)
+    boxes[:, 0] = (rows[:, 0] - rows[:, 2] / 2 - transform.pad_x) / transform.scale_x
+    boxes[:, 2] = (rows[:, 0] + rows[:, 2] / 2 - transform.pad_x) / transform.scale_x
+    boxes[:, 1] = (rows[:, 1] - rows[:, 3] / 2 - transform.pad_y) / transform.scale_y
+    boxes[:, 3] = (rows[:, 1] + rows[:, 3] / 2 - transform.pad_y) / transform.scale_y
+    boxes[:, (0, 2)] = np.clip(boxes[:, (0, 2)], 0, transform.original_width)
+    boxes[:, (1, 3)] = np.clip(boxes[:, (1, 3)], 0, transform.original_height)
+    valid &= (boxes[:, 2] > boxes[:, 0]) & (boxes[:, 3] > boxes[:, 1])
+    classes = np.argmax(rows[:, 4:], axis=1)
+    return rows, boxes, valid, classes
+
+
+def raw_diagnosis(target, arrays, class_names):
+    rows, boxes, valid, classes = arrays
+    gt = np.asarray(target.bbox, dtype=np.float64)
+    intersections = np.maximum(0, np.minimum(boxes[:, 2:], gt[2:]) - np.maximum(boxes[:, :2], gt[:2]))
+    intersection = intersections[:, 0] * intersections[:, 1]
+    gt_area = (gt[2] - gt[0]) * (gt[3] - gt[1])
+    box_area = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
+    overlaps = np.divide(intersection, box_area + gt_area - intersection)
+    overlaps[~valid] = -1
+    platform_index = class_names.index('platform')
+    platform = valid & (classes == platform_index)
+    scores = rows[:, 4 + platform_index]
+
+    def item(index):
+        index = int(index)
+        if index < 6400:
+            stride, local, grid = 4, index, 80
+        elif index < 8000:
+            stride, local, grid = 8, index - 6400, 40
+        else:
+            stride, local, grid = 16, index - 8000, 20
+        return {'raw_index':index, 'bbox':boxes[index].tolist(), 'iou':float(overlaps[index]),
+                'platform_score':float(scores[index]), 'winning_class':class_names[int(classes[index])],
+                'winning_score':float(rows[index, 4 + classes[index]]), 'stride':stride,
+                'anchor_model_xy':[(local % grid + .5) * stride, (local // grid + .5) * stride]}
+
+    def best(mask, score=False):
+        indices = np.flatnonzero(mask)
+        if not len(indices):
+            return None
+        chosen = indices[np.argmax(scores[indices] if score else overlaps[indices])]
+        return item(chosen)
+
+    overlap_valid = valid & (overlaps >= .5)
+    platform_overlap = platform & (overlaps >= .5)
+    confident_platform = platform & (scores >= .25)
+    confident_overlap = confident_platform & (overlaps >= .5)
+    if confident_overlap.any():
+        absence_reason = 'qualifying_raw_candidate_not_retained_or_not_matched'
+    elif platform_overlap.any():
+        absence_reason = 'raw_platform_geometry_exists_but_score_below_frozen_threshold'
+    elif overlap_valid.any():
+        absence_reason = 'iou50_geometry_exists_only_with_another_winning_class'
+    else:
+        absence_reason = 'no_raw_decoded_box_reaches_iou50'
+    return {
+        'raw_valid_rows':int(valid.sum()),
+        'raw_any_class_iou50_rows':int(overlap_valid.sum()),
+        'raw_platform_iou50_rows':int(platform_overlap.sum()),
+        'raw_platform_iou50_rows_above_frozen_confidence':int(confident_overlap.sum()),
+        'best_any_class_iou':best(valid),
+        'best_platform_iou':best(platform),
+        'highest_platform_score_at_iou50':best(platform_overlap, score=True),
+        'best_platform_iou_above_frozen_confidence':best(confident_platform),
+        'highest_platform_score_any_iou':best(platform, score=True),
+        'absence_reason_if_unmatched':absence_reason,
+    }
+
+
+manifest_bytes = (DATA / 'manifest.json').read_bytes()
+assert hashlib.sha256(manifest_bytes).hexdigest() == EXPECTED_DATA
+manifest = json.loads(manifest_bytes)
+records = [item for item in manifest['samples'] if item['split'] == 'val']
+assert len(records) == 192
+formal = json.loads((BASE / 'terrain-model-validation.json').read_text())
+assert formal['split'] == 'val' and formal['dataset_manifest_sha256'] == EXPECTED_DATA
+model = OnnxDetector(MODEL / 'model.onnx', MODEL / 'manifest.json', confidence_threshold=.25, iou_threshold=.45)
+assert model.loaded_model_sha256 == EXPECTED_MODEL
+assert model.runtime_settings == formal['detector']['inference_runtime']
+assert asdict(model.manifest) == {**formal['detector']['full_model_manifest'], 'class_names':tuple(formal['detector']['full_model_manifest']['class_names'])}
+initial_settings = (model.loaded_model_sha256, asdict(model.manifest), model.runtime_settings, model.confidence_threshold, model.iou_threshold)
+ledger=[]
+samples=[]
+first_miss=None
+native_calls=0
+for image_index, record in enumerate(records):
+    image_path, label_path = DATA / record['image'], DATA / record['label']
+    assert digest(image_path) == record['image_sha256']
+    assert digest(label_path) == record['label_sha256']
+    frame = ImageFrame.from_file(image_path,sequence=record['sequence'],timestamp_ms=record['timestamp_ms'])
+    tensor, transform = preprocess(frame, model.manifest.input_width, model.manifest.input_height)
+    raw = np.asarray(model._session.run(None, {model._input_name:tensor})[0])
+    native_calls += 1
+    predictions = decode(raw, model.manifest, transform, confidence_threshold=.25, iou_threshold=.45)
+    truth = _ground_truth(label_path, frame.width, frame.height)
+    samples.append(EvaluationSample(truth, predictions))
+    matched={}
+    for pi, prediction in sorted(enumerate(predictions), key=lambda pair:(-pair[1].confidence,pair[0])):
+        if prediction.confidence < .25:
+            continue
+        options=[(_iou(prediction,target),ti) for ti,target in enumerate(truth)
+                 if target.class_id==prediction.class_id and ti not in matched]
+        best=max(options,key=lambda pair:(pair[0],-pair[1]),default=None)
+        if best is not None and best[0] >= .5:
+            matched[best[1]]=(pi,prediction,best[0])
+    arrays=raw_rows(raw, transform)
+    for ti,target in enumerate(truth):
+        match=matched.get(ti)
+        row={
+            'image_index':image_index,'image':record['image'],'image_sha256':record['image_sha256'],
+            'label':record['label'],'label_sha256':record['label_sha256'],
+            'session_id':record['session_id'],'sequence':record['sequence'],'map_id':record['map_id'],
+            'phase':record['phase'],'target_index':ti,'class_id':target.class_id,'target_bbox':list(target.bbox),
+            'matched':match is not None,
+            'matched_prediction':None if match is None else {'index':match[0],'bbox':list(match[1].bbox),'confidence':match[1].confidence,'iou':match[2]},
+        }
+        if target.class_id=='platform':
+            row['raw_diagnosis']=raw_diagnosis(target,arrays,model.manifest.class_names)
+        ledger.append(row)
+        if first_miss is None and target.class_id=='platform' and match is None:
+            first_miss={'record':record,'image_index':image_index,'missed_target_index':ti,'ground_truth':[asdict(t) for t in truth],'candidate_predictions':[asdict(p) for p in predictions]}
+metrics=evaluate_predictions(samples,confidence_threshold=.25,iou_threshold=.5)
+assert metrics == formal['metrics'], 'diagnostic predictions must reproduce every official aggregate metric exactly'
+assert (metrics['per_class']['platform']['tp'],metrics['per_class']['platform']['fn'])==(472,104)
+assert len(ledger)==1569 and native_calls==192
+assert (DATA/'manifest.json').read_bytes()==manifest_bytes
+assert initial_settings==(model.loaded_model_sha256,asdict(model.manifest),model.runtime_settings,model.confidence_threshold,model.iou_threshold)
+platforms=[row for row in ledger if row['class_id']=='platform']
+missing=[row for row in platforms if not row['matched']]
+
+def summary(rows):
+    return {'gt':len(rows),'matched':sum(row['matched'] for row in rows),'missed':sum(not row['matched'] for row in rows)}
+
+def grouped(rows, field):
+    groups=defaultdict(list)
+    for row in rows:
+        groups[str(row[field])].append(row)
+    return {key:summary(value) for key,value in sorted(groups.items())}
+
+geometries=defaultdict(list)
+for row in platforms:
+    # The key retains full label precision, not an inferred map/platform name.
+    geometries[(row['map_id'],tuple(row['target_bbox']))].append(row)
+geometry_groups=[{'map_id':key[0],'target_bbox':list(key[1]),**summary(rows)} for key,rows in sorted(geometries.items())]
+raw_reasons=Counter(row['raw_diagnosis']['absence_reason_if_unmatched'] for row in missing)
+
+def distribution(values):
+    finite=[float(v) for v in values if v is not None]
+    return {'samples':len(finite),'min':min(finite) if finite else None,'p50':float(np.percentile(finite,50)) if finite else None,'p95':float(np.percentile(finite,95)) if finite else None,'max':max(finite) if finite else None}
+
+assert first_miss is not None
+# One old-model inference for the fixed first-miss illustration, not a new baseline evaluation.
+old_root=ROOT/'examples/lifecycle-model'
+old=OnnxDetector(old_root/'model.onnx',old_root/'manifest.json',confidence_threshold=.25,iou_threshold=.45)
+assert old.loaded_model_sha256=='7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3'
+first_frame=ImageFrame.from_file(DATA/first_miss['record']['image'])
+first_miss['baseline_predictions']=[asdict(p) for p in old.detect(first_frame)]
+first_miss['baseline_model_sha256']=old.loaded_model_sha256
+first_miss['candidate_model_sha256']=model.loaded_model_sha256
+first_miss['split']='val'
+first_miss['selection_rule']='first val image in the formal benchmark order containing an unmatched platform'
+first_miss['extra_baseline_native_calls']=1
+with OUTPUTS[0].open('x',encoding='utf-8',newline='\n') as stream:
+    for row in ledger:
+        stream.write(json.dumps(row,sort_keys=True,separators=(',',':'),allow_nan=False)+'\n')
+write(OUTPUTS[2],first_miss)
+report={
+    'schema_version':1,'scope':'post_rejection_validation_only_diagnosis_not_acceptance',
+    'created_at_utc':datetime.now(UTC).isoformat(),'split':'val',
+    'dataset_manifest_sha256':EXPECTED_DATA,'candidate_model_sha256':EXPECTED_MODEL,
+    'official_report_sha256':digest(BASE/'terrain-model-validation.json'),
+    'diagnostic_script_sha256':digest(Path(__file__)),
+    'thresholds':{'confidence':.25,'nms_iou':.45,'matching_iou':.5},
+    'inference_runtime':model.runtime_settings,
+    'candidate_native_calls':native_calls,'baseline_native_calls_for_figure':1,
+    'all_1569_ground_truth_rows_recorded':True,'official_aggregate_metrics_reproduced_exactly':True,
+    'metrics':metrics,'platform_by_map':grouped(platforms,'map_id'),
+    'platform_by_phase':grouped(platforms,'phase'),'platform_by_session':grouped(platforms,'session_id'),
+    'platform_by_geometry':geometry_groups,'unmatched_platform_reason_counts':dict(raw_reasons),
+    'unmatched_best_raw_any_iou':distribution([r['raw_diagnosis']['best_any_class_iou']['iou'] for r in missing]),
+    'unmatched_best_raw_platform_iou':distribution([r['raw_diagnosis']['best_platform_iou']['iou'] if r['raw_diagnosis']['best_platform_iou'] else None for r in missing]),
+    'unmatched_max_platform_score_at_iou50':distribution([r['raw_diagnosis']['highest_platform_score_at_iou50']['platform_score'] if r['raw_diagnosis']['highest_platform_score_at_iou50'] else None for r in missing]),
+    'unmatched_best_confident_platform_iou':distribution([r['raw_diagnosis']['best_platform_iou_above_frozen_confidence']['iou'] if r['raw_diagnosis']['best_platform_iou_above_frozen_confidence'] else None for r in missing]),
+    'ledger':{'file':OUTPUTS[0].name,'sha256':digest(OUTPUTS[0]),'rows':len(ledger),'platform_rows':len(platforms),'platform_misses':len(missing)},
+    'first_miss':{'file':OUTPUTS[2].name,'sha256':digest(OUTPUTS[2]),'image':first_miss['record']['image'],'image_index':first_miss['image_index']},
+    'test_images_or_labels_opened':False,'thresholds_changed':False,'candidate_retrained':False,
+    'acceptance_result_changed':False,'model_promoted':False,'timing_is_benchmark':False,
+    'limitations':[
+       'An additional val-only diagnostic inference pass after rejection; not another model candidate and not a held-out test evaluation.',
+       'Raw-head IoU/score evidence describes this exported model; it does not prove the optimization or training-assignment cause.',
+       'No confidence or NMS threshold sweep was performed; the frozen failed gate remains failed.',
+       'Root QA may share the CPU; this pass makes no latency claim.',
+       'Only the first missed val frame receives an extra old-model inference for the illustration.'
+    ]
+}
+write(OUTPUTS[1],report)
+print(json.dumps({key:report[key] for key in ('platform_by_map','platform_by_geometry','unmatched_platform_reason_counts','unmatched_best_raw_any_iou','unmatched_best_raw_platform_iou','unmatched_max_platform_score_at_iou50','unmatched_best_confident_platform_iou','ledger','first_miss')},indent=2),flush=True)

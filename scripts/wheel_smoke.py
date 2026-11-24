@@ -3,7 +3,8 @@
 Only this script's standard-library imports run in the build environment. All package
 checks run as subprocesses in a separate virtual environment, and stdout is one JSON
 report. It intentionally does not train a model; CI has a separate opt-in CPU smoke.
-The runtime checks include v0.2 local sync, lifecycle data and pixel re-inference.
+The runtime checks include local sync, lifecycle data, pixel re-inference, and
+the packaged terrain configuration and model-only terrain route without native extras.
 """
 
 import argparse
@@ -110,11 +111,14 @@ def smoke(wheel: Path, checkout: Path) -> dict[str, Any]:
                     "from pathlib import Path; from importlib.resources import files; "
                     "import maple_vision; "
                     "resource=files('maple_vision').joinpath('resources/tiny-yolo.yaml'); "
+                    "terrain=files('maple_vision').joinpath('resources/terrain-yolo.yaml'); "
                     "print(json.dumps({'module':str(Path(maple_vision.__file__).resolve()), "
                     "'version':m.version('maple-vision-platform'), "
                     "'runtime':{n:m.version(n) for n in ('numpy','Pillow')}, "
                     "'model_config_packaged':resource.is_file() "
                     "and 'backbone:' in resource.read_text(), "
+                    "'terrain_config_packaged':terrain.is_file() "
+                    "and 'reg_max: 16' in terrain.read_text(), "
                     "'training_not_installed':importlib.util.find_spec('torch') is None, "
                     "'inference_not_installed':importlib.util.find_spec('onnxruntime') is None}))",
                 ]
@@ -122,9 +126,47 @@ def smoke(wheel: Path, checkout: Path) -> dict[str, Any]:
         )
         require(not Path(installed["module"]).is_relative_to(checkout), "import used checkout")
         require(installed["model_config_packaged"], "tiny YOLO config missing from installed wheel")
+        require(
+            installed["terrain_config_packaged"], "terrain YOLO config missing from installed wheel"
+        )
         require(installed["training_not_installed"], "isolated smoke unexpectedly contains torch")
         require(installed["inference_not_installed"], "isolated smoke unexpectedly contains ORT")
         checks["installed_package"] = installed
+        execute([str(executable), "model", "audit-terrain", "--help"])
+        terrain = strict_json(
+            execute(
+                [
+                    str(python),
+                    "-c",
+                    """
+import json
+from maple_vision.agent import HybridPerception
+from maple_vision.contracts import Detection
+from maple_vision.scene import SceneRenderer
+from maple_vision.simulation import Simulator
+from maple_vision.vision import PixelPerception
+import maple_vision.terrain_audit
+
+objects = (Detection('player', (25, 146, 39, 168), 0.9),
+           Detection('platform', (20, 168, 300, 172), 0.8))
+class Detector:
+    def detect(self, frame):
+        return objects
+def forbidden(self, frame):
+    raise AssertionError('model terrain must not call palette object detection')
+PixelPerception.detect = forbidden
+observation = HybridPerception(Detector(), terrain_source='model').observe(
+    SceneRenderer().render(Simulator().snapshot()))
+assert observation.detections == objects
+assert observation.source_id == 'onnx-all-objects+fixture-hud-v1'
+print(json.dumps({'pipeline': observation.source_id, 'fixture_object_detection_called': False,
+                  'object_count': len(observation.detections), 'native_extras_required': False}))
+""",
+                ]
+            )
+        )
+        require(terrain["object_count"] == 2, "installed model-only terrain lost detector objects")
+        checks["model_terrain_without_native_extras"] = terrain
 
         trace = scratch / "p0-trace.jsonl"
         p0 = cli("demo", "--frames", "3", "--output", str(trace))

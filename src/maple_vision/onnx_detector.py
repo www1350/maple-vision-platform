@@ -209,6 +209,17 @@ class OnnxDetector:
         """Identity of the exact bytes supplied to the native inference session."""
         return self._loaded_model_sha256
 
+    @property
+    def runtime_settings(self) -> dict[str, object]:
+        """Read actual native session options without changing the inference session."""
+        options = self._session.get_session_options()
+        return {
+            "providers": list(self._session.get_providers()),
+            "intra_op_num_threads": options.intra_op_num_threads,
+            "inter_op_num_threads": options.inter_op_num_threads,
+            "execution_mode": str(options.execution_mode),
+        }
+
     def __init__(
         self,
         model: Path,

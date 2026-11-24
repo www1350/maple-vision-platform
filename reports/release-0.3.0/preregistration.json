@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-11-24T13:51:15.597437+00:00",
+  "stage": "before_candidate_training_and_candidate_validation",
+  "candidate_count_limit": 1,
+  "baseline_model": "examples/lifecycle-model",
+  "baseline_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+  "baseline_validation_observed_before_freeze": true,
+  "candidate_validation_observed_before_freeze": false,
+  "dataset": {
+    "manifest_sha256": "f73d7390980fa6aedea3b3a12ada2f0a8f3658519e0ca435ca93414bbd02aac4",
+    "generator": "lifecycle-v1",
+    "seed": 2026112603,
+    "sessions": 18,
+    "frames_per_session": 48,
+    "frames": 864,
+    "split_frames": {
+      "train": 480,
+      "val": 192,
+      "test": 192
+    },
+    "split_sessions": {
+      "train": 10,
+      "val": 4,
+      "test": 4
+    },
+    "maps": [
+      "meadow",
+      "cavern"
+    ],
+    "unseen_maps": false
+  },
+  "training": {
+    "config": "configs/terrain-yolo.yaml",
+    "config_sha256": "b4a42896b69b9a55d1fc2324e2c4b55cc12d8fdd4ac69ab26583957b00839111",
+    "epochs": 40,
+    "image_size": 320,
+    "batch": 8,
+    "seed": 42,
+    "cpu_threads": 2,
+    "pretrained": false,
+    "checkpoint_selection": "existing trainer best.pt selected by validation fitness",
+    "augmentations": "unchanged fixed fixture-safe training.py options"
+  },
+  "preflight": {
+    "actual_strides": [
+      4,
+      8,
+      16
+    ],
+    "actual_reg_max": 16,
+    "parameters": 398357,
+    "ground_eligible_stride16_anchors": 20,
+    "ground_full_box_unclipped_stride16_anchors": 10,
+    "evidence": "preliminary-terrain-audit.json",
+    "latency_scope": "random-weight Torch CPU forward only; not deployed ONNX speed"
+  },
+  "evaluation": {
+    "confidence_threshold": 0.25,
+    "matching_iou_threshold": 0.5,
+    "detector_nms_iou": 0.45,
+    "onnx_intra_op_threads": 1,
+    "warmup_calls_excluded": 3,
+    "split": "val",
+    "measurements": 192,
+    "latency_scope": "detect(frame), preprocess/infer/decode included; PNG I/O excluded",
+    "no_parallel_training_during_timing": true
+  },
+  "validation_gates": {
+    "platform_recall_min": 0.98,
+    "ladder_recall_min": 0.98,
+    "full_width_floor_recall_min": 0.98,
+    "full_width_floor_top_edge_abs_error_p95_max_pixels": 1.0,
+    "full_width_floor_each_endpoint_abs_error_p95_max_pixels": 4.0,
+    "dynamic_classes": [
+      "player",
+      "monster",
+      "loot",
+      "portal",
+      "npc"
+    ],
+    "each_dynamic_recall_min_baseline_minus": 0.01,
+    "macro_ap50_min": "same validation baseline macro AP50",
+    "micro_precision_min": 0.98,
+    "detect_latency_p95_max_ms": 75.0
+  },
+  "geometry_semantics": {
+    "ground_truth": "visible YOLO labels in original image coordinates",
+    "full_width_floor": "platform box whose left=0 and right=image_width (absolute tolerance 1e-6); no guessed hidden geometry",
+    "matching": "confidence-ranked one-to-one same-image same-class matching across all platforms at IoU>=0.5, then stratify matches by full-width GT",
+    "errors": "absolute top/left/right differences in original pixels, report each endpoint p95 separately and only among matched full-width floors; recall still includes unmatched",
+    "quantile": "linear interpolation (numpy default)",
+    "promotion_requires_nonempty_floor_population": true
+  },
+  "scenario_gates": {
+    "terrain_source": "model",
+    "pipeline": "onnx-all-objects+fixture-hud-v1",
+    "normal_jobs": [
+      "assassin",
+      "dragon_knight",
+      "cleric"
+    ],
+    "normal_seeds": [
+      0,
+      1,
+      2
+    ],
+    "faults": [
+      "brief_dropout",
+      "persistent_dropout",
+      "duplicate_frames",
+      "freeze_input"
+    ],
+    "expected_outcomes_required": 13,
+    "actual_reinference_jobs": [
+      "assassin",
+      "dragon_knight",
+      "cleric"
+    ],
+    "reinference_seed": 0,
+    "short_resource_soak_requested_seconds": 60
+  },
+  "holdout_policy": {
+    "test_predictions_or_scores_before_selection": false,
+    "input_copy_and_integrity_validation_allowed": true,
+    "test_evaluation_limit": 1,
+    "test_gates": "same absolute platform/ladder/full-floor/geometry/micro-precision/latency gates; dynamic class recall >=0.95 and macroAP50>=0.97; no baseline test evaluation",
+    "test_dynamic_recall_min": 0.95,
+    "test_macro_ap50_min": 0.97,
+    "if_validation_fails": "retain candidate failure and do not score test or promote",
+    "if_test_fails": "retain result without tuning or replacing current accepted model",
+    "no_adaptive_second_candidate": true
+  },
+  "scope": {
+    "object_source": "all seven object classes from model",
+    "context_source": "fixture pixel HUD/map/dialogue",
+    "ladder_closed_loop_navigation_accepted": false,
+    "real_domain_accepted": false,
+    "wall_clock_24h_accepted": false,
+    "full_v8_accepted": false
+  },
+  "base_commit": "d11e285f6ba648c34f3bcabb1c3d193f63350da1",
+  "training_source_sha256": {
+    "src/maple_vision/training.py": "f15fd0a5051780225b9952505c98e45cbb61c34ef4ba15efe97957fd9b09e8d6",
+    "src/maple_vision/dataset.py": "d723f0f565beaba6ee66aeb4d7a0485e133f27e97baaf08e59343ba07bdbb0f9",
+    "src/maple_vision/scene.py": "3402f66889e927bd7b4dfaff0fb443b07d385acbe86cbad7509f1b34eb395e93",
+    "src/maple_vision/simulation.py": "093148c5e60fd93e0d8b0cac65ea97717aa0d8e89da114d7a0e7b1ceb3c1e430",
+    "src/maple_vision/sim_types.py": "9ff904684fe0462db9e4ae638a34e153ef3d9a58f84172de5374c2926a4fac60"
+  },
+  "hashes_are_integrity_identifiers_not_signatures": true
+}

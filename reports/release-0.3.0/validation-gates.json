@@ -1,0 +1,155 @@
+{
+  "gates": {
+    "detect_latency_p95_ms": {
+      "actual": 24.986153549999997,
+      "passed": true,
+      "required": {
+        "operator": "<=",
+        "value": 75.0
+      }
+    },
+    "dynamic_recall_loot": {
+      "actual": 0.96,
+      "passed": true,
+      "required": {
+        "operator": ">=",
+        "value": 0.95
+      }
+    },
+    "dynamic_recall_monster": {
+      "actual": 1.0,
+      "passed": true,
+      "required": {
+        "operator": ">=",
+        "value": 0.99
+      }
+    },
+    "dynamic_recall_npc": {
+      "actual": 1.0,
+      "passed": true,
+      "required": {
+        "operator": ">=",
+        "value": 0.99
+      }
+    },
+    "dynamic_recall_player": {
+      "actual": 1.0,
+      "passed": true,
+      "required": {
+        "operator": ">=",
+        "value": 0.99
+      }
+    },
+    "dynamic_recall_portal": {
+      "actual": 1.0,
+      "passed": true,
+      "required": {
+        "operator": ">=",
+        "value": 0.99
+      }
+    },
+    "full_width_floor_left_error_p95_pixels": {
+      "actual": 0.4719100952148432,
+      "passed": true,
+      "required": {
+        "operator": "<=",
+        "value": 4.0
+      }
+    },
+    "full_width_floor_recall": {
+      "actual": 1.0,
+      "passed": true,
+      "required": {
+        "operator": ">=",
+        "value": 0.98
+      }
+    },
+    "full_width_floor_right_error_p95_pixels": {
+      "actual": 0.15177917480468744,
+      "passed": true,
+      "required": {
+        "operator": "<=",
+        "value": 4.0
+      }
+    },
+    "full_width_floor_top_error_p95_pixels": {
+      "actual": 3.147757811916563e-05,
+      "passed": true,
+      "required": {
+        "operator": "<=",
+        "value": 1.0
+      }
+    },
+    "ladder_recall": {
+      "actual": 0.9895833333333334,
+      "passed": true,
+      "required": {
+        "operator": ">=",
+        "value": 0.98
+      }
+    },
+    "macro_ap50": {
+      "actual": 0.9646245103193939,
+      "passed": true,
+      "required": {
+        "operator": ">=",
+        "value": 0.9448299740688355
+      }
+    },
+    "micro_precision": {
+      "actual": 0.9993150684931507,
+      "passed": true,
+      "required": {
+        "operator": ">=",
+        "value": 0.98
+      }
+    },
+    "platform_recall": {
+      "actual": 0.8194444444444444,
+      "passed": false,
+      "required": {
+        "operator": ">=",
+        "value": 0.98
+      }
+    }
+  },
+  "input_file_sha256": {
+    "baseline": "f4b8dcca9bd18aced57e96c796a1941c021e33c527f2155c9422298c436c735d",
+    "candidate": "7811708cb24b51c70b201ce6ac0a2d4ac893cc15f0f63af3fbc74b903a64e1d4",
+    "preregistration": "751baa9fae9832f4d76ef19ceef11f5c9d1371c368d8887d1f8be4b6976a6a47"
+  },
+  "input_identity": {
+    "baseline_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+    "baseline_report_sha256": "fe1648bc881c389e0ecb64ce665b4651bd9c170079fb3c24fcf1e6d13f4cae55",
+    "candidate_model_sha256": "be5cd99bce0f52b0cdfc7e033251f2c919e14d203c8b72d394a18d7a067751f0",
+    "candidate_report_sha256": "e5f14494773d83d995cde09069e89be338db6bedb3601dfb085534e011301acf",
+    "confidence_threshold": 0.25,
+    "dataset_manifest_sha256": "f73d7390980fa6aedea3b3a12ada2f0a8f3658519e0ca435ca93414bbd02aac4",
+    "detector_nms_iou": 0.45,
+    "full_width_floor_ground_truth": 192,
+    "full_width_floor_matches": 192,
+    "hash_kind": "SHA-256 of canonical JSON, not a signature or model-file verification",
+    "images": 192,
+    "latency_samples": 192,
+    "matching_iou_threshold": 0.5,
+    "preregistration_sha256": "37d8105eafb4c5baa34b17866a03bc7c9d75b1be9a69762ab3438bf55f12a2d4",
+    "warmup_calls_excluded": 3
+  },
+  "limitations": [
+    "Only supplied report values and identity claims are checked; predictions are not rescored.",
+    "Hashes identify supplied content, not authenticity, preregistration timing or test isolation.",
+    "Absence of concurrent training and hardware load requires separate process evidence.",
+    "Quality pass alone does not grant model promotion, real-domain or 24-hour acceptance."
+  ],
+  "model_promotion_granted": false,
+  "predictions_rescored": false,
+  "quality_gates_passed": false,
+  "schema_version": 1,
+  "scope": "supplied_report_quality_and_identity_check",
+  "separate_gates": [
+    "scenario_suite",
+    "actual_reinference",
+    "resource_soak"
+  ],
+  "split": "val"
+}

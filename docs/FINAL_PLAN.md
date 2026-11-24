@@ -1,12 +1,14 @@
 # Maple Vision Platform 最终实施方案
 
-**用途：交给另一名程序员或编程 AI，即可复现当前实现，并继续完成剩余工程。** 本文统筹 [v8 总规格](../MASTER_SPEC.md)、[实际架构](ARCHITECTURE.md)、[v0.1 历史验收](RELEASE_ACCEPTANCE.md) 与当前 **v0.2.0 已验收离线实现**。本轮执行顺序和门禁见 [V0_2_PLAN.md](V0_2_PLAN.md)，准确提交的最终结果见 [v0.2 发布验收](RELEASE_0_2_ACCEPTANCE.md)。旧版本验收、新实现可运行、当前版本发布通过、完整 v8 完成是不同状态。
+**用途：交给另一名程序员或编程 AI，即可复现当前实现，并继续完成剩余工程。** 本文统筹 [v8 总规格](../MASTER_SPEC.md)、[实际架构](ARCHITECTURE.md)、已验收的 [v0.1](RELEASE_ACCEPTANCE.md) / [v0.2](RELEASE_0_2_ACCEPTANCE.md) 与当前 **v0.3 开发中的地形研究和模型对象管线**。本轮执行顺序和冻结门禁见 [V0_3_PLAN.md](V0_3_PLAN.md)，实际结果及未完成项见 [v0.3 验收记录](RELEASE_0_3_ACCEPTANCE.md)。旧版本验收、新实现可运行、当前版本发布通过、完整 v8 完成是不同状态。
 
 ## 1. 交付目标与当前结论
 
 建立一个本机可运行的闭环：有来源的知识与素材进入独立模拟世界；渲染生成图像，视觉模块理解图像，策略决定动作，模拟器执行动作，独立验证器核查结果。使用者能自己复现成功和失败，不需要拿正式账号试错。
 
-当前具备 SQLite 知识目录、静态素材登记与渲染、会话级合成数据集、实际 YOLO 训练和 ONNX 推理、三职业两地图任务、故障测试、动作重放、录像观察与本地 OCR。v0.2 增加本地知识增量计划、生命周期数据与分组评估、指定模型的 suite/soak、资源采样和真实感知/策略重新执行。本地工程、新验证器预检/文件变化防护与实际失败保留已通过，所选 lifecycle 模型完成合成混合管线本地门禁；源代码、模型及测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492` 的[三项远端 CI](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)均已通过；后续文档归档提交在 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3) 继续执行同一套检查。内置规则与画面仍为 `synthetic_fixture`，没有将小册子最新资料、正式地图物理或真实图像效果冒充为已核实内容。
+当前具备 SQLite 知识目录、静态素材登记与渲染、会话级合成数据集、实际 YOLO 训练和 ONNX 推理、三职业两地图任务、故障测试、动作重放、录像观察与本地 OCR。v0.2 的知识增量计划、生命周期数据与分组评估、模型 suite/soak、资源采样和实际感知/策略重新执行已经验收；所选 lifecycle 模型只取得合成混合管线准入。其源代码、模型及测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492` 的[三项远端 CI](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)均已通过，最终归档与合并历史见 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)。
+
+v0.3已新增结构/锚点审查、schema3几何评分和显式模型对象模式。唯一候选val中平台召回0.819444低于冻结的0.98：14项阈值通过13项仍不推广，也不评分test、不运行候选推广suite/reinfer/soak、不训练第二候选。工具本地完整回归 **823通过、0失败、0跳过**，包含已启用原生检查，隔离wheel安装通过；准确提交的远端CI仍待完成。内置规则与画面仍为 `synthetic_fixture`，不能将工具通过扩为真实域准确率。[本地验证](../reports/release-0.3.0/local-verification.json)
 
 本项目执行对象是独立 Python 模拟器。正式客户端控制、系统按键注入、输入伪装、封包/内存修改和反作弊绕过不在交付范围内；独立验证也不能证明正式账号不会被封。玩家回复只产出待人工确认的本地草稿。依赖安装后，默认运行、训练、推理和 OCR 使用本地计算，不调用 LLM API，不消耗运行时 LLM token；编程 AI 开发本身的计费另算。
 
@@ -17,7 +19,7 @@ flowchart TD
     S["独立模拟器"] --> R["分层渲染器"]
     A["已校验的静态素材包"] -.-> R
     R --> F["RGB ImageFrame"]
-    F --> V["像素基线或 YOLO 混合感知"]
+    F --> V["像素基线或显式模型对象感知"]
     V --> G["Supervisor"]
     G --> P["VisualAgent"]
     P -->|"SimAction"| S
@@ -69,38 +71,58 @@ flowchart TD
 
 v0.1 的 288 帧数据缺少 x<40 的玩家样本，而模拟器起点 x=24。v0.2 的显式 `profile="lifecycle"` 新增 schema v2：用实际模拟动作走完两图战斗、收集、对话和往返，选取出生、战斗、拾取、清场、对话、切图六阶段及边缘、高台、非落地位置。校验器逐会话重放动作，独立核对所选画面、可见标签、阶段和覆盖统计；训练生成可读取真值，运行检测器仍只接收 RGB 帧。默认 legacy 生成器和旧数据字节保持兼容。[生命周期合同](DATASET_LIFECYCLE.md)
 
-本轮冻结输入为 18 会话×48 帧，共 864 张图片、7098 个可见标注，train/val/test 为 480/192/192 帧；manifest SHA-256 为 `670f6dae181f0f4b3107ba6a47cb733f19cfbc216c4e8e8c23f96b756601b3ff`。三职业、两地图、六阶段及五种位置分组均有覆盖。分组评估重新计算每组 TP/FP/FN/AP，保留聚合结果；无怪物真值时的误检仍计 FP。两张地图仍在各分区出现，会话隔离和生命周期覆盖不等于未见地图或真实域泛化。
+v0.2 冻结输入为 18 会话×48 帧，共 864 张图片、7098 个可见标注，train/val/test 为 480/192/192 帧；manifest SHA-256 为 `670f6dae181f0f4b3107ba6a47cb733f19cfbc216c4e8e8c23f96b756601b3ff`。三职业、两地图、六阶段及五种位置分组均有覆盖。分组评估重新计算每组 TP/FP/FN/AP，保留聚合结果；无怪物真值时的误检仍计 FP。v0.3 另建新种子、无完全相同RGB和会话种子交集的数据，身份见5.4节。两版的两张地图仍在各分区出现，会话隔离和生命周期覆盖不等于未见地图或真实域泛化。
 
 ### 5.2 训练与推理职责
 
 YOLO 是学习图像中对象位置和类别的检测模型；它不负责理解技能规则或完成任务。当前 tiny 结构从本地 YAML 随机初始化，CPU 训练，单独导出 ONNX，再由真实 ONNX Runtime 推理。训练使用私有数据副本，第三方缓存不会污染源数据集；模型 manifest 绑定权重哈希、类别顺序、输入尺寸、输出格式与适用域。
 
-默认 `PixelPerception` 是几何样例专用颜色基线。模型闭环明确使用 **YOLO 检测玩家/怪物/掉落/NPC/门，像素方法读取平台/梯子/HUD/地图/对话标记**；动态对象漏检时不偷偷用颜色基线补成 YOLO 成绩。自定义素材必须训练或提供适配检测器，不能期待原调色板解析器自动识别。
+默认 `PixelPerception` 是几何样例专用颜色基线。v0.2兼容的模型模式使用 **YOLO 检测玩家/怪物/掉落/NPC/门，像素方法读取平台/梯子/HUD/地图/对话标记**。v0.3 显式 `--terrain-source model` 将平台与梯子也交给模型，缺失对象不以像素回退补成模型成绩；HUD/地图/对话仍是fixture解析。该新路径已经接入接口，候选能否通过任务与质量门禁另行记录。自定义素材必须训练或提供适配检测器，不能期待原调色板解析器自动识别。
 
 v0.2 让同一个显式 ONNX 实例进入 suite/soak，并在新运行包中记录实际加载模型哈希、manifest、阈值和终止观测。`lab reinfer` 从初始画面起实际执行每帧感知、监督和策略，比较新计算的观测与动作；它不把记录动作当作新策略输出。预检资源/文件变化边界和保留实际失败轮次一次已完成本地审查与回归，详见 [模型验证](MODEL_VALIDATION.md)。
 
 本地 Tesseract 适配器可以识别指定图像区域文字，但尚无游戏中文小字、聊天栏或真实 HUD 准确率验收，也没有自动接入任务策略。完整时序跟踪、目标身份、WorldState/BeliefState 融合属于后续工程：需保留测量时间、来源、有效期和不确定性，不能把上次估计永久当真。[训练](TRAINING.md) · [评估定义](EVALUATION.md) · [录像与 OCR](RECORDINGS.md)
 
-### 5.3 所选 lifecycle 模型、实际结果与边界
+### 5.3 v0.2 已验收 lifecycle 模型、实际结果与边界
 
 v0.2 的所选模型位于 `examples/lifecycle-model/`，SHA-256 为 `7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3`。它采用 320px、40 epoch、batch 8、seed 42、CPU 2 线程，从本地配置随机初始化，实际训练耗时 **1067.895699 秒**。来源、权重与完整结果见 [YOLO_LIFECYCLE_EXPERIMENT.md](YOLO_LIFECYCLE_EXPERIMENT.md)。
 
-在同一份新数据的 192 帧 val 上比较：
+在同一份 v0.2 数据的 192 帧 val 上比较：
 
 | 模型 | AP50 | platform recall |
 |---|---:|---:|
 | v0.1 旧模型 | 0.900697 | 0.467014 |
 | v0.2 lifecycle 模型 | 0.946252 | 0.661458 |
 
-本轮工程准入要求在首个候选 val 之后制定，**没有预注册**。选模同时参考新 val 与明确单列的合成任务套件，于 **2026-11-24 12:06:01 UTC** 固定候选；随后只评估一次保留 test，不据 test 调参。该 test 为 192 帧、1572 个真值目标，TP=1372、FP=3、FN=200；AP50=**0.944822452**、micro precision=**0.997818182**、recall=**0.872773537**。AP50 是指定置信度截断后的单 IoU 指标，不是完整 COCO mAP50–95。
+v0.2 工程准入要求在首个候选 val 之后制定，**没有预注册**。选模同时参考其 val 与明确单列的合成任务套件，于 **2026-11-24 12:06:01 UTC** 固定候选；随后只评估一次保留 test，不据 test 调参。该 test 为 192 帧、1572 个真值目标，TP=1372、FP=3、FN=200；AP50=**0.944822452**、micro precision=**0.997818182**、recall=**0.872773537**。AP50 是指定置信度截断后的单 IoU 指标，不是完整 COCO mAP50–95。
 
 混合管线的三职业任务分别用 **327/325/317 步**完成，独立目标核验通过；实际 reinfer 分别重新执行 **328/326/318 帧**感知与策略，包含终止帧。模型 suite **13/13** 场景符合预期；60 秒 soak 请求实际运行 **61.510525 秒**、完成 **10 轮**，有 **63** 个资源样本，最大采样当前 RSS **90.09375 MiB**。这些本地门禁支持本次合成混合管线模型准入，不能推导真实域或 24 小时可靠率。[发布证据](RELEASE_0_2_ACCEPTANCE.md)
 
-**纯 YOLO 地形仍未通过。** 对实际 ONNX 的检查确认 `reg_max=8`、stride=4/8；每边距离由 0…7 的 DFL bins 表示，单框宽度上界为 `2×(8−1)×8=112px`。当前全宽地板为 320px，单框 IoU 上界为 `112/320=0.35`，达不到评估 IoU=0.5。这解释了 val 中 192 个全宽地板漏检，不能据此解释剩余其他错误。直接添加 stride32 分支虽然扩大理论框宽，但当前 320 输入/4px 地板几何下实际匹配器给该分支 **0 个可用地板正样本锚点**，因此没有训练这个无效候选。详见实验报告中的实际架构与锚点检查。
+**v0.2 模型没有通过纯模型地形准入。** 对实际 ONNX 的检查确认 `reg_max=8`、stride=4/8；每边距离由 0…7 的 DFL bins 表示，单框宽度上界为 `2×(8−1)×8=112px`。当前全宽地板为 320px，单框 IoU 上界为 `112/320=0.35`，达不到评估 IoU=0.5。这解释了其 val 中 192 个全宽地板漏检，不能据此解释剩余其他错误。直接添加 stride32 分支虽然扩大理论框宽，但当前 320 输入/4px 地板几何下实际匹配器给该分支 **0 个可用地板正样本锚点**，因此没有训练这个无效候选。详见实验报告中的实际架构与锚点检查。
 
-当前闭环保留 YOLO 动态对象加像素地形/HUD，不把混合成功写成纯 YOLO 地形通过，也不修改标签去隐藏架构限制。后续架构研究必须先核对可表示范围、实际正样本分配和 CPU 成本，再单独训练与验证。
+已验收闭环保留YOLO动态对象加像素地形/HUD，不把混合成功写成纯模型地形通过，也不修改标签隐藏架构限制。v0.3按这些结构证据完成了下节的单候选实验；新候选解决全宽地板后仍未达到总体平台门禁，明确不推广。
 
-v0.1 样例与历史数据仍保留在 `examples/fixture-model/` 和 [YOLO_EXPERIMENT.md](YOLO_EXPERIMENT.md)。其原 test 是 64 帧、633 个目标、AP50=0.92645、平台 recall≈0.4948，三职业原任务为 327/349/317 步；这些旧 test 数字与本轮新 test 不应直接用来估计模型提升。默认像素基线也没有被静默替换。
+v0.1 样例与历史数据仍保留在 `examples/fixture-model/` 和 [YOLO_EXPERIMENT.md](YOLO_EXPERIMENT.md)。其原 test 是 64 帧、633 个目标、AP50=0.92645、平台 recall≈0.4948，三职业原任务为 327/349/317 步；不同数据的旧 test 数字不应直接用来估计模型提升。默认像素基线也没有被静默替换。
+
+### 5.4 v0.3 已实现工具与未推广候选
+
+| 当前新增接口 | 实际职责 | 保持的验收边界 |
+|---|---|---|
+| `model audit-terrain` | 仅在train/val审查真实检测头、stride/DFL、正样本与完整四边目标；记录随机权重CPU前向成本 | 可表达、可分配和训练后学会是不同结论；不接受test作为结构选择来源 |
+| `vision benchmark --terrain-metrics` | schema3追加`terrain_geometry`；复用同批预测，全部平台一对一匹配后再分层全宽地板 | 未命中仍计FN，几何误差只统计匹配框；空指标不能算通过 |
+| `--terrain-source model` | 七类对象来自ONNX，pipeline=`onnx-all-objects+fixture-hud-v1`；同来源进入run/suite/soak/reinfer | 无地形像素回退；HUD仍是fixture；接口实现不自动授予模型准入 |
+
+新数据seed=2026112603，18×48=864帧、7091对象，train/val/test为10/4/4会话、480/192/192帧；manifest SHA-256为 `f73d7390980fa6aedea3b3a12ada2f0a8f3658519e0ca435ca93414bbd02aac4`。与旧两版数据的解码RGB完全重复为0、会话种子无交集，新数据跨split重复也为0。地图仍完全相同，192帧test来自4个会话，不是192个独立世界。
+
+[不可变预注册](../reports/release-0.3.0/preregistration.json)于2026-11-24 13:51:15.597437 UTC冻结，早于候选训练及候选验证。旧模型在新val的基线已先行查看：AP50=0.944829974、platform recall=0.664930556；不把v0.2原数据分数作为本轮阈值。唯一候选为 `configs/terrain-yolo.yaml`，实际reg_max16、stride4/8/16；地板20个合格stride16锚点中10个具有未截断的完整四边目标。
+
+唯一候选完成40epoch、320px、batch8、seed42、Torch2线程训练，实际耗时1467.923792秒。同新val的AP50为0.9646245103、microP/R为0.9993150685/0.9298916507，TP/FP/FN为1459/1/110。全宽地板192/192命中，顶边及两端点p95误差通过；ORT1线程detect p95为24.98615355ms。**总体平台只有472/576命中，recall=0.8194444444，未达到0.98，因此整体模型拒绝推广。**
+
+失败ONNX SHA-256为 `be5cd99bce0f52b0cdfc7e033251f2c919e14d203c8b72d394a18d7a067751f0`，保留位置是 `examples/terrain-candidate`。评分及门禁证据归档为 [terrain-model-validation.json](../reports/release-0.3.0/terrain-model-validation.json) 和 [validation-gates.json](../reports/release-0.3.0/validation-gates.json)；详细val分析由 [YOLO_TERRAIN_EXPERIMENT.md](YOLO_TERRAIN_EXPERIMENT.md)维护。已验收的 `examples/lifecycle-model` 混合模型不变。
+
+按预注册，候选推广13场景、三职业reinfer、soak及test均不执行，不增加第二候选。新test字节允许用于完整性核对与训练副本复制，但没有产生模型预测或分数。这是已经执行的失败出口，不是接手AI应补做的遗漏步骤。
+
+结构审查的构建前分配预算、既有训练离线运行域与设置恢复已通过本地原生验证。冻结训练源码未改，1730个源数据与私有副本文件一致；后加审查预算不能追溯计入首批审查报告或训练入口。完整本地回归823项通过，隔离wheel也通过，准确提交的远端CI仍待完成。数值门禁、模型确定失败与当前证据见 [V0_3_PLAN.md](V0_3_PLAN.md) 和 [RELEASE_0_3_ACCEPTANCE.md](RELEASE_0_3_ACCEPTANCE.md)；工具本地验收不能改变模型结论。
 
 ## 6. 职业能力、任务与有界监督
 
@@ -176,7 +198,7 @@ python -m maple_vision lab run --output artifacts/plan-profile --knowledge-db ar
 
 `knowledge-demo.json` 是合成测试资料。先查看计划中捕获的证据与差异，再应用；原来的 `knowledge import` 仍可用于直接原子导入。素材须先准备自己创作或获准使用的本地图片；登记命令、映射 JSON 和实际授权字段见 [SPRITE_PACK.md](SPRITE_PACK.md)。随后对 `dataset create` 与 `lab run` 成对增加 `--asset-registry REGISTRY --sprite-map MAPPING.json`。替换素材后应重训检测器并重新验收，现有模型没有任意画风兼容承诺。
 
-### 8.3 生成、训练、导出与独立评估
+### 8.3 复现已验收的 v0.2 模型流程
 
 ```bash
 python -m maple_vision dataset create artifacts/plan-data --profile lifecycle --sessions 18 --frames 48 --seed 20261125
@@ -195,7 +217,7 @@ python -m maple_vision model export artifacts/plan-train/run/weights/best.pt --o
 python -m maple_vision vision benchmark artifacts/plan-data --output artifacts/plan-yolo-val.json --split val --model artifacts/plan-export/model.onnx --manifest artifacts/plan-export/manifest.json
 ```
 
-以上复现 v0.2 所选候选的 320px、40 epoch、batch 8、seed 42 配置；原运行训练耗时 1067.895699 秒，实际权重与结果见 [本轮实验](YOLO_LIFECYCLE_EXPERIMENT.md)。重新训练的时间与字节不保证跨环境相同。v0.1 历史实验使用旧版数据，复现时应采用其原数据命令。3 epoch 可用于流程 smoke，不能作为质量验收。Python API 与 CLI 的默认输入尺寸不同，实验命令始终显式指定。调参只看 train/val，test 作为选择后的保留评估；持续据 test 修模型后必须建立新的独立留出集。
+以上复现 v0.2 所选候选的 320px、40 epoch、batch 8、seed 42 配置；原运行训练耗时 1067.895699 秒，实际权重与结果见 [v0.2 实验](YOLO_LIFECYCLE_EXPERIMENT.md)。重新训练的时间与字节不保证跨环境相同。v0.1 历史实验使用旧版数据，复现时应采用其原数据命令。3 epoch 可用于流程 smoke，不能作为质量验收。Python API 与 CLI 的默认输入尺寸不同，实验命令始终显式指定。调参只看 train/val；旧test已经公开查看，重跑它只是历史复现，不能作为v0.3的新独立holdout。
 
 固定候选权重与选模理由后，再执行保留 test 和独立任务检查：
 
@@ -212,9 +234,20 @@ python -m maple_vision lab suite --output artifacts/plan-model-suite --seeds 3 -
 python -m maple_vision lab soak --output artifacts/plan-model-soak --seconds 60 --resource-interval 1 --max-resource-samples 1024 --model artifacts/plan-export/model.onnx --manifest artifacts/plan-export/manifest.json
 ```
 
-输出包括实际墙钟、进程 CPU 和支持平台上的 RSS 来源与单位；未知内存保持 `null`。资源样本有界保留，最大采样值不能冒充精确瞬时峰值。预检/文件变化防护和原始失败包保留已有本地回归证据；实现及模型测试提交的远端 CI 已通过；后续文档归档提交继续执行同一套检查。
+输出包括实际墙钟、进程 CPU 和支持平台上的 RSS 来源与单位；未知内存保持 `null`。资源样本有界保留，最大采样值不能冒充精确瞬时峰值。预检/文件变化防护和原始失败包保留已有v0.2回归证据；当前v0.3变更另行取得测试与CI。
 
-### 8.4 本地录像、OCR 与草稿
+### 8.4 v0.3 结构、几何与模型对象入口
+
+完整复现命令见 [V0_3_PLAN.md](V0_3_PLAN.md)。唯一训练及val已经完成且失败，接手者应归档结果并继续工具工程检查，不得另起候选、评分test或执行该失败候选的推广任务。以下只展示允许在train/val使用的结构和几何入口；输出不得覆盖现有证据。
+
+```bash
+python -m maple_vision model audit-terrain artifacts/v03-repeat/dataset --config configs/terrain-yolo.yaml --output artifacts/v03-repeat/structure.json --split train --image-size 320
+python -m maple_vision vision benchmark artifacts/v03-repeat/dataset --split val --terrain-metrics --model artifacts/v03-repeat/export/model.onnx --manifest artifacts/v03-repeat/export/manifest.json --output artifacts/v03-repeat/validation.json
+```
+
+`vision benchmark`直接评估检测器，不使用混合感知补全对象；默认split是test，所以候选比较必须明确`--split val`。`lab run/suite/soak/reinfer`的模型对象入口仍是成对model/manifest加`--terrain-source model`，运行和复验不能更换来源身份；该工具接口的存在不允许越过当前候选的val失败出口。
+
+### 8.5 本地录像、OCR 与草稿
 
 准备有权分析的 `./recording-frames` PNG 目录，文件名补零，下面授权说明应替换为真实情况：
 
@@ -230,9 +263,9 @@ OCR 需要本机 Tesseract 与对应语言包；中文需自行安装并验证 `
 
 ## 9. P0–P13 工作拆解与依赖
 
-按此表继续现有仓库，不重建已经通过的基础设施。实际机器可并行处理独立模块；集成前先冻结合同。机器可读依赖见 [milestones.yaml](../engineering/milestones.yaml)。
+按此表中的已验收v0.2基础继续现有仓库，不重建已经通过的基础设施；v0.3模型失败与工具工程状态见5.4节和独立合同。实际机器可并行处理独立模块；集成前先冻结合同。机器可读依赖见 [milestones.yaml](../engineering/milestones.yaml)。
 
-| 阶段 | 前置 | 当前已验收离线实现 | 完整目标仍需的工作 |
+| 阶段 | 前置 | v0.2 已验收离线基础 | 完整目标仍需的工作 |
 |---|---|---|---|
 | P0 工程基础 | 无 | 合同、CLI、v1 SQLite、CI 与兼容回归 | 保留历史验收，不改写旧成绩 |
 | P1 知识 | P0 | v2 导入/冲突/快照、职业配置注入、本地增量计划与原子应用 | 网络来源与持续调度、最新核实数据、其余规则映射 |
@@ -240,7 +273,7 @@ OCR 需要本机 Tesseract 与对应语言包；中文需自行安装并验证 `
 | P3 地图渲染 | P1/P2 | 两地图、分层/镜头/透明度标签 | 外部地图包、编辑与几何校验 |
 | P4 数据 | P3 | legacy v1、生命周期 v2、动作/像素/标签/覆盖重放检查 | 未见地图、真实标注、更多遮挡与跨域覆盖 |
 | P5 模拟器 | P0/P3 | 固定步长、物理/战斗/资源/保存恢复 | 更多机制、经核实的规则校准 |
-| P6 模型 | P4 | 训练、导出、分组指标、所选 lifecycle 模型混合管线准入 | 纯 YOLO 地形、模型规模/两阶段比较、真实域准入 |
+| P6 模型 | P4 | 训练、导出、分组指标、所选 lifecycle 模型混合管线准入 | 本轮地形候选未通过，保留证据；后续视觉研究须另立协议，真实域未准入 |
 | P7 视觉状态 | P5/P6 | 对象、样例 HUD、本地 OCR | 时序追踪、真实 UI、BeliefState |
 | P8 职业 | P1/P5 | 三职业与严格参数注入 | 全职业数据、外部能力包 |
 | P9 任务 | P7/P8 | 两图任务、视觉效果与真值核验 | 通用任务 DSL、配置化任务图 |
@@ -261,15 +294,15 @@ python -m ruff check .
 python -m mypy
 python -m pytest -q
 python -m build --wheel --no-isolation
-python scripts/wheel_smoke.py --wheel dist/maple_vision_platform-0.2.0-py3-none-any.whl
+python scripts/wheel_smoke.py --wheel dist/maple_vision_platform-0.3.0-py3-none-any.whl
 python -m maple_vision lab soak --output artifacts/plan-soak --seconds 60
 ```
 
 训练环境另执行 `MAPLE_TRAINING_SMOKE=1 python -m pytest tests/test_training.py -q`；Windows 环境变量写法见快速开始。完整长稳请求使用 `lab soak --output artifacts/plan-soak-24h --seconds 86400`，需持续运行并核对实际墙钟结果；该长时任务不是上面命令的隐含步骤。
 
-下面保留 v0.1 的历史结果；这些数字不代表当前 v0.2 工作树已通过。v0.2 的完整测试、模型门禁、安装与远端 CI 统一记入 [RELEASE_0_2_ACCEPTANCE.md](RELEASE_0_2_ACCEPTANCE.md)。
+下面保留 v0.1 的历史结果；这些数字不代表当前 v0.3 工作树已通过。v0.2 的历史测试、模型门禁、安装与远端CI见 [RELEASE_0_2_ACCEPTANCE.md](RELEASE_0_2_ACCEPTANCE.md)；本轮结果只记入 [RELEASE_0_3_ACCEPTANCE.md](RELEASE_0_3_ACCEPTANCE.md)。
 
-| 验收层 | v0.1 历史结论 | v0.2 与后续证据要求 |
+| 验收层 | v0.1 历史结论 | 当前版本仍需的独立证据 |
 |---|---|---|
 | 平台工程 | 本地 500 passed/1 skipped；原生联合 107 passed，存在重叠不能相加 | 精确提交、依赖、环境、命令、失败与跳过原因 |
 | fixture 任务 | 基线 9 个正常任务和 4 个预期故障结果通过；选定模型混合闭环另报 | 更多种子、地图与任务阶段；模型和基线分别统计 |
@@ -279,17 +312,17 @@ python -m maple_vision lab soak --output artifacts/plan-soak --seconds 60
 
 实现提交 [`2114372ac4705625b017d0dc907168560e768db2`](https://github.com/www1350/maple-vision-platform/commit/2114372ac4705625b017d0dc907168560e768db2) 的 [GitHub Actions 45380643809](https://github.com/www1350/maple-vision-platform/actions/runs/45380643809) 三个作业已通过：Ubuntu 498 passed/3 skipped，Windows 495 passed/6 skipped，原生训练/录像/OCR 107 passed/0 skipped。不同环境跳过项不能计作通过；此成绩只覆盖该实现提交，后续最终 PR 提交仍需自己的检查。
 
-v8 中地图识别 99%、平台定位 98%、核心任务 98%、拾取 95%、生存 99%、恢复 95% 是**建议目标**，不是当前实测成绩。实施前须定义分母、任务分布、样本量和不确定性；检测 AP 不能替代任务成功率。当前门禁见 [v02-contract.yaml](../engineering/v02-contract.yaml)；[platform-contract.yaml](../engineering/platform-contract.yaml) 与 [RELEASE_ACCEPTANCE.md](RELEASE_ACCEPTANCE.md) 保留 v0.1 归档状态。
+v8 中地图识别 99%、平台定位 98%、核心任务 98%、拾取 95%、生存 99%、恢复 95% 是**建议目标**，不是当前实测成绩。实施前须定义分母、任务分布、样本量和不确定性；检测 AP 不能替代任务成功率。当前固定门禁见 [v03-contract.yaml](../engineering/v03-contract.yaml)；[v02-contract.yaml](../engineering/v02-contract.yaml)、[platform-contract.yaml](../engineering/platform-contract.yaml)及对应验收保留历史状态。
 
-v0.2 的源代码、模型与测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492`（tree `96de98b2e95ccd8fef04b0052b11f60bee63fe35`）已通过 [CI 45394348732](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)：Ubuntu 631 passed/3 skipped，Windows 627 passed/7 skipped，原生训练 107 passed/0 skipped；本地为 634 passed/0 skipped。Windows 已通过源自 v0.1 的严格 RGB/文本/manifest 语义指纹检查，生产源码未因该修正而改变。[远端证据](../reports/release-0.2.0/remote-ci.json)保留首轮失败和第二轮成功；后续文档归档提交仍由 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3) 承载相同 CI，不提前声称这些后续检查通过。
+v0.2 的源代码、模型与测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492`（tree `96de98b2e95ccd8fef04b0052b11f60bee63fe35`）已通过 [CI 45394348732](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)：Ubuntu 631 passed/3 skipped，Windows 627 passed/7 skipped，原生训练 107 passed/0 skipped；本地为 634 passed/0 skipped。Windows 已通过源自 v0.1 的严格 RGB/文本/manifest 语义指纹检查，生产源码未因该修正而改变。[远端证据](../reports/release-0.2.0/remote-ci.json)保留首轮失败和第二轮成功，最终归档与合并历史由 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)保存。v0.3已另行取得823项本地回归、原生审查与隔离安装证据；远端准确提交CI仍待完成，不继承以上旧版绿灯。
 
-## 11. 下一轮工程的明确优先级
+## 11. 接手后的执行优先级
 
-1. **开展专门的地形研究。** 以实际回归范围、细长地板的正样本锚点和 CPU 成本为前置条件，设计新的受控地形实验；先验证可学习性，再训练和评估。保留本轮混合管线与冻结 test，不以改标签、合并碎框或降低 IoU 冒充纯 YOLO 地形通过。
+1. **完成v0.3准确提交的远端CI与最终归档。** 唯一候选失败已记录，test及推广分支停止；本地823项回归、原生审查与隔离安装已通过，接手者继续Ubuntu/Windows/native CI，不重复开启已关闭模型分支。保留 `examples/terrain-candidate`，不覆盖已验收模型、不另起第二候选、不降低阈值。后续视觉研究须另立协议并明确已查看数据的用途。
 2. **扩展经授权的知识闭环。** 本地静态导出的计划/应用已实现；后续为获准来源增加网络适配和持续调度，完成真实资料映射审查，再把地图/怪物/技能规则逐项接入。不把目录条目存在当作玩法已经生效。
 3. **扩展外部内容。** 在现有静态 SpritePack 上添加动画/锚点和地图包验证；用全新内容包测试加载、碰撞、可见标签及旧版本重放，之后再扩展职业。
 4. **建设真实录像评估集。** 按独立录制会话和地图留出，人工标注对象、HUD 和文字；记录画面尺度、遮挡与版本，真实域误差单独报告。需要精确时序时先补逐帧 PTS 合同。
-5. **补状态与任务通用性。** 设计有期限的跟踪/BeliefState 和可配置任务图；利用本轮已本地验证的实际模型/策略重新执行做回归，保留预检与文件变化反例。新提案先过 Schema 与独立测试，再接现有 VisualAgent，最后考虑管理 UI。
-6. **执行 24 小时发布长稳。** 所选模型已通过 61.510525 秒、10 轮短时运行，有界资源采样与原始失败保留也已本地验证。后续固定提交、依赖、数据/模型和机器，真正连续运行 24 小时，保留失败和资源趋势；当前不得标记 24 小时通过。
+5. **补状态与任务通用性。** 设计有期限的跟踪/BeliefState 和可配置任务图；利用已有实际模型/策略重新执行合同做回归，保留预检与文件变化反例。新提案先过Schema与独立测试，再接现有VisualAgent，最后考虑管理UI；梯子驱动导航也需独立任务设计，不能由检测分数代替。
+6. **执行 24 小时发布长稳。** v0.2模型已通过61.510525秒、10轮短时运行，有界资源采样与原始失败保留已有历史验证。后续固定验收后的提交、依赖、数据/模型和机器，真正连续运行24小时，保留失败和资源趋势；当前不得标记24小时通过。
 
 继续开发的入口是本文件与 [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)；实现细节查 [API_CONTRACTS.md](API_CONTRACTS.md)、[DATA_SCHEMAS.md](DATA_SCHEMAS.md) 和各专题文档。每次交付都同时给出代码、可执行命令、实际证据与未通过项，使下一名执行者能直接复现，而不是重新推测项目状态。

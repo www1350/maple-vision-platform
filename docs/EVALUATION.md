@@ -4,13 +4,16 @@
 
 ```python
 benchmark_dataset(
-    dataset, output, detector=None, split="test", confidence_threshold=0.25, iou_threshold=0.5
+    dataset, output, detector=None, split="test", confidence_threshold=0.25, iou_threshold=0.5,
+    *, terrain_metrics=False
 )
 ```
 
 `detector=None` 使用合成调色板基线；传入 `OnnxDetector` 才测试实际 ONNX 推理。
 调用先验证数据集，再读取独立 YOLO 标签；评估不读取模拟器状态或渲染器标签接口。
 输出为独占创建的 JSON 文件，已有报告不会覆盖。
+
+显式指定 `terrain_metrics=True` 或 CLI `--terrain-metrics` 会输出 schema3，保留已有指标，并从相同预测追加全宽地板召回和原图坐标下的顶边/端点误差。没有匹配框时误差为未知，不写成零；详情见 [地形专项评估](TERRAIN_EVALUATION.md)。默认旧报告不增加这些字段。
 
 纯计算接口供独立测试使用：
 

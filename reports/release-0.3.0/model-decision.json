@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-11-24T14:21:49.290252+00:00",
+  "model_sha256": "be5cd99bce0f52b0cdfc7e033251f2c919e14d203c8b72d394a18d7a067751f0",
+  "candidate_directory": "examples/terrain-candidate",
+  "decision": "rejected_by_preregistered_validation_gate",
+  "model_promotion_granted": false,
+  "quality_gates_passed": false,
+  "passed_quality_gates": 13,
+  "total_quality_gates": 14,
+  "failed_gates": {
+    "platform_recall": {
+      "actual": 0.8194444444444444,
+      "passed": false,
+      "required": {
+        "operator": ">=",
+        "value": 0.98
+      }
+    }
+  },
+  "preregistration_file_sha256": "751baa9fae9832f4d76ef19ceef11f5c9d1371c368d8887d1f8be4b6976a6a47",
+  "validation_report_file_sha256": "7811708cb24b51c70b201ce6ac0a2d4ac893cc15f0f63af3fbc74b903a64e1d4",
+  "quality_gate_report_file_sha256": "0a673f1708e2819f112dc92d946a02a374543c46985c4eb4064c81caf1bd72ad",
+  "candidate_training_runs": 1,
+  "training_budget_completed": true,
+  "test_scoring": "not_performed_due_to_validation_rejection",
+  "promotion_scenario_suite": "not_run_due_to_validation_rejection",
+  "promotion_reinference": "not_run_due_to_validation_rejection",
+  "promotion_resource_soak": "not_run_due_to_validation_rejection",
+  "previous_accepted_model": "examples/lifecycle-model",
+  "previous_accepted_pipeline": "onnx-objects+fixture-terrain-hud-v1",
+  "new_candidate_not_selected_for_default": true,
+  "purpose": "retain a failed research result reproducibly; not an accepted terrain model"
+}

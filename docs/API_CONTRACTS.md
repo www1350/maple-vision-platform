@@ -1,7 +1,46 @@
 # API 合同
 
-本页先说明 v0.1 当前接口，后保留 P0 历史兼容接口。数据字段及格式见 [DATA_SCHEMAS.md](DATA_SCHEMAS.md)，实现边界见 [ARCHITECTURE.md](ARCHITECTURE.md)。
+本页先说明 v0.2/v0.3 增量接口，再列出继续兼容的 v0.1 接口与 P0 历史接口。数据字段及格式见 [DATA_SCHEMAS.md](DATA_SCHEMAS.md)，实现边界见 [ARCHITECTURE.md](ARCHITECTURE.md)。
 新 RGB 视觉链路与 P0 NoOp 链路分开：`scene.ImageFrame` 不是 `contracts.Frame`，`simulation.Simulator.step(action)` 也不是旧占位协议的 `step() -> Frame`。调用方应显式选择对应 API。
+
+## v0.2/v0.3 增量接口
+
+```python
+# 本地知识增量计划；不会访问网络来源
+plan_sync(database, source_json, output_plan) -> dict
+apply_sync(database, plan_path) -> dict
+
+# 默认继续 legacy；lifecycle 必须满足自己的帧数/覆盖合同
+generate_dataset(output, sessions=9, frames_per_session=8, seed=0,
+                 *, sprite_pack=None, profile="legacy") -> dict
+
+# 地形预检只接受 train/val，iterations=0 表示不做计时
+audit_terrain_architecture(dataset, model_config, output, *, split="val",
+                          image_size=320, warmup=3, iterations=20, seed=42) -> dict
+benchmark_dataset(dataset, output, detector=None, split="test",
+                  confidence_threshold=0.25, iou_threshold=0.5,
+                  *, terrain_metrics=False) -> dict
+evaluate_terrain_geometry(samples, image_sizes, *,
+                          confidence_threshold=0.25, iou_threshold=0.5) -> dict
+
+# 缺少模型时只允许默认 fixture；模型对象模式不补颜色地形
+HybridPerception(detector, *, terrain_source="fixture")
+PixelPerception().observe_hud(frame) -> VisualObservation
+run_episode(output=None, config=None, detector=None, *, class_profile=None,
+            sprite_pack=None, terrain_source="fixture") -> dict
+run_suite(output, seeds=3, detector=None, *, terrain_source="fixture") -> dict
+run_soak(output, seconds=60, detector=None, *, resource_interval_seconds=1.0,
+         max_resource_samples=1024, terrain_source="fixture") -> dict
+verify_perception(output, detector=None, *, terrain_source="fixture") -> dict
+```
+
+`terrain_source` 严格为 `fixture` 或 `model`。默认保留原模式；`model` 模式把七类对象全部交给检测器，HP/MP、地图与对话标记仍是 fixture 像素解析。该模式的完整模型 manifest 必须包含七类，非法/越界输出拒绝，不转为像素结果。`observe_hud` 不检测对象，其自身结果为 UNKNOWN；组合后 KNOWN 也不等于全部地形均已检出。[模式合同](MODEL_TERRAIN.md)
+
+`verify_perception` 真实重新执行 N+1 帧感知、监督、策略和动作；原有 `verify_run` 仍只核对动作及环境。新模式必须显式指定同一 `terrain_source`，错误模式在首次检测前拒绝；默认旧证据格式保持兼容。[验证合同](MODEL_VALIDATION.md)
+
+原生 `OnnxDetector.loaded_model_sha256` 是传给 ORT 的实际字节身份；只读 `runtime_settings` 返回实际 session providers、intra/inter-op 线程和执行模式。`terrain_metrics=True` 的 schema3 报告绑定这些运行选项与完整 manifest，并在评分前后核对身份。地形几何分层复用同批预测，不再次调用检测器。[地形指标](TERRAIN_EVALUATION.md)
+
+知识计划的基线检查与导入在一个写事务中执行；schema、并发、严格幂等、冲突及体积边界见 [KNOWLEDGE_SYNC.md](KNOWLEDGE_SYNC.md)。lifecycle 格式和实际轨迹覆盖见 [DATASET_LIFECYCLE.md](DATASET_LIFECYCLE.md)。结构检查与检测评分输出为新的 JSON 文件；其通过不自动授予模型推广或真实域准入。
 
 ## v0.1 本地数据接口
 

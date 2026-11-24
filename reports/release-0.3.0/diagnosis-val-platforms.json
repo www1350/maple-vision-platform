@@ -1,0 +1,342 @@
+{
+  "acceptance_result_changed": false,
+  "all_1569_ground_truth_rows_recorded": true,
+  "baseline_native_calls_for_figure": 1,
+  "candidate_model_sha256": "be5cd99bce0f52b0cdfc7e033251f2c919e14d203c8b72d394a18d7a067751f0",
+  "candidate_native_calls": 192,
+  "candidate_retrained": false,
+  "created_at_utc": "2026-11-24T14:25:49.629881+00:00",
+  "dataset_manifest_sha256": "f73d7390980fa6aedea3b3a12ada2f0a8f3658519e0ca435ca93414bbd02aac4",
+  "diagnostic_script_sha256": "9c23b2c162d281af7a4500b8b94d454a17de8634611d0df06a1555f52b85f0eb",
+  "first_miss": {
+    "file": "diagnosis-first-miss.json",
+    "image": "images/val/s0002_00000.png",
+    "image_index": 0,
+    "sha256": "23663f95fedd31f4876519017f3653e24347d2bfa646c036e17bf3742b1248e1"
+  },
+  "inference_runtime": {
+    "execution_mode": "ExecutionMode.ORT_SEQUENTIAL",
+    "inter_op_num_threads": 0,
+    "intra_op_num_threads": 1,
+    "providers": [
+      "CPUExecutionProvider"
+    ]
+  },
+  "ledger": {
+    "file": "diagnosis-ground-truth-ledger.jsonl",
+    "platform_misses": 104,
+    "platform_rows": 576,
+    "rows": 1569,
+    "sha256": "1fa1008275b4de642e4814934686a280befa578532a998fb7295e8a354f9541a"
+  },
+  "limitations": [
+    "An additional val-only diagnostic inference pass after rejection; not another model candidate and not a held-out test evaluation.",
+    "Raw-head IoU/score evidence describes this exported model; it does not prove the optimization or training-assignment cause.",
+    "No confidence or NMS threshold sweep was performed; the frozen failed gate remains failed.",
+    "Root QA may share the CPU; this pass makes no latency claim.",
+    "Only the first missed val frame receives an extra old-model inference for the illustration."
+  ],
+  "metrics": {
+    "ap_classes_with_ground_truth": 7,
+    "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+    "class_count": 7,
+    "classes": [
+      "player",
+      "monster",
+      "loot",
+      "portal",
+      "npc",
+      "platform",
+      "ladder"
+    ],
+    "confidence_threshold": 0.25,
+    "images": 192,
+    "iou_threshold": 0.5,
+    "map50": 0.9646245103193939,
+    "map50_95": null,
+    "map_at_iou": 0.9646245103193939,
+    "micro": {
+      "f1": 0.9633542423241994,
+      "fn": 110,
+      "fp": 1,
+      "ground_truth": 1569,
+      "precision": 0.9993150684931507,
+      "predictions": 1460,
+      "recall": 0.9298916507329509,
+      "tp": 1459
+    },
+    "per_class": {
+      "ladder": {
+        "ap50": 0.9800943445129853,
+        "ap_at_iou": 0.9800943445129853,
+        "f1": 0.9921671018276762,
+        "fn": 2,
+        "fp": 1,
+        "ground_truth": 192,
+        "precision": 0.9947643979057592,
+        "predictions": 191,
+        "recall": 0.9895833333333334,
+        "tp": 190
+      },
+      "loot": {
+        "ap50": 0.9603960396039604,
+        "ap_at_iou": 0.9603960396039604,
+        "f1": 0.9795918367346939,
+        "fn": 4,
+        "fp": 0,
+        "ground_truth": 100,
+        "precision": 1.0,
+        "predictions": 96,
+        "recall": 0.96,
+        "tp": 96
+      },
+      "monster": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 144,
+        "precision": 1.0,
+        "predictions": 144,
+        "recall": 1.0,
+        "tp": 144
+      },
+      "npc": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 173,
+        "precision": 1.0,
+        "predictions": 173,
+        "recall": 1.0,
+        "tp": 173
+      },
+      "platform": {
+        "ap50": 0.8118811881188119,
+        "ap_at_iou": 0.8118811881188119,
+        "f1": 0.9007633587786259,
+        "fn": 104,
+        "fp": 0,
+        "ground_truth": 576,
+        "precision": 1.0,
+        "predictions": 472,
+        "recall": 0.8194444444444444,
+        "tp": 472
+      },
+      "player": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 192,
+        "precision": 1.0,
+        "predictions": 192,
+        "recall": 1.0,
+        "tp": 192
+      },
+      "portal": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 192,
+        "precision": 1.0,
+        "predictions": 192,
+        "recall": 1.0,
+        "tp": 192
+      }
+    },
+    "predictions_below_confidence_threshold": 0,
+    "unrecognized_prediction_classes": []
+  },
+  "model_promoted": false,
+  "official_aggregate_metrics_reproduced_exactly": true,
+  "official_report_sha256": "7811708cb24b51c70b201ce6ac0a2d4ac893cc15f0f63af3fbc74b903a64e1d4",
+  "platform_by_geometry": [
+    {
+      "gt": 88,
+      "map_id": "cavern",
+      "matched": 88,
+      "missed": 0,
+      "target_bbox": [
+        0.0,
+        168.00000096,
+        320.0,
+        172.00000032000003
+      ]
+    },
+    {
+      "gt": 88,
+      "map_id": "cavern",
+      "matched": 88,
+      "missed": 0,
+      "target_bbox": [
+        86.00000000000001,
+        118.00000032,
+        152.0,
+        121.99999968
+      ]
+    },
+    {
+      "gt": 88,
+      "map_id": "cavern",
+      "matched": 88,
+      "missed": 0,
+      "target_bbox": [
+        212.00000000000003,
+        94.00000032,
+        270.0,
+        97.99999968
+      ]
+    },
+    {
+      "gt": 104,
+      "map_id": "meadow",
+      "matched": 104,
+      "missed": 0,
+      "target_bbox": [
+        0.0,
+        168.00000096,
+        320.0,
+        172.00000032000003
+      ]
+    },
+    {
+      "gt": 104,
+      "map_id": "meadow",
+      "matched": 104,
+      "missed": 0,
+      "target_bbox": [
+        76.0,
+        126.00000096,
+        136.0,
+        130.00000032000003
+      ]
+    },
+    {
+      "gt": 104,
+      "map_id": "meadow",
+      "matched": 0,
+      "missed": 104,
+      "target_bbox": [
+        180.0,
+        103.99999967999999,
+        237.99999999999997,
+        107.99999904
+      ]
+    }
+  ],
+  "platform_by_map": {
+    "cavern": {
+      "gt": 264,
+      "matched": 264,
+      "missed": 0
+    },
+    "meadow": {
+      "gt": 312,
+      "matched": 208,
+      "missed": 104
+    }
+  },
+  "platform_by_phase": {
+    "cleared": {
+      "gt": 204,
+      "matched": 168,
+      "missed": 36
+    },
+    "combat": {
+      "gt": 132,
+      "matched": 108,
+      "missed": 24
+    },
+    "dialogue": {
+      "gt": 48,
+      "matched": 40,
+      "missed": 8
+    },
+    "loot": {
+      "gt": 132,
+      "matched": 108,
+      "missed": 24
+    },
+    "spawn": {
+      "gt": 36,
+      "matched": 28,
+      "missed": 8
+    },
+    "transition": {
+      "gt": 24,
+      "matched": 20,
+      "missed": 4
+    }
+  },
+  "platform_by_session": {
+    "s0002": {
+      "gt": 144,
+      "matched": 118,
+      "missed": 26
+    },
+    "s0004": {
+      "gt": 144,
+      "matched": 118,
+      "missed": 26
+    },
+    "s0012": {
+      "gt": 144,
+      "matched": 118,
+      "missed": 26
+    },
+    "s0013": {
+      "gt": 144,
+      "matched": 118,
+      "missed": 26
+    }
+  },
+  "schema_version": 1,
+  "scope": "post_rejection_validation_only_diagnosis_not_acceptance",
+  "split": "val",
+  "test_images_or_labels_opened": false,
+  "thresholds": {
+    "confidence": 0.25,
+    "matching_iou": 0.5,
+    "nms_iou": 0.45
+  },
+  "thresholds_changed": false,
+  "timing_is_benchmark": false,
+  "unmatched_best_confident_platform_iou": {
+    "max": 0.0,
+    "min": 0.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "samples": 104
+  },
+  "unmatched_best_raw_any_iou": {
+    "max": 0.0686244361554994,
+    "min": 0.06857905593710989,
+    "p50": 0.06859198582694599,
+    "p95": 0.0686244361554994,
+    "samples": 104
+  },
+  "unmatched_best_raw_platform_iou": {
+    "max": 0.0678041663232337,
+    "min": 0.0677286733862141,
+    "p50": 0.06778784420565434,
+    "p95": 0.0678041663232337,
+    "samples": 104
+  },
+  "unmatched_max_platform_score_at_iou50": {
+    "max": null,
+    "min": null,
+    "p50": null,
+    "p95": null,
+    "samples": 0
+  },
+  "unmatched_platform_reason_counts": {
+    "no_raw_decoded_box_reaches_iou50": 104
+  }
+}
