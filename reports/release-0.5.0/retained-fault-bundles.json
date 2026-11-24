@@ -1,0 +1,47 @@
+{
+  "bundles": [
+    {
+      "bytes": 234654,
+      "name": "builtin-suite-brief_dropout.tar.gz",
+      "sha256": "9b7627b7f1dacda238fdb82d306012516ea36c45fa5bebc34e8e140a4541ea16"
+    },
+    {
+      "bytes": 25235,
+      "name": "builtin-suite-persistent_dropout.tar.gz",
+      "sha256": "d32c8ffa246f6d4e81e11fbfd28fdd5882e1aa5dd283f6243ed2cb5dc2495b54"
+    },
+    {
+      "bytes": 234583,
+      "name": "builtin-suite-duplicate_frames.tar.gz",
+      "sha256": "270e4ba0cfd4ef4bae8a4525f7262e80b9f6ecb7b4a332149d2d34c22e9b0ee8"
+    },
+    {
+      "bytes": 44219,
+      "name": "builtin-suite-freeze_input.tar.gz",
+      "sha256": "9bb5e064e3a51b51ac8f98c52325aab593b7e451c11a3d5151b10f5b88f66fad"
+    },
+    {
+      "bytes": 405594,
+      "name": "external-suite-brief_dropout.tar.gz",
+      "sha256": "e900253a5453e51f7d485e959e32ab961da063d7e92b473a90e2a821610c939b"
+    },
+    {
+      "bytes": 26677,
+      "name": "external-suite-persistent_dropout.tar.gz",
+      "sha256": "888c4bd7d4a58638249dbf7fb7255469c0abb170fc681a20695f8c0054385eed"
+    },
+    {
+      "bytes": 405580,
+      "name": "external-suite-duplicate_frames.tar.gz",
+      "sha256": "e6f1711c42bcdeee27a1ab967436b558e73a21c94cc238ea69738b2f057d3638"
+    },
+    {
+      "bytes": 46201,
+      "name": "external-suite-freeze_input.tar.gz",
+      "sha256": "39ff4f7b83cee5fa5ed4385ce1b6c300ad5b4d274216752985a1f3b66fa1598d"
+    }
+  ],
+  "capture": "original_single_execution",
+  "schema_version": 1,
+  "verification": "Each archived source bundle passed action replay and full N+1-frame reinference during formal acceptance."
+}

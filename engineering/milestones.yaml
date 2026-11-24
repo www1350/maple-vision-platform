@@ -1,4 +1,4 @@
-schema_version: 5
+schema_version: 6
 milestones:
   P0: []
   P1: [P0]
@@ -21,36 +21,43 @@ contracts:
   platform_v0_2: engineering/v02-contract.yaml
   platform_v0_3: engineering/v03-contract.yaml
   platform_v0_4: engineering/v04-contract.yaml
+  platform_v0_5: engineering/v05-contract.yaml
 
 delivery:
   active_milestone: P13
-  active_increment_phases: [P3, P4, P5, P9, P11, P12, P13]
-  scope: bounded_external_synthetic_map_content_and_portable_validation
-  release_version: "0.4.0"
-  release_status: accepted_offline_map_implementation_final_archive_checked_in_pr
-  result_source: docs/RELEASE_0_4_ACCEPTANCE.md
-  execution_plan: docs/V0_4_PLAN.md
-  evidence_archive: reports/release-0.4.0
-  local_evidence: reports/release-0.4.0/local-verification.json
-  criteria_timing: engineering_conditions_after_early_probes_not_model_preregistration
-  base_commit: 493b7d24688c6aad22d7583f11e8098a28965567
-  final_implementation_commit_status: passed
-  implementation_commit: 8a649f8aaa88429d7a7da2415f29dc632ccf5d42
-  implementation_tree: 767de0dde9df1a2d55dddb216b9f838b7215c09b
-  remote_run_url: https://github.com/www1350/maple-vision-platform/actions/runs/45455031462
-  final_head_checks: https://github.com/www1350/maple-vision-platform/pull/5
+  active_increment_phases: [P7, P9, P10, P11, P13]
+  scope: temporal_visual_beliefs_and_structured_simulator_task_runtime
+  release_version: "0.5.0"
+  release_status: local_final_source_accepted_exact_head_ci_recorded_in_pr
+  result_source: docs/RELEASE_0_5_ACCEPTANCE.md
+  execution_plan: docs/V0_5_PLAN.md
+  evidence_archive: reports/release-0.5.0
+  local_evidence: reports/release-0.5.0/local-verification.json
+  criteria_timing: engineering_contract_before_formal_acceptance_not_model_preregistration
+  base_commit: 87de967ad036c60ef4eacd86a4d44ef17ec9a2c8
   final_archive_head_must_pass_before_merge: true
-  final_ci_status: implementation_passed_final_archive_checked_separately_in_pr
-  pending_gates: [final_archive_head_ci]
-  pending_gates_scope: v04_only_v03_is_closed
+  pending_gates: [exact_head_ci]
+  pending_gates_scope: v05_only_prior_releases_are_closed
   p0_result_source: docs/P0_ACCEPTANCE.md
   p0_contract_is_historical: true
-  user_authorization_date: "2026-11-24"
+  user_authorization_date: "2026-11-25"
   continue_beyond_p0: true
   full_v8_spec_acceptance: false
   phase_status_meaning: implementation_is_separate_from_fixture_and_real_domain_acceptance
 
 historical_releases:
+  v0_4:
+    release_version: "0.4.0"
+    release_status: accepted_bounded_external_maps
+    result_source: docs/RELEASE_0_4_ACCEPTANCE.md
+    local_evidence: reports/release-0.4.0/local-verification.json
+    final_archive_head: 92e673a92c6dd8196a3393d943a78912084631fa
+    final_tree: a93041c326b126d3e2203862a023909e0af282a4
+    final_head_run: https://github.com/www1350/maple-vision-platform/actions/runs/45456607613
+    final_head_checks: https://github.com/www1350/maple-vision-platform/pull/5
+    final_head_ci: passed
+    merge_commit: 320989e0bf4b906cb4d7ed7e6cf8eef33bcd5473
+    pending_gates: []
   v0_3:
     release_version: "0.3.0"
     release_status: accepted_offline_tools_candidate_rejected

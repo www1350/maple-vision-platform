@@ -1,0 +1,59 @@
+schema_version: 1
+increment: v0.5
+status: local_final_source_accepted_exact_head_ci_recorded_in_pr
+baseline_commit: 87de967ad036c60ef4eacd86a4d44ef17ec9a2c8
+original_chapters: [1, 8, 11, 12, 14, 15, 18, 21]
+scope: temporal_visual_beliefs_and_structured_simulator_task_runtime
+authorization: continuous_implementation_testing_and_repository_delivery
+compatibility:
+  legacy_runtime_default: true
+  legacy_run_config_unchanged: true
+  legacy_run_bundle_schema: 1
+  structured_run_bundle_schema: 2
+  historical_models_and_experiments_immutable: true
+  original_master_spec_immutable: true
+interfaces:
+  state: TemporalStateEstimator.update(VisualObservation, now_ms) -> BeliefState
+  task: TaskRuntime.decide(BeliefState, now_ms) -> RuntimeDecision
+  authorization: ActionScheduler.dispatch(ActionIntent, now_ms) -> DispatchResult
+  execution_receipt: accepted_reason_timestamp_only_no_ground_truth
+  cancellation: TaskRuntime.interrupt(reason, now_ms, terminal)
+  evidence: complete_state_task_plan_intent_dispatch_receipt_and_terminal
+state_requirements:
+  - versioned_strict_bounded_configuration
+  - deterministic_bounded_class_matching_with_uncertainty
+  - field_source_confidence_observation_time_and_expiry
+  - retained_tracks_are_hypotheses_not_fresh_detections
+  - invalid_future_duplicate_frames_do_not_poison_accepted_identity
+  - map_changes_reset_identity
+  - exactly_one_update_per_acquired_frame_including_terminal
+task_requirements:
+  - independent_candidates_priorities_lifecycles_plans_and_intents
+  - emergency_preemption_invalidates_pending_work
+  - ordered_bounded_compound_plans_and_conflict_locks
+  - reject_stale_cancelled_replayed_or_unregistered_intents
+  - accepted_command_is_not_verified_effect
+  - explicit_success_likely_success_unknown_failed_timeout
+  - bounded_pause_retry_failure_and_stop
+evidence_requirements:
+  - structured_identity_required_in_manifest_summary_and_every_row
+  - full_configs_embedded_and_hashed_with_bounded_sidecar_read
+  - raw_observation_and_derived_belief_separately_recorded
+  - action_replay_checks_intent_action_receipt_and_fault_binding
+  - reinference_recomputes_every_belief_task_plan_and_intent
+  - terminal_budget_exit_records_unexecuted_policy_state_honestly
+  - old_schema_cannot_silently_accept_new_runtime_fields
+acceptance:
+  - independent_temporal_identity_and_scheduler_counterexamples
+  - all_three_jobs_builtin_and_external_maps
+  - normal_and_expected_fault_outcomes
+  - real_N_plus_1_frame_reinference_and_tamper_rejection
+  - legacy_regression_and_installed_wheel
+  - exact_head_ubuntu_windows_and_native_ci
+not_claimed:
+  - full_v8_acceptance
+  - arbitrary_tasks_or_full_class_packages
+  - real_game_visual_accuracy
+  - official_client_control_or_detection_bypass
+  - new_research_model_promotion
+  - wall_clock_24h_endurance

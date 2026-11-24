@@ -32,6 +32,20 @@
 
 ## 3. 原始 22 章逐章映射
 
+### v0.5 状态与任务增量
+
+本轮基线为原文对齐后的 `87de967ad036c60ef4eacd86a4d44ef17ec9a2c8`。新增实现如下，验收状态与数字以 [v0.5 验收记录](RELEASE_0_5_ACCEPTANCE.md) 为准；后面的逐章表保留 v0.4 基线用于比较，不能忽略本节更新。
+
+| 原章 | 本轮增加 | 仍然开放 |
+|---|---|---|
+| 01、08 | Tracker、字段来源/置信度/时间/有效期、BeliefState，地图/感知来源切换与未知处理 | 当前是有界几何关联；完整多传感器世界模型、真实 HUD/中文 OCR 尚未验收 |
+| 11 | 独立候选/仲裁/生命周期、Planner、复合动作步骤、Scheduler、Intent 与实际受控执行接通 | 业务仍限三职业的固定任务族；任意任务 DSL、导航图、复杂库存和聊天理解仍需实现 |
+| 12 | SUCCESS/LIKELY_SUCCESS/UNKNOWN/FAILED/TIMEOUT，实际回执和可见效果分别记录 | 攻击、拾取、Buff 缺少可见状态时明确 UNKNOWN；完整技能和背包效果仍缺测量 |
+| 14 | 抢占/暂停/取消、意图到期、重复/错序拒绝、恢复/失败预算及停止状态接入 | 原章全套异常分类、通用恢复计划和真实故障语料仍开放 |
+| 15 | schema2 自包含状态/任务设置、逐层 trace、终止状态、全部 N+1 帧的实际重执行 | 原章分层标准 Failure Bundle/MP4、真实 Golden 与 READ_ONLY 产品仍待实现 |
+
+用户已授权继续后续工程，不以单个版本闭合代替完整 v8。原始总纲与来源归档保持不变。
+
 | 原章 | 原始交付要求 | 当前实现、状态与证据 | 仍需完成的内容 |
 |---|---|---|---|
 | 01 总体架构 | 数据、素材、录像进入知识底座；Tracking、状态融合、规划、调度、受控执行和验证组成主链 | **部分实现**：`Simulator → ImageFrame → Perception → Supervisor → VisualAgent → SimAction → Simulator` 与独立 oracle 已运行；数据/训练支路存在。[当前接口](API_CONTRACTS.md) | 原图中的 Tracker、完整 WorldState/BeliefState、Planner、Sequencer、Scheduler、Session Manager 未形成完整运行链；须补接口迁移与跨层证据 |

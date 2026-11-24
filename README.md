@@ -1,4 +1,4 @@
-# Maple Vision Platform v0.4.0
+# Maple Vision Platform v0.5.0
 
 一个可在本机运行、训练和验证的**离线视觉研究平台与独立模拟器**。它包含本地知识目录、素材登记、合成数据集、YOLO 训练与 ONNX 推理、多职业/多地图任务，以及可重放的验证证据。
 
@@ -15,6 +15,21 @@
 v0.2 已验收的模型继续保存在 `examples/lifecycle-model/`，其范围是 YOLO 动态对象加像素地形/HUD；生命周期数据、知识增量计划和实际感知/策略重新执行也继续兼容。[v0.2 历史验收](docs/RELEASE_0_2_ACCEPTANCE.md) · [PR #3](https://github.com/www1350/maple-vision-platform/pull/3) · [v0.1 历史验收](docs/RELEASE_ACCEPTANCE.md)。
 
 默认任务使用可解释的像素颜色基线，便于独立检查工程闭环。可选的 tiny YOLO 从本地配置随机初始化训练；训练完成、导出成功、检测效果、任务完成是四项不同的验收，不会互相冒充。当前规则和画面都是项目自行构造的 `synthetic_fixture`，不代表已经核实的国服数据或正式游戏操作。
+
+## v0.5 时序状态与结构化任务
+
+显式选择 `--runtime structured` 后，观测进入有界 Tracker/BeliefState，再由任务候选、仲裁、计划、复合动作顺序、Intent 授权、实际回执及效果验证驱动模拟器。紧急任务可以抢占，过期、取消、重复或错序的意图不会执行；保存的旧框只表示假设。默认 `legacy` 继续兼容旧运行包。
+
+```bash
+python -m maple_vision lab run --runtime structured --output artifacts/structured-run
+python -m maple_vision lab replay artifacts/structured-run
+python -m maple_vision lab reinfer artifacts/structured-run
+python scripts/verify_structured_runtime.py --output artifacts/structured-acceptance
+```
+
+schema2 运行包完整保存状态与任务配置。`reinfer` 从证据恢复模式，并重建包含终止帧的全部 N+1 次状态更新及任务决定。最后一条验收命令还需要 inference 依赖及仓库内已准入的 v0.2 ONNX；只做工程集成回归，不训练或推广新模型。详见 [状态估计](docs/STATE_ESTIMATION.md)、[任务运行时](docs/TASK_RUNTIME.md)、[本轮合同](engineering/v05-contract.yaml)与[验收记录](docs/RELEASE_0_5_ACCEPTANCE.md)。
+
+最终源码本地 **1187 项通过、0 跳过**，9条实际任务及两组各13个预期场景通过；全部逐帧复验，隔离安装通过。短时请求60秒实际62.29秒、28轮，完整24小时仍开放。快照隔离缺陷、修复前记录及修复后的完整重测均保留；准确head CI和合并由本次PR记录。
 
 ## 先跑一个完整任务
 
@@ -152,7 +167,7 @@ python -m ruff check .
 python -m mypy
 python -m pytest -q
 python -m build --wheel --no-isolation
-python scripts/wheel_smoke.py --wheel dist/maple_vision_platform-0.4.0-py3-none-any.whl
+python scripts/wheel_smoke.py --wheel dist/maple_vision_platform-0.5.0-py3-none-any.whl
 ```
 
 这里的 `python` 应为上面虚拟环境的解释器。CI 配置同时检查 Ubuntu、Windows 的 Python 3.12，并在仓库之外新建仅含基础运行依赖的环境验证 wheel；另设 Ubuntu CPU 训练、ONNX 导出与推理检查。CI 成绩及版本见验收记录，不能从工作流文件存在推断已经通过。

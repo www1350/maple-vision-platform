@@ -1,7 +1,29 @@
 # API 合同
 
-本页先说明 v0.4 外部地图接口，再列出 v0.2/v0.3 增量接口、继续兼容的 v0.1 接口与 P0 历史接口。历史代码块列出对应版本的调用方式；当前新增参数以前面的增量合同为准。数据字段及格式见 [DATA_SCHEMAS.md](DATA_SCHEMAS.md)，实现边界见 [ARCHITECTURE.md](ARCHITECTURE.md)。
+本页先说明 v0.5 状态/任务与 v0.4 外部地图接口，再列出 v0.2/v0.3 增量接口、继续兼容的 v0.1 接口与 P0 历史接口。历史代码块列出对应版本的调用方式；当前新增参数以前面的增量合同为准。数据字段及格式见 [DATA_SCHEMAS.md](DATA_SCHEMAS.md)，实现边界见 [ARCHITECTURE.md](ARCHITECTURE.md)。
 新 RGB 视觉链路与 P0 NoOp 链路分开：`scene.ImageFrame` 不是 `contracts.Frame`，`simulation.Simulator.step(action)` 也不是旧占位协议的 `step() -> Frame`。调用方应显式选择对应 API。
+
+## v0.5 时序状态与任务接口
+
+`runtime_pipeline.RuntimeConfig` 是新配置，不是旧 P0 的同名配置类；其完整设置和内容哈希随运行保存。
+
+```python
+from maple_vision.runtime_pipeline import RuntimeConfig
+from maple_vision.state_estimation import TemporalStateEstimator
+from maple_vision.task_runtime import TaskRuntime
+
+belief = TemporalStateEstimator().update(observation, now_ms)
+runtime = TaskRuntime(job="assassin", maps=("meadow", "cavern"))
+decision = runtime.decide(belief, now_ms)
+# 每个非空 intent 必须先 dispatch；仅执行 accepted 返回的 action。
+authorization = runtime.scheduler.dispatch(decision.intent, now_ms)
+# 执行后仅传入真实 accepted/reason/time，不把 snapshot/events 交给 runtime。
+runtime.record_execution(decision.intent.intent_id, accepted, reason, now_ms)
+```
+
+上例描述边界，调用方必须处理 `intent is None` 的等待、暂停和终止，以及 dispatch 拒绝。完整可运行入口为 `lab.run_episode(..., runtime=RuntimeConfig())`；`run_suite` 与 `run_soak` 同样接受该可选参数。`None` 保留旧默认，`RunConfig` 本身不迁移。CLI run/suite/soak 使用 `--runtime structured`；replay/reinfer 从证据恢复，禁止猜测模式。
+
+`TaskRuntime.interrupt(reason, now_ms, terminal=False)` 取消在途计划；非终止暂停可由新观测恢复，终止状态锁定。`snapshot()` 只导出当前状态，不补做策略决策。动作效果使用 SUCCESS/LIKELY_SUCCESS/UNKNOWN/FAILED/TIMEOUT；当前合成观测没有库存、Buff 或击杀事件证据，相关效果保持 UNKNOWN，不以接受回执或框消失代替确认。具体字段和限制见 [状态合同](STATE_ESTIMATION.md)、[任务合同](TASK_RUNTIME.md)。
 
 ## v0.4 外部地图接口
 
