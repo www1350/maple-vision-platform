@@ -34,15 +34,15 @@
       "result": "No broken requirements found."
     },
     {
-      "command": "ORT_DISABLE_TELEMETRY=1 MAPLE_TRAINING_SMOKE=1 MPLBACKEND=Agg python -m pytest -q --junitxml=artifacts/v03-experiment/full-pytest-final.xml",
-      "tests": 823,
+      "command": "ORT_DISABLE_TELEMETRY=1 MAPLE_TRAINING_SMOKE=1 MPLBACKEND=Agg python -m pytest -q --junitxml=artifacts/v03-experiment/full-pytest-runtime-fixed.xml",
+      "tests": 834,
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "passed": 823,
-      "junit_seconds": 106.129,
+      "passed": 834,
+      "junit_seconds": 110.497,
       "warnings": 6,
-      "pytest_wall_seconds": 106.26,
+      "pytest_wall_seconds": 110.65,
       "evidence": "local-pytest.xml",
       "log": "local-pytest.log"
     }
@@ -71,15 +71,19 @@
     "junit_seconds": 8.634,
     "evidence": "native-terrain-audit.xml",
     "overlaps_full_suite": true,
-    "pytest_wall_seconds": 8.78
+    "pytest_wall_seconds": 8.78,
+    "executed_before_runtime_stream_fix": true
   },
   "isolated_wheel": {
     "passed": true,
-    "wheel_sha256": "fe38f69f994d987168e9c74e3a3e94b8d697767842d721b0f798f4df7a9245d6",
-    "wall_seconds": 21.709,
+    "wheel_sha256": "f0b7603f2cd2589127d27bd3c05ae310973c6b45e7b4c07a8feb08d3235c719f",
+    "wall_seconds": 20.961,
     "evidence": "wheel-smoke.json",
     "built_before_final_documentation": true,
-    "scope": "Installed outside checkout in a clean environment containing only runtime dependencies; both model configs packaged; model terrain object source verified without native extras."
+    "scope": "Installed outside checkout in a clean environment containing only runtime dependencies; both model configs packaged; model terrain object source verified without native extras.",
+    "rebuilt_after_runtime_fix": true,
+    "python_source_files_byte_identical_to_current": 30,
+    "previous_evidence": "wheel-smoke-before-runtime-fix.json"
   },
   "archived_gate_recheck": {
     "command": "python -I -S scripts/check_terrain_experiment.py --preregistration reports/release-0.3.0/preregistration.json --candidate reports/release-0.3.0/terrain-model-validation.json --baseline reports/release-0.3.0/lifecycle-baseline-validation.json --output reports/release-0.3.0/validation-gates-independent-review.json",
@@ -131,7 +135,7 @@
     "src/maple_vision/telemetry.py": "e440078c53264e4b1d582cba5c656f094c11b333ab32b59625a5a092803b1243",
     "src/maple_vision/terrain_audit.py": "2e353f6a33b33a6876da91494163e278f3714eb1490c4576dfe3e269f1e3dc86",
     "src/maple_vision/terrain_metrics.py": "5fc9c0878638630343eec453f4c844a72c96981261001bd6dc165c26ec2e2b06",
-    "src/maple_vision/training.py": "f15fd0a5051780225b9952505c98e45cbb61c34ef4ba15efe97957fd9b09e8d6",
+    "src/maple_vision/training.py": "c1f6be9c6d5b9a028e089fa59a892adaf8c2e60c2e793d52be0823767fb2c739",
     "src/maple_vision/validation_resources.py": "390c0ff84d98f329761c23b98aa8196b53b2440f2d981546a43fecf7910deb86",
     "src/maple_vision/vision.py": "cb9407773be31f5a68b9241e98622da1b9ccc32594091b935906bab8ff054365",
     "tests/test_agent_review.py": "8b067d73431dcceb18fcd9c99863644390de2bfa5c848d06419a7c6e5dd49ebb",
@@ -153,7 +157,7 @@
     "tests/test_model_terrain.py": "2842902ea2e711d695e0177e72490bb580236455577abb650583020dfc6633cf",
     "tests/test_model_validation.py": "d415731e87cfb8f95656c8f0a969444ad8b1f7cc0e3c01c2050c81fdc8a6840a",
     "tests/test_ocr.py": "76f72ed343c5854d6866a6afc99fc16b2d584fdc76bf7bc3e3697a6ef3251bdb",
-    "tests/test_offline_runtime.py": "3f3a3452b18eff8e62917cc71bfabbe16df9299f6529301317bdcdc016b94f7f",
+    "tests/test_offline_runtime.py": "f58a8004cbbb7eeaba3f40f71cea2c65686395bc564f96a36a99b06521be7616",
     "tests/test_onnx_detector.py": "a03dc122df58ec05378ccd780bfe5b61070863d875cc5adde9add345bb3f9244",
     "tests/test_pipeline.py": "74bf6c8253d243b9c720e024224487e95e30e272093f1107350e32d266b19084",
     "tests/test_platform_cli.py": "a173ee40865899589ce75abfdecf11feca80d3d769acd0654f530982a556ba35",
@@ -178,7 +182,50 @@
   "model_decision": "rejected; no test model predictions or scores; no promotion suite/reinference/soak; no second candidate",
   "integrity_scope": "Dataset integrity checks and private training input copies read test bytes without running model predictions or scoring them.",
   "separate_acceptance": "Tool engineering tests do not establish candidate model quality, real-domain accuracy, official-client support, or 24-hour wall-clock acceptance.",
-  "independent_release_review": {
+  "before_runtime_fix_full_suite": {
+    "command": "ORT_DISABLE_TELEMETRY=1 MAPLE_TRAINING_SMOKE=1 MPLBACKEND=Agg python -m pytest -q --junitxml=artifacts/v03-experiment/full-pytest-final.xml",
+    "tests": 823,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 823,
+    "junit_seconds": 106.129,
+    "warnings": 6,
+    "pytest_wall_seconds": 106.26,
+    "evidence": "local-pytest-before-runtime-fix.xml",
+    "log": "local-pytest-before-runtime-fix.log",
+    "verification": "local-verification-before-runtime-fix.json",
+    "commit": "ff357c8951da8e84265d31c5a8b86a48934a4f01"
+  },
+  "runtime_stream_fix": {
+    "evidence": "runtime-stream-fix.json",
+    "changed_after_registered_experiment": true,
+    "historical_source_commit": "ff357c8951da8e84265d31c5a8b86a48934a4f01",
+    "native_exact_ci_order": {
+      "tests": 155,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 155,
+      "junit_seconds": 10.681,
+      "pytest_seconds": 10.83,
+      "warnings": 5,
+      "evidence": "ci-native-order-after-fix.xml",
+      "log": "ci-native-order-after-fix.log"
+    },
+    "focused_regressions": {
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 13,
+      "junit_seconds": 0.305,
+      "new_cases": 11,
+      "pytest_seconds": 0.45,
+      "evidence": "runtime-stream-fix-tests.xml"
+    }
+  },
+  "before_runtime_fix_release_review": {
     "status": "passed",
     "origin": "separate_read_only_repository_review",
     "model_inference_or_training_performed": false,
@@ -192,6 +239,13 @@
       "correct distinction between model rejection, engineering verification, integrity reads, and test scoring",
       "actual CI and wheel commands match package version; remote checks remain pending until execution"
     ],
-    "scope": "Independent agent review of current local release evidence; not an external signature or a substitute for exact-commit CI."
+    "scope": "Independent agent review of current local release evidence; not an external signature or a substitute for exact-commit CI.",
+    "source_commit": "ff357c8951da8e84265d31c5a8b86a48934a4f01"
+  },
+  "independent_runtime_fix_review": {
+    "status": "passed",
+    "mode": "separate read-only agent",
+    "evidence": "runtime-stream-fix.json",
+    "no_additional_model_inference_or_training_by_reviewer": true
   }
 }

@@ -2,7 +2,7 @@
 
 本轮检验一个明确问题：**在保留现有离线模拟器和训练数据合同的前提下，修复模型对宽而薄的平台的表达限制，并让七类对象全部来自指定 ONNX 模型。** 血量、魔量、地图标记和对话状态仍由 fixture 像素解析器读取。因此本轮称“模型对象管线”，不称所有视觉信息均由 YOLO 取得。
 
-当前状态：唯一候选完成训练和val，**模型准入失败**。14项阈值中13项通过，但平台召回472/576=0.819444低于0.98。按协议不推广、不评分test、不执行候选推广suite/reinfer/soak，也不训练第二候选。工具本地完整回归823通过、0失败/跳过，原生审查与隔离wheel通过；准确提交的远端CI仍待完成。实际结果统一记录在 [RELEASE_0_3_ACCEPTANCE.md](RELEASE_0_3_ACCEPTANCE.md)，机器可读状态见 [v03-contract.yaml](../engineering/v03-contract.yaml)。[v0.2 验收](RELEASE_0_2_ACCEPTANCE.md)及原有模型证据保持为历史记录。
+当前状态：唯一候选完成训练和val，**模型准入失败**。平台召回472/576=0.819444低于0.98，14项通过13项也不推广，不评分test、不执行候选推广任务、不训练第二候选。工具首轮远端native暴露日志流问题；事后窄修复后完整本地834项、同序原生155项、日志13项及重建wheel通过，修复版远端CI仍待结果。实际结果见 [RELEASE_0_3_ACCEPTANCE.md](RELEASE_0_3_ACCEPTANCE.md)，合同见 [v03-contract.yaml](../engineering/v03-contract.yaml)。v0.2与原实验证据保持历史内容。
 
 ## 1. 预注册与有限预算
 
@@ -22,7 +22,7 @@
 
 训练、数据、渲染、模拟器和类型定义的源文件哈希也在预注册文件内。训练使用经过校验的私有输入副本，结束后重新校验实际副本和配置。该副本包含所有 split：**完整性检查和复制可以读取 test 字节，但 test 不得进入训练、候选评分或选模。** 不能将这一流程表述成“test 文件从未被读取”。详细本地训练约束见 [TRAINING.md](TRAINING.md)。
 
-结构审查新增原生模型构建前的形状/分配预算保护，复用既有 `training._offline_runtime`；真实原生审查与设置恢复已通过本地测试。冻结训练源码未改，源数据与实际训练副本的1730个文件逐字节一致，证据为 [training-input-provenance.json](../reports/release-0.3.0/training-input-provenance.json)。新增审查预算不能追溯计入早期审查报告，也不能宣称独立训练入口自动执行了它；该工程改动不授权改变候选配置、训练选项或搜索预算。
+正式40epoch训练与val评分期间，五项冻结源码保持预注册字节，1730个输入副本文件一致，证据为 [training-input-provenance.json](../reports/release-0.3.0/training-input-provenance.json)。历史 `training.py` 可从 `ff357c8951da8e84265d31c5a8b86a48934a4f01`读取，其SHA-256仍为 `f15fd0a5051780225b9952505c98e45cbb61c34ef4ba15efe97957fd9b09e8d6`。实验结束后，远端原生CI发现logger引用已关闭流；窄范围日志生命周期修复不追溯进入实验，不修改候选、数据或搜索预算。结构审查新增分配预算同样与训练入口分开，不能追溯计入早期审查报告。
 
 ## 2. 结构预检为什么必要
 
@@ -144,7 +144,7 @@ maple-vision lab soak --output artifacts/v03-repeat/soak --seconds 60 --model ar
 
 另两职业同样运行及实际复验。`model audit-terrain` 只接受 train/val，并在随机权重下检查实际检测头及锚点，不能当作候选质量评分。上例审查新复现数据的 train；正式冻结前的历史审查使用的是旧 v0.2 val，两个来源在报告中分别保留。`vision benchmark` 直接评估检测器输出，不接收 terrain source 参数，也不会使用混合感知补全地形；它的默认 split 是 test，候选比较必须明确写 `--split val`。
 
-本轮已执行val失败出口：保存失败研究结果，不评分test、不推广、不训练第二候选；冻结文件中的条件式test门禁保留为原协议，并没有被执行。工具本地完整回归已为 **823 passed、0 failed、0 skipped，106.26秒**，JUnit记录106.129秒，6条上游warning；隔离wheel通过。当前剩余是准确提交的Ubuntu/Windows/native CI和最终归档，模型推广仍未通过。[本地证据](../reports/release-0.3.0/local-verification.json)
+本轮已执行val失败出口；原条件式test门禁保留而没有执行。日志工程修复后完整本地为 **834 passed、0 failed/error/skipped，110.65秒**，JUnit110.497秒，6条上游warning；重建wheel20.961秒通过。旧823项/旧wheel另存修复前历史，不能覆盖新源码。当前剩余是修复后准确提交的Ubuntu/Windows/native CI与归档，模型推广仍未通过。[本地证据](../reports/release-0.3.0/local-verification.json)
 
 ## 8. 本轮以外
 

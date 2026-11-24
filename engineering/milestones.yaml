@@ -26,7 +26,7 @@ delivery:
   active_increment_phases: [P6, P7, P11, P13]
   scope: bounded_offline_synthetic_terrain_research_and_model_object_pipeline
   release_version: "0.3.0"
-  release_status: local_engineering_passed_remote_ci_pending_candidate_rejected
+  release_status: candidate_rejected_post_runtime_fix_local_passed_remote_ci_pending
   result_source: docs/RELEASE_0_3_ACCEPTANCE.md
   execution_plan: docs/V0_3_PLAN.md
   evidence_archive: reports/release-0.3.0
@@ -81,18 +81,26 @@ historical_releases:
     full_v8_spec_acceptance: false
 
 current_verification:
-  local_full_tree: passed_823_no_failures_no_skips_106_26_seconds
-  remote_ubuntu_windows_and_native: pending
-  clean_wheel_installation: passed_local_isolated_0_3_0_21_709_seconds
-  wheel_sha256: fe38f69f994d987168e9c74e3a3e94b8d697767842d721b0f798f4df7a9245d6
+  local_full_tree: passed_post_runtime_fix_834_zero_failures_errors_or_skips_110_65_seconds
+  historical_before_runtime_fix_evidence: reports/release-0.3.0/local-verification-before-runtime-fix.json
+  remote_ubuntu_windows_and_native: initial_base_jobs_passed_native_failed_repaired_commit_pending
+  remote_evidence: reports/release-0.3.0/remote-ci.json
+  clean_wheel_installation: passed_post_runtime_fix_local_isolated_0_3_0_20_961_seconds
+  wheel_sha256: f0b7603f2cd2589127d27bd3c05ae310973c6b45e7b4c07a8feb08d3235c719f
   ruff_format_files: 113
   ruff_check: passed
   mypy_source_files_passed: 30
   initial_full_tree: retained_821_passed_two_incorrect_test_expectation_failures
-  targeted_native_audit: passed_48_no_failures_or_skips_junit_8_634_seconds_overlaps_full_suite
+  targeted_native_audit: historical_before_runtime_fix_48_passed_junit_8_634_seconds_overlapping_coverage
   audit_preallocation_guard: passed_local_nonnative_and_actual_native_with_restoration
   audit_runtime: reuses_existing_training_offline_guard
-  frozen_training_sources_unchanged: true
+  training_sources_unchanged_during_registered_experiment: true
+  historical_training_source_commit: ff357c8951da8e84265d31c5a8b86a48934a4f01
+  historical_training_module_sha256: f15fd0a5051780225b9952505c98e45cbb61c34ef4ba15efe97957fd9b09e8d6
+  post_experiment_logging_fix_report: reports/release-0.3.0/runtime-stream-fix.json
+  logging_fix_exact_native_order: passed_155_zero_failures_skips_10_83_seconds
+  logging_fix_runtime_regression: passed_13_zero_failures_skips_0_45_seconds
+  logging_fix_participated_in_registered_experiment: false
   source_and_actual_training_copy_identical_files: 1730
   current_candidate_promotion: rejected_frozen_platform_recall_gate_failed
   current_candidate_training: completed_single_40_epoch_run_1467_923792_seconds
@@ -105,7 +113,7 @@ current_verification:
   current_dataset_manifest_sha256: f73d7390980fa6aedea3b3a12ada2f0a8f3658519e0ca435ca93414bbd02aac4
   input_isolation: new_sessions_no_decoded_rgb_duplicates_or_shared_session_seeds_against_prior_two_datasets
   structural_preflight: actual_regmax16_strides4_8_16_and_ten_complete_ground_anchors_verified
-  geometry_review: 21_focused_tests_and_100_independent_general_evaluator_parity_cases_passed
+  geometry_review: early_21_tests_and_100_parity_cases_passed_current_26_tests_in_full_834
   explicit_model_terrain_source: passed_local_contract_regression_candidate_not_accepted_remote_ci_pending
   current_candidate_validation:
     evidence: reports/release-0.3.0/terrain-model-validation.json
@@ -222,7 +230,7 @@ phase_status:
     historical_v0_1_fixture_verification: passed_local_and_remote_installation_plus_local_60_second_smoke
     v0_2_verification: passed_local_model_soak_resources_original_failure_and_remote_implementation_ci
     v0_3_implementation: cli_contracts_packaging_and_audit_preallocation_guard_implemented
-    v0_3_verification: local_823_tests_native_and_wheel_passed_remote_exact_commit_ci_pending_candidate_soak_not_executed
+    v0_3_verification: runtime_fix_full834_native155_and_rebuilt_wheel_passed_remote_ci_pending_candidate_soak_not_executed
     real_domain_gate: not_accepted
     wall_clock_24h_soak: not_completed
     remaining_engineering: [full_24_hour_wall_clock_endurance]

@@ -2,13 +2,13 @@
   "schema_version": 1,
   "passed": true,
   "wheel": "maple_vision_platform-0.3.0-py3-none-any.whl",
-  "wheel_sha256": "fe38f69f994d987168e9c74e3a3e94b8d697767842d721b0f798f4df7a9245d6",
+  "wheel_sha256": "f0b7603f2cd2589127d27bd3c05ae310973c6b45e7b4c07a8feb08d3235c719f",
   "python": "3.12.14",
   "platform": "Linux",
-  "wall_seconds": 21.709,
+  "wall_seconds": 20.961,
   "checks": {
     "installed_package": {
-      "module": "/tmp/maple-wheel-yyytpb9y/venv/lib/python3.12/site-packages/maple_vision/__init__.py",
+      "module": "/tmp/maple-wheel-n4yvn9rk/venv/lib/python3.12/site-packages/maple_vision/__init__.py",
       "version": "0.3.0",
       "runtime": {
         "numpy": "2.5.5",
@@ -238,7 +238,7 @@
           "onnxruntime": "not_installed"
         },
         "python": "3.12.14",
-        "source_sha256": "95214210b4e06501d51d495bcb004075c3f68ee03646a320831aa822fd314619"
+        "source_sha256": "833e3da0f52bd4939c4809df7216e855d2884d08e383026250a84af30ccc1e64"
       },
       "verification_runtime_identity": {
         "python": "3.12.14",
@@ -248,7 +248,7 @@
           "numpy": "2.5.5",
           "onnxruntime": "not_installed"
         },
-        "source_sha256": "95214210b4e06501d51d495bcb004075c3f68ee03646a320831aa822fd314619"
+        "source_sha256": "833e3da0f52bd4939c4809df7216e855d2884d08e383026250a84af30ccc1e64"
       }
     },
     "module_entrypoint": {

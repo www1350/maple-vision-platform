@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "scope": "offline_synthetic_fixture_platform",
+  "initial_commit": "ff357c8951da8e84265d31c5a8b86a48934a4f01",
+  "initial_tree": "10e5339a03a2d9fa0dde0bb416821899038587d5",
+  "pull_request": "https://github.com/www1350/maple-vision-platform/pull/4",
+  "attempts": [
+    {
+      "commit": "ff357c8951da8e84265d31c5a8b86a48934a4f01",
+      "tree": "10e5339a03a2d9fa0dde0bb416821899038587d5",
+      "run_id": 45417925554,
+      "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45417925554",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "id": 138529138806,
+          "name": "Python 3.12 / ubuntu-latest",
+          "conclusion": "success",
+          "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45417925554/job/138529138806",
+          "passed": 816,
+          "skipped": 7,
+          "failed": 0,
+          "warnings": 0,
+          "seconds": 85.93,
+          "summary": "816 passed, 7 skipped in 85.93s (0:01:25)",
+          "platform": "ubuntu-latest",
+          "python": "3.12.16",
+          "wheel": "passed",
+          "wheel_seconds": 11.654,
+          "wheel_sha256": "abcdee07ddc494b7d364ddb5732a4c62c109a3cfdffe5b64774bd9a3e8f2d8c4",
+          "wheel_evidence": "remote-wheel-initial-ubuntu.json"
+        },
+        {
+          "id": 138529139117,
+          "name": "CPU YOLO training and ONNX export / ubuntu",
+          "conclusion": "failure",
+          "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45417925554/job/138529139117",
+          "passed": 152,
+          "skipped": 0,
+          "failed": 3,
+          "warnings": 2,
+          "seconds": 6.25,
+          "summary": "3 failed, 152 passed, 2 warnings in 6.25s",
+          "platform": "ubuntu-native",
+          "python": "3.12.16",
+          "wheel": "covered_by_base_platform_jobs",
+          "failure": "closed_stream_flush_in_training_offline_runtime"
+        },
+        {
+          "id": 138529139206,
+          "name": "Python 3.12 / windows-latest",
+          "conclusion": "success",
+          "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45417925554/job/138529139206",
+          "passed": 812,
+          "skipped": 11,
+          "failed": 0,
+          "warnings": 0,
+          "seconds": 107.03,
+          "summary": "812 passed, 11 skipped in 107.03s (0:01:47)",
+          "platform": "windows-latest",
+          "python": "3.12.10",
+          "wheel": "passed",
+          "wheel_seconds": 19.941,
+          "wheel_sha256": "75939db8e3b6a59c03cd2115d778a549c3f49e63019c9800f8a2ce8b845aceaf",
+          "wheel_evidence": "remote-wheel-initial-windows.json"
+        }
+      ],
+      "diagnosis": "The native CI ordering exposed logging.StreamHandler.setStream flushing a capture stream already closed by a preceding native test. The same failure was reproduced locally, then repaired in the shared runtime without suppressing ordinary flush errors. Exact-order native tests, 11 new targeted regressions, the complete 834-test local suite, and a rebuilt isolated wheel passed; remote validation of the new commit is pending. The repair is post-experiment and does not change the frozen candidate or its rejection.",
+      "failure_evidence": "remote-native-initial.log",
+      "repair_evidence": "runtime-stream-fix.json"
+    }
+  ],
+  "implementation_ci_status": "initial_native_failure_locally_repaired_pending_new_exact_commit_ci",
+  "final_verified_commit": null,
+  "final_verified_tree": null
+}

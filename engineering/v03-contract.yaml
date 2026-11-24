@@ -2,12 +2,12 @@ contract_version: 1
 spec_version: "8.0"
 release_version: "0.3.0"
 scope: bounded_offline_synthetic_terrain_research_and_model_object_pipeline
-status: candidate_rejected_local_engineering_passed_remote_ci_pending
+status: candidate_rejected_post_runtime_fix_local_passed_remote_ci_pending
 base_commit: d11e285f6ba648c34f3bcabb1c3d193f63350da1
 execution_plan: docs/V0_3_PLAN.md
 result_source: docs/RELEASE_0_3_ACCEPTANCE.md
 full_spec_acceptance: false
-engineering_acceptance: passed_local_pending_exact_commit_remote_ci
+engineering_acceptance: passed_post_runtime_fix_local_pending_exact_commit_remote_ci
 model_promotion: rejected_frozen_platform_recall_gate_failed
 historical_contract: engineering/v02-contract.yaml
 historical_model: examples/lifecycle-model
@@ -73,7 +73,7 @@ candidate_budget:
   torch_threads: 2
   pretrained: false
   checkpoint_selection: existing_trainer_best_pt_validation_fitness
-  augmentation_options: frozen_training_source_unchanged
+  augmentation_options: preregistered_options_unchanged_during_registered_experiment
   source_fingerprints: reports/release-0.3.0/preregistration.json
   extend_epochs_after_validation: false
   adaptive_second_candidate: false
@@ -161,7 +161,10 @@ candidate_result:
   training_wall_seconds: 1467.923792
   training_evidence: reports/release-0.3.0/training.json
   training_input_provenance: reports/release-0.3.0/training-input-provenance.json
-  frozen_training_sources_unchanged: true
+  training_sources_unchanged_during_registered_experiment: true
+  historical_training_source_commit: ff357c8951da8e84265d31c5a8b86a48934a4f01
+  historical_training_module_sha256: f15fd0a5051780225b9952505c98e45cbb61c34ef4ba15efe97957fd9b09e8d6
+  post_experiment_logging_fix_participated_in_experiment: false
   source_and_training_copy_identical_files: 1730
   weights_sha256: 85a4b789dae6b33940f1f5cf22b7c1f6a080f595f23925cb7e589ea784fd4748
   export_completed: true
@@ -269,43 +272,57 @@ holdout_policy:
 
 engineering_release_gates:
   exact_commit_recorded: pending
-  lint_types_full_local_tests: passed_local_823_tests_no_failures_or_skips
-  native_training_export_inference: passed_local_actual_enabled_native_tests
+  lint_types_full_local_tests: passed_post_runtime_fix_834_zero_failures_errors_or_skips
+  native_training_export_inference: passed_post_fix_exact_ci_order_155_no_failures_or_skips
   audit_preallocation_guard: passed_local_preflight_actual_native_and_restoration_tests
   audit_reuses_existing_training_offline_runtime: true
   retrofit_new_allocation_guard_into_earlier_audits_or_training: forbidden
   independent_geometry_review: passed_and_included_in_full_local_regression
   independent_pipeline_review: local_contract_regression_passed_remote_commit_pending
-  ubuntu_ci: pending
-  windows_ci: pending
-  cpu_native_ci: pending
-  clean_wheel_installation: passed_local_isolated_0_3_0_without_torch_or_ort
+  ubuntu_ci: initial_ff357_passed_post_fix_exact_commit_pending
+  windows_ci: initial_ff357_passed_post_fix_exact_commit_pending
+  cpu_native_ci: initial_ff357_failed_post_fix_exact_commit_pending
+  clean_wheel_installation: passed_post_runtime_fix_local_isolated_0_3_0_without_torch_or_ort
   evidence_archive: reports/release-0.3.0
   no_unrun_commit_success_claim: true
 
 local_engineering_evidence:
+  full_suite_stage: current_after_runtime_logging_fix
   report: reports/release-0.3.0/local-verification.json
   pytest_xml: reports/release-0.3.0/local-pytest.xml
   pytest_log: reports/release-0.3.0/local-pytest.log
-  passed: 823
+  passed: 834
   failed: 0
   errors: 0
   skipped: 0
   upstream_warnings: 6
-  pytest_reported_seconds: 106.26
-  junit_suite_seconds: 106.129
+  pytest_reported_seconds: 110.65
+  junit_suite_seconds: 110.497
   ruff_format_files: 113
   ruff_check: passed
   mypy_source_files: 30
   mypy: passed
   actual_native_audit_training_export_inference_included: true
   targeted_native_audit:
+    stage: historical_before_runtime_logging_fix
     report: reports/release-0.3.0/native-terrain-audit.xml
     passed: 48
     failed: 0
     skipped: 0
     junit_suite_seconds: 8.634
     overlaps_full_suite: true
+  before_runtime_fix_full_suite:
+    report: reports/release-0.3.0/local-verification-before-runtime-fix.json
+    pytest_xml: reports/release-0.3.0/local-pytest-before-runtime-fix.xml
+    pytest_log: reports/release-0.3.0/local-pytest-before-runtime-fix.log
+    passed: 823
+    failed: 0
+    errors: 0
+    skipped: 0
+    upstream_warnings: 6
+    pytest_reported_seconds: 106.26
+    junit_suite_seconds: 106.129
+    covers_repaired_training_source: false
   initial_failure:
     xml: reports/release-0.3.0/local-pytest-initial.xml
     log: reports/release-0.3.0/local-pytest-initial.log
@@ -319,8 +336,12 @@ local_engineering_evidence:
     report: reports/release-0.3.0/wheel-smoke.json
     passed: true
     version: "0.3.0"
-    wall_seconds: 21.709
-    wheel_sha256: fe38f69f994d987168e9c74e3a3e94b8d697767842d721b0f798f4df7a9245d6
+    stage: rebuilt_after_runtime_logging_fix
+    wall_seconds: 20.961
+    wheel_sha256: f0b7603f2cd2589127d27bd3c05ae310973c6b45e7b4c07a8feb08d3235c719f
+    package_python_files_matching_current_source: 30
+    packaged_yamls_matching_current_source: 2
+    historical_before_fix_report: reports/release-0.3.0/wheel-smoke-before-runtime-fix.json
     both_model_configs_packaged: true
     torch_installed: false
     ort_installed: false
@@ -328,6 +349,55 @@ local_engineering_evidence:
     actual_failed_candidate_promotion_evaluated: false
   remote_exact_commit_ci: pending
   local_success_does_not_override_candidate_rejection: true
+
+post_experiment_logging_fix:
+  scope: narrow_training_offline_runtime_logger_handler_lifecycle
+  report: reports/release-0.3.0/runtime-stream-fix.json
+  source_files_changed: [src/maple_vision/training.py, tests/test_offline_runtime.py]
+  reason: setting_logger_stream_flushed_closed_capture_stream_from_preceding_native_test
+  historical_experiment_commit: ff357c8951da8e84265d31c5a8b86a48934a4f01
+  historical_training_sha256: f15fd0a5051780225b9952505c98e45cbb61c34ef4ba15efe97957fd9b09e8d6
+  repaired_training_sha256: c1f6be9c6d5b9a028e089fa59a892adaf8c2e60c2e793d52be0823767fb2c739
+  independent_review: completed_without_blocking_findings
+  before_fix_same_order:
+    xml: reports/release-0.3.0/local-native-order-before-fix.xml
+    passed: 152
+    failed: 3
+    skipped: 0
+    pytest_seconds: 10.28
+  after_fix_same_order:
+    xml: reports/release-0.3.0/ci-native-order-after-fix.xml
+    log: reports/release-0.3.0/ci-native-order-after-fix.log
+    passed: 155
+    failed: 0
+    skipped: 0
+    warnings: 5
+    pytest_seconds: 10.83
+    junit_seconds: 10.681
+  runtime_regressions:
+    xml: reports/release-0.3.0/runtime-stream-fix-tests.xml
+    passed: 13
+    failed: 0
+    skipped: 0
+    new_cases: 11
+    pytest_seconds: 0.45
+    junit_seconds: 0.305
+  experiment_reports_and_model_modified: false
+  additional_40_epoch_research_candidate: false
+  full_current_tree_regression: passed_834_zero_failures_errors_or_skips_110_65_seconds
+  remote_repaired_commit_ci: pending
+
+remote_ci_history:
+  report: reports/release-0.3.0/remote-ci.json
+  pull_request: https://github.com/www1350/maple-vision-platform/pull/4
+  initial_commit: ff357c8951da8e84265d31c5a8b86a48934a4f01
+  initial_tree: 10e5339a03a2d9fa0dde0bb416821899038587d5
+  initial_run: https://github.com/www1350/maple-vision-platform/actions/runs/45417925554
+  initial_conclusion: failed_native_logging_stream_lifecycle
+  initial_ubuntu: {passed: 816, failed: 0, skipped: 7, seconds: 85.93, wheel: passed}
+  initial_windows: {passed: 812, failed: 0, skipped: 11, seconds: 107.03, wheel: passed}
+  initial_native: {passed: 152, failed: 3, skipped: 0, seconds: 6.25}
+  repaired_exact_commit_status: pending
 
 separate_incomplete_acceptance:
   pure_model_object_quality: rejected_platform_recall_gate_failed

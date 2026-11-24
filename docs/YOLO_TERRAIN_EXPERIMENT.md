@@ -22,7 +22,7 @@
 | 候选 ONNX SHA-256 | `be5cd99bce0f52b0cdfc7e033251f2c919e14d203c8b72d394a18d7a067751f0` |
 | 同集旧模型 ONNX SHA-256 | `7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3` |
 
-训练实际用时 **1467.923792 秒**。ONNX 输入为 `[1,3,320,320]`、输出为 `[1,11,8400]`。冻结训练源文件未改，1730 个源数据与实际训练副本文件逐字节一致；训练入口执行了输入副本和配置的前后检查。[训练](../reports/release-0.3.0/training.json) · [导出](../reports/release-0.3.0/export.json) · [输入核对](../reports/release-0.3.0/training-input-provenance.json)
+训练实际用时 **1467.923792 秒**。ONNX 输入为 `[1,3,320,320]`、输出为 `[1,11,8400]`。正式40epoch训练与val评分期间，五项冻结源码保持预注册字节；历史源码保存在提交 [`ff357c8`](https://github.com/www1350/maple-vision-platform/commit/ff357c8951da8e84265d31c5a8b86a48934a4f01)。1730 个源数据与实际训练副本文件逐字节一致，训练入口执行了输入副本和配置的前后检查。实验结束后发现的日志流生命周期修复属于独立工程更正，未参与也不追溯记入本次实验，原始模型和报告保持原样。[训练](../reports/release-0.3.0/training.json) · [导出](../reports/release-0.3.0/export.json) · [输入核对](../reports/release-0.3.0/training-input-provenance.json)
 
 ## 2. 正式 val 成绩与拒绝理由
 

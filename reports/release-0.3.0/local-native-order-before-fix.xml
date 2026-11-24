@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="155" time="10.082" timestamp="2026-11-24T06:51:06.933210-08:00" hostname="0a4532fb6b91"><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides0]" time="0.001" /><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides1]" time="0.001" /><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides2]" time="0.001" /><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides3]" time="0.001" /><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides4]" time="0.001" /><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides5]" time="0.001" /><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides6]" time="0.001" /><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides7]" time="0.001" /><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides8]" time="0.001" /><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides9]" time="0.001" /><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides10]" time="0.001" /><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides11]" time="0.001" /><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides12]" time="0.001" /><testcase classname="tests.test_training" name="test_training_arguments_rejected_before_creating_output[overrides13]" time="0.001" /><testcase classname="tests.test_training" name="test_local_model_required_no_download_by_name" time="0.001" /><testcase classname="tests.test_training" name="test_fixture_model_config_passes_local_allowlist" time="0.003" /><testcase classname="tests.test_training" name="test_unsupported_config_rejected_before_ultralytics[modification0]" time="0.005" /><testcase classname="tests.test_training" name="test_unsupported_config_rejected_before_ultralytics[modification1]" time="0.005" /><testcase classname="tests.test_training" name="test_unsupported_config_rejected_before_ultralytics[modification2]" time="0.003" /><testcase classname="tests.test_training" name="test_unsupported_config_rejected_before_ultralytics[modification3]" time="0.004" /><testcase classname="tests.test_training" name="test_unsupported_config_rejected_before_ultralytics[modification4]" time="0.004" /><testcase classname="tests.test_training" name="test_unsupported_config_rejected_before_ultralytics[modification5]" time="0.005" /><testcase classname="tests.test_training" name="test_unsupported_config_rejected_before_ultralytics[modification6]" time="0.005" /><testcase classname="tests.test_training" name="test_unsupported_config_rejected_before_ultralytics[modification7]" time="0.005" /><testcase classname="tests.test_training" name="test_unsupported_config_rejected_before_ultralytics[modification8]" time="0.004" /><testcase classname="tests.test_training" name="test_only_manifest_copies_used_without_mutating_source_dataset" time="0.078" /><testcase classname="tests.test_training" name="test_existing_training_output_never_overwritten" time="0.045" /><testcase classname="tests.test_training" name="test_tampered_dataset_rejected_before_training" time="0.036" /><testcase classname="tests.test_training" name="test_export_validates_parameters_without_loading_weights[kwargs0]" time="0.001" /><testcase classname="tests.test_training" name="test_export_validates_parameters_without_loading_weights[kwargs1]" time="0.001" /><testcase classname="tests.test_training" name="test_export_validates_parameters_without_loading_weights[kwargs2]" time="0.001" /><testcase classname="tests.test_training" name="test_export_never_downloads_missing_weights" time="0.001" /><testcase classname="tests.test_training" name="test_missing_heavy_dependencies_restore_environment" time="0.002" /><testcase classname="tests.test_training" name="test_partial_dependency_import_restores_pillow_loader" time="0.001" /><testcase classname="tests.test_training" name="test_pillow_import_patch_is_suppressed_during_runtime_and_restored_on_error" time="0.002" /><testcase classname="tests.test_training" name="test_real_cpu_training_export_and_adapter_inference" time="7.616" /><testcase classname="tests.test_terrain_audit" name="test_total_width_capacity_does_not_create_a_positive_anchor_row" time="0.006" /><testcase classname="tests.test_terrain_audit" name="test_total_width_capacity_is_insufficient_when_one_side_is_out_of_range" time="0.000" /><testcase classname="tests.test_terrain_audit" name="test_expanded_candidate_outside_original_box_needs_a_negative_edge" time="0.000" /><testcase classname="tests.test_terrain_audit" name="test_support_endpoint_and_training_clamp_are_distinguished" time="0.000" /><testcase classname="tests.test_terrain_audit" name="test_zero_edge_target_is_training_valid_but_not_strict_softmax_interior" time="0.000" /><testcase classname="tests.test_terrain_audit" name="test_stride16_reg16_has_ten_unclipped_floor_anchors_reg12_has_two" time="0.001" /><testcase classname="tests.test_terrain_audit" name="test_invalid_geometry_is_rejected[overrides0]" time="0.000" /><testcase classname="tests.test_terrain_audit" name="test_invalid_geometry_is_rejected[overrides1]" time="0.002" /><testcase classname="tests.test_terrain_audit" name="test_invalid_geometry_is_rejected[overrides2]" time="0.000" /><testcase classname="tests.test_terrain_audit" name="test_invalid_geometry_is_rejected[overrides3]" time="0.000" /><testcase classname="tests.test_terrain_audit" name="test_invalid_geometry_is_rejected[overrides4]" time="0.000" /><testcase classname="tests.test_terrain_audit" name="test_invalid_geometry_is_rejected[overrides5]" time="0.001" /><testcase classname="tests.test_terrain_audit" name="test_invalid_geometry_is_rejected[overrides6]" time="0.000" /><testcase classname="tests.test_terrain_audit" name="test_invalid_geometry_is_rejected[overrides7]" time="0.002" /><testcase classname="tests.test_terrain_audit" name="test_invalid_geometry_is_rejected[overrides8]" time="0.001" /><testcase classname="tests.test_terrain_audit" name="test_invalid_geometry_is_rejected[overrides9]" time="0.000" /><testcase classname="tests.test_terrain_audit" name="test_invalid_geometry_is_rejected[overrides10]" time="0.003" /><testcase classname="tests.test_terrain_audit" name="test_candidate_configuration_is_packaged_identically_and_allowlisted" time="0.022" /><testcase classname="tests.test_terrain_audit" name="test_arguments_are_rejected_before_loading_data_or_native_dependencies[arguments0]" time="0.003" /><testcase classname="tests.test_terrain_audit" name="test_arguments_are_rejected_before_loading_data_or_native_dependencies[arguments1]" time="0.002" /><testcase classname="tests.test_terrain_audit" name="test_arguments_are_rejected_before_loading_data_or_native_dependencies[arguments2]" time="0.002" /><testcase classname="tests.test_terrain_audit" name="test_arguments_are_rejected_before_loading_data_or_native_dependencies[arguments3]" time="0.001" /><testcase classname="tests.test_terrain_audit" name="test_arguments_are_rejected_before_loading_data_or_native_dependencies[arguments4]" time="0.002" /><testcase classname="tests.test_terrain_audit" name="test_arguments_are_rejected_before_loading_data_or_native_dependencies[arguments5]" time="0.001" /><testcase classname="tests.test_terrain_audit" name="test_arguments_are_rejected_before_loading_data_or_native_dependencies[arguments6]" time="0.001" /><testcase classname="tests.test_terrain_audit" name="test_arguments_are_rejected_before_loading_data_or_native_dependencies[arguments7]" time="0.002" /><testcase classname="tests.test_terrain_audit" name="test_arguments_are_rejected_before_loading_data_or_native_dependencies[arguments8]" time="0.002" /><testcase classname="tests.test_terrain_audit" name="test_arguments_are_rejected_before_loading_data_or_native_dependencies[arguments9]" time="0.001" /><testcase classname="tests.test_terrain_audit" name="test_preflight_rejects_oversized_or_unknown_topology_before_native_import[classes]" time="0.016" /><testcase classname="tests.test_terrain_audit" name="test_preflight_rejects_oversized_or_unknown_topology_before_native_import[channels]" time="0.007" /><testcase classname="tests.test_terrain_audit" name="test_preflight_rejects_oversized_or_unknown_topology_before_native_import[upsample]" time="0.010" /><testcase classname="tests.test_terrain_audit" name="test_preflight_rejects_oversized_or_unknown_topology_before_native_import[concat]" time="0.009" /><testcase classname="tests.test_terrain_audit" name="test_preflight_rejects_oversized_or_unknown_topology_before_native_import[depth]" time="0.008" /><testcase classname="tests.test_terrain_audit" name="test_preflight_rejects_oversized_or_unknown_topology_before_native_import[width]" time="0.009" /><testcase classname="tests.test_terrain_audit" name="test_preflight_rejects_oversized_or_unknown_topology_before_native_import[repeats]" time="0.011" /><testcase classname="tests.test_terrain_audit" name="test_preflight_rejects_oversized_or_unknown_topology_before_native_import[stride]" time="0.009" /><testcase classname="tests.test_terrain_audit" name="test_preflight_rejects_oversized_or_unknown_topology_before_native_import[layers]" time="0.012" /><testcase classname="tests.test_terrain_audit" name="test_preflight_rejects_oversized_or_unknown_topology_before_native_import[end2end]" time="0.008" /><testcase classname="tests.test_terrain_audit" name="test_preflight_rejects_oversized_or_unknown_topology_before_native_import[no_dfl]" time="0.007" /><testcase classname="tests.test_terrain_audit" name="test_preflight_rejects_oversized_or_unknown_topology_before_native_import[construction_allocation]" time="0.006" /><testcase classname="tests.test_terrain_audit" name="test_existing_output_and_dataset_destination_are_rejected" time="0.001" /><testcase classname="tests.test_terrain_audit" name="test_selected_label_corruption_fails_before_native_import" time="0.062" /><testcase classname="tests.test_terrain_audit" name="test_manifest_change_after_validation_is_rejected_before_following_paths" time="0.049" /><testcase classname="tests.test_terrain_audit" name="test_report_publication_is_exclusive_and_removes_only_its_temporary_file" time="0.001" /><testcase classname="tests.test_terrain_audit" name="test_native_actual_head_dfl_anchor_coverage_and_offline_restoration[False]" time="0.070"><failure message="ValueError: I/O operation on closed file.">small_dataset = PosixPath('/workspace/scratch/3968a72df173/maple-vision-platform/artifacts/v03-experiment/ci-native-order-before-fix-work/test_native_actual_head_dfl_an0/dataset')
+tmp_path = PosixPath('/workspace/scratch/3968a72df173/maple-vision-platform/artifacts/v03-experiment/ci-native-order-before-fix-work/test_native_actual_head_dfl_an0')
+candidate = False
+
+    @pytest.mark.skipif(not NATIVE, reason="opt-in native terrain model architecture audit")
+    @pytest.mark.parametrize("candidate", [False, True])
+    def test_native_actual_head_dfl_anchor_coverage_and_offline_restoration(
+        small_dataset, tmp_path, candidate
+    ):
+        manifest = json.loads((small_dataset / "manifest.json").read_text())
+        records = [row for row in manifest["samples"] if row["split"] == "val"]
+        sessions = {row["id"]: row for row in manifest["sessions"]}
+        assert len(records) == 2
+        assert {sessions[row["session_id"]]["map_id"] for row in records} == {"meadow", "cavern"}
+        for row in records:
+            floors = []
+            for line in (small_dataset / row["label"]).read_text().splitlines():
+                category, cx, _cy, width, height = map(float, line.split())
+                if (
+                    manifest["classes"][int(category)] == "platform"
+                    and abs(cx - width / 2) &lt; 1e-12
+                    and abs(cx + width / 2 - 1) &lt; 1e-12
+                    and 0 &lt; height * row["height"] &lt;= 8.001
+                ):
+                    floors.append(line)
+            assert len(floors) == 1, "each independently inspected val label has exactly one floor"
+        image_loader = Image.open
+        original_offline = os.environ.get("YOLO_OFFLINE")
+        path = tmp_path / "audit.json"
+&gt;       report = audit_terrain_architecture(
+            small_dataset,
+            CANDIDATE if candidate else BASELINE,
+            path,
+            image_size=320,
+            warmup=1,
+            iterations=2 if candidate else 0,
+        )
+
+tests/test_terrain_audit.py:302: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/maple_vision/terrain_audit.py:599: in audit_terrain_architecture
+    with _offline_runtime(staging) as (torch, ultralytics), torch.random.fork_rng(devices=[]):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/maple_vision/training.py:219: in _offline_runtime
+    handler.setStream(sys.stderr)
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/logging/__init__.py:1184: in setStream
+    self.flush()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;StreamHandler (ERROR)&gt;
+
+    def flush(self):
+        """
+        Flushes the stream.
+        """
+        self.acquire()
+        try:
+            if self.stream and hasattr(self.stream, "flush"):
+&gt;               self.stream.flush()
+E               ValueError: I/O operation on closed file.
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/logging/__init__.py:1144: ValueError</failure></testcase><testcase classname="tests.test_terrain_audit" name="test_native_actual_head_dfl_anchor_coverage_and_offline_restoration[True]" time="0.069"><failure message="ValueError: I/O operation on closed file.">small_dataset = PosixPath('/workspace/scratch/3968a72df173/maple-vision-platform/artifacts/v03-experiment/ci-native-order-before-fix-work/test_native_actual_head_dfl_an1/dataset')
+tmp_path = PosixPath('/workspace/scratch/3968a72df173/maple-vision-platform/artifacts/v03-experiment/ci-native-order-before-fix-work/test_native_actual_head_dfl_an1')
+candidate = True
+
+    @pytest.mark.skipif(not NATIVE, reason="opt-in native terrain model architecture audit")
+    @pytest.mark.parametrize("candidate", [False, True])
+    def test_native_actual_head_dfl_anchor_coverage_and_offline_restoration(
+        small_dataset, tmp_path, candidate
+    ):
+        manifest = json.loads((small_dataset / "manifest.json").read_text())
+        records = [row for row in manifest["samples"] if row["split"] == "val"]
+        sessions = {row["id"]: row for row in manifest["sessions"]}
+        assert len(records) == 2
+        assert {sessions[row["session_id"]]["map_id"] for row in records} == {"meadow", "cavern"}
+        for row in records:
+            floors = []
+            for line in (small_dataset / row["label"]).read_text().splitlines():
+                category, cx, _cy, width, height = map(float, line.split())
+                if (
+                    manifest["classes"][int(category)] == "platform"
+                    and abs(cx - width / 2) &lt; 1e-12
+                    and abs(cx + width / 2 - 1) &lt; 1e-12
+                    and 0 &lt; height * row["height"] &lt;= 8.001
+                ):
+                    floors.append(line)
+            assert len(floors) == 1, "each independently inspected val label has exactly one floor"
+        image_loader = Image.open
+        original_offline = os.environ.get("YOLO_OFFLINE")
+        path = tmp_path / "audit.json"
+&gt;       report = audit_terrain_architecture(
+            small_dataset,
+            CANDIDATE if candidate else BASELINE,
+            path,
+            image_size=320,
+            warmup=1,
+            iterations=2 if candidate else 0,
+        )
+
+tests/test_terrain_audit.py:302: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/maple_vision/terrain_audit.py:599: in audit_terrain_architecture
+    with _offline_runtime(staging) as (torch, ultralytics), torch.random.fork_rng(devices=[]):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/maple_vision/training.py:219: in _offline_runtime
+    handler.setStream(sys.stderr)
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/logging/__init__.py:1184: in setStream
+    self.flush()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;StreamHandler (ERROR)&gt;
+
+    def flush(self):
+        """
+        Flushes the stream.
+        """
+        self.acquire()
+        try:
+            if self.stream and hasattr(self.stream, "flush"):
+&gt;               self.stream.flush()
+E               ValueError: I/O operation on closed file.
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/logging/__init__.py:1144: ValueError</failure></testcase><testcase classname="tests.test_terrain_audit" name="test_native_candidate_one_epoch_training_export_and_ort" time="0.087"><failure message="ValueError: I/O operation on closed file.">small_dataset = PosixPath('/workspace/scratch/3968a72df173/maple-vision-platform/artifacts/v03-experiment/ci-native-order-before-fix-work/test_native_candidate_one_epoc0/dataset')
+tmp_path = PosixPath('/workspace/scratch/3968a72df173/maple-vision-platform/artifacts/v03-experiment/ci-native-order-before-fix-work/test_native_candidate_one_epoc0')
+
+    @pytest.mark.skipif(not NATIVE, reason="opt-in real candidate CPU training/export smoke")
+    def test_native_candidate_one_epoch_training_export_and_ort(small_dataset, tmp_path):
+        image_loader = Image.open
+&gt;       result = train_yolo(
+            small_dataset,
+            tmp_path / "training",
+            CANDIDATE,
+            epochs=1,
+            image_size=160,
+            batch=2,
+            seed=42,
+        )
+
+tests/test_terrain_audit.py:337: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/maple_vision/training.py:339: in train_yolo
+    with _offline_runtime(staging) as (torch, ultralytics):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/maple_vision/training.py:219: in _offline_runtime
+    handler.setStream(sys.stderr)
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/logging/__init__.py:1184: in setStream
+    self.flush()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;StreamHandler (ERROR)&gt;
+
+    def flush(self):
+        """
+        Flushes the stream.
+        """
+        self.acquire()
+        try:
+            if self.stream and hasattr(self.stream, "flush"):
+&gt;               self.stream.flush()
+E               ValueError: I/O operation on closed file.
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/logging/__init__.py:1144: ValueError</failure></testcase><testcase classname="tests.test_terrain_audit" name="test_native_no_dfl_head_is_rejected_without_output" time="0.058" /><testcase classname="tests.test_recordings" name="test_png_import_and_replay_pixel_identity" time="0.034" /><testcase classname="tests.test_recordings" name="test_import_is_reproducible_and_truncation_explicit" time="0.026" /><testcase classname="tests.test_recordings" name="test_directory_invalid_fps_rejected[None]" time="0.007" /><testcase classname="tests.test_recordings" name="test_directory_invalid_fps_rejected[True]" time="0.008" /><testcase classname="tests.test_recordings" name="test_directory_invalid_fps_rejected[0]" time="0.007" /><testcase classname="tests.test_recordings" name="test_directory_invalid_fps_rejected[-1]" time="0.006" /><testcase classname="tests.test_recordings" name="test_directory_invalid_fps_rejected[241]" time="0.006" /><testcase classname="tests.test_recordings" name="test_directory_invalid_fps_rejected[nan]" time="0.007" /><testcase classname="tests.test_recordings" name="test_directory_invalid_fps_rejected[inf]" time="0.006" /><testcase classname="tests.test_recordings" name="test_directory_invalid_fps_rejected[20]" time="0.006" /><testcase classname="tests.test_recordings" name="test_invalid_frame_limit[0]" time="0.006" /><testcase classname="tests.test_recordings" name="test_invalid_frame_limit[True]" time="0.006" /><testcase classname="tests.test_recordings" name="test_invalid_frame_limit[10001]" time="0.006" /><testcase classname="tests.test_recordings" name="test_invalid_frame_limit[-1]" time="0.007" /><testcase classname="tests.test_recordings" name="test_invalid_frame_limit[1.5]" time="0.007" /><testcase classname="tests.test_recordings" name="test_fractional_fps_uses_explicit_nominal_timeline" time="0.037" /><testcase classname="tests.test_recordings" name="test_missing_source_url_and_unlicensed_input_rejected" time="0.016" /><testcase classname="tests.test_recordings" name="test_output_never_overwrites_and_cannot_be_inside_source" time="0.007" /><testcase classname="tests.test_recordings" name="test_invalid_later_frame_does_not_publish_partial_session[corrupt]" time="0.064" /><testcase classname="tests.test_recordings" name="test_invalid_later_frame_does_not_publish_partial_session[resize]" time="0.013" /><testcase classname="tests.test_recordings" name="test_invalid_later_frame_does_not_publish_partial_session[transparent]" time="0.025" /><testcase classname="tests.test_recordings" name="test_total_pixel_budget_is_enforced_before_publication" time="0.016" /><testcase classname="tests.test_recordings" name="test_manifest_hash_detects_changes" time="0.028" /><testcase classname="tests.test_recordings" name="test_internal_invariants_checked_even_when_manifest_digest_is_recomputed[&lt;lambda&gt;0]" time="0.032" /><testcase classname="tests.test_recordings" name="test_internal_invariants_checked_even_when_manifest_digest_is_recomputed[&lt;lambda&gt;1]" time="0.022" /><testcase classname="tests.test_recordings" name="test_internal_invariants_checked_even_when_manifest_digest_is_recomputed[&lt;lambda&gt;2]" time="0.024" /><testcase classname="tests.test_recordings" name="test_internal_invariants_checked_even_when_manifest_digest_is_recomputed[&lt;lambda&gt;3]" time="0.024" /><testcase classname="tests.test_recordings" name="test_internal_invariants_checked_even_when_manifest_digest_is_recomputed[&lt;lambda&gt;4]" time="0.024" /><testcase classname="tests.test_recordings" name="test_internal_invariants_checked_even_when_manifest_digest_is_recomputed[&lt;lambda&gt;5]" time="0.021" /><testcase classname="tests.test_recordings" name="test_internal_invariants_checked_even_when_manifest_digest_is_recomputed[&lt;lambda&gt;6]" time="0.022" /><testcase classname="tests.test_recordings" name="test_internal_invariants_checked_even_when_manifest_digest_is_recomputed[&lt;lambda&gt;7]" time="0.023" /><testcase classname="tests.test_recordings" name="test_internal_invariants_checked_even_when_manifest_digest_is_recomputed[&lt;lambda&gt;8]" time="0.025" /><testcase classname="tests.test_recordings" name="test_internal_invariants_checked_even_when_manifest_digest_is_recomputed[&lt;lambda&gt;9]" time="0.025" /><testcase classname="tests.test_recordings" name="test_frame_content_and_unlisted_files_rejected" time="0.025" /><testcase classname="tests.test_recordings" name="test_frame_is_rechecked_at_consumption_time" time="0.025" /><testcase classname="tests.test_recordings" name="test_pixel_replay_reports_perception_only" time="0.056" /><testcase classname="tests.test_recordings" name="test_custom_detector_does_not_manufacture_world_state" time="0.032" /><testcase classname="tests.test_recordings" name="test_bad_detector_result_does_not_publish_success" time="0.030" /><testcase classname="tests.test_recordings" name="test_mp4_rejects_playlist_before_decoder_import" time="0.002" /><testcase classname="tests.test_recordings" name="test_real_local_mp4_decode" time="0.032" /><testcase classname="tests.test_ocr" name="test_local_command_crop_and_coordinates" time="0.001" /><testcase classname="tests.test_ocr" name="test_language_arguments_cannot_inject_command_options[eng;echo]" time="0.000" /><testcase classname="tests.test_ocr" name="test_language_arguments_cannot_inject_command_options[../eng]" time="0.000" /><testcase classname="tests.test_ocr" name="test_language_arguments_cannot_inject_command_options[-x]" time="0.000" /><testcase classname="tests.test_ocr" name="test_language_arguments_cannot_inject_command_options[eng+]" time="0.000" /><testcase classname="tests.test_ocr" name="test_language_arguments_cannot_inject_command_options[]" time="0.000" /><testcase classname="tests.test_ocr" name="test_language_arguments_cannot_inject_command_options[True]" time="0.001" /><testcase classname="tests.test_ocr" name="test_missing_language_does_not_download" time="0.000" /><testcase classname="tests.test_ocr" name="test_missing_binary_and_relative_override_rejected" time="0.000" /><testcase classname="tests.test_ocr" name="test_invalid_runtime_bounds[kwargs0]" time="0.000" /><testcase classname="tests.test_ocr" name="test_invalid_runtime_bounds[kwargs1]" time="0.000" /><testcase classname="tests.test_ocr" name="test_invalid_runtime_bounds[kwargs2]" time="0.000" /><testcase classname="tests.test_ocr" name="test_invalid_runtime_bounds[kwargs3]" time="0.001" /><testcase classname="tests.test_ocr" name="test_invalid_runtime_bounds[kwargs4]" time="0.000" /><testcase classname="tests.test_ocr" name="test_invalid_runtime_bounds[kwargs5]" time="0.000" /><testcase classname="tests.test_ocr" name="test_invalid_runtime_bounds[kwargs6]" time="0.000" /><testcase classname="tests.test_ocr" name="test_invalid_crop_does_not_start_ocr[crop0]" time="0.001" /><testcase classname="tests.test_ocr" name="test_invalid_crop_does_not_start_ocr[crop1]" time="0.001" /><testcase classname="tests.test_ocr" name="test_invalid_crop_does_not_start_ocr[crop2]" time="0.001" /><testcase classname="tests.test_ocr" name="test_invalid_crop_does_not_start_ocr[crop3]" time="0.001" /><testcase classname="tests.test_ocr" name="test_invalid_crop_does_not_start_ocr[crop4]" time="0.001" /><testcase classname="tests.test_ocr" name="test_pixel_budget_applies_to_crop_not_source" time="0.001" /><testcase classname="tests.test_ocr" name="test_timeout_and_process_failure_are_errors" time="0.001" /><testcase classname="tests.test_ocr" name="test_malformed_tsv_cannot_become_success[bad columns\n]" time="0.001" /><testcase classname="tests.test_ocr" name="test_malformed_tsv_cannot_become_success[level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n5\t1\t1\t1\t1\t1\t2\t3\t10\t5\tnan\tMAPLE\n]" time="0.001" /><testcase classname="tests.test_ocr" name="test_malformed_tsv_cannot_become_success[level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n5\t1\t1\t1\t1\t1\t2\t3\t10\t5\t101\tMAPLE\n]" time="0.001" /><testcase classname="tests.test_ocr" name="test_malformed_tsv_cannot_become_success[level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n5\t1\t1\t1\t1\t1\t95\t3\t10\t5\t87.5\tMAPLE\n]" time="0.001" /><testcase classname="tests.test_ocr" name="test_malformed_tsv_cannot_become_success[level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n5\t1\t1\t1\t1\t1\t2\t3\t10\t5\t87.5\t\xff\n]" time="0.001" /><testcase classname="tests.test_ocr" name="test_empty_ocr_result_is_explicit" time="0.001" /><testcase classname="tests.test_ocr" name="test_tessdata_dir_is_explicit_local_argument" time="0.001" /><testcase classname="tests.test_ocr" name="test_real_authored_text_smoke" time="0.224" /></testsuite></testsuites>

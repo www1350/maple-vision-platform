@@ -133,6 +133,21 @@ def _blocked_network(*args: Any, **kwargs: Any) -> NoReturn:
     raise OSError("network access is disabled during offline training/export")
 
 
+def _set_logging_stream(handler: logging.StreamHandler[Any], stream: Any) -> None:
+    """Preserve normal flushing, but do not flush an already-closed capture stream."""
+    handler.acquire()
+    try:
+        if getattr(handler.stream, "closed", False) is True:
+            # A previous caller may have closed its redirected stdout/stderr.
+            # There is no remaining buffer to flush; retain the handler itself.
+            handler.stream = stream
+        else:
+            # Do not suppress unrelated flush failures on a usable stream.
+            handler.setStream(stream)
+    finally:
+        handler.release()
+
+
 @contextmanager
 def _offline_runtime(directory: Path) -> Iterator[tuple[Any, Any]]:
     """Suppress downloads/telemetry and cap CPU threads without persisting settings.
@@ -216,8 +231,8 @@ def _offline_runtime(directory: Path) -> Iterator[tuple[Any, Any]]:
         for handler in utils.LOGGER.handlers:
             if isinstance(handler, logging.StreamHandler):
                 previous_stream = handler.stream
-                handler.setStream(sys.stderr)
-                stack.callback(handler.setStream, previous_stream)
+                _set_logging_stream(handler, sys.stderr)
+                stack.callback(_set_logging_stream, handler, previous_stream)
         # Imported analytics modules may have cached settings from another caller.
         events = importlib.import_module("ultralytics.utils.events")
         event_emitter = getattr(events, "events", None)
