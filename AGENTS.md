@@ -1,2 +1,4 @@
 # Coding AI instructions
 Read MASTER_SPEC.md first. P0 is accepted. The user authorized continuous implementation and testing of the remaining offline platform on 2026-11-24; continue through the feasible milestones without a P0 stop gate. Do not implement official-client controls or bypasses. Use independent tests, bounded repair attempts and review. Never weaken tests to hide failures. Report actual evidence and distinguish implemented synthetic-fixture functionality from externally blocked game-data, real-recording, trained-model, and wall-clock soak acceptance. Keep the visual policy isolated from simulator ground truth. Preserve existing P0 APIs unless a migration is explicit.
+
+Read docs/FINAL_PLAN.md for the consolidated architecture, execution order and AI handoff. Use docs/RELEASE_ACCEPTANCE.md and engineering/platform-contract.yaml to distinguish delivered v0.1 behavior from future work; do not treat proposed interfaces as existing APIs.

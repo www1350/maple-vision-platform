@@ -3,7 +3,7 @@
 用户已于 2026-11-24 授权连续实施和测试，不再停在 P0。原 P0 已有独立验收，见 [P0_ACCEPTANCE.md](P0_ACCEPTANCE.md)；该历史记录和 [P0 合同](../engineering/p0-contract.yaml) 不因新版本而改写。
 本次交付目标是能独立运行和验证的合成场景平台。它覆盖 P1–P13 的若干工程工作，但不能称为全部 v8.0 真实场景验收完成。
 
-依赖关系与状态见 [milestones.yaml](../engineering/milestones.yaml)，本版本门禁见 [platform-contract.yaml](../engineering/platform-contract.yaml)，发布证据记录在 [RELEASE_ACCEPTANCE.md](RELEASE_ACCEPTANCE.md)。最终提交的 CI、安装验证和审查通过前，发布状态仍为 pending；文档中的“已实现”不预先声明最终验收 PASS。
+依赖关系与状态见 [milestones.yaml](../engineering/milestones.yaml)，本版本门禁见 [platform-contract.yaml](../engineering/platform-contract.yaml)，发布证据记录在 [RELEASE_ACCEPTANCE.md](RELEASE_ACCEPTANCE.md)。v0.1 实现已通过本地审查、Ubuntu/Windows 安装验证和原生训练 CI；证据关联准确实现提交，后续文档归档提交继续执行同一套 CI。完整 v8 与真实域验收保持独立。
 
 ## 阶段对应的实际交付
 
@@ -22,7 +22,7 @@
 | P10 | 连续未知暂停/停止、时序检查、卡住恢复预算、战斗进度限额 | `Supervisor`、故障适配器 | 更广泛恢复策略与真实观测失效样本 |
 | P11 | 动作回放、篡改检测、4 类故障、本地 PNG/MP4 导入观察 | `lab replay/suite`、`recording` | 真实 Golden Recording 精度、广泛属性/差异验证和实时录像采集 |
 | P12 | 三职业、两地图组合运行 | `lab suite` | 任意第三方内容包和插件兼容性、更多地图/职业验收 |
-| P13 | 包、CLI、发布门禁、墙上时间 soak 工具 | wheel、CI、`lab soak` | 当前最终提交 CI/审查、24 小时真实进程长稳、真实域发布准入 |
+| P13 | 包、CLI、跨平台发布验证、墙钟时间 soak 工具 | wheel、CI、`lab soak` | 24 小时真实进程长稳、真实域发布准入 |
 
 ## 本版本连续交付顺序
 

@@ -1,5 +1,7 @@
 # Maple Vision Platform v8.0
 
+完整架构、从零执行步骤与 AI 接手指南见 [docs/FINAL_PLAN.md](docs/FINAL_PLAN.md)；当前实现与验收证据见 [docs/RELEASE_ACCEPTANCE.md](docs/RELEASE_ACCEPTANCE.md)。本文件保留总体规格，具体交付范围以版本验收记录为准。
+
 ## 项目范围
 面向冒险岛风格的离线视觉研究和独立模拟器。正式游戏仅限符合规则的只读观察；不提供正式客户端自动控制、反作弊绕过、封包拦截、内存操纵或输入伪装。独立验证不能证明正式账号安全。
 

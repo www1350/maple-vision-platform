@@ -2,13 +2,15 @@
   "schema_version": 1,
   "release_version": "0.1.0",
   "scope": "offline_synthetic_fixture_platform",
-  "recorded_at_utc": "2026-11-24T10:57:22.089497+00:00",
+  "recorded_at_utc": "2026-11-24T11:09:24.695395+00:00",
   "local_gates_status": "passed",
   "full_v8_spec_acceptance": false,
   "commit_identity": {
-    "status": "pending_published_exact_commit",
-    "commit_sha": null,
-    "note": "Local evidence describes the frozen implementation worktree; release documentation and evidence were archived afterwards. Exact published commit CI remains separate."
+    "status": "published_implementation_commit_verified",
+    "scope": "implementation_commit",
+    "commit_sha": "2114372ac4705625b017d0dc907168560e768db2",
+    "tree_sha": "5832e7e3df9df887f76d27925daa40997aa67bd9",
+    "note": "Default tests were rerun after CI artifact-directory setup and cross-platform catalog filename test corrections. Business source and model are unchanged. The implementation commit passed all three remote CI jobs; later plan and evidence-only updates receive the same checks at the final pull-request head."
   },
   "environment": {
     "interpreter": ".venv/bin/python",
@@ -62,20 +64,20 @@
     "default_pytest": {
       "status": "passed",
       "counts": {
-        "tests": 500,
+        "tests": 501,
         "errors": 0,
         "failures": 0,
         "skipped": 1,
-        "passed": 499
+        "passed": 500
       },
-      "junit_seconds": 35.913,
+      "junit_seconds": 37.634,
       "suite_timestamps": [
-        "2026-11-24T02:50:52.839172-08:00"
+        "2026-11-24T03:03:14.899452-08:00"
       ],
       "test_modules": {
         "tests.test_agent_review": 10,
         "tests.test_asset_registry": 17,
-        "tests.test_catalog": 40,
+        "tests.test_catalog": 41,
         "tests.test_cli": 16,
         "tests.test_contracts": 14,
         "tests.test_data_review": 16,
@@ -111,10 +113,10 @@
         }
       ],
       "junit_report": "reports/release-0.1.0/release-pytest.xml",
-      "junit_sha256": "3f3e764a6e652b4f0bc7cde986745f26fc2c59e75135543b7883ec7fac3842f2",
+      "junit_sha256": "7869ff646bf0c80f15cf35ff94976142656ec71489a66f9946c120f9a0c990bb",
       "command": "ORT_DISABLE_TELEMETRY=1 .venv/bin/python -m pytest -q --junitxml=artifacts/release-pytest.xml",
       "command_basis": "exact_invocation_reported_by_release_runner",
-      "reported_console_seconds": 36.05,
+      "reported_console_seconds": 37.76,
       "scope": "all_default_tests_including_native_onnx_and_shipped_model; opt_in_training_separately_executed"
     },
     "opt_in_native_pytest": {
@@ -194,13 +196,16 @@
       "command_basis": "normalized_reproduction_commands",
       "report": "reports/release-0.1.0/wheel-smoke.json",
       "wheel": "maple_vision_platform-0.1.0-py3-none-any.whl",
-      "wheel_sha256": "3790fc884c8d2bcdf94a594a994c8c385e17194dcbd75bb04b84f005a32e1dcf",
+      "wheel_sha256": "564f5c5bc12dff13e8918cb0b1eebc893532bdba6923edac7c5943b1d363f531",
       "platform": "Linux",
-      "actual_wall_seconds": 13.638,
+      "actual_wall_seconds": 17.083,
       "scope": "isolated_installed_runtime; training_and_accuracy_are_separate_gates",
       "packaged_source_bytes_match_current_source": true,
       "packaged_readme_matches_current_readme": true,
-      "package_content_check_source": "release_runner_byte_comparison_after_final_build"
+      "package_content_check_source": "release_runner_byte_comparison_after_final_build",
+      "readme_sha256": "f596ebd667265ba43bcef2d88138610a3e0a8cc59fefbb340030a69d4271ad78",
+      "package_source_matches_implementation_commit": true,
+      "validation_phase": "rebuilt_after_consolidated_plan_navigation_update"
     },
     "independent_review": {
       "status": "approved_local",
@@ -216,25 +221,39 @@
     }
   },
   "remote_ci": {
-    "status": "pending_exact_commit_run",
+    "status": "passed_for_published_implementation_commit",
     "workflow": ".github/workflows/ci.yml",
-    "commit_sha": null,
-    "run_url": null,
+    "commit_sha": "2114372ac4705625b017d0dc907168560e768db2",
+    "run_id": 45380643809,
+    "run_url": "https://github.com/www1350/maple-vision-platform/actions/runs/45380643809",
+    "report": "reports/release-0.1.0/remote-ci.json",
     "jobs": [
       {
-        "platform": "ubuntu-latest",
-        "job": "test",
-        "status": "pending"
+        "id": 138398460640,
+        "name": "Python 3.12 / windows-latest",
+        "status": "completed",
+        "conclusion": "success",
+        "passed": 495,
+        "skipped": 6,
+        "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45380643809/job/138398460640"
       },
       {
-        "platform": "windows-latest",
-        "job": "test",
-        "status": "pending"
+        "id": 138398460832,
+        "name": "Python 3.12 / ubuntu-latest",
+        "status": "completed",
+        "conclusion": "success",
+        "passed": 498,
+        "skipped": 3,
+        "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45380643809/job/138398460832"
       },
       {
-        "platform": "ubuntu-latest",
-        "job": "training-smoke",
-        "status": "pending"
+        "id": 138398460898,
+        "name": "CPU YOLO training and ONNX export / ubuntu",
+        "status": "completed",
+        "conclusion": "success",
+        "passed": 107,
+        "skipped": 0,
+        "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45380643809/job/138398460898"
       }
     ]
   },
@@ -254,13 +273,13 @@
     {
       "path": "reports/release-0.1.0/wheel-smoke.json",
       "source": "artifacts/release-wheel-smoke.json",
-      "sha256": "3543706fd3e9eb52f6792ec04f9061bc73cd1f8cad9c6098b789a86d2468450e",
+      "sha256": "e318a277046e423b45b0c8f734ba192d773d8b66ba760d6a2f51e0ddf3ca8113",
       "copied_without_changes": true
     },
     {
       "path": "reports/release-0.1.0/release-pytest.xml",
       "source": "artifacts/release-pytest.xml",
-      "sha256": "3f3e764a6e652b4f0bc7cde986745f26fc2c59e75135543b7883ec7fac3842f2",
+      "sha256": "7869ff646bf0c80f15cf35ff94976142656ec71489a66f9946c120f9a0c990bb",
       "copied_without_changes": true
     },
     {
@@ -268,10 +287,17 @@
       "source": "artifacts/native-pillow-fix.xml",
       "sha256": "754333295d14b5ab851c0eb2a0994afc12053f3ebebd71387973033eab860e41",
       "copied_without_changes": true
+    },
+    {
+      "path": "reports/release-0.1.0/remote-ci.json",
+      "source": "https://github.com/www1350/maple-vision-platform/actions/runs/45380643809",
+      "sha256": "89aba06379320ec7a2fb5f3a1951844c0c88d02f3f1c2fae802a9b3be757a41d",
+      "copied_without_changes": false,
+      "derivation": "GitHub workflow and job metadata, decoded test logs and installed-wheel JSON"
     }
   ],
   "limitations": [
-    "Local Linux checks do not establish Ubuntu or Windows exact-commit CI success.",
+    "Remote CI covers the named runner environments and implementation commit; other platforms and Python versions require separate verification.",
     "Synthetic detection metrics and hybrid fixture missions do not establish real-game accuracy.",
     "Recordings validate observed frames, not counterfactual action effects; no real recording accuracy acceptance is claimed.",
     "The 60-second smoke is not a 24-hour wall-clock endurance test.",

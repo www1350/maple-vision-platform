@@ -1,0 +1,590 @@
+{
+  "schema_version": 1,
+  "release_version": "0.1.0",
+  "scope": "offline_synthetic_fixture_platform",
+  "implementation_commit": "2114372ac4705625b017d0dc907168560e768db2",
+  "implementation_tree": "5832e7e3df9df887f76d27925daa40997aa67bd9",
+  "workflow": {
+    "id": 428837550,
+    "name": "Offline Platform CI",
+    "run_id": 45380643809,
+    "run_number": 9,
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45380643809"
+  },
+  "jobs": [
+    {
+      "id": 138398460640,
+      "name": "Python 3.12 / windows-latest",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45380643809/job/138398460640",
+      "python": "3.12.10",
+      "tests": {
+        "passed": 495,
+        "skipped": 6,
+        "warnings": 0,
+        "seconds": 48.32,
+        "console_result": "2026-11-24T11:05:31.2477050Z 495 passed, 6 skipped in 48.32s"
+      },
+      "checks": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install pinned runtime and development tools",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install package without resolving a second dependency set",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check dependency consistency",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Format",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Lint",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Types",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Tests including native ONNX adapter",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build wheel",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Isolated installed-package smoke",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test evidence",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "installed_wheel": {
+        "schema_version": 1,
+        "passed": true,
+        "wheel": "maple_vision_platform-0.1.0-py3-none-any.whl",
+        "wheel_sha256": "824708bf9f7618fae759933837128216eb67eb7e3e2e62bb76432b5b854c1c4c",
+        "python": "3.12.10",
+        "platform": "Windows",
+        "wall_seconds": 19.032,
+        "checks": {
+          "installed_package": {
+            "module": "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\maple-wheel-nu_tw7jd\\venv\\Lib\\site-packages\\maple_vision\\__init__.py",
+            "version": "0.1.0",
+            "runtime": {
+              "numpy": "2.5.5",
+              "Pillow": "13.0.0"
+            },
+            "model_config_packaged": true,
+            "training_not_installed": true,
+            "inference_not_installed": true
+          },
+          "p0_demo": {
+            "schema_version": 1,
+            "frames_processed": 3,
+            "intents_emitted": 3,
+            "executions_skipped": 3,
+            "verifications_not_applicable": 3
+          },
+          "p0_database": {
+            "schema_version": 1,
+            "source_records": 0
+          },
+          "catalog_snapshot": {
+            "schema_version": 2,
+            "records": 1,
+            "entities": 1,
+            "legacy_source_records": 0,
+            "status_counts": {
+              "CONFLICTED": 0,
+              "PROVISIONAL": 0,
+              "UNKNOWN": 0,
+              "VERIFIED": 1
+            },
+            "scopes": [
+              "synthetic_fixture"
+            ],
+            "game_versions": [
+              "wheel-smoke-v1"
+            ]
+          },
+          "dataset": {
+            "schema_version": 1,
+            "origin": "synthetic-fixture-v1",
+            "sessions": 6,
+            "frames": 12,
+            "objects": 120,
+            "split_frames": {
+              "train": 4,
+              "val": 4,
+              "test": 4
+            },
+            "split_sessions": {
+              "train": 2,
+              "val": 2,
+              "test": 2
+            },
+            "class_counts": {
+              "train": {
+                "player": 4,
+                "monster": 8,
+                "loot": 4,
+                "portal": 4,
+                "npc": 4,
+                "platform": 12,
+                "ladder": 4
+              },
+              "val": {
+                "player": 4,
+                "monster": 8,
+                "loot": 4,
+                "portal": 4,
+                "npc": 4,
+                "platform": 12,
+                "ladder": 4
+              },
+              "test": {
+                "player": 4,
+                "monster": 8,
+                "loot": 4,
+                "portal": 4,
+                "npc": 4,
+                "platform": 12,
+                "ladder": 4
+              }
+            },
+            "missing_classes": {
+              "train": [],
+              "val": [],
+              "test": []
+            },
+            "split_maps": {
+              "train": {
+                "meadow": 2,
+                "cavern": 2
+              },
+              "val": {
+                "meadow": 2,
+                "cavern": 2
+              },
+              "test": {
+                "meadow": 2,
+                "cavern": 2
+              }
+            },
+            "missing_maps": {
+              "train": [],
+              "val": [],
+              "test": []
+            },
+            "validated": true
+          },
+          "asset_registry": {
+            "verified": true,
+            "media_type": "image/png"
+          },
+          "mission": {
+            "status": "completed",
+            "steps": 325,
+            "scope": "synthetic_fixture",
+            "detector": "pixel-fixture",
+            "independent_goal_check": true,
+            "maps_visited": [
+              "cavern",
+              "meadow"
+            ]
+          },
+          "replay": {
+            "verified": true,
+            "steps_replayed": 325,
+            "scope": "deterministic_simulator",
+            "files_checked": 88,
+            "independent_goal_check": true,
+            "perception_reproduced": false,
+            "runtime_identity_matches": true
+          },
+          "module_entrypoint": {
+            "passed": true
+          }
+        },
+        "scope": "isolated_installed_runtime; training_and_accuracy_are_separate_gates"
+      },
+      "artifacts": [
+        "https://github.com/www1350/maple-vision-platform/actions/runs/45380643809/artifacts/14913382146"
+      ]
+    },
+    {
+      "id": 138398460832,
+      "name": "Python 3.12 / ubuntu-latest",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45380643809/job/138398460832",
+      "python": "3.12.16",
+      "tests": {
+        "passed": 498,
+        "skipped": 3,
+        "warnings": 0,
+        "seconds": 28.23,
+        "console_result": "2026-11-24T11:04:32.3436899Z 498 passed, 3 skipped in 28.23s"
+      },
+      "checks": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install pinned runtime and development tools",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install package without resolving a second dependency set",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check dependency consistency",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Format",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Lint",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Types",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Tests including native ONNX adapter",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build wheel",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Isolated installed-package smoke",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test evidence",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "installed_wheel": {
+        "schema_version": 1,
+        "passed": true,
+        "wheel": "maple_vision_platform-0.1.0-py3-none-any.whl",
+        "wheel_sha256": "8f5a18540d5455ebb1edbfa3b31bb6e9edee41f5f994ce45de9057c4e781aca5",
+        "python": "3.12.16",
+        "platform": "Linux",
+        "wall_seconds": 8.041,
+        "checks": {
+          "installed_package": {
+            "module": "/tmp/maple-wheel-p_xlq9ax/venv/lib/python3.12/site-packages/maple_vision/__init__.py",
+            "version": "0.1.0",
+            "runtime": {
+              "numpy": "2.5.5",
+              "Pillow": "13.0.0"
+            },
+            "model_config_packaged": true,
+            "training_not_installed": true,
+            "inference_not_installed": true
+          },
+          "p0_demo": {
+            "schema_version": 1,
+            "frames_processed": 3,
+            "intents_emitted": 3,
+            "executions_skipped": 3,
+            "verifications_not_applicable": 3
+          },
+          "p0_database": {
+            "schema_version": 1,
+            "source_records": 0
+          },
+          "catalog_snapshot": {
+            "schema_version": 2,
+            "records": 1,
+            "entities": 1,
+            "legacy_source_records": 0,
+            "status_counts": {
+              "CONFLICTED": 0,
+              "PROVISIONAL": 0,
+              "UNKNOWN": 0,
+              "VERIFIED": 1
+            },
+            "scopes": [
+              "synthetic_fixture"
+            ],
+            "game_versions": [
+              "wheel-smoke-v1"
+            ]
+          },
+          "dataset": {
+            "schema_version": 1,
+            "origin": "synthetic-fixture-v1",
+            "sessions": 6,
+            "frames": 12,
+            "objects": 120,
+            "split_frames": {
+              "train": 4,
+              "val": 4,
+              "test": 4
+            },
+            "split_sessions": {
+              "train": 2,
+              "val": 2,
+              "test": 2
+            },
+            "class_counts": {
+              "train": {
+                "player": 4,
+                "monster": 8,
+                "loot": 4,
+                "portal": 4,
+                "npc": 4,
+                "platform": 12,
+                "ladder": 4
+              },
+              "val": {
+                "player": 4,
+                "monster": 8,
+                "loot": 4,
+                "portal": 4,
+                "npc": 4,
+                "platform": 12,
+                "ladder": 4
+              },
+              "test": {
+                "player": 4,
+                "monster": 8,
+                "loot": 4,
+                "portal": 4,
+                "npc": 4,
+                "platform": 12,
+                "ladder": 4
+              }
+            },
+            "missing_classes": {
+              "train": [],
+              "val": [],
+              "test": []
+            },
+            "split_maps": {
+              "train": {
+                "meadow": 2,
+                "cavern": 2
+              },
+              "val": {
+                "meadow": 2,
+                "cavern": 2
+              },
+              "test": {
+                "meadow": 2,
+                "cavern": 2
+              }
+            },
+            "missing_maps": {
+              "train": [],
+              "val": [],
+              "test": []
+            },
+            "validated": true
+          },
+          "asset_registry": {
+            "verified": true,
+            "media_type": "image/png"
+          },
+          "mission": {
+            "status": "completed",
+            "steps": 325,
+            "scope": "synthetic_fixture",
+            "detector": "pixel-fixture",
+            "independent_goal_check": true,
+            "maps_visited": [
+              "cavern",
+              "meadow"
+            ]
+          },
+          "replay": {
+            "verified": true,
+            "steps_replayed": 325,
+            "scope": "deterministic_simulator",
+            "files_checked": 88,
+            "independent_goal_check": true,
+            "perception_reproduced": false,
+            "runtime_identity_matches": true
+          },
+          "module_entrypoint": {
+            "passed": true
+          }
+        },
+        "scope": "isolated_installed_runtime; training_and_accuracy_are_separate_gates"
+      },
+      "artifacts": [
+        "https://github.com/www1350/maple-vision-platform/actions/runs/45380643809/artifacts/14913302786"
+      ]
+    },
+    {
+      "id": 138398460898,
+      "name": "CPU YOLO training and ONNX export / ubuntu",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45380643809/job/138398460898",
+      "python": "3.12.16",
+      "tests": {
+        "passed": 107,
+        "skipped": 0,
+        "warnings": 2,
+        "seconds": 6.7,
+        "console_result": "2026-11-24T11:05:09.2773157Z 107 passed, 2 warnings in 6.70s"
+      },
+      "checks": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install pinned CPU wheels from the official PyTorch index",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install pinned training dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install local OCR engine for native adapter checks",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install package without changing dependency versions",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check dependency consistency",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Prepare native test artifacts",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Train, export, infer, decode local video, and run local OCR",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Training smoke evidence",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "installed_wheel": null,
+      "artifacts": [
+        "https://github.com/www1350/maple-vision-platform/actions/runs/45380643809/artifacts/14912628929"
+      ]
+    }
+  ],
+  "initial_run": {
+    "commit": "f748613954fbe75f323050a51f512ea916ba7e28",
+    "run_id": 45379917569,
+    "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45379917569",
+    "conclusion": "failure",
+    "issues": [
+      {
+        "job": "native_training",
+        "cause": "Nested pytest basetemp parent artifacts did not exist in clean checkout",
+        "fix": "Explicitly create artifacts before running the unchanged native tests"
+      },
+      {
+        "job": "windows",
+        "cause": "URI test attempted to create a question-mark filename forbidden by Windows",
+        "fix": "Portable Unicode/space/hash/percent case runs everywhere; question-mark case remains an extra POSIX test"
+      }
+    ]
+  },
+  "evidence_scope": "This report binds the implementation and CI configuration to the successful published commit; later evidence-only changes receive an additional PR-head CI run linked in the pull request.",
+  "notes": [
+    "Default and native tests overlap; do not sum them as distinct cases.",
+    "Platform-specific and optional dependency skips are reported as skips, not passes.",
+    "Wheel content is verified through installation; differing wheel archive hashes do not imply byte-for-byte reproducible archive builds.",
+    "Synthetic-fixture acceptance does not establish real-game performance or a 24-hour wall-clock soak."
+  ]
+}

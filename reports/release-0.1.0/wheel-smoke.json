@@ -2,13 +2,13 @@
   "schema_version": 1,
   "passed": true,
   "wheel": "maple_vision_platform-0.1.0-py3-none-any.whl",
-  "wheel_sha256": "3790fc884c8d2bcdf94a594a994c8c385e17194dcbd75bb04b84f005a32e1dcf",
+  "wheel_sha256": "564f5c5bc12dff13e8918cb0b1eebc893532bdba6923edac7c5943b1d363f531",
   "python": "3.12.14",
   "platform": "Linux",
-  "wall_seconds": 13.638,
+  "wall_seconds": 17.083,
   "checks": {
     "installed_package": {
-      "module": "/tmp/maple-wheel-cm21jrss/venv/lib/python3.12/site-packages/maple_vision/__init__.py",
+      "module": "/tmp/maple-wheel-65_xict8/venv/lib/python3.12/site-packages/maple_vision/__init__.py",
       "version": "0.1.0",
       "runtime": {
         "numpy": "2.5.5",

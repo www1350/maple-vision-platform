@@ -16,24 +16,38 @@
 
 ## 本地发布门禁
 
-本地发布门禁已通过，证据归档在 `reports/release-0.1.0/`。本次环境为 Debian GNU/Linux 13、x86_64、Python 3.12.14；这是本地 Linux 验收，远程 Ubuntu/Windows 和原生训练 CI 仍待最终发布提交运行。
+本地发布门禁已通过，证据归档在 `reports/release-0.1.0/`。本次环境为 Debian GNU/Linux 13、x86_64、Python 3.12.14；远程 Ubuntu/Windows 和原生训练检查也已独立通过，具体提交与结果见下一节。
 
 | 本地门禁 | 实际结果 |
 |---|---|
 | Ruff 格式与检查、依赖一致性 | 全部通过 |
 | mypy | 26 个模块通过 |
-| 默认完整测试 | 499 passed、1 skipped；终端报告 36.05 秒，JUnit 套件计时 35.913 秒 |
+| 默认完整测试 | 500 passed、1 skipped；终端报告 37.76 秒，JUnit 套件计时 37.634 秒 |
 | 显式启用的训练/录像/OCR 联合测试 | 107 passed、0 skipped；JUnit 6.550 秒 |
 | 三职业 × 三种子及四个故障场景 | 13 个预期结果全部通过；其中 9 个正常任务完成 |
-| 隔离安装 wheel | 13.638 秒通过；基础依赖环境完成 325 步任务及独立重放 |
+| 隔离安装 wheel | 17.083 秒通过；基础依赖环境完成 325 步任务及独立重放 |
 | 短时墙钟长稳 | 请求 60 秒，实际 60.488174 秒，完成 80 轮；模拟时间 1291.7 秒 |
 | 独立集成审查 | 当前离线范围通过；发现的问题与修复见下节 |
 
 默认测试唯一跳过项是显式启用的真实 CPU 训练/导出 smoke，它已在 107 项联合测试中实际执行通过。两组测试有重叠，不能相加当作不同测试数量。故障场景包括短暂黑屏和重复帧后恢复完成、持续黑屏后停止、输入冻结后有界失败；“通过”指符合这些预期，并非所有故障任务都完成。
 
-最终 wheel 的 SHA-256 为 `3790fc884c8d2bcdf94a594a994c8c385e17194dcbd75bb04b84f005a32e1dcf`。隔离环境仅安装固定基础依赖，未安装训练或原生 ONNX 推理依赖；该检查验证安装与基础闭环，不替代模型质量评估。打包源码与当前源码逐字节一致，wheel 中 README 元数据与当前 README 一致。
+最终 wheel 的 SHA-256 为 `564f5c5bc12dff13e8918cb0b1eebc893532bdba6923edac7c5943b1d363f531`。隔离环境仅安装固定基础依赖，未安装训练或原生 ONNX 推理依赖；该检查验证安装与基础闭环，不替代模型质量评估。打包源码与当前源码逐字节一致，wheel 中 README 元数据与当前 README 一致。
 
-原始 JUnit、命令、环境及计数见 [本地验证记录](../reports/release-0.1.0/local-verification.json)；另有 [场景套件](../reports/release-0.1.0/scenario-suite.json)、[wheel 检查](../reports/release-0.1.0/wheel-smoke.json) 和 [短时长稳](../reports/release-0.1.0/wall-soak-smoke.json)。最终发布提交 SHA、远程 Ubuntu/Windows 和训练作业的运行链接、结果保持 **pending**，须按真实执行结果补充；本地通过不代表这些远程门禁已通过。
+原始 JUnit、命令、环境及计数见 [本地验证记录](../reports/release-0.1.0/local-verification.json)；另有 [场景套件](../reports/release-0.1.0/scenario-suite.json)、[wheel 检查](../reports/release-0.1.0/wheel-smoke.json) 和 [短时长稳](../reports/release-0.1.0/wall-soak-smoke.json)。
+
+## 远程 CI 与提交
+
+实现与 CI 配置提交为 [`2114372ac4705625b017d0dc907168560e768db2`](https://github.com/www1350/maple-vision-platform/commit/2114372ac4705625b017d0dc907168560e768db2)，对应 tree 为 `5832e7e3df9df887f76d27925daa40997aa67bd9`。[GitHub Actions 第 9 次运行](https://github.com/www1350/maple-vision-platform/actions/runs/45380643809) 的三个作业全部成功。
+
+| 远程环境 | 测试结果 | 独立 wheel |
+|---|---|---|
+| Ubuntu，Python 3.12.16 | 498 passed、3 skipped，28.23 秒 | 通过，8.041 秒 |
+| Windows，Python 3.12.10 | 495 passed、6 skipped，48.32 秒 | 通过，19.032 秒 |
+| Ubuntu 原生 CPU 训练/导出/录像/OCR | 107 passed、0 skipped，6.70 秒；2 条上游弃用警告 | 由前两项独立检查 |
+
+不同环境的可选依赖和文件系统限制导致跳过数量不同，跳过项不计作通过；显式安装训练、视频和 OCR 依赖的原生作业没有跳过。两个基础作业均实际运行格式检查、lint、类型检查、依赖检查、测试、构建与脱离源码目录的安装包任务。
+
+[远程证据](../reports/release-0.1.0/remote-ci.json) 保存作业链接、控制台计数、wheel 校验及首次失败原因。后续归档提交只更新方案、文档与报告，并继续运行同一套 CI；[PR #2](https://github.com/www1350/maple-vision-platform/pull/2) 保留最终提交的检查与合并记录。合并条件是该最终提交的全部作业通过。
 
 ## 已实测模型结果
 
@@ -50,7 +64,7 @@
 
 对应 [模型评估](../reports/release-0.1.0/yolo-benchmark.json)、[混合任务](../reports/release-0.1.0/yolo-missions.json)、[训练记录](YOLO_EXPERIMENT.md)。示例模型和 manifest 在 `examples/fixture-model/`，可直接用于 `lab run`，无需先训练。
 
-## 独立审查中发现并修复的问题
+## 审查与跨平台 CI 发现并修复的问题
 
 1. 旧帧、重复帧与未来帧可能污染恢复序号或虚报效果：现在检查序号、捕获时间与处理时间，未知结果不计成功。
 2. 模型文件在哈希校验后被替换：原生会话加载同一份已校验字节。
@@ -61,6 +75,8 @@
 7. 跳标后追逐地面目标误入高台：加入落地等待和有界下台流程。
 8. 原生 ONNX Runtime 初始化遥测尝试外联被自动审批拦截：已在导入前设置进程级禁用变量，并关闭 API 遥测；有导入顺序回归测试，重新完成本地推理。
 9. Ultralytics 导入改写 Pillow 的全局 `Image.open`，使后续图像读取进入额外 HEIF 插件加载路径：在依赖导入完成后立即恢复调用方加载器，部分导入失败和操作异常时同样恢复。两项回归覆盖恢复时机与异常路径，修复后的训练、录像和 OCR 联合 107 项实际通过。
+10. 干净 CI 环境尚无 `artifacts/`，pytest 的嵌套 `--basetemp` 无法创建：训练任务现在先显式创建父目录，再执行完整原生检查。
+11. URI 转义测试使用 Windows 禁止的 `?` 文件名：所有平台均验证中文、空格、`#` 和字面量 `%20`，保留原只读断言；含 `?` 的文件名在 POSIX 额外验证，仅在 Windows 因文件系统限制跳过。
 
 ## 不得扩大解释的边界
 

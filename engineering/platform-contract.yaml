@@ -2,9 +2,10 @@ contract_version: 1
 spec_version: "8.0"
 release_version: "0.1"
 scope: offline_synthetic_fixture_platform
-status: local_gates_passed_remote_ci_pending
+status: accepted_offline_fixture_implementation
 result_source: docs/RELEASE_ACCEPTANCE.md
 local_evidence: reports/release-0.1.0/local-verification.json
+remote_evidence: reports/release-0.1.0/remote-ci.json
 full_spec_acceptance: false
 stop_after_p0: false
 historical_p0_contract: engineering/p0-contract.yaml
@@ -61,7 +62,7 @@ required_release_gates:
     status: passed_local
   - id: unit_integration_and_regression
     command: python -m pytest -q
-    status: passed_local_499_passed_1_opt_in_skip
+    status: passed_local_500_passed_1_opt_in_skip
   - id: fixture_mission_and_fault_suite
     command: python -m maple_vision lab suite --output artifacts/final-release-suite --seeds 3
     expectation: nine_normal_missions_plus_four_expected_fault_outcomes
@@ -72,7 +73,7 @@ required_release_gates:
     status: passed_local
   - id: package_installation
     requirement: Build wheel, install into a clean virtual environment, execute outside checkout on Ubuntu and Windows.
-    status: passed_local_linux_remote_platforms_pending
+    status: passed_local_linux_and_remote_ubuntu_windows
     evidence: reports/release-0.1.0/wheel-smoke.json
   - id: optional_model_tool_smoke
     requirement: Record actual local CPU training, ONNX export and real inference separately from model-quality acceptance.
@@ -87,17 +88,25 @@ required_release_gates:
     status: approved_local
 
 remote_release_gates:
-  status: pending_exact_published_commit_ci
-  commit_sha: null
-  run_url: null
+  status: passed_for_published_implementation_commit
+  commit_sha: 2114372ac4705625b017d0dc907168560e768db2
+  run_url: https://github.com/www1350/maple-vision-platform/actions/runs/45380643809
+  evidence_only_followups: require_same_checks_at_final_pull_request_head
+  final_pull_request: https://github.com/www1350/maple-vision-platform/pull/2
   jobs:
     - id: ubuntu_python312
-      status: pending
+      status: passed
+      passed: 498
+      skipped: 3
     - id: windows_python312
-      status: pending
+      status: passed
+      passed: 495
+      skipped: 6
     - id: ubuntu_cpu_training_and_native_adapters
-      status: pending
-  boundary: local_debian_results_do_not_establish_remote_ubuntu_or_windows_success
+      status: passed
+      passed: 107
+      skipped: 0
+  boundary: results_apply_to_named_environments_and_implementation_commit_not_real_game_accuracy
 
 separate_acceptance_gates:
   learned_model_promotion:
