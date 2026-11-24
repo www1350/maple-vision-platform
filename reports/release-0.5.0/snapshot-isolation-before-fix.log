@@ -1,0 +1,4 @@
+{'original': 'task_created', 'after_external_snapshot_edit': 'external_corruption'}
+Traceback (most recent call last):
+  File "<stdin>", line 14, in <module>
+AssertionError: exported lifecycle event aliases internal runtime history

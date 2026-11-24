@@ -3,6 +3,16 @@
 本文描述实际保存的数据，先列当前增量格式，再保留原有兼容格式。`MASTER_SPEC.md` 中更细的技能、掉落、地图连接等表属于长期规划；本版本没有创建几十张专用业务表。
 Schema 版本、文件哈希和来源断言分别解决兼容性、完整性和可追溯性；哈希本身不能证明内容真实或使用许可有效。
 
+## v0.5 结构化运行证据
+
+显式 structured 模式的 manifest、summary、trace 行均为 schema2；旧模式保持 schema1。`runtime-config.json` 是完整 `runtime_pipeline.RuntimeConfig.manifest()`，同时绑定 manifest.runtime 和 summary.runtime_evidence.settings。三个副本必须一致，文件读取在哈希前受 64 KiB 上限约束。schema1 不允许夹带新模式字段或边文件。
+
+每行另有 runtime schema1：原始观测以外单独保存 belief、decision、policy_evaluated、dispatch、receipt 和动作回执之后的 state。decision 包含候选、计划、意图和效果证据；receipt 绑定真正应用的动作。输入冻结产生的 idle 不能改写成所请求攻击已经执行。
+
+summary.runtime_evidence.terminal 保存最后 belief、decision、policy_evaluated、interruption 和 state。策略终止记录实际调用结果；监督停止或预算用尽记录 interruption，不补造没有执行过的决定。实际 reinfer 重建全部 N+1 帧并比较上述证据；仅动作 replay 不声称已经复现感知或策略。
+
+状态字段与轨迹独立记录来源、观测时间、置信度、有效期及 observed_this_frame；旧框和旧资源不会重新进入当前可行动 observation。身份关联是几何假设，不能当作已核实怪物身份。详情见 [STATE_ESTIMATION](STATE_ESTIMATION.md) 与 [TASK_RUNTIME](TASK_RUNTIME.md)。
+
 ## v0.2–v0.4 格式索引
 
 | 数据 | 格式 | 关键边界 |

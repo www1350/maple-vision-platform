@@ -20,10 +20,14 @@ from .catalog import strict_json
 from .map_pack import MapPack
 from .onnx_detector import OnnxDetector
 from .profiles import LoadedClassProfile, parse_loaded_class_profile
+from .runtime_evidence import load_run_runtime, runtime_summary_fields, validate_runtime_step
+from .runtime_pipeline import MAX_RUNTIME_CONFIG_BYTES, RuntimeConfig
 from .scene import ImageFrame, SceneRenderer
 from .sim_types import CLASS_SPECS, RULESET, SimAction
 from .simulation import Simulator
 from .sprite_pack import SpritePack, verify_dataset_sprite_pack
+from .state_estimation import BeliefState, TemporalStateEstimator
+from .task_runtime import RuntimeDecision, TaskRuntime
 from .validation_resources import ProcessResourceMonitor
 from .vision import Detector, PixelPerception, TerrainSource, validate_terrain_source
 
@@ -127,6 +131,7 @@ def run_episode(
     sprite_pack: SpritePack | None = None,
     map_pack: MapPack | None = None,
     terrain_source: TerrainSource = "fixture",
+    runtime: RuntimeConfig | None = None,
 ) -> dict[str, Any]:
     return _execute_episode(
         output,
@@ -136,6 +141,7 @@ def run_episode(
         sprite_pack=sprite_pack,
         map_pack=map_pack,
         terrain_source=terrain_source,
+        runtime=runtime,
     )
 
 
@@ -209,8 +215,12 @@ def _execute_episode(
     initial_state: dict[str, Any] | None = None,
     trace_consumer: Callable[[dict[str, Any]], None] | None = None,
     terrain_source: TerrainSource = "fixture",
+    runtime: RuntimeConfig | None = None,
 ) -> dict[str, Any]:
     config = config or RunConfig()
+    if runtime is not None and type(runtime) is not RuntimeConfig:
+        raise ValueError("runtime must be a structured RuntimeConfig or None")
+    bundle_schema = 1 if runtime is None else 2
     spec = None if class_profile is None else class_profile.class_spec
     simulator = (
         Simulator(
@@ -241,10 +251,19 @@ def _execute_episode(
         if detector is None
         else HybridPerception(detector, terrain_source=terrain_source, map_markers=markers)
     )
-    policy, supervisor = VisualAgent(config.job, mission_maps, class_spec=spec), Supervisor()
+    policy: VisualAgent | TaskRuntime
+    policy = (
+        VisualAgent(config.job, mission_maps, class_spec=spec)
+        if runtime is None
+        else TaskRuntime(config.job, mission_maps, class_spec=spec, config=runtime.tasks)
+    )
+    supervisor = Supervisor()
+    estimator = None if runtime is None else TemporalStateEstimator(runtime.state)
     initial = simulator.save()
     if output:
         _write_json(output / "initial-state.json", initial)
+        if runtime is not None:
+            _write_json(output / "runtime-config.json", runtime.manifest())
         if map_pack is not None:
             _write_json(output / "map-pack.json", map_pack.manifest())
         if sprite_pack is not None:
@@ -263,6 +282,12 @@ def _execute_episode(
     wall_start = time.perf_counter()
     frame = fault_frames.apply(renderer.render(simulator.snapshot()))
     observation = perception.observe(frame)
+    belief: BeliefState | None = (
+        None if estimator is None else estimator.update(observation, simulator.timestamp_ms)
+    )
+    runtime_decision: RuntimeDecision | None = None
+    runtime_interruption: RuntimeDecision | None = None
+    runtime_policy_evaluated = False
     status, reason = "failed", "step_budget_exhausted"
     terminal: dict[str, Any] = {
         "cause": "step_budget_exhausted",
@@ -275,15 +300,42 @@ def _execute_episode(
         cleared[before.map_id] = not before.monsters and not before.drops
         guard = supervisor.inspect(observation, before.timestamp_ms)
         if guard.state == "stopped":
+            if isinstance(policy, TaskRuntime):
+                runtime_interruption = policy.interrupt(
+                    guard.reason, before.timestamp_ms, terminal=True
+                )
+                runtime_decision = None
+                runtime_policy_evaluated = False
             status, reason = "stopped", guard.reason
             terminal = {"cause": "supervisor", "guard": asdict(guard), "decision": None}
             break
         if guard.state == "paused":
             paused_steps += 1
-            decision = AgentDecision(SimAction(), policy.phase, "paused", guard.reason)
+            if isinstance(policy, TaskRuntime):
+                runtime_decision = policy.interrupt(guard.reason, before.timestamp_ms)
+                decision = AgentDecision(
+                    runtime_decision.action,
+                    runtime_decision.task,
+                    runtime_decision.state,
+                    runtime_decision.reason,
+                )
+            else:
+                decision = AgentDecision(SimAction(), policy.phase, "paused", guard.reason)
+            runtime_policy_evaluated = False
         else:
-            decision = policy.decide(observation)
-        if decision.state in {"failed", "completed"}:
+            if isinstance(policy, TaskRuntime):
+                assert belief is not None
+                runtime_decision = policy.decide(belief, before.timestamp_ms)
+                decision = AgentDecision(
+                    runtime_decision.action,
+                    runtime_decision.task,
+                    runtime_decision.state,
+                    runtime_decision.reason,
+                )
+                runtime_policy_evaluated = True
+            else:
+                decision = policy.decide(observation)
+        if decision.state in {"failed", "completed", "stopped"}:
             status, reason = decision.state, decision.reason
             terminal = {
                 "cause": "policy",
@@ -292,8 +344,21 @@ def _execute_episode(
             }
             break
         action = decision.action
+        dispatch = None
+        authorized_action = action
+        if isinstance(policy, TaskRuntime):
+            assert runtime_decision is not None
+            authorized_action = SimAction()
+            if runtime_decision.intent is not None:
+                dispatch = policy.scheduler.dispatch(runtime_decision.intent, before.timestamp_ms)
+                if dispatch.accepted:
+                    authorized_action = dispatch.action
+                else:
+                    policy.interrupt(f"dispatch_denied:{dispatch.reason}", before.timestamp_ms)
         applied = (
-            SimAction() if config.fault == "freeze_input" and before.sequence >= 20 else action
+            SimAction()
+            if config.fault == "freeze_input" and before.sequence >= 20
+            else authorized_action
         )
         actions[action.kind] += 1
         if output and before.sequence % config.record_stride == 0:
@@ -301,6 +366,18 @@ def _execute_episode(
             if len(previews) < 600:
                 previews.append(frame.to_image())
         outcome = simulator.step(applied)
+        receipt: dict[str, Any] | None = None
+        if isinstance(policy, TaskRuntime) and dispatch is not None and dispatch.accepted:
+            policy.record_execution(
+                dispatch.intent_id, outcome.accepted, outcome.reason, before.timestamp_ms
+            )
+            receipt = {
+                "intent_id": dispatch.intent_id,
+                "timestamp_ms": before.timestamp_ms,
+                "accepted": outcome.accepted,
+                "reason": outcome.reason,
+                "applied_action": asdict(applied),
+            }
         events.update(outcome.events)
         if "loot" in outcome.events and before.map_id == outcome.snapshot.map_id:
             remaining = {drop.id for drop in outcome.snapshot.drops}
@@ -314,7 +391,7 @@ def _execute_episode(
         effect = verify_visual_effect(observation, following, action)
         effects[effect] += 1
         row = {
-            "schema_version": 1,
+            "schema_version": bundle_schema,
             "sequence": before.sequence,
             "frame_sha256": hashlib.sha256(frame.pixels).hexdigest(),
             "observation": asdict(observation),
@@ -329,11 +406,28 @@ def _execute_episode(
             "visual_effect": effect,
             "after_state_sha256": digest(simulator.save()),
         }
+        if isinstance(policy, TaskRuntime):
+            assert belief is not None and runtime_decision is not None
+            row["runtime"] = {
+                "schema_version": 1,
+                "belief": belief.to_dict(),
+                "decision": runtime_decision.to_dict(),
+                "policy_evaluated": runtime_policy_evaluated,
+                "dispatch": None if dispatch is None else dispatch.to_dict(),
+                "receipt": receipt,
+                "state": policy.snapshot(),
+            }
         if output:
             trace.append(row)
         if trace_consumer is not None:
             trace_consumer(row)
         observation, frame = following, following_frame
+        if estimator is not None:
+            belief = estimator.update(following, simulator.timestamp_ms)
+    if isinstance(policy, TaskRuntime) and terminal["cause"] == "step_budget_exhausted":
+        runtime_interruption = policy.interrupt(reason, simulator.timestamp_ms, terminal=True)
+        runtime_decision = None
+        runtime_policy_evaluated = False
     final = simulator.snapshot()
     visited.add(final.map_id)
     cleared[final.map_id] = not final.monsters and not final.drops
@@ -353,7 +447,7 @@ def _execute_episode(
     ):
         raise ValueError("detector settings changed during the episode")
     summary: dict[str, Any] = {
-        "schema_version": 1,
+        "schema_version": bundle_schema,
         "scope": "synthetic_fixture",
         "ruleset": RULESET,
         "config": asdict(config),
@@ -385,6 +479,22 @@ def _execute_episode(
             "terminal": {**terminal, "observation": asdict(observation)},
         },
     }
+    if runtime is not None:
+        assert isinstance(policy, TaskRuntime) and belief is not None
+        summary["runtime_evidence"] = {
+            "schema_version": 1,
+            "settings": runtime.manifest(),
+            "terminal": {
+                "schema_version": 1,
+                "belief": belief.to_dict(),
+                "decision": None if runtime_decision is None else runtime_decision.to_dict(),
+                "policy_evaluated": runtime_policy_evaluated,
+                "interruption": None
+                if runtime_interruption is None
+                else runtime_interruption.to_dict(),
+                "state": policy.snapshot(),
+            },
+        }
     if sprite_pack is not None:
         summary["sprite_pack"] = sprite_pack.manifest()
     if map_pack is not None:
@@ -411,18 +521,18 @@ def _execute_episode(
             for path in sorted(output.rglob("*"))
             if path.is_file()
         }
-        _write_json(
-            output / "manifest.json",
-            {
-                "schema_version": 1,
-                "kind": "offline-run-bundle",
-                "files": files,
-                "recording": "sampled_png_and_preview_gif; full_action_trace",
-                "replay_scope": (
-                    "deterministic_simulator_action_replay; not_counterfactual_video_control"
-                ),
-            },
-        )
+        manifest: dict[str, Any] = {
+            "schema_version": bundle_schema,
+            "kind": "offline-run-bundle",
+            "files": files,
+            "recording": "sampled_png_and_preview_gif; full_action_trace",
+            "replay_scope": (
+                "deterministic_simulator_action_replay; not_counterfactual_video_control"
+            ),
+        }
+        if runtime is not None:
+            manifest["runtime"] = runtime.manifest()
+        _write_json(output / "manifest.json", manifest)
         summary["output"] = str(output)
     return summary
 
@@ -440,13 +550,28 @@ def _run_evidence_path(output: Path, relative: object) -> Path:
     return target
 
 
+def _read_run_evidence(output: Path, relative: str) -> bytes:
+    target = _run_evidence_path(output, relative)
+    if relative not in {"map-pack.json", "runtime-config.json"}:
+        return target.read_bytes()
+    label = "map pack" if relative == "map-pack.json" else "runtime config"
+    budget = _MAX_MAP_EVIDENCE_BYTES if relative == "map-pack.json" else MAX_RUNTIME_CONFIG_BYTES
+    if (output / relative).is_symlink():
+        raise ValueError(f"invalid run {label} manifest")
+    with target.open("rb") as source:
+        contents = source.read(budget + 1)
+    if len(contents) > budget:
+        raise ValueError(f"invalid run {label} manifest")
+    return contents
+
+
 def verify_run(output: Path) -> dict[str, Any]:
     """Check evidence integrity then replay every applied action and resulting state."""
-    manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
+    manifest = strict_json((output / "manifest.json").read_text(encoding="utf-8"))
     if (
         not isinstance(manifest, dict)
         or type(manifest.get("schema_version")) is not int
-        or manifest.get("schema_version") != 1
+        or manifest.get("schema_version") not in {1, 2}
         or manifest.get("kind") != "offline-run-bundle"
     ):
         raise ValueError("unsupported run manifest")
@@ -461,21 +586,14 @@ def verify_run(output: Path) -> dict[str, Any]:
     if not isinstance(files, dict) or not required <= set(files):
         raise ValueError("run manifest omits required evidence")
     for relative, expected in files.items():
-        target = _run_evidence_path(output, relative)
-        if relative == "map-pack.json":
-            # Bound the read before hashing, not only later during schema parsing.
-            if (output / relative).is_symlink():
-                raise ValueError("invalid run map pack manifest")
-            with target.open("rb") as source:
-                contents = source.read(_MAX_MAP_EVIDENCE_BYTES + 1)
-            if len(contents) > _MAX_MAP_EVIDENCE_BYTES:
-                raise ValueError("invalid run map pack manifest")
-        else:
-            contents = target.read_bytes()
+        contents = _read_run_evidence(output, relative)
         if hashlib.sha256(contents).hexdigest() != expected:
             raise ValueError(f"run evidence checksum mismatch: {relative}")
-    initial = json.loads((output / "initial-state.json").read_text(encoding="utf-8"))
-    summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
+    initial = strict_json((output / "initial-state.json").read_text(encoding="utf-8"))
+    summary = strict_json((output / "summary.json").read_text(encoding="utf-8"))
+    if not isinstance(initial, dict) or not isinstance(summary, dict):
+        raise ValueError("run state and summary must be objects")
+    runtime = load_run_runtime(output, manifest, summary)
     config = RunConfig(**summary["config"])
     simulator = Simulator.restore(initial)
     profile_metadata = summary.get("class_profile")
@@ -514,16 +632,16 @@ def verify_run(output: Path) -> dict[str, Any]:
         or simulator.step_ms != 50
     ):
         raise ValueError("run config disagrees with initial simulator state")
-    if map_pack is not None:
+    if map_pack is not None or runtime is not None:
         expected_initial = Simulator(
             config.seed,
             config.job,
-            map_id=map_pack.entry_map,
+            map_id="meadow" if map_pack is None else map_pack.entry_map,
             class_spec=simulator.class_spec if "class_profile" in initial else None,
             map_pack=map_pack,
         ).save()
         if canonical(simulator.save()) != canonical(expected_initial):
-            raise ValueError("map run initial state is not the declared fresh seeded world")
+            raise ValueError("run initial state is not the declared fresh seeded world")
     sprite_pack = None
     sprite_manifest_path = output / "sprite-pack.json"
     if "sprite-pack.json" in files:
@@ -550,6 +668,7 @@ def verify_run(output: Path) -> dict[str, Any]:
     dialogue_maps: set[str] = set()
     collected_drops: set[tuple[str, str]] = set()
     cleared: dict[str, bool] = {}
+    seen_intents: set[str] = set()
 
     def check_image(path: Path, expected: ImageFrame) -> None:
         actual = ImageFrame.from_file(path)
@@ -564,9 +683,12 @@ def verify_run(output: Path) -> dict[str, Any]:
         for line in stream:
             if count >= config.max_steps:
                 raise ValueError("replay trace exceeds the configured step budget")
-            row = json.loads(line)
+            row = strict_json(line)
             if (
-                row.get("schema_version") != 1
+                not isinstance(row, dict)
+                or type(row.get("schema_version")) is not int
+                or row.get("schema_version") != manifest["schema_version"]
+                or type(row.get("sequence")) is not int
                 or row.get("sequence") != simulator.snapshot().sequence
             ):
                 raise ValueError("replay sequence mismatch")
@@ -583,11 +705,14 @@ def verify_run(output: Path) -> dict[str, Any]:
                 check_image(output / relative, frame)
             execution = row["execution"]
             requested = SimAction(**row["decision"]["action"])
+            authorized = validate_runtime_step(
+                row, runtime, now_ms=snapshot.timestamp_ms, seen_intents=seen_intents
+            )
             applied = SimAction(**execution["applied_action"])
             expected_action = (
                 SimAction()
                 if config.fault == "freeze_input" and snapshot.sequence >= 20
-                else requested
+                else authorized
             )
             if applied != expected_action:
                 raise ValueError("applied action disagrees with recorded fault configuration")
@@ -612,7 +737,7 @@ def verify_run(output: Path) -> dict[str, Any]:
             if digest(simulator.save()) != row["after_state_sha256"]:
                 raise ValueError("replay state mismatch")
             count += 1
-    final = json.loads((output / "final-state.json").read_text(encoding="utf-8"))
+    final = strict_json((output / "final-state.json").read_text(encoding="utf-8"))
     snapshot = simulator.snapshot()
     visited.add(snapshot.map_id)
     cleared[snapshot.map_id] = not snapshot.monsters and not snapshot.drops
@@ -702,6 +827,7 @@ def verify_perception(
         raise ValueError("run manifest changed during action replay preflight")
     manifest = strict_json(manifest_bytes.decode("utf-8"))
     summary = strict_json(_run_evidence_path(output, "summary.json").read_text(encoding="utf-8"))
+    runtime = load_run_runtime(output, manifest, summary)
     evidence = summary.get("perception_evidence")
     if (
         not isinstance(evidence, dict)
@@ -782,6 +908,7 @@ def verify_perception(
             initial_state=initial,
             trace_consumer=compare_trace,
             terrain_source=terrain_source,
+            runtime=runtime,
         )
         if stream.readline():
             raise ValueError("perception replay terminated before all recorded steps")
@@ -819,17 +946,17 @@ def verify_perception(
         "model_manifest",
         "class_profile",
         "map_pack",
+        "runtime_evidence",
     ):
         if canonical(reproduced.get(key)) != canonical(summary.get(key)):
             raise ValueError(f"perception replay summary mismatch: {key}")
     if _run_evidence_path(output, "manifest.json").read_bytes() != manifest_bytes:
         raise ValueError("run manifest changed during perception verification")
     for relative, expected_hash in manifest["files"].items():
-        target = _run_evidence_path(output, relative)
-        if hashlib.sha256(target.read_bytes()).hexdigest() != expected_hash:
+        if hashlib.sha256(_read_run_evidence(output, relative)).hexdigest() != expected_hash:
             raise ValueError(f"run evidence changed during perception verification: {relative}")
     identity = runtime_identity()
-    return {
+    result = {
         "schema_version": 1,
         "verified": True,
         "scope": "synthetic_fixture_perception_and_policy_reexecution",
@@ -852,6 +979,12 @@ def verify_perception(
         "recorded_runtime_identity": summary.get("runtime_identity"),
         "verification_runtime_identity": identity,
     }
+    if runtime is not None:
+        result["structured_runtime_reproduced"] = True
+        result["runtime_settings"] = runtime.manifest()
+        result["belief_frames_recomputed"] = count + 1
+        result["terminal_runtime_compared"] = True
+    return result
 
 
 def _record_episode(
@@ -862,13 +995,14 @@ def _record_episode(
     failure_name: str,
     terrain_source: TerrainSource = "fixture",
     map_pack: MapPack | None = None,
+    runtime: RuntimeConfig | None = None,
 ) -> dict[str, Any]:
     """Capture exactly once; retain the actual failure rather than executing a rerun."""
     staging = output / "active-episode"
     # run_episode refuses an existing path, so cleanup only targets the directory
     # created by this particular call in this already-new validation output.
     result = run_episode(
-        staging, config, detector, terrain_source=terrain_source, map_pack=map_pack
+        staging, config, detector, terrain_source=terrain_source, map_pack=map_pack, runtime=runtime
     )
     if result["status"] == "completed":
         shutil.rmtree(staging)
@@ -909,9 +1043,12 @@ def run_suite(
     *,
     terrain_source: TerrainSource = "fixture",
     map_pack: MapPack | None = None,
+    runtime: RuntimeConfig | None = None,
 ) -> dict[str, Any]:
     if type(seeds) is not int or not 1 <= seeds <= 1000:
         raise ValueError("seeds must be in [1, 1000]")
+    if runtime is not None and type(runtime) is not RuntimeConfig:
+        raise ValueError("runtime must be a structured RuntimeConfig or None")
     settings = _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
     if output.exists():
         raise FileExistsError(f"suite output already exists: {output}")
@@ -923,6 +1060,8 @@ def run_suite(
     )
     if map_pack is not None:
         source_options["map_pack"] = map_pack
+    if runtime is not None:
+        source_options["runtime"] = runtime
     for job in CLASS_SPECS:
         for seed in range(seeds):
             config = RunConfig(seed, job, max_steps=_episode_budget(map_pack), record_stride=16)
@@ -939,6 +1078,7 @@ def run_suite(
             detector,
             terrain_source=terrain_source,
             map_pack=map_pack,
+            runtime=runtime,
         )
         result["episode_capture"] = {
             "mode": "original_single_execution",
@@ -978,6 +1118,7 @@ def run_suite(
     }
     if map_pack is not None:
         report["map_pack"] = map_pack.manifest()
+    report.update(runtime_summary_fields(runtime))
     _write_json(output / "suite.json", report)
     return report
 
@@ -991,6 +1132,7 @@ def run_soak(
     max_resource_samples: int = 1024,
     terrain_source: TerrainSource = "fixture",
     map_pack: MapPack | None = None,
+    runtime: RuntimeConfig | None = None,
 ) -> dict[str, Any]:
     """Wall-clock soak, checkpointed after each mission (up to one episode overrun).
 
@@ -1000,6 +1142,8 @@ def run_soak(
     """
     if type(seconds) is not int or not 1 <= seconds <= 7 * 24 * 3600:
         raise ValueError("soak seconds must be in [1, 604800]")
+    if runtime is not None and type(runtime) is not RuntimeConfig:
+        raise ValueError("runtime must be a structured RuntimeConfig or None")
     resources = ProcessResourceMonitor(resource_interval_seconds, max_resource_samples)
     settings = _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
     if output.exists():
@@ -1016,6 +1160,8 @@ def run_soak(
     )
     if map_pack is not None:
         source_options["map_pack"] = map_pack
+    if runtime is not None:
+        source_options["runtime"] = runtime
     resources.start()
     try:
         with (output / "episodes.jsonl").open("x", encoding="utf-8") as stream:
@@ -1052,6 +1198,7 @@ def run_soak(
                         "perception_settings": settings,
                         "episode_capture": _capture_contract(),
                         "resources": resources.report(),
+                        **runtime_summary_fields(runtime),
                     },
                 )
     except BaseException as exc:
@@ -1084,6 +1231,7 @@ def run_soak(
         }
         if map_pack is not None:
             report["map_pack"] = map_pack.manifest()
+        report.update(runtime_summary_fields(runtime))
         _write_json(output / "soak.json", report)
     return report
 

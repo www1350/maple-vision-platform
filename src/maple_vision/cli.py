@@ -218,6 +218,12 @@ def _parser() -> argparse.ArgumentParser:
         )
     for map_command in (run, suite, soak):
         map_command.add_argument("--map-pack", type=Path)
+        map_command.add_argument(
+            "--runtime",
+            choices=("legacy", "structured"),
+            default="legacy",
+            help="choose the existing policy or the versioned state/task runtime",
+        )
     chat = commands.add_parser(
         "chat-draft", help="prepare a local human-reviewed reply; sends nothing"
     )
@@ -461,8 +467,14 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
             return asdict(perception.observe(ImageFrame.from_file(args.path)))
         from .lab import RunConfig, run_episode, run_soak, run_suite, verify_run
         from .map_pack import load_map_pack
+        from .runtime_pipeline import RuntimeConfig as StructuredRuntimeConfig
 
         pack = load_map_pack(args.map_pack) if getattr(args, "map_pack", None) else None
+        runtime = (
+            StructuredRuntimeConfig()
+            if getattr(args, "runtime", "legacy") == "structured"
+            else None
+        )
 
         if args.operation == "run":
             from .profiles import load_class_profile
@@ -489,6 +501,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 sprite_pack=sprites,
                 terrain_source=terrain_source,
                 map_pack=pack,
+                runtime=runtime,
             )
         if args.operation == "suite":
             return run_suite(
@@ -497,6 +510,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 detector=detector,
                 terrain_source=terrain_source,
                 map_pack=pack,
+                runtime=runtime,
             )
         if args.operation == "soak":
             return run_soak(
@@ -507,6 +521,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 max_resource_samples=args.max_resource_samples,
                 terrain_source=terrain_source,
                 map_pack=pack,
+                runtime=runtime,
             )
         if args.operation == "reinfer":
             from .lab import verify_perception

@@ -421,6 +421,38 @@ print(json.dumps({'pipeline': observation.source_id, 'fixture_object_detection_c
             before_reinference == after_reinference, "re-inference modified the original bundle"
         )
         checks["reinference"] = reinference
+        structured_dir = scratch / "structured-mission"
+        structured = cli(
+            "lab",
+            "run",
+            "--output",
+            str(structured_dir),
+            "--runtime",
+            "structured",
+            "--record-stride",
+            "32",
+        )
+        require(
+            structured["schema_version"] == 2
+            and structured["status"] == "completed"
+            and structured["independent_goal_check"],
+            "installed structured mission failed",
+        )
+        structured_reinfer = cli("lab", "reinfer", str(structured_dir))
+        require(
+            structured_reinfer["verified"]
+            and structured_reinfer["structured_runtime_reproduced"]
+            and structured_reinfer["belief_frames_recomputed"] == structured["steps"] + 1
+            and structured_reinfer["terminal_runtime_compared"]
+            and structured_reinfer["runtime_identity_matches"],
+            "installed structured pipeline did not reproduce every belief and task",
+        )
+        checks["structured_runtime"] = {
+            "status": structured["status"],
+            "steps": structured["steps"],
+            "independent_goal_check": structured["independent_goal_check"],
+            "reinference": structured_reinfer,
+        }
         # Author-supplied JSON is an input, while every implementation import and
         # CLI invocation remains in the isolated installed environment.
         map_source = scratch / "map-pack.json"
