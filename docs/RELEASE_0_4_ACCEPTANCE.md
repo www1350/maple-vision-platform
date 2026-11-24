@@ -1,6 +1,6 @@
 # v0.4 外部地图包与可移植验证验收
 
-**本地工程、独立三地图验证与隔离安装已通过；准确提交的远端 CI 另行记录。** 本轮把外部地图内容接入已有离线平台，未训练新研究模型，未改变 v0.3 失败候选及其关闭分支。总体方案见 [FINAL_PLAN.md](FINAL_PLAN.md)，执行步骤与条件见 [V0_4_PLAN.md](V0_4_PLAN.md) 和 [v04-contract.yaml](../engineering/v04-contract.yaml)。
+**本地工程、独立三地图验证、隔离安装，以及准确修复实现提交的三组远端CI均已通过。** 首次Windows的测试用例名称超限问题已修复，生产代码、测试数据和断言不变，首次失败记录保留。最终文档归档head的检查与合并回执见[PR #5](https://github.com/www1350/maple-vision-platform/pull/5)。本轮未训练新研究模型，未改变v0.3失败候选及其关闭分支。总体方案见[FINAL_PLAN.md](FINAL_PLAN.md)，执行步骤与条件见[V0_4_PLAN.md](V0_4_PLAN.md)和[v04-contract.yaml](../engineering/v04-contract.yaml)。
 
 ## 1. 已实现的范围
 
@@ -19,6 +19,7 @@
 |---|---|
 | 基线 main | `493b7d24688c6aad22d7583f11e8098a28965567`，已完成的v0.3合并 |
 | 包版本 | `0.4.0` |
+| 已通过远端CI的修复实现 | `8a649f8aaa88429d7a7da2415f29dc632ccf5d42`，tree `767de0dde9df1a2d55dddb216b9f838b7215c09b` |
 | 地图样例 | `examples/maps/three-map-fixture.json`，`grove → quarry → ruins → grove` |
 | 地图规范化 SHA-256 | `e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9` |
 | 本轮数据 manifest SHA-256 | `4588290aec2d333ce6684ba207f753f53ab7660d33a8c6362870fe93c93a0f39` |
@@ -35,12 +36,12 @@
 | Ruff格式与lint | 通过；当前格式检查123文件，包含可格式化文档片段 |
 | mypy strict | 31个源码文件通过 |
 | 完整pytest，含启用的原生能力 | **1011 passed，0 failures/errors/skipped，6 warnings** |
-| pytest实际用时 | **112.41秒**；JUnit suite为112.311秒 |
+| 修复测试ID后的pytest实际用时 | **112.65秒**；JUnit suite为112.552秒 |
 | 干净wheel安装及运行 | **通过，26.144秒** |
 
 原生能力启用方式为`MAPLE_TRAINING_SMOKE=1`，实际工程一epoch训练、导出、ORT、录像和OCR测试包含在全量中；它们不是第二个研究候选。6条warning来自已存在的上游导出/trace提示，原始日志保留。专项检查与完整测试重叠，不把计数相加。
 
-第一次格式检查发现新增文档中一段Python字典缩进需要格式化，修正后全部通过；首次拒绝保留为[format-initial.log](../reports/release-0.4.0/format-initial.log)。本次完整pytest一次通过，没有通过跳过或降低断言处理失败。[完整日志](../reports/release-0.4.0/local-pytest.log) · [JUnit](../reports/release-0.4.0/local-pytest.xml)
+第一次格式检查发现新增文档中一段Python字典缩进需要格式化，修正后全部通过；首次拒绝保留为[format-initial.log](../reports/release-0.4.0/format-initial.log)。测试ID修复前本地全量也为1011通过、112.41秒，历史[日志](../reports/release-0.4.0/local-pytest-before-windows-id-fix.log)和[总报告](../reports/release-0.4.0/local-verification-before-windows-id-fix.json)保留；随后Windows环境暴露下述平台问题。修复后完整本地重新执行，仍为1011通过，没有跳过或降低断言。[当前完整日志](../reports/release-0.4.0/local-pytest.log) · [当前JUnit](../reports/release-0.4.0/local-pytest.xml)
 
 隔离安装在仓库以外创建干净环境，从构建wheel导入，未安装Torch/ORT。除了旧基础、知识、数据和任务，它真实执行了外部地图检查、三图任务、54帧schema3数据、源路径删除后的数据检查、动作重放和560帧重新感知。[安装报告](../reports/release-0.4.0/wheel-smoke.json)
 
@@ -97,8 +98,22 @@
 
 同时保留不同怪物数量的独立oracle测试、删除地图/职业数据库/素材后的复验、冲突副本、错误状态及伪造完成反例。[测试入口](../tests/test_map_lab.py) · [地图/模拟器边界](../tests/test_map_simulation.py)
 
-## 8. 远端交付与后续
+## 8. 首次远端失败、修复与准确提交通过
 
-本地证据不替代准确提交CI。本轮源代码、计划及报告将通过同一PR取得Ubuntu/Windows基础检查、两个隔离wheel和Ubuntu原生作业结果；最终归档head也必须独立通过后再合并。准确head和检查回执由PR保存，避免提交记录自己的SHA形成循环。
+首次实现`33554d453e4296bcb97942b0306f04d4cb952924`的[CI 45453684481](https://github.com/www1350/maple-vision-platform/actions/runs/45453684481)整体失败：Ubuntu为1004通过/7跳过，native为155通过；Windows为999通过/11跳过/2 errors。**两个error来自同一个超大输入用例的setup和teardown**，并非两个数据校验断言失败。pytest自动把131073字节的参数写入node ID，再赋给`PYTEST_CURRENT_TEST`，超过Windows环境变量32767字符限制，导致该用例尚未执行就报错。[首次报告与三个压缩原始日志](../reports/release-0.4.0/remote-ci-initial.json)
+
+修复只给原来六份输入添加六个短ID，原始大输入、严格拒绝断言与生产模块均未改。最初手动列出五个ID时，pytest集合阶段拒绝了长度不符，修正为六个后通过；该开发日志也保留。修复后loader专项93通过，全部93个node ID最长130字符；本地全量再次1011通过。专项与全量不能相加。[专项结果](../reports/release-0.4.0/map-loader-after-windows-fix.log) · [实际集合列表](../reports/release-0.4.0/map-loader-nodeids.log)
+
+修复实现提交**`8a649f8aaa88429d7a7da2415f29dc632ccf5d42`**、tree **`767de0dde9df1a2d55dddb216b9f838b7215c09b`**的[CI 45455031462](https://github.com/www1350/maple-vision-platform/actions/runs/45455031462)三组全部成功：
+
+| 作业 | Python | 测试结果 | 测试用时 | 隔离wheel |
+|---|---|---|---:|---:|
+| Ubuntu基础 | 3.12.16 | 1004通过、0失败、7跳过 | 137.56秒 | 通过，19.615秒 |
+| Windows基础 | 3.12.10 | 1000通过、0失败、11跳过 | 138.69秒 | 通过，24.879秒 |
+| Ubuntu原生 | 3.12.16 | 155通过、0失败/跳过，5条warning | 9.11秒 | 前两作业覆盖 |
+
+跳过项来自基础环境未启用的可选能力，不能算作通过；独立native作业实际运行训练、导出、录像和OCR。两边隔离wheel均实际完成外部地图任务、数据、源路径删除后的重放和重新感知。31个生产模块仍与独立任务/数据/短时运行时完全一致，因此这些证据和本地wheel继续适用于修复后的生产代码。[完整远端报告](../reports/release-0.4.0/remote-ci.json) · [Ubuntu安装](../reports/release-0.4.0/remote-wheel-ubuntu.json) · [Windows安装](../reports/release-0.4.0/remote-wheel-windows.json)
+
+最终文档与证据归档head仍必须独立通过CI后合并；准确head和回执保存在[PR #5](https://github.com/www1350/maple-vision-platform/pull/5)，避免提交记录自己的SHA形成循环。
 
 本轮没有重新打开v0.3候选，没有改写旧模型、预注册或历史评分。真实数据、网络知识来源、动画和大世界、分支导航、外部职业、时序跟踪、任务DSL、真实域及24小时长稳仍需独立实施；完整v8未验收。

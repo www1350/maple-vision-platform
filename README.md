@@ -6,6 +6,8 @@
 
 **v0.4 新增外部地图包。** 同一份严格校验的 JSON 可用于模拟、渲染、三职业任务、生命周期数据和独立重放；示例已扩展为 `grove → quarry → ruins` 三图。地图内容、来源与摘要随数据和运行保存，删除原文件后可以复验。固定画布下支持 2–8 图单出口循环路线，地图格式有效不等于任意布局都能完成。[地图包使用](docs/MAP_PACKS.md) · [本轮执行方案](docs/V0_4_PLAN.md) · [本轮实际验收](docs/RELEASE_0_4_ACCEPTANCE.md)
 
+本地完整**1011项通过、0跳过**，三职业与13场景通过，486帧数据复核通过；60秒请求实际61.05秒、53轮。修复实现`8a649f8`的[Ubuntu、Windows和原生CI](https://github.com/www1350/maple-vision-platform/actions/runs/45455031462)全部成功，两平台隔离安装也通过。首次Windows的测试名称超限失败与修复保留；最终归档检查与合并见[PR #5](https://github.com/www1350/maple-vision-platform/pull/5)。像素val仍有40个误检与12个漏检，新地图学习模型准确率未验收。
+
 **v0.3 工具工程验收已通过，地形实验已完成并保留失败候选。** 新增训练前的检测头/锚点检查、全宽地板召回与边缘误差、显式模型地形模式，以及训练前冻结的单候选实验。候选虽检出192/192条整幅地板，但总平台召回只有81.94%，未达到98%门槛，已明确拒绝推广；test保持未评分。本地完整回归 **834 项通过、0 跳过**，隔离安装包验证也已通过；日志流生命周期问题已修复；实现提交 `3340d8f` 的[Ubuntu、Windows及原生CI](https://github.com/www1350/maple-vision-platform/actions/runs/45421893081)全部通过，最终归档检查与合并记录见 [PR #4](https://github.com/www1350/maple-vision-platform/pull/4)。完整状态见 [v0.3 发布验收](docs/RELEASE_0_3_ACCEPTANCE.md) 和 [执行方案](docs/V0_3_PLAN.md)。
 
 v0.2 已验收的模型继续保存在 `examples/lifecycle-model/`，其范围是 YOLO 动态对象加像素地形/HUD；生命周期数据、知识增量计划和实际感知/策略重新执行也继续兼容。[v0.2 历史验收](docs/RELEASE_0_2_ACCEPTANCE.md) · [PR #3](https://github.com/www1350/maple-vision-platform/pull/3) · [v0.1 历史验收](docs/RELEASE_ACCEPTANCE.md)。

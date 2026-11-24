@@ -1,0 +1,8 @@
+
+==================================== ERRORS ====================================
+___________________ ERROR collecting tests/test_map_pack.py ____________________
+In test_file_loader_rejects_duplicate_keys_nonfinite_encoding_recursion_and_size: 6 parameter sets specified, with different number of ids: 5
+=========================== short test summary info ============================
+ERROR tests/test_map_pack.py - Failed: In test_file_loader_rejects_duplicate_...
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.23s

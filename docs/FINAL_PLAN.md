@@ -10,6 +10,8 @@
 
 v0.4 在保留两张内置地图的基础上增加显式外部 MapPack，已接入模拟器、渲染、三职业任务、数据生成及自包含重放。示例有 `grove / quarry / ruins` 三张新地图；结构支持固定画布下 2–8 图循环路线。新增地图工程以像素基线独立验收，没有训练新模型，也没有证明原 YOLO 在新地图上的准确率。[地图格式与使用](MAP_PACKS.md)
 
+本轮完整本地1011通过、0跳过，隔离wheel通过；三职业分别559/519/507步完成，实际重新感知560/520/508帧；13场景、486帧数据与61.05秒53轮短时运行通过。首次Windows因超长pytest参数ID产生一个用例的setup/teardown错误，仅修改用例ID后，修复实现`8a649f8aaa88429d7a7da2415f29dc632ccf5d42`已通过[三组远端CI](https://github.com/www1350/maple-vision-platform/actions/runs/45455031462)与两平台隔离安装。生产代码和原始测试输入/断言未变。像素val仍有40FP/12FN，不宣称完美感知；最终归档head的检查和合并由[PR #5](https://github.com/www1350/maple-vision-platform/pull/5)记录。
+
 v0.3增加结构审查、schema3几何评分和显式模型对象模式；候选14项阈值通过13项，但平台召回0.819444＜0.98，依协议不推广、不评分test、不执行候选推广任务或再训第二候选。日志流工程修复后完整本地834通过，准确实现提交的三组 CI 通过；最终归档 head `f1c9fc143c35e4ce7849410d6b13df3bcf0a3df6` 也已通过 [CI 45423871093](https://github.com/www1350/maple-vision-platform/actions/runs/45423871093)，经 [PR #4](https://github.com/www1350/maple-vision-platform/pull/4) 合并为 `493b7d24688c6aad22d7583f11e8098a28965567`。该轮工程已闭合，模型拒绝结论保持不变。
 
 本项目执行对象是独立 Python 模拟器。正式客户端控制、系统按键注入、输入伪装、封包/内存修改和反作弊绕过不在交付范围内；独立验证也不能证明正式账号不会被封。玩家回复只产出待人工确认的本地草稿。依赖安装后，默认运行、训练、推理和 OCR 使用本地计算，不调用 LLM API，不消耗运行时 LLM token；编程 AI 开发本身的计费另算。
