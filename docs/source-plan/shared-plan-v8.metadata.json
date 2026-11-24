@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "title": "Maple Vision Platform v8.0 — 最终工程实施总纲",
+  "source_url": "https://chatgpt.com/s/t_6b05d66c4fac81918da3094a5f80f7dc",
+  "alignment_date": "2026-11-25",
+  "source_published_at": "2026-11-24T18:24:44.311Z",
+  "encoding": "UTF-8",
+  "extraction": "Public shared-page response; decoded JSON string values without executing embedded scripts.",
+  "markdown": {
+    "path": "MASTER_SPEC.md",
+    "source_field": "fallbackMarkdown",
+    "bytes": 28251,
+    "sha256": "856cf6f772239212d4ea9535f17ab54f5deb947a76969ebb66731dc051e9a0a3",
+    "content_modified": false
+  },
+  "interactive_source": {
+    "path": "docs/source-plan/shared-plan-v8.source.txt",
+    "source_field": "message.content.parts[0]",
+    "bytes": 46498,
+    "sha256": "96b15d5aff01e1347512f4c80739bb0da907484b5950c5fbbf2327f50b68f510",
+    "content_modified": false,
+    "execution": "archival_text_only"
+  },
+  "chapter_count": 22,
+  "previous_condensed_spec": {
+    "commit": "320989e0bf4b906cb4d7ed7e6cf8eef33bcd5473",
+    "path": "MASTER_SPEC.md",
+    "bytes": 7674,
+    "sha256": "1df52fa821286bc77ed7c5244e0f15e532dc2d1df51537cd83d803409e4a944d"
+  },
+  "notes": [
+    "The shared page contains interactive diagrams and a product prototype. Its Markdown fallback does not reproduce every interactive element; the full original source is also retained.",
+    "Original source statements are preserved, including the historical P0-only instruction. Later user authorization to continue implementation and testing remains in effect; see AGENTS.md and docs/PLAN_ALIGNMENT.md.",
+    "Original proposed targets are not acceptance results. The existing implementation and version reports do not establish full-v8 completion."
+  ]
+}

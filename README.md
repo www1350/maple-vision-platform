@@ -2,7 +2,9 @@
 
 一个可在本机运行、训练和验证的**离线视觉研究平台与独立模拟器**。它包含本地知识目录、素材登记、合成数据集、YOLO 训练与 ONNX 推理、多职业/多地图任务，以及可重放的验证证据。
 
-**完整方案入口：[完整方案与 AI 落地指南](docs/FINAL_PLAN.md)**。其中集中说明架构、数据流、从零实施顺序、各阶段完成标准，以及下一位编程 AI 接手时应遵守的接口与验证要求。
+**原始整体方案：[Maple Vision Platform v8.0 — 最终工程实施总纲](MASTER_SPEC.md)**。这是用户指定的[共享方案](https://chatgpt.com/s/t_6b05d66c4fac81918da3094a5f80f7dc)的完整 22 章 Markdown 正文，逐字保留；图表和交互原型的[完整源文本](docs/source-plan/shared-plan-v8.source.txt)及[来源与校验值](docs/source-plan/shared-plan-v8.metadata.json)一并归档。GitHub 不执行这些交互组件，产品原型不代表管理界面已经实现。
+
+**进度对齐：[原方案逐章对照](docs/PLAN_ALIGNMENT.md)**；**当前执行指南：[实现状态与 AI 落地指南](docs/FINAL_PLAN.md)**。原方案定义最终目标，执行指南说明现有接口与步骤，各版本验收记录实际成绩。此前仓库中的 `MASTER_SPEC.md` 是压缩摘要，本次已补回原文；现有三职业、有限地图和固定任务链是阶段性实现，不能替代完整 v8 目标。
 
 **v0.4 新增外部地图包。** 同一份严格校验的 JSON 可用于模拟、渲染、三职业任务、生命周期数据和独立重放；示例已扩展为 `grove → quarry → ruins` 三图。地图内容、来源与摘要随数据和运行保存，删除原文件后可以复验。固定画布下支持 2–8 图单出口循环路线，地图格式有效不等于任意布局都能完成。[地图包使用](docs/MAP_PACKS.md) · [本轮执行方案](docs/V0_4_PLAN.md) · [本轮实际验收](docs/RELEASE_0_4_ACCEPTANCE.md)
 
