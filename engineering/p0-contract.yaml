@@ -2,7 +2,13 @@ contract_version: 1
 spec_version: "8.0"
 milestone: P0
 scope: offline_foundation
-evidence_status: pending
+evidence_status: passed
+evidence:
+  source_commit: "06deaa52dc9f938efb4f7741d21601fdab7e301a"
+  ci_url: "https://github.com/www1350/maple-vision-platform/actions/runs/45367311402"
+  tests_per_platform: 70
+  operating_systems: [ubuntu-latest, windows-latest]
+  independent_review: completed
 stop_after_acceptance: true
 
 deliverables:
@@ -30,7 +36,7 @@ tasks:
   P0.3:
     depends_on: [P0.2]
     output: noop_pipeline
-    evidence: [end_to_end_trace, stale_and_mismatched_observation_rejection]
+    evidence: [end_to_end_trace, stale_observation_marking, mismatched_observation_rejection]
   P0.4:
     depends_on: [P0.1]
     output: sqlite_foundation

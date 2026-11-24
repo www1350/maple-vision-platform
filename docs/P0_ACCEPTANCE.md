@@ -4,7 +4,8 @@
 - 方案：v8.0；工程阶段：P0
 - 起始提交：`961abeaa299ca36be02308964b9d8cf068fd857c`
 - 交付位置：[PR #1](https://github.com/www1350/maple-vision-platform/pull/1)
-- 当前结论：本地验收通过；本次提交的 Windows/Linux CI 待远端执行后记录。
+- 代码验收提交：`06deaa52dc9f938efb4f7741d21601fdab7e301a`
+- 当前结论：**P0 验收通过**，本地和 Windows/Linux CI 均已完成。
 
 ## 已交付
 
@@ -42,7 +43,16 @@
 
 CI 对本 PR 提交运行 Ubuntu 和 Windows、Python 3.12，分别完成格式、lint、类型、pytest、wheel 构建与仓库外安装检查。结果以 [Actions](https://github.com/www1350/maple-vision-platform/actions) 的具体提交 SHA 为准，不能沿用最初四项测试的旧成功记录。
 
-本次远端运行链接与最终结论在 CI 返回后补充。
+本次代码验收：[Foundation CI #4](https://github.com/www1350/maple-vision-platform/actions/runs/45367311402)，状态为 success。
+
+| 环境 | pytest 实测 | 格式 / lint / 类型 | wheel 构建与独立安装 |
+|---|---|---|---|
+| Ubuntu / Python 3.12 | 70 passed，0.90s | 全部 PASS | PASS |
+| Windows / Python 3.12 | 70 passed，2.02s | 全部 PASS | PASS |
+
+两个平台均成功上传 `p0-evidence` 产物，含 JUnit XML 与 wheel smoke 摘要；产物按 workflow 设置保留 14 天。测试耗时仅描述此次 CI 运行，不作为性能保证。
+
+此处追加的是测试证据与合同状态，未改动已验收的源代码或测试。后续文档提交和合并仍由 CI 检查，不继承过期的检查结论。
 
 ## 限制与后续
 
