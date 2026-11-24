@@ -332,6 +332,7 @@ def test_embedded_content_hash_rejects_tampered_data_and_invalid_hashes():
         b"[" * 2000 + b"]" * 2000,
         b" " * (MAX_MAP_PACK_BYTES + 1),
     ],
+    ids=["duplicate-key", "nan", "infinity", "invalid-utf8", "deep-nesting", "oversize"],
 )
 def test_file_loader_rejects_duplicate_keys_nonfinite_encoding_recursion_and_size(
     tmp_path, payload
