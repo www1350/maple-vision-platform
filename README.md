@@ -4,7 +4,7 @@
 
 **完整方案入口：[完整方案与 AI 落地指南](docs/FINAL_PLAN.md)**。其中集中说明架构、数据流、从零实施顺序、各阶段完成标准，以及下一位编程 AI 接手时应遵守的接口与验证要求。
 
-**当前为 v0.2.0 发布候选。** 本轮新增生命周期数据集与分组评估、本地知识增量计划、指定模型的套件/长稳，以及实际感知与策略重新执行。最终提交的完整测试、跨平台 CI、新验证器门禁和模型选择结论仍待验收；见 [v0.2 执行与验收补充](docs/V0_2_PLAN.md) 和 [v0.2 发布验收](docs/RELEASE_0_2_ACCEPTANCE.md)。[v0.1 历史验收](docs/RELEASE_ACCEPTANCE.md) 保持独立，不作为新修改已经通过的证据。
+**v0.2.0 已完成本地工程与合成混合管线模型验收，最终发布提交的远端 CI 待确认。** 本轮新增生命周期数据集与分组评估、本地知识增量计划、指定模型的套件/长稳，以及实际感知与策略重新执行。新模型位于 `examples/lifecycle-model/`；其验收范围是 YOLO 动态对象加像素地形/HUD。当前发布进度见 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)、[v0.2 执行补充](docs/V0_2_PLAN.md) 和 [v0.2 发布验收](docs/RELEASE_0_2_ACCEPTANCE.md)。[v0.1 历史验收](docs/RELEASE_ACCEPTANCE.md) 保持独立。
 
 默认任务使用可解释的像素颜色基线，便于独立检查工程闭环。可选的 tiny YOLO 从本地配置随机初始化训练；训练完成、导出成功、检测效果、任务完成是四项不同的验收，不会互相冒充。当前规则和画面都是项目自行构造的 `synthetic_fixture`，不代表已经核实的国服数据或正式游戏操作。
 
@@ -49,7 +49,7 @@ $maplePython = ".\.venv\Scripts\python.exe"
 | 视觉 | 像素基线、哈希绑定的 ONNX 适配器；聚合与阶段/地图/位置分组检测指标；模型闭环采用 YOLO 动态对象与像素地形/HUD，策略只接收观测 |
 | YOLO 工具 | 本地 tiny 配置、真实 CPU 训练、独立输入副本、ONNX 导出、真实运行时推理检查 |
 | 任务与监督 | 有界任务与恢复、观测新鲜度、重复帧/时钟回退/未知状态处理、独立目标核验 |
-| 验证实验 | 短暂/持续黑屏、重复帧、输入冻结；指定模型参与 suite/soak，采样进程资源；新增 reinfer 实际重新运行每帧感知、监督与策略，新门禁待最终验收 |
+| 验证实验 | 短暂/持续黑屏、重复帧、输入冻结；指定模型参与 suite/soak，采样进程资源；reinfer 实际重新运行每帧感知、监督与策略；预检/文件变化与保留原始失败轮次已通过本地回归 |
 | 本地录像与 OCR | PNG 帧目录/MP4 导入、完整性检查与感知回放；通过已安装的 Tesseract 识别文本 |
 | 回话 | 模拟器 NPC 对话；人工确认的本地玩家回复草稿，不含发送后端 |
 
@@ -71,28 +71,31 @@ python -m maple_vision knowledge apply-sync artifacts/sync-knowledge.sqlite arti
 
 知识计划捕获源文件原字节和完整目录基线；查看计划后应用的是同一份证据。源文件变化需要新建计划，数据库变化会使旧计划失败；缺失条目保留、冲突不自动解除、未知不自动核实。当前只实现本地导出适配器，没有自动获取最新小册子资料。[知识同步合同](docs/KNOWLEDGE_SYNC.md)
 
-显式使用同一 ONNX 与 manifest 完成运行、重新推理验证和模型测试。下面继续使用仓库的 v0.1 样例模型，便于复现；它不代表 v0.2 新候选已经推广：
+显式使用同一 ONNX 与 manifest 完成运行、重新推理验证和模型测试。下面使用已通过本地混合管线门禁的 v0.2 lifecycle 模型；旧模型继续保存在 `examples/fixture-model/`：
 
 ```bash
-python -m maple_vision lab run --output artifacts/v02-model-run --model examples/fixture-model/model.onnx --manifest examples/fixture-model/manifest.json
-python -m maple_vision lab reinfer artifacts/v02-model-run --model examples/fixture-model/model.onnx --manifest examples/fixture-model/manifest.json
-python -m maple_vision lab suite --output artifacts/v02-model-suite --seeds 3 --model examples/fixture-model/model.onnx --manifest examples/fixture-model/manifest.json
-python -m maple_vision lab soak --output artifacts/v02-model-soak --seconds 60 --resource-interval 1 --max-resource-samples 1024 --model examples/fixture-model/model.onnx --manifest examples/fixture-model/manifest.json
+python -m maple_vision lab run --output artifacts/v02-model-run --model examples/lifecycle-model/model.onnx --manifest examples/lifecycle-model/manifest.json
+python -m maple_vision lab reinfer artifacts/v02-model-run --model examples/lifecycle-model/model.onnx --manifest examples/lifecycle-model/manifest.json
+python -m maple_vision lab suite --output artifacts/v02-model-suite --seeds 3 --model examples/lifecycle-model/model.onnx --manifest examples/lifecycle-model/manifest.json
+python -m maple_vision lab soak --output artifacts/v02-model-soak --seconds 60 --resource-interval 1 --max-resource-samples 1024 --model examples/lifecycle-model/model.onnx --manifest examples/lifecycle-model/manifest.json
 ```
 
-`lab replay` 保持动作与环境重放语义；`lab reinfer` 额外执行真实感知与策略，只支持包含新版证据的运行包，旧包继续使用 replay。新验证器的预检/文件变化边界，以及套件保留原始失败轮次的行为，须通过 v0.2 最终门禁；实现和限制见 [模型验证](docs/MODEL_VALIDATION.md)。60 秒长稳是短时验证，不是 24 小时验收。
+`lab replay` 保持动作与环境重放语义；`lab reinfer` 额外执行真实感知与策略，只支持包含新版证据的运行包，旧包继续使用 replay。预检/文件变化边界和保留实际失败轮次一次已有本地审查与回归证据；实现和限制见 [模型验证](docs/MODEL_VALIDATION.md)。最终提交仍需自己的远端 CI。60 秒长稳是短时验证，不是 24 小时验收。
 
 ## 模型与发布证据
 
 - [v0.2 发布验收记录](docs/RELEASE_0_2_ACCEPTANCE.md)：当前版本准确提交、测试、操作系统和实测结果；未完成项保留待验收状态。
+- [v0.2 lifecycle 模型实验](docs/YOLO_LIFECYCLE_EXPERIMENT.md)：选模时序、检测指标、三职业实际重新推理、短时长稳与架构限制。
 - [v0.1 发布验收](docs/RELEASE_ACCEPTANCE.md) · [v0.1 YOLO 实验](docs/YOLO_EXPERIMENT.md)：历史模型、原数据划分和原环境结果。
 - [生命周期数据与分组评估](docs/DATASET_LIFECYCLE.md)：v0.2 数据合同、冻结输入及验证范围。
 - [阶段状态与后续工作](docs/IMPLEMENTATION_PLAN.md)：区分已实现、已验证与需要外部素材的项目。
 
-默认像素基线不是 YOLO。tiny YOLO 是在自绘合成数据上训练的模型，不是已经证明能识别真实游戏画面的通用成品。模型配置会打包进 wheel；仓库 `examples/fixture-model` 提供对应验收的 ONNX 样例，具体指标及局限见实验记录。模型闭环仍使用像素方法识别地形和 HUD，不能将混合系统成绩归为纯 YOLO。工具不会按模型名自动下载其他权重。
+v0.2 模型在冻结后的保留 test 上测得 AP50 **0.944822**、micro precision **0.997818**、recall **0.872774**：192 帧、1572 个真值目标，TP/FP/FN 为 **1372/3/200**。三职业任务和实际 reinfer 全部通过，模型 suite 的 **13/13** 场景符合预期。60 秒请求实际运行 **61.510525 秒**、完成 **10 轮**，记录 **63** 个资源样本，最大采样当前 RSS 为 **90.09375 MiB**；24 小时门禁未完成。指标和运行证据见[本轮实验](docs/YOLO_LIFECYCLE_EXPERIMENT.md)。
+
+纯 YOLO 地形验收仍未通过：实际模型 `reg_max=8`、stride 为 4/8，单框最大宽度 112px，无法在 IoU=0.5 下匹配 320px 全宽地板。当前闭环使用 YOLO 动态对象与像素地形/HUD，不能将混合成绩归为纯 YOLO。新模型保存在 `examples/lifecycle-model/`，旧模型和原报告保持不变；默认像素基线也继续可用。所有成绩来自自绘合成场景，没有真实游戏识别效果结论；工具不会按模型名自动下载权重。
 
 ```bash
-python -m maple_vision lab run --output artifacts/shipped-model-run --model examples/fixture-model/model.onnx --manifest examples/fixture-model/manifest.json
+python -m maple_vision lab run --output artifacts/shipped-model-run --model examples/lifecycle-model/model.onnx --manifest examples/lifecycle-model/manifest.json
 ```
 
 ## 开发与自动验收

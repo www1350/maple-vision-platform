@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "scope": "offline_synthetic_fixture_platform",
+  "initial_commit": "4e9914411c1b3f49b2f8eb81d7c17948af8ddb82",
+  "initial_tree": "8e7801c1564646c08339f1ca7ea74042a24bb443",
+  "pull_request": "https://github.com/www1350/maple-vision-platform/pull/3",
+  "attempts": [
+    {
+      "run_id": 45390705416,
+      "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45390705416",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "id": 138433319448,
+          "platform": "ubuntu-latest",
+          "conclusion": "success",
+          "passed": 626,
+          "skipped": 3,
+          "failed": 0,
+          "seconds": 46.46,
+          "wheel": "passed"
+        },
+        {
+          "id": 138433319499,
+          "platform": "windows-latest",
+          "conclusion": "failure",
+          "passed": 621,
+          "skipped": 7,
+          "failed": 1,
+          "seconds": 116.78,
+          "wheel": "not_run_due_to_test_failure",
+          "failure": "test_legacy_release_dataset_retains_its_exact_manifest_hash",
+          "expected_manifest_sha256": "ecc0ff6c4e9bbebc9915f0313bb3b227a99ecc321051ee2ae2e8a0eff096ad67",
+          "observed_manifest_sha256": "b04f41f74cf82795744142d87868c48a684a9d4c67c85a9098068878ce549367"
+        },
+        {
+          "id": 138433318698,
+          "platform": "ubuntu-native",
+          "conclusion": "success",
+          "passed": 107,
+          "skipped": 0,
+          "failed": 0,
+          "warnings": 2,
+          "seconds": 6.55
+        }
+      ],
+      "diagnosis": "Original v0.1 and current legacy outputs are byte-identical separately under LF and CRLF. The test incorrectly assumed one Linux PNG/text byte hash was a portable content contract. Replaced with strict original-v0.1 RGB, LF-normalized labels/YAML and complete manifest-semantic fingerprints, retaining raw artifact integrity and same-environment byte reproducibility; actual Windows confirmation pending.",
+      "production_source_changed_for_fix": false,
+      "diagnosis_evidence": "legacy-content-diagnosis.json"
+    }
+  ],
+  "final_verified_commit": null,
+  "final_run": null
+}

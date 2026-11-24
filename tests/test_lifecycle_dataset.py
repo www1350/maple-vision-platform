@@ -1,12 +1,15 @@
 import hashlib
 import json
+import platform
 import shutil
+import zlib
 from collections import Counter
 from dataclasses import fields
 from pathlib import Path
 
 import pytest
-from PIL import Image
+from PIL import Image, features
+from PIL import __version__ as pillow_version
 
 import maple_vision.dataset as factory
 from maple_vision.asset_registry import import_asset
@@ -144,15 +147,139 @@ def test_lifecycle_is_byte_reproducible(lifecycle, tmp_path) -> None:
     assert (second / "data.yaml").read_bytes() == (lifecycle / "data.yaml").read_bytes()
 
 
-def test_legacy_release_dataset_retains_its_exact_manifest_hash(tmp_path) -> None:
+def _canonical_hash(value):
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def _legacy_content_fingerprints(path):
+    """Preserve all legacy content; normalize only text EOL and PNG compression."""
+    manifest = _read(path)
+    rgb_index = {}
+    label_index = {}
+    for sample in manifest["samples"]:
+        image_path = path / sample["image"]
+        label_path = path / sample["label"]
+        assert hashlib.sha256(image_path.read_bytes()).hexdigest() == sample.pop("image_sha256")
+        assert hashlib.sha256(label_path.read_bytes()).hexdigest() == sample.pop("label_sha256")
+        with Image.open(image_path) as image:
+            assert image.format == "PNG" and image.mode == "RGB"
+            assert image.size == (sample["width"], sample["height"])
+            image_hash = hashlib.sha256(image.tobytes()).hexdigest()
+            rgb_index[sample["image"]] = {
+                "mode": image.mode,
+                "size": list(image.size),
+                "rgb_sha256": image_hash,
+            }
+        label_hash = hashlib.sha256(label_path.read_text("utf-8").encode("utf-8")).hexdigest()
+        label_index[sample["label"]] = label_hash
+        sample["image_rgb_sha256"] = image_hash
+        sample["label_lf_sha256"] = label_hash
+    yaml_path = path / "data.yaml"
+    assert hashlib.sha256(yaml_path.read_bytes()).hexdigest() == manifest.pop("data_yaml_sha256")
+    yaml_hash = hashlib.sha256(yaml_path.read_text("utf-8").encode("utf-8")).hexdigest()
+    manifest["data_yaml_lf_sha256"] = yaml_hash
+    return {
+        "portable_manifest_sha256": _canonical_hash(manifest),
+        "rgb_index_sha256": _canonical_hash(rgb_index),
+        "label_lf_index_sha256": _canonical_hash(label_index),
+        "data_yaml_lf_sha256": yaml_hash,
+    }
+
+
+def _encoding_environment():
+    return {
+        "platform": platform.platform(),
+        "python": platform.python_version(),
+        "pillow": pillow_version,
+        "pillow_zlib": features.version("zlib"),
+        "pillow_zlib_ng": features.version("zlib_ng"),
+        "python_zlib": zlib.ZLIB_RUNTIME_VERSION,
+    }
+
+
+def test_legacy_release_dataset_retains_its_exact_portable_content(tmp_path) -> None:
+    # Derived from d66cd79897ecba52d58885795f0fec5ff1de9837's original generator.
+    # Original dataset.py SHA256: 7f40490dde5b7f30ccd3d6c08a25183dedd74e2e38094bd93c5ac62b3145c85a.
+    # Original/current outputs were byte-identical under separately forced LF and CRLF.
+    # Historical Linux manifest: ecc0ff6c4e9bbebc9915f0313bb3b227a99ecc321051ee2ae2e8a0eff096ad67.
+    # Raw PNG compression and platform text EOL are not a portable content contract.
+    expected = {
+        "portable_manifest_sha256": (
+            "82329e75bd6056ae95643e35fa07260dacbaad0dcd4546afd450f916d53ed2fd"
+        ),
+        "rgb_index_sha256": "8913573ae212fc71053de5514d33231623c2c18f97870798b9b98506719e647a",
+        "label_lf_index_sha256": "d4d6f0b8fd9b9ffd593daa2b83f4d56dd7fb7d338bb3b3ebdfbde125793014be",
+        "data_yaml_lf_sha256": "d348ee17aca7dedce5a1c34eab802d85b873e77c33ad4cd5a475ec746389f2eb",
+    }
     result = generate_dataset(
         tmp_path / "legacy", sessions=18, frames_per_session=16, seed=20261124
     )
-    assert result["manifest_sha256"] == (
-        "ecc0ff6c4e9bbebc9915f0313bb3b227a99ecc321051ee2ae2e8a0eff096ad67"
+    actual = _legacy_content_fingerprints(tmp_path / "legacy")
+    assert actual == expected, json.dumps(
+        {
+            "expected": expected,
+            "actual": actual,
+            "raw_manifest_sha256": result["manifest_sha256"],
+            "encoding_environment": _encoding_environment(),
+        },
+        indent=2,
+        sort_keys=True,
     )
     assert result["schema_version"] == 1
     assert "coverage" not in result and "profile" not in result
+
+
+def test_portable_fingerprint_ignores_encoding_but_detects_content_changes(tmp_path) -> None:
+    path = tmp_path / "legacy"
+    generate_dataset(path, sessions=3, frames_per_session=2, seed=321)
+    expected = _legacy_content_fingerprints(path)
+    manifest = _read(path)
+    first = manifest["samples"][0]
+    image_path = path / first["image"]
+    previous_image_hash = first["image_sha256"]
+    with Image.open(image_path) as source:
+        pixels = source.copy()
+    pixels.save(image_path, compress_level=0)
+    first["image_sha256"] = hashlib.sha256(image_path.read_bytes()).hexdigest()
+    assert first["image_sha256"] != previous_image_hash
+    for sample in manifest["samples"]:
+        label_path = path / sample["label"]
+        label_path.write_bytes(label_path.read_text("utf-8").replace("\n", "\r\n").encode())
+        sample["label_sha256"] = hashlib.sha256(label_path.read_bytes()).hexdigest()
+    yaml_path = path / "data.yaml"
+    yaml_path.write_bytes(yaml_path.read_text("utf-8").replace("\n", "\r\n").encode())
+    manifest["data_yaml_sha256"] = hashlib.sha256(yaml_path.read_bytes()).hexdigest()
+    _write(path, manifest)
+    assert _legacy_content_fingerprints(path) == expected
+
+    original_pixel = pixels.getpixel((0, 0))
+    pixels.putpixel((0, 0), ((original_pixel[0] + 1) % 256, *original_pixel[1:]))
+    pixels.save(image_path)
+    first["image_sha256"] = hashlib.sha256(image_path.read_bytes()).hexdigest()
+    _write(path, manifest)
+    changed_pixels = _legacy_content_fingerprints(path)
+    assert changed_pixels["portable_manifest_sha256"] != expected["portable_manifest_sha256"]
+    assert changed_pixels["rgb_index_sha256"] != expected["rgb_index_sha256"]
+    assert changed_pixels["label_lf_index_sha256"] == expected["label_lf_index_sha256"]
+
+    label_path = path / first["label"]
+    label_path.write_text(label_path.read_text("utf-8") + "0 0.1 0.1 0.1 0.1\n", "utf-8")
+    first["label_sha256"] = hashlib.sha256(label_path.read_bytes()).hexdigest()
+    _write(path, manifest)
+    changed_labels = _legacy_content_fingerprints(path)
+    assert changed_labels["portable_manifest_sha256"] != changed_pixels["portable_manifest_sha256"]
+    assert changed_labels["label_lf_index_sha256"] != changed_pixels["label_lf_index_sha256"]
+    assert changed_labels["rgb_index_sha256"] == changed_pixels["rgb_index_sha256"]
+
+    first["timestamp_ms"] += 1
+    _write(path, manifest)
+    changed_metadata = _legacy_content_fingerprints(path)
+    assert (
+        changed_metadata["portable_manifest_sha256"] != changed_labels["portable_manifest_sha256"]
+    )
+    assert changed_metadata["rgb_index_sha256"] == changed_labels["rgb_index_sha256"]
+    assert changed_metadata["label_lf_index_sha256"] == changed_labels["label_lf_index_sha256"]
 
 
 @pytest.mark.parametrize("profile,frames", [("unknown", 24), (True, 24), ("lifecycle", 11)])

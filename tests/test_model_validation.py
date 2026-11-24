@@ -437,10 +437,10 @@ def test_soak_exception_never_becomes_a_24h_pass_and_still_records_resources(tmp
     assert report["resources"]["retained_samples"] >= 2
 
 
-@pytest.fixture(scope="module")
-def actual_model_run(tmp_path_factory):
+@pytest.fixture(scope="module", params=("fixture-model", "lifecycle-model"))
+def actual_model_run(tmp_path_factory, request):
     pytest.importorskip("onnxruntime")
-    directory = Path(__file__).parents[1] / "examples" / "fixture-model"
+    directory = Path(__file__).parents[1] / "examples" / request.param
     output = tmp_path_factory.mktemp("onnx-reinfer") / "run"
     detector = OnnxDetector(directory / "model.onnx", directory / "manifest.json")
     summary = run_episode(output, detector=detector)

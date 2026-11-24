@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "accepted_at_utc": "2026-11-24T12:11:59.102686+00:00",
+  "status": "accepted_for_offline_fixture_hybrid_pipeline",
+  "release": "0.2.0",
+  "model_path": "examples/lifecycle-model/model.onnx",
+  "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+  "gates": {
+    "selection_fixed_before_holdout": true,
+    "holdout_reported_without_tuning": true,
+    "three_jobs_completed_and_reinferred": true,
+    "model_suite_13_expected_results": true,
+    "short_model_resource_soak": true
+  },
+  "pure_yolo_terrain_acceptance": false,
+  "real_domain_acceptance": false,
+  "wall_clock_24h_acceptance": false,
+  "legacy_model_preserved": "examples/fixture-model/",
+  "runtime_default": "pixel_fixture",
+  "engineering_final_commit_ci": "pending"
+}

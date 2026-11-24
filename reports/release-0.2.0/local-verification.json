@@ -21,14 +21,14 @@
       "result": "No broken requirements found"
     },
     {
-      "command": "ORT_DISABLE_TELEMETRY=1 MAPLE_TRAINING_SMOKE=1 python -m pytest -q --junitxml=artifacts/v02-full-native.xml",
-      "tests": 629,
-      "passed": 629,
+      "command": "ORT_DISABLE_TELEMETRY=1 MAPLE_TRAINING_SMOKE=1 python -m pytest -q --junitxml=artifacts/v02-final-local-pytest.xml",
+      "tests": 633,
+      "passed": 633,
       "skipped": 0,
       "failures": 0,
       "warnings": 2,
-      "pytest_wall_seconds": 89.97,
-      "junit_seconds": 89.824
+      "pytest_wall_seconds": 107.45,
+      "junit_seconds": 107.267
     }
   ],
   "native_snapshot_subset": {
@@ -94,7 +94,7 @@
     "tests/test_lab.py": "e54ca9fea8c667ccc5ca10a6ecc4a9b2f99cc4ba7a5e74ba591e7658af6f992d",
     "tests/test_lab_review.py": "f26c3db9f1140679bca605acc8132f251faf366af55439ac361c821fcd93c7e2",
     "tests/test_lifecycle_dataset.py": "caa94b59fc76e1ae1dd95dc8cebc49a08ecd75ee127c7ee7c7cb3f85b6e56560",
-    "tests/test_model_validation.py": "6f4e8b8ff54062db6ed73c7f153a5625db272b4068554f3f2d0ce8d520647831",
+    "tests/test_model_validation.py": "d415731e87cfb8f95656c8f0a969444ad8b1f7cc0e3c01c2050c81fdc8a6840a",
     "tests/test_ocr.py": "76f72ed343c5854d6866a6afc99fc16b2d584fdc76bf7bc3e3697a6ef3251bdb",
     "tests/test_offline_runtime.py": "3f3a3452b18eff8e62917cc71bfabbe16df9299f6529301317bdcdc016b94f7f",
     "tests/test_onnx_detector.py": "a03dc122df58ec05378ccd780bfe5b61070863d875cc5adde9add345bb3f9244",
@@ -114,5 +114,18 @@
     "tests/test_vision.py": "042fec36cc0bbac288d7cd509a04554d7fd7304a37aa89d6d2f97160dcf59bdb"
   },
   "warning_context": "Two upstream TorchScript ONNX exporter deprecation warnings; no test failures.",
-  "timing_context": "Concurrent local validation workloads; not an idle performance comparison."
+  "timing_context": "Concurrent local validation workloads; not an idle performance comparison.",
+  "native_model_scope": "Both shipped ONNX checkpoints are parametrized through actual full-mission reinference and mismatch rejection.",
+  "independent_experiment_review": {
+    "status": "passed_after_documentation_corrections",
+    "reviewed_files": [
+      "docs/YOLO_LIFECYCLE_EXPERIMENT.md",
+      "examples/lifecycle-model/README.md"
+    ],
+    "corrected_facts": [
+      "Both old and new model training seeds are 42; the dataset generation seed differs.",
+      "N+1 counts actual perception frames; only supervision and policy decisions actually executed are compared, with null terminal decisions preserved."
+    ],
+    "source_code_changed": false
+  }
 }

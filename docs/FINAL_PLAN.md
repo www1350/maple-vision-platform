@@ -6,7 +6,7 @@
 
 建立一个本机可运行的闭环：有来源的知识与素材进入独立模拟世界；渲染生成图像，视觉模块理解图像，策略决定动作，模拟器执行动作，独立验证器核查结果。使用者能自己复现成功和失败，不需要拿正式账号试错。
 
-当前具备 SQLite 知识目录、静态素材登记与渲染、会话级合成数据集、实际 YOLO 训练和 ONNX 推理、三职业两地图任务、故障测试、动作重放、录像观察与本地 OCR。v0.2 增加本地知识增量计划、生命周期数据与分组评估、指定模型的 suite/soak、资源采样和真实感知/策略重新执行。当前修改的完整测试、跨平台 CI、新验证器最终门禁和候选模型推广仍待验收；内置规则与画面仍为 `synthetic_fixture`，没有将小册子最新资料、正式地图物理或真实图像效果冒充为已核实内容。
+当前具备 SQLite 知识目录、静态素材登记与渲染、会话级合成数据集、实际 YOLO 训练和 ONNX 推理、三职业两地图任务、故障测试、动作重放、录像观察与本地 OCR。v0.2 增加本地知识增量计划、生命周期数据与分组评估、指定模型的 suite/soak、资源采样和真实感知/策略重新执行。本地工程、新验证器预检/文件变化防护与实际失败保留已通过，所选 lifecycle 模型完成合成混合管线本地门禁；最终发布提交的远端 CI 仍待确认。内置规则与画面仍为 `synthetic_fixture`，没有将小册子最新资料、正式地图物理或真实图像效果冒充为已核实内容。
 
 本项目执行对象是独立 Python 模拟器。正式客户端控制、系统按键注入、输入伪装、封包/内存修改和反作弊绕过不在交付范围内；独立验证也不能证明正式账号不会被封。玩家回复只产出待人工确认的本地草稿。依赖安装后，默认运行、训练、推理和 OCR 使用本地计算，不调用 LLM API，不消耗运行时 LLM token；编程 AI 开发本身的计费另算。
 
@@ -77,17 +77,30 @@ YOLO 是学习图像中对象位置和类别的检测模型；它不负责理解
 
 默认 `PixelPerception` 是几何样例专用颜色基线。模型闭环明确使用 **YOLO 检测玩家/怪物/掉落/NPC/门，像素方法读取平台/梯子/HUD/地图/对话标记**；动态对象漏检时不偷偷用颜色基线补成 YOLO 成绩。自定义素材必须训练或提供适配检测器，不能期待原调色板解析器自动识别。
 
-v0.2 让同一个显式 ONNX 实例进入 suite/soak，并在新运行包中记录实际加载模型哈希、manifest、阈值和终止观测。`lab reinfer` 从初始画面起实际执行每帧感知、监督和策略，比较新计算的观测与动作；它不把记录动作当作新策略输出。预检资源/文件变化边界和原始失败轮次保留仍须完成最终门禁，详见 [模型验证](MODEL_VALIDATION.md)。
+v0.2 让同一个显式 ONNX 实例进入 suite/soak，并在新运行包中记录实际加载模型哈希、manifest、阈值和终止观测。`lab reinfer` 从初始画面起实际执行每帧感知、监督和策略，比较新计算的观测与动作；它不把记录动作当作新策略输出。预检资源/文件变化边界和保留实际失败轮次一次已完成本地审查与回归，详见 [模型验证](MODEL_VALIDATION.md)。
 
 本地 Tesseract 适配器可以识别指定图像区域文字，但尚无游戏中文小字、聊天栏或真实 HUD 准确率验收，也没有自动接入任务策略。完整时序跟踪、目标身份、WorldState/BeliefState 融合属于后续工程：需保留测量时间、来源、有效期和不确定性，不能把上次估计永久当真。[训练](TRAINING.md) · [评估定义](EVALUATION.md) · [录像与 OCR](RECORDINGS.md)
 
-### 5.3 v0.1 模型历史结果与 v0.2 选模边界
+### 5.3 所选 lifecycle 模型、实际结果与边界
 
-v0.1 的最终候选为 320px、60 epoch，按验证集选择后才评估当时的保留 test。该历史测试集为 64 帧、633 个目标，在 confidence≥0.25、IoU=0.5 下为 TP=535、FP=0、FN=98；micro precision=1.0000、recall=0.8452、macro AP50=0.92645。平台召回约 **0.4948**。这里的 AP50 是置信度截断后的单 IoU 指标，不是完整 COCO mAP50–95。
+v0.2 的所选模型位于 `examples/lifecycle-model/`，SHA-256 为 `7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3`。它采用 320px、40 epoch、batch 8、seed 42、CPU 2 线程，从本地配置随机初始化，实际训练耗时 **1067.895699 秒**。来源、权重与完整结果见 [YOLO_LIFECYCLE_EXPERIMENT.md](YOLO_LIFECYCLE_EXPERIMENT.md)。
 
-混合感知下，标飞/龙骑/牧师分别用 327/349/317 步完成两图任务并通过独立重放，标飞包含两次跳跃攻击。三次合成任务成功不足以证明总体可靠率或真实素材泛化。模型、分区和完整指标见 [YOLO_EXPERIMENT.md](YOLO_EXPERIMENT.md)；随仓库模型位于 `examples/fixture-model/`。
+在同一份新数据的 192 帧 val 上比较：
 
-在 v0.2 新数据的 **192 帧 val** 上，同一旧模型的 AP50 为 **0.900697**、平台召回为 **0.467014**。这是用于本轮选模的同数据基线；不能与上面的旧 test 数字直接比较并推断升级效果。新候选训练、验证集选模、选择后的 test 和闭环验收由独立实验记录负责，尚未授予新模型推广结论。准确结果汇入 [v0.2 发布验收](RELEASE_0_2_ACCEPTANCE.md)。
+| 模型 | AP50 | platform recall |
+|---|---:|---:|
+| v0.1 旧模型 | 0.900697 | 0.467014 |
+| v0.2 lifecycle 模型 | 0.946252 | 0.661458 |
+
+本轮工程准入要求在首个候选 val 之后制定，**没有预注册**。选模同时参考新 val 与明确单列的合成任务套件，于 **2026-11-24 12:06:01 UTC** 固定候选；随后只评估一次保留 test，不据 test 调参。该 test 为 192 帧、1572 个真值目标，TP=1372、FP=3、FN=200；AP50=**0.944822452**、micro precision=**0.997818182**、recall=**0.872773537**。AP50 是指定置信度截断后的单 IoU 指标，不是完整 COCO mAP50–95。
+
+混合管线的三职业任务分别用 **327/325/317 步**完成，独立目标核验通过；实际 reinfer 分别重新执行 **328/326/318 帧**感知与策略，包含终止帧。模型 suite **13/13** 场景符合预期；60 秒 soak 请求实际运行 **61.510525 秒**、完成 **10 轮**，有 **63** 个资源样本，最大采样当前 RSS **90.09375 MiB**。这些本地门禁支持本次合成混合管线模型准入，不能推导真实域或 24 小时可靠率。[发布证据](RELEASE_0_2_ACCEPTANCE.md)
+
+**纯 YOLO 地形仍未通过。** 对实际 ONNX 的检查确认 `reg_max=8`、stride=4/8；每边距离由 0…7 的 DFL bins 表示，单框宽度上界为 `2×(8−1)×8=112px`。当前全宽地板为 320px，单框 IoU 上界为 `112/320=0.35`，达不到评估 IoU=0.5。这解释了 val 中 192 个全宽地板漏检，不能据此解释剩余其他错误。直接添加 stride32 分支虽然扩大理论框宽，但当前 320 输入/4px 地板几何下实际匹配器给该分支 **0 个可用地板正样本锚点**，因此没有训练这个无效候选。详见实验报告中的实际架构与锚点检查。
+
+当前闭环保留 YOLO 动态对象加像素地形/HUD，不把混合成功写成纯 YOLO 地形通过，也不修改标签去隐藏架构限制。后续架构研究必须先核对可表示范围、实际正样本分配和 CPU 成本，再单独训练与验证。
+
+v0.1 样例与历史数据仍保留在 `examples/fixture-model/` 和 [YOLO_EXPERIMENT.md](YOLO_EXPERIMENT.md)。其原 test 是 64 帧、633 个目标、AP50=0.92645、平台 recall≈0.4948，三职业原任务为 327/349/317 步；这些旧 test 数字与本轮新 test 不应直接用来估计模型提升。默认像素基线也没有被静默替换。
 
 ## 6. 职业能力、任务与有界监督
 
@@ -141,7 +154,7 @@ python -m maple_vision lab replay artifacts/plan-assassin
 python -m maple_vision lab run --output artifacts/plan-knight --job dragon_knight --seed 1
 python -m maple_vision lab run --output artifacts/plan-cleric --job cleric --seed 2
 python -m maple_vision lab suite --output artifacts/plan-suite --seeds 3
-python -m maple_vision lab run --output artifacts/plan-yolo --model examples/fixture-model/model.onnx --manifest examples/fixture-model/manifest.json
+python -m maple_vision lab run --output artifacts/plan-yolo --model examples/lifecycle-model/model.onnx --manifest examples/lifecycle-model/manifest.json
 python -m maple_vision lab replay artifacts/plan-yolo
 ```
 
@@ -182,7 +195,7 @@ python -m maple_vision model export artifacts/plan-train/run/weights/best.pt --o
 python -m maple_vision vision benchmark artifacts/plan-data --output artifacts/plan-yolo-val.json --split val --model artifacts/plan-export/model.onnx --manifest artifacts/plan-export/manifest.json
 ```
 
-以上是 v0.2 首个候选的 320px、40 epoch、batch 8、seed 42 计划，不是已经取得的成绩；实际候选与结果以实验记录为准。v0.1 历史实验使用旧版数据，复现时应采用其原数据命令。3 epoch 可用于流程 smoke，不能作为质量验收。Python API 与 CLI 的默认输入尺寸不同，实验命令始终显式指定。调参只看 train/val，test 作为选择后的保留评估；持续据 test 修模型后必须建立新的独立留出集。
+以上复现 v0.2 所选候选的 320px、40 epoch、batch 8、seed 42 配置；原运行训练耗时 1067.895699 秒，实际权重与结果见 [本轮实验](YOLO_LIFECYCLE_EXPERIMENT.md)。重新训练的时间与字节不保证跨环境相同。v0.1 历史实验使用旧版数据，复现时应采用其原数据命令。3 epoch 可用于流程 smoke，不能作为质量验收。Python API 与 CLI 的默认输入尺寸不同，实验命令始终显式指定。调参只看 train/val，test 作为选择后的保留评估；持续据 test 修模型后必须建立新的独立留出集。
 
 固定候选权重与选模理由后，再执行保留 test 和独立任务检查：
 
@@ -199,7 +212,7 @@ python -m maple_vision lab suite --output artifacts/plan-model-suite --seeds 3 -
 python -m maple_vision lab soak --output artifacts/plan-model-soak --seconds 60 --resource-interval 1 --max-resource-samples 1024 --model artifacts/plan-export/model.onnx --manifest artifacts/plan-export/manifest.json
 ```
 
-输出包括实际墙钟、进程 CPU 和支持平台上的 RSS 来源与单位；未知内存保持 `null`。资源样本有界保留，最大采样值不能冒充精确瞬时峰值。最终预检/文件变化防护和原始失败包保留须随本版准确提交验收。
+输出包括实际墙钟、进程 CPU 和支持平台上的 RSS 来源与单位；未知内存保持 `null`。资源样本有界保留，最大采样值不能冒充精确瞬时峰值。预检/文件变化防护和原始失败包保留已有本地回归证据；最终发布提交仍需远端 CI。
 
 ### 8.4 本地录像、OCR 与草稿
 
@@ -219,7 +232,7 @@ OCR 需要本机 Tesseract 与对应语言包；中文需自行安装并验证 `
 
 按此表继续现有仓库，不重建已经通过的基础设施。实际机器可并行处理独立模块；集成前先冻结合同。机器可读依赖见 [milestones.yaml](../engineering/milestones.yaml)。
 
-| 阶段 | 前置 | 当前实现（v0.2 新增仍待最终门禁） | 完整目标仍需的工作 |
+| 阶段 | 前置 | 当前实现与本地验证（最终提交 CI 待确认） | 完整目标仍需的工作 |
 |---|---|---|---|
 | P0 工程基础 | 无 | 合同、CLI、v1 SQLite、CI 与兼容回归 | 保留历史验收，不改写旧成绩 |
 | P1 知识 | P0 | v2 导入/冲突/快照、职业配置注入、本地增量计划与原子应用 | 网络来源与持续调度、最新核实数据、其余规则映射 |
@@ -227,12 +240,12 @@ OCR 需要本机 Tesseract 与对应语言包；中文需自行安装并验证 `
 | P3 地图渲染 | P1/P2 | 两地图、分层/镜头/透明度标签 | 外部地图包、编辑与几何校验 |
 | P4 数据 | P3 | legacy v1、生命周期 v2、动作/像素/标签/覆盖重放检查 | 未见地图、真实标注、更多遮挡与跨域覆盖 |
 | P5 模拟器 | P0/P3 | 固定步长、物理/战斗/资源/保存恢复 | 更多机制、经核实的规则校准 |
-| P6 模型 | P4 | 训练、导出、ONNX、聚合与生命周期分组指标 | 本轮候选最终选模、模型规模/两阶段比较、真实域准入 |
+| P6 模型 | P4 | 训练、导出、分组指标、所选 lifecycle 模型混合管线准入 | 纯 YOLO 地形、模型规模/两阶段比较、真实域准入 |
 | P7 视觉状态 | P5/P6 | 对象、样例 HUD、本地 OCR | 时序追踪、真实 UI、BeliefState |
 | P8 职业 | P1/P5 | 三职业与严格参数注入 | 全职业数据、外部能力包 |
 | P9 任务 | P7/P8 | 两图任务、视觉效果与真值核验 | 通用任务 DSL、配置化任务图 |
 | P10 监督 | P9 | 新鲜度、未知/恢复预算、失败停止 | 更丰富故障与恢复证据 |
-| P11 回归 | P10 | 动作重放、故障集、录像观察、新版实际模型/策略重新执行 | 新验证器最终门禁、真实 Golden Recording |
+| P11 回归 | P10 | 动作重放、故障集、录像观察、实际模型/策略重新执行与边界回归 | 真实 Golden Recording |
 | P12 扩展 | P11 | 三职业两地图组合 | 第三方内容包、管理 UI |
 | P13 发布 | P12 | wheel/CI、指定模型的 suite/soak、进程资源测量 | v0.2 准确提交 CI、完整 24 小时墙钟和真实域发布门禁 |
 
@@ -270,11 +283,11 @@ v8 中地图识别 99%、平台定位 98%、核心任务 98%、拾取 95%、生�
 
 ## 11. 下一轮工程的明确优先级
 
-1. **完成 v0.2 模型与发布验收。** 生命周期 v2 数据已冻结，保留旧实验；根据新数据的 val 选择候选，再做保留 test、逐阶段/位置漏检分析和三职业两图闭环。准确提交的测试与 CI 通过前保持候选状态，未达到模型门禁则保留实验失败。
+1. **完成 v0.2 最终提交 CI。** 数据、模型与源码已冻结，本地工程、混合管线选模、保留 test、三职业闭环和实际重新推理已完成；把最终测试与文档收口后的提交送入 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3) 的远端检查。纯 YOLO 地形仍需新的独立工程研究，不因本轮混合准入而改写结论。
 2. **扩展经授权的知识闭环。** 本地静态导出的计划/应用已实现；后续为获准来源增加网络适配和持续调度，完成真实资料映射审查，再把地图/怪物/技能规则逐项接入。不把目录条目存在当作玩法已经生效。
 3. **扩展外部内容。** 在现有静态 SpritePack 上添加动画/锚点和地图包验证；用全新内容包测试加载、碰撞、可见标签及旧版本重放，之后再扩展职业。
 4. **建设真实录像评估集。** 按独立录制会话和地图留出，人工标注对象、HUD 和文字；记录画面尺度、遮挡与版本，真实域误差单独报告。需要精确时序时先补逐帧 PTS 合同。
-5. **补状态与任务通用性。** 设计有期限的跟踪/BeliefState 和可配置任务图；利用本轮新增的实际模型/策略重新执行做回归，但先完成其预检与文件变化边界验收。新提案先过 Schema 与独立测试，再接现有 VisualAgent，最后考虑管理 UI。
-6. **执行发布长稳。** 本轮已接线显式模型与有界资源测量；待其最终门禁通过后，固定提交、依赖、数据/模型和机器，真正连续运行 24 小时。应保留实际失败轮次一次，而非重新运行制造替代证据；这项最终行为仍待 v0.2 验收确认。短时 smoke、模型长稳入口存在、完整 24 小时通过分别记录。
+5. **补状态与任务通用性。** 设计有期限的跟踪/BeliefState 和可配置任务图；利用本轮已本地验证的实际模型/策略重新执行做回归，保留预检与文件变化反例。新提案先过 Schema 与独立测试，再接现有 VisualAgent，最后考虑管理 UI。
+6. **执行 24 小时发布长稳。** 所选模型已通过 61.510525 秒、10 轮短时运行，有界资源采样与原始失败保留也已本地验证。后续固定提交、依赖、数据/模型和机器，真正连续运行 24 小时，保留失败和资源趋势；当前不得标记 24 小时通过。
 
 继续开发的入口是本文件与 [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)；实现细节查 [API_CONTRACTS.md](API_CONTRACTS.md)、[DATA_SCHEMAS.md](DATA_SCHEMAS.md) 和各专题文档。每次交付都同时给出代码、可执行命令、实际证据与未通过项，使下一名执行者能直接复现，而不是重新推测项目状态。

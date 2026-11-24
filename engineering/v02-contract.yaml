@@ -2,13 +2,16 @@ contract_version: 1
 spec_version: "8.0"
 release_version: "0.2.0"
 scope: offline_synthetic_fixture_platform
-status: candidate_pending_final_validation
+status: local_accepted_pending_final_remote_ci
 result_source: docs/RELEASE_0_2_ACCEPTANCE.md
 execution_plan: docs/V0_2_PLAN.md
-implementation_commit: null
-local_evidence: null
+implementation_commit: 4e9914411c1b3f49b2f8eb81d7c17948af8ddb82
+implementation_commit_role: initial_remote_implementation_before_final_test_model_and_evidence_followups
+final_release_commit: null
+local_evidence: docs/RELEASE_0_2_ACCEPTANCE.md
+local_evidence_archive: reports/release-0.2.0
 remote_evidence: null
-final_head_checks: null
+final_head_checks: https://github.com/www1350/maple-vision-platform/pull/3
 full_spec_acceptance: false
 historical_contracts:
   p0: engineering/p0-contract.yaml
@@ -30,7 +33,7 @@ candidate_surfaces:
     plan_schema_version: 1
     database_schema_version: 2
     local_review: completed_with_transaction_growth_budget_regression
-    final_verification: pending_exact_commit_tests_and_ci
+    final_verification: passed_local_final_remote_ci_pending
     invariants:
       - Capture original source bytes and derived provenance inside one self-contained plan.
       - Bind the complete catalog and legacy-source baseline to a deterministic logical fingerprint.
@@ -50,7 +53,7 @@ candidate_surfaces:
     generator_version: lifecycle-v1
     legacy_profile_and_schema_preserved: true
     local_review: completed_with_selected_combat_hit_coverage_regression
-    final_verification: pending_exact_commit_tests_and_ci
+    final_verification: passed_local_final_remote_ci_pending
     phases: [spawn, combat, loot, cleared, dialogue, transition]
     validation_basis: actual_bounded_action_replay_pixels_labels_and_coverage
     boundary: training_scenario_truth_does_not_enter_runtime_detector_or_policy
@@ -60,15 +63,15 @@ candidate_surfaces:
     report_schema_version: 2
     groups: [phase, map, map_phase, player_position, overlapping_coverage_tag]
     aggregate_predictions_preserved: true
-    final_verification: pending_exact_commit_tests_and_ci
+    final_verification: passed_local_final_remote_ci_pending
     metric_definition: single_iou_101_point_interpolated_ap_after_declared_confidence_cutoff
     empty_truth_false_positives_counted: true
     unseen_map_or_real_domain_acceptance: false
   model_validation:
     modules: [lab.py, validation_resources.py, onnx_detector.py]
     commands: [lab_suite_with_model, lab_soak_with_model, lab_reinfer]
-    final_verification: pending_preflight_race_and_actual_failure_retention_gates
-    intended_final_behavior:
+    final_verification: preflight_race_and_actual_failure_retention_passed_local
+    verified_local_behavior:
       reinfer: actually_execute_every_perception_supervisor_and_policy_step_including_terminal_frame
       identity: compare_loaded_model_hash_full_manifest_and_thresholds_before_first_detect
       evidence_preflight: enforce_bounded_inputs_and_reject_evidence_changes_during_verification
@@ -81,7 +84,10 @@ candidate_surfaces:
     reference: docs/MODEL_VALIDATION.md
 
 frozen_experiment_input:
-  origin: synthetic_fixture_lifecycle_v2
+  origin: synthetic-fixture-v1
+  profile: lifecycle
+  manifest_schema_version: 2
+  generator_version: lifecycle-v1
   local_path: artifacts/v02-experiment/dataset
   sessions: 18
   frames_per_session: 48
@@ -112,55 +118,129 @@ prior_model_on_new_validation:
   local_evidence: artifacts/v02-experiment/prior-model-validation.json
   comparability: compare_candidates_on_this_same_validation_set_not_to_v0_1_old_test_scores
 
+selected_model:
+  status: accepted_local_synthetic_hybrid_pipeline
+  directory: examples/lifecycle-model
+  model_sha256: 7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3
+  dataset_manifest_sha256: 670f6dae181f0f4b3107ba6a47cb733f19cfbc216c4e8e8c23f96b756601b3ff
+  training: {image_size: 320, epochs: 40, batch: 8, seed: 42, cpu_threads: 2, wall_seconds: 1067.895699}
+  selection_timestamp_utc: "2026-11-24T12:06:01.657452+00:00"
+  criteria_were_preregistered: false
+  criteria_timing: engineering_requirements_recorded_after_first_candidate_val_before_holdout
+  selection_data: validation_plus_explicitly_separate_synthetic_scenario_suite
+  validation: {frames: 192, ap50: 0.9462517680339462, platform_recall: 0.6614583333333334}
+  heldout_test:
+    evaluated_once_after_selection: true
+    used_for_tuning: false
+    frames: 192
+    ground_truth: 1572
+    tp: 1372
+    fp: 3
+    fn: 200
+    ap50: 0.944822452170029
+    micro_precision: 0.9978181818181818
+    micro_recall: 0.8727735368956743
+    confidence_threshold: 0.25
+    iou_threshold: 0.5
+  missions_and_actual_reinference:
+    assassin: {steps: 327, frames_reinferred: 328, goal_verified: true, reinference_verified: true}
+    dragon_knight: {steps: 325, frames_reinferred: 326, goal_verified: true, reinference_verified: true}
+    cleric: {steps: 317, frames_reinferred: 318, goal_verified: true, reinference_verified: true}
+  scenario_suite: {expected_outcomes: 13, passed: 13}
+  short_resource_soak:
+    requested_wall_seconds: 60
+    actual_wall_seconds: 61.510525
+    completed_episodes: 10
+    resource_samples: 63
+    max_sampled_current_rss_bytes: 94470144
+    max_sampled_current_rss_mib: 90.09375
+    passed: true
+    wall_clock_24h_soak: not_completed
+  scope: onnx_dynamic_objects_plus_fixture_pixel_terrain_hud
+  pure_yolo_terrain_acceptance: false
+  historical_model_preserved: examples/fixture-model
+  report: docs/YOLO_LIFECYCLE_EXPERIMENT.md
+
+terrain_architecture_limit:
+  basis: actual_exported_onnx_and_installed_assigner_probe_on_validation_geometry
+  actual_reg_max: 8
+  strides: [4, 8]
+  maximum_box_width_pixels: 112
+  full_width_floor_pixels: 320
+  full_floor_iou_upper_bound: 0.35
+  evaluation_iou_threshold: 0.5
+  pure_yolo_terrain_acceptance: false
+  appended_stride32_candidate:
+    eligible_positive_floor_anchors: 0
+    scope: measured_320_input_4px_floor_geometry_and_current_assigner
+    trained: false
+    reason: wider_regression_range_does_not_fix_missing_positive_floor_assignment
+  heldout_test_used_for_diagnosis_or_tuning: false
+  labels_modified: false
+  report: docs/YOLO_LIFECYCLE_EXPERIMENT.md
+
 required_release_gates:
   - id: formatting_lint_and_types
     commands:
       - python -m ruff format --check .
       - python -m ruff check .
       - python -m mypy
-    status: pending_exact_commit_execution_and_evidence
+    status: passed_local_final_remote_ci_pending
   - id: full_unit_integration_and_legacy_regression
     command: python -m pytest -q
-    status: pending_exact_commit_execution_and_evidence
+    status: passed_local_final_count_recorded_in_release_evidence
   - id: atomic_knowledge_sync
     requirement: Verify deltas, history, status/version separation, tamper, staleness, concurrency and complete rollback including logical growth budget.
-    status: local_focused_review_complete_final_tree_and_ci_pending
+    status: passed_local_review_and_full_regression
   - id: lifecycle_and_grouped_metrics
     requirement: Preserve frozen data and legacy bytes; verify replayed phase/coverage, selected combat hits, isolation, forged evidence rejection and grouped/aggregate metrics.
-    status: local_focused_review_complete_final_tree_and_ci_pending
+    status: passed_local_review_and_full_regression_initial_windows_legacy_hash_issue_open
   - id: actual_perception_and_policy_reinference
     requirement: Match all N+1 perceptions and real decisions, enforce model identity before detection, handle termination and faults, reject stale or over-budget evidence.
-    status: pending_final_verifier_review_and_exact_commit_validation
+    status: passed_local_review_regression_and_actual_selected_model_reinference
   - id: original_failed_episode_retention
     requirement: Retain the actual failed episode and its failure context once, with no replacement rerun and bounded successful-episode storage.
-    status: pending_final_validation
+    status: passed_local_independent_review_and_regression
   - id: model_suite_and_short_resource_soak
     requirement: Record explicit model hash, actual task/fault outcomes, wall duration, process resource sources/units/unknowns and bounded samples.
-    status: pending_final_model_and_environment_evidence
+    status: passed_local_selected_model_13_scenarios_and_61_second_10_episode_soak
   - id: native_training_export_and_inference
     requirement: Execute local CPU training, ONNX export, actual native inference and adapter regressions against the current commit.
-    status: pending_final_execution_and_evidence
+    status: passed_local_training_export_inference_and_native_regressions
   - id: clean_wheel_installation
     requirement: Install the 0.2.0 wheel in a clean environment and execute outside the checkout on Ubuntu and Windows.
-    status: pending_final_execution_and_evidence
+    status: local_verified_final_remote_ubuntu_windows_commit_pending
   - id: independent_review
     requirement: Preserve concrete review findings, fixes, regression evidence and unresolved limits.
-    status: in_progress_final_verifier_and_release_review_pending
+    status: passed_local_including_preflight_race_and_original_failure_retention
 
 remote_release_gates:
-  status: pending_exact_release_commit
+  status: initial_windows_legacy_hash_failure_final_release_commit_pending
   commit_sha: null
   run_url: null
-  final_pull_request: null
+  final_pull_request: https://github.com/www1350/maple-vision-platform/pull/3
+  initial_implementation_commit: 4e9914411c1b3f49b2f8eb81d7c17948af8ddb82
+  initial_run_url: https://github.com/www1350/maple-vision-platform/actions/runs/45390705416
+  initial_run_observation:
+    ubuntu: passed
+    native_training: passed
+    windows: failed_legacy_exact_manifest_hash_regression
+    issue: Linux raw PNG/text hash was assumed portable. Original v0.1 and current outputs match byte-for-byte within fixed LF and CRLF environments; strict original-content fingerprints now replace the invalid cross-encoder byte expectation. Actual Windows confirmation pending.
+    corrective_evidence: reports/release-0.2.0/legacy-content-diagnosis.json
+    production_source_changed_for_fix: false
+    no_skip_or_weakened_assertion_as_resolution: true
   jobs:
-    - {id: ubuntu_python312, status: pending}
-    - {id: windows_python312, status: pending}
-    - {id: ubuntu_cpu_training_and_native_adapters, status: pending}
+    - {id: ubuntu_python312, status: pending_final_head}
+    - {id: windows_python312, status: pending_final_head}
+    - {id: ubuntu_cpu_training_and_native_adapters, status: pending_final_head}
   boundary: historical_green_checks_do_not_cover_new_changes
 
 separate_acceptance_gates:
   learned_model_promotion:
-    status: pending_candidate_selection_and_acceptance
+    status: accepted_local_for_synthetic_hybrid_pipeline_only
+    criteria_were_preregistered: false
+    criteria_timing: after_first_candidate_validation_before_holdout
+    pure_yolo_terrain_acceptance: false
     requires: [declared_selection_criteria, same_dataset_validation, post_selection_test, grouped_errors, multiclass_two_map_closed_loop, actual_reinference, model_and_data_hashes]
     unsuccessful_candidate_policy: retain_results_without_promoting_or_overwriting_historical_evidence
   real_domain_validation:

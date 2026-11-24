@@ -1,0 +1,234 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-11-24T12:08:51.601296+00:00",
+  "scope": "local_installed_architecture_and_exported_model_diagnosis_not_training_or_test_tuning",
+  "method": "Inspected installed primary-source implementations and actual exported ONNX weights/constants. Executed the actual installed TaskAlignedAssigner.select_candidates_in_gts and make_anchors on the measured floor box before constructing this report.",
+  "environment": {
+    "ultralytics": "8.4.218",
+    "torch": "2.15.0+cpu",
+    "onnx": "1.23.2"
+  },
+  "model": {
+    "path": "artifacts/v02-experiment/export-tiny-320/model.onnx",
+    "sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+    "input_shape": [
+      1,
+      3,
+      320,
+      320
+    ],
+    "output_shape": [
+      1,
+      11,
+      8000
+    ],
+    "dfl_weight_name": "model.6.dfl.conv.weight",
+    "dfl_weight_shape": [
+      1,
+      8,
+      1,
+      1
+    ],
+    "dfl_bins": [
+      0.0,
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0,
+      7.0
+    ],
+    "actual_reg_max": 8,
+    "stride_constants": [
+      {
+        "node": "/model.6/Constant_13",
+        "shape": [
+          1,
+          8000
+        ],
+        "stride_values": [
+          4.0,
+          8.0
+        ],
+        "anchor_counts": [
+          6400,
+          1600
+        ]
+      }
+    ]
+  },
+  "dataset": {
+    "manifest_sha256": "670f6dae181f0f4b3107ba6a47cb733f19cfbc216c4e8e8c23f96b756601b3ff",
+    "observed_split": "val",
+    "full_width_floor_count": 192,
+    "source_box_xyxy": [
+      0,
+      168,
+      320,
+      172
+    ],
+    "input_scale": 1.0,
+    "letterbox_padding_top": 64,
+    "model_input_box_xyxy": [
+      0,
+      232,
+      320,
+      236
+    ],
+    "training_imgsz": 320,
+    "training_rect": false,
+    "test_used_for_diagnosis": false
+  },
+  "box_capacity": {
+    "derivation": "DFL is a softmax-weighted expectation of bins 0..reg_max-1. dist2bbox width=(left+right)*stride; therefore width <= 2*(reg_max-1)*stride.",
+    "maximum_width_by_stride": {
+      "4": 56,
+      "8": 112
+    },
+    "global_maximum_width_pixels": 112,
+    "full_floor_iou_upper_bound": 0.35,
+    "evaluation_iou_threshold": 0.5,
+    "full_floor_cannot_match_at_iou50": true,
+    "conclusion": "All 192 full-width floor GT boxes in val necessarily fail the single-box IoU50 matching rule at the declared input size. This explains at least192 of the observed195 platform FN; the remaining3 are not attributed by this architecture proof."
+  },
+  "actual_anchor_probe": {
+    "gt_box_xyxy": [
+      0.0,
+      232.0,
+      320.0,
+      236.0
+    ],
+    "mask_gt": true,
+    "grid_offset": 0.5,
+    "assigner_rule": "stride_val=stride[1] for multi-level heads; enlarge any GT side smaller than stride_val about its center; center must be strictly inside enlarged box.",
+    "enlarged_candidate_box_xyxy": [
+      0.0,
+      230.0,
+      320.0,
+      238.0
+    ],
+    "runs": [
+      {
+        "strides": [
+          4,
+          8
+        ],
+        "stride_val": 8,
+        "eligible_anchor_counts": {
+          "4": 80,
+          "8": 40
+        },
+        "eligible_y": {
+          "4": [
+            234.0
+          ],
+          "8": [
+            236.0
+          ]
+        }
+      },
+      {
+        "strides": [
+          4,
+          8,
+          32
+        ],
+        "stride_val": 8,
+        "eligible_anchor_counts": {
+          "4": 80,
+          "8": 40,
+          "32": 0
+        },
+        "eligible_y": {
+          "4": [
+            234.0
+          ],
+          "8": [
+            236.0
+          ],
+          "32": []
+        }
+      },
+      {
+        "strides": [
+          4,
+          8,
+          16
+        ],
+        "stride_val": 8,
+        "eligible_anchor_counts": {
+          "4": 80,
+          "8": 40,
+          "16": 20
+        },
+        "eligible_y": {
+          "4": [
+            234.0
+          ],
+          "8": [
+            236.0
+          ],
+          "16": [
+            232.0
+          ]
+        }
+      }
+    ]
+  },
+  "rejected_second_candidate": {
+    "description": "Keep reg_max8; append stride16 and stride32 Conv stages; Detect inputs [2,5,7], strides[4,8,32].",
+    "hypothetical_stride32_width_capacity": 448,
+    "actual_stride32_eligible_floor_anchors": 0,
+    "reason": "Range alone does not fix training assignment: nearest stride32 anchor row is y240, outside the expanded y230..238 candidate box. The new head receives no eligible positive floor anchors for this fixed geometry.",
+    "trained": false,
+    "configuration_modified_by_diagnosis": false
+  },
+  "reg_max32_alternative": {
+    "strides": [
+      4,
+      8
+    ],
+    "maximum_width_pixels": 496,
+    "box_head_hidden_channels_before": 32,
+    "box_head_hidden_channels_after": 128,
+    "interpretation": "Installed Detect defines c2=max(16,ch[0]//4,4*reg_max); this widens regression convolutions at both existing high-resolution heads. Mathematical range improves, but added CPU cost and thin-box localization need independent evidence. No candidate trained or recommended for this release."
+  },
+  "decision": {
+    "additional_training": false,
+    "selected_model_unchanged": true,
+    "scope": "onnx_dynamic_objects_plus_fixture_pixel_terrain_hud",
+    "pure_yolo_terrain_acceptance": false,
+    "no_label_changes": true,
+    "no_test_based_tuning": true,
+    "future_work": "Evaluate terrain geometry as a distinct task with actual anchor eligibility, representable regression distances and measured CPU cost before starting a new controlled architecture experiment."
+  },
+  "limitations": [
+    "Export inspection proves the model architecture and geometric limit, not empirical success of an untrained alternative.",
+    "Anchor counts use the actual fixed320 input and measured4px floor geometry; different padding, scale, augmentation or assigner versions require a new check.",
+    "IoU bound is for each individual box; this evaluator does not merge several predicted fragments into a full-width ground-truth box.",
+    "No heldout test outputs were read; candidate selection remained fixed before holdout."
+  ],
+  "primary_local_sources": [
+    {
+      "path": ".venv/lib/python3.12/site-packages/ultralytics/nn/modules/head.py",
+      "symbols": "Detect.__init__, Detect._get_decode_boxes, Detect.decode_bboxes",
+      "sha256": "33b14c3268281f04786c4120d1388baf73ee5e6b84761354905c49ff9245eaa9"
+    },
+    {
+      "path": ".venv/lib/python3.12/site-packages/ultralytics/nn/modules/block.py",
+      "symbols": "DFL.__init__, DFL.forward",
+      "sha256": "cca26c2b295351ebdca179795e02e08cf4052dc71d9c2da9cb870080f2b8dc35"
+    },
+    {
+      "path": ".venv/lib/python3.12/site-packages/ultralytics/utils/tal.py",
+      "symbols": "TaskAlignedAssigner.__init__, select_candidates_in_gts, make_anchors, dist2bbox",
+      "sha256": "f4a1d6efc1220db304b144da0e8e481e7499935033388923e2eeffffaa93dd09"
+    },
+    {
+      "path": ".venv/lib/python3.12/site-packages/ultralytics/nn/tasks.py",
+      "symbols": "parse_model reg_max propagation",
+      "sha256": "606f0fe80c7e3da78fa7370ef4ae4b1a884b63986ef3db06f800e2b3092f3a28"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "checked_at_utc": "2026-11-24T11:59:41.862434+00:00",
+  "input_hashes": {
+    "configs/tiny-yolo.yaml": "122a5e4040cdf15f5acdd692974c55b1b3260794601b1f8d5756595866b81bf6",
+    "artifacts/v02-experiment/training-tiny-320/model.yaml": "122a5e4040cdf15f5acdd692974c55b1b3260794601b1f8d5756595866b81bf6",
+    "artifacts/v02-experiment/dataset/manifest.json": "670f6dae181f0f4b3107ba6a47cb733f19cfbc216c4e8e8c23f96b756601b3ff",
+    "artifacts/v02-experiment/training-tiny-320/input_snapshot/manifest.json": "670f6dae181f0f4b3107ba6a47cb733f19cfbc216c4e8e8c23f96b756601b3ff"
+  },
+  "snapshot_frames": 864,
+  "snapshot_validation_passed": true,
+  "note": "Independent post-run validation. This long training process began before the added before/after native input fingerprint guard; frozen config and manifest remain equal to original inputs."
+}

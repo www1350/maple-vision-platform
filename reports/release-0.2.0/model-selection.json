@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "selected_at_utc": "2026-11-24T12:06:01.657452+00:00",
+  "selected_candidate": "tiny-320-lifecycle-40epoch",
+  "selected_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+  "dataset_manifest_sha256": "670f6dae181f0f4b3107ba6a47cb733f19cfbc216c4e8e8c23f96b756601b3ff",
+  "selection_data": "val only, plus explicitly separate synthetic scenario suite",
+  "criteria_were_preregistered": false,
+  "criteria_timing": "Engineering criteria recorded after first candidate validation; holdout has not been evaluated.",
+  "checks": {
+    "macro_ap50_not_worse": true,
+    "platform_recall_not_worse": true,
+    "dynamic_recalls_not_worse": true,
+    "suite_all_expected_outcomes": true
+  },
+  "candidate_fixed_before_test": true,
+  "additional_candidates_this_release": false,
+  "second_candidate_status": "not_run; architecture diagnosis instead of unsupported small-stride search",
+  "remaining_promotion_gates": [
+    "report_heldout_test_without_tuning",
+    "three_job_actual_reinference",
+    "explicit_model_short_resource_soak"
+  ],
+  "scope": "onnx_dynamic_objects_plus_fixture_pixel_terrain_hud",
+  "pure_yolo_terrain_acceptance": false
+}

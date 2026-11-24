@@ -1,0 +1,2950 @@
+{
+  "24h_wall_soak": "not_run",
+  "actual_wall_seconds": 69.911523,
+  "episode_capture": {
+    "bounded_storage": "one_active_episode_plus_retained_failures_and_requested_fault_bundles",
+    "failed_bundles": "retained_original_execution_not_rerun",
+    "full_action_observation_terminal_trace": true,
+    "mode": "single_execution_staging",
+    "record_stride": 16,
+    "successful_normal_bundles": "discarded_after_summary",
+    "wall_and_resources_include_capture_io": true
+  },
+  "episode_wall_seconds": 68.174822,
+  "episodes": 13,
+  "model_manifest": {
+    "class_names": [
+      "player",
+      "monster",
+      "loot",
+      "portal",
+      "npc",
+      "platform",
+      "ladder"
+    ],
+    "input_height": 320,
+    "input_width": 320,
+    "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+    "output_format": "raw_xywh",
+    "schema_version": 1,
+    "scope": "synthetic_fixture"
+  },
+  "normal_episodes": 9,
+  "passed": true,
+  "perception_settings": {
+    "implementation": "maple_vision.onnx_detector.OnnxDetector",
+    "inference_options": {
+      "confidence_threshold": 0.25,
+      "iou_threshold": 0.45
+    },
+    "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+    "model_manifest": {
+      "class_names": [
+        "player",
+        "monster",
+        "loot",
+        "portal",
+        "npc",
+        "platform",
+        "ladder"
+      ],
+      "input_height": 320,
+      "input_width": 320,
+      "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+      "output_format": "raw_xywh",
+      "schema_version": 1,
+      "scope": "synthetic_fixture"
+    },
+    "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+    "verifiable_model_binding": true
+  },
+  "real_recording_acceptance": "not_run",
+  "results": [
+    {
+      "actions": {
+        "attack": 10,
+        "buff": 2,
+        "idle": 53,
+        "interact": 2,
+        "jump_attack": 2,
+        "loot": 6,
+        "move": 251,
+        "portal": 1
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "assassin",
+        "max_steps": 1000,
+        "record_stride": 16,
+        "seed": 0
+      },
+      "detector": "onnx",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "episode_capture": {
+        "full_action_observation_terminal_trace": true,
+        "mode": "original_single_execution",
+        "record_stride": 16,
+        "retained_bundle": null
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "jump": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6
+      },
+      "final_coins": 20,
+      "final_state_sha256": "a4ba5d4c14922425ac7ba7c7539c08b12277ca1ac8dbc30937e7815020ec8638",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": {
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_height": 320,
+        "input_width": 320,
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "output_format": "raw_xywh",
+        "schema_version": 1,
+        "scope": "synthetic_fixture"
+      },
+      "paused_steps": 0,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.onnx_detector.OnnxDetector",
+          "inference_options": {
+            "confidence_threshold": 0.25,
+            "iou_threshold": 0.45
+          },
+          "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+          "model_manifest": {
+            "class_names": [
+              "player",
+              "monster",
+              "loot",
+              "portal",
+              "npc",
+              "platform",
+              "ladder"
+            ],
+            "input_height": 320,
+            "input_width": 320,
+            "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+            "output_format": "raw_xywh",
+            "schema_version": 1,
+            "scope": "synthetic_fixture"
+          },
+          "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 0.9676103591918945,
+            "detections": [
+              {
+                "bbox": [
+                  8.035476684570312,
+                  131.99678802490234,
+                  28.005054473876953,
+                  168.0071792602539
+                ],
+                "class_id": "portal",
+                "confidence": 0.992280125617981
+              },
+              {
+                "bbox": [
+                  273.9996643066406,
+                  144.0221710205078,
+                  288.0116882324219,
+                  168.1267547607422
+                ],
+                "class_id": "npc",
+                "confidence": 0.9824764728546143
+              },
+              {
+                "bbox": [
+                  250.68460845947266,
+                  145.97479248046875,
+                  265.53304290771484,
+                  167.84396362304688
+                ],
+                "class_id": "player",
+                "confidence": 0.9676103591918945
+              },
+              {
+                "bbox": [
+                  212.0,
+                  94.0,
+                  270.0,
+                  98.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  86.0,
+                  118.0,
+                  152.0,
+                  122.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  115.0,
+                  118.0,
+                  125.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "cavern",
+            "mp_ratio": 0.33,
+            "sequence": 327,
+            "source_id": "onnx-objects+fixture-terrain-hud-v1",
+            "status": "known",
+            "timestamp_ms": 16350
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.2.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "94f1d3b41d11b7c80d71b9e4dea78d3eeff488b6995ea19551da56554c747639"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 16.35,
+      "status": "completed",
+      "steps": 327,
+      "visual_effects": {
+        "not_applicable": 53,
+        "observed": 256,
+        "unknown": 18
+      },
+      "wall_seconds": 6.110549
+    },
+    {
+      "actions": {
+        "attack": 10,
+        "buff": 2,
+        "idle": 53,
+        "interact": 2,
+        "jump_attack": 2,
+        "loot": 6,
+        "move": 249,
+        "portal": 1
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "assassin",
+        "max_steps": 1000,
+        "record_stride": 16,
+        "seed": 1
+      },
+      "detector": "onnx",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "episode_capture": {
+        "full_action_observation_terminal_trace": true,
+        "mode": "original_single_execution",
+        "record_stride": 16,
+        "retained_bundle": null
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "jump": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6
+      },
+      "final_coins": 20,
+      "final_state_sha256": "89cbdb3b62dd3700b5f085cdb27681739c6be508b3aba4ad8db2bef190621bbf",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": {
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_height": 320,
+        "input_width": 320,
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "output_format": "raw_xywh",
+        "schema_version": 1,
+        "scope": "synthetic_fixture"
+      },
+      "paused_steps": 0,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.onnx_detector.OnnxDetector",
+          "inference_options": {
+            "confidence_threshold": 0.25,
+            "iou_threshold": 0.45
+          },
+          "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+          "model_manifest": {
+            "class_names": [
+              "player",
+              "monster",
+              "loot",
+              "portal",
+              "npc",
+              "platform",
+              "ladder"
+            ],
+            "input_height": 320,
+            "input_width": 320,
+            "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+            "output_format": "raw_xywh",
+            "schema_version": 1,
+            "scope": "synthetic_fixture"
+          },
+          "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 0.9676103591918945,
+            "detections": [
+              {
+                "bbox": [
+                  8.035476684570312,
+                  131.99678802490234,
+                  28.005054473876953,
+                  168.0071792602539
+                ],
+                "class_id": "portal",
+                "confidence": 0.992280125617981
+              },
+              {
+                "bbox": [
+                  273.9996643066406,
+                  144.0221710205078,
+                  288.0116882324219,
+                  168.1267547607422
+                ],
+                "class_id": "npc",
+                "confidence": 0.9824764728546143
+              },
+              {
+                "bbox": [
+                  250.68460845947266,
+                  145.97479248046875,
+                  265.53304290771484,
+                  167.84396362304688
+                ],
+                "class_id": "player",
+                "confidence": 0.9676103591918945
+              },
+              {
+                "bbox": [
+                  212.0,
+                  94.0,
+                  270.0,
+                  98.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  86.0,
+                  118.0,
+                  152.0,
+                  122.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  115.0,
+                  118.0,
+                  125.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "cavern",
+            "mp_ratio": 0.33,
+            "sequence": 325,
+            "source_id": "onnx-objects+fixture-terrain-hud-v1",
+            "status": "known",
+            "timestamp_ms": 16250
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.2.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "94f1d3b41d11b7c80d71b9e4dea78d3eeff488b6995ea19551da56554c747639"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 16.25,
+      "status": "completed",
+      "steps": 325,
+      "visual_effects": {
+        "not_applicable": 53,
+        "observed": 254,
+        "unknown": 18
+      },
+      "wall_seconds": 5.847122
+    },
+    {
+      "actions": {
+        "attack": 10,
+        "buff": 2,
+        "idle": 53,
+        "interact": 2,
+        "jump_attack": 2,
+        "loot": 6,
+        "move": 253,
+        "portal": 1
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "assassin",
+        "max_steps": 1000,
+        "record_stride": 16,
+        "seed": 2
+      },
+      "detector": "onnx",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "episode_capture": {
+        "full_action_observation_terminal_trace": true,
+        "mode": "original_single_execution",
+        "record_stride": 16,
+        "retained_bundle": null
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "jump": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6
+      },
+      "final_coins": 18,
+      "final_state_sha256": "e2063d5990c48363368accc13c209d5223812fee0e2bf1df3b480472a4004c1d",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": {
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_height": 320,
+        "input_width": 320,
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "output_format": "raw_xywh",
+        "schema_version": 1,
+        "scope": "synthetic_fixture"
+      },
+      "paused_steps": 0,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.onnx_detector.OnnxDetector",
+          "inference_options": {
+            "confidence_threshold": 0.25,
+            "iou_threshold": 0.45
+          },
+          "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+          "model_manifest": {
+            "class_names": [
+              "player",
+              "monster",
+              "loot",
+              "portal",
+              "npc",
+              "platform",
+              "ladder"
+            ],
+            "input_height": 320,
+            "input_width": 320,
+            "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+            "output_format": "raw_xywh",
+            "schema_version": 1,
+            "scope": "synthetic_fixture"
+          },
+          "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 0.9676103591918945,
+            "detections": [
+              {
+                "bbox": [
+                  8.035476684570312,
+                  131.99678802490234,
+                  28.005054473876953,
+                  168.0071792602539
+                ],
+                "class_id": "portal",
+                "confidence": 0.992280125617981
+              },
+              {
+                "bbox": [
+                  273.9996643066406,
+                  144.0221710205078,
+                  288.0116882324219,
+                  168.1267547607422
+                ],
+                "class_id": "npc",
+                "confidence": 0.9824764728546143
+              },
+              {
+                "bbox": [
+                  250.68460845947266,
+                  145.97479248046875,
+                  265.53304290771484,
+                  167.84396362304688
+                ],
+                "class_id": "player",
+                "confidence": 0.9676103591918945
+              },
+              {
+                "bbox": [
+                  212.0,
+                  94.0,
+                  270.0,
+                  98.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  86.0,
+                  118.0,
+                  152.0,
+                  122.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  115.0,
+                  118.0,
+                  125.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "cavern",
+            "mp_ratio": 0.33,
+            "sequence": 329,
+            "source_id": "onnx-objects+fixture-terrain-hud-v1",
+            "status": "known",
+            "timestamp_ms": 16450
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.2.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "94f1d3b41d11b7c80d71b9e4dea78d3eeff488b6995ea19551da56554c747639"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 16.45,
+      "status": "completed",
+      "steps": 329,
+      "visual_effects": {
+        "not_applicable": 53,
+        "observed": 258,
+        "unknown": 18
+      },
+      "wall_seconds": 5.980243
+    },
+    {
+      "actions": {
+        "attack": 12,
+        "buff": 2,
+        "idle": 47,
+        "interact": 2,
+        "loot": 6,
+        "move": 253,
+        "portal": 1,
+        "potion_mp": 2
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "dragon_knight",
+        "max_steps": 1000,
+        "record_stride": 16,
+        "seed": 0
+      },
+      "detector": "onnx",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "episode_capture": {
+        "full_action_observation_terminal_trace": true,
+        "mode": "original_single_execution",
+        "record_stride": 16,
+        "retained_bundle": null
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6,
+        "potion_mp": 2
+      },
+      "final_coins": 20,
+      "final_state_sha256": "a6139098bfc6029d218395c58fee94a36bd59b3cb5443a9cb6fb1fdd76f26bf6",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": {
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_height": 320,
+        "input_width": 320,
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "output_format": "raw_xywh",
+        "schema_version": 1,
+        "scope": "synthetic_fixture"
+      },
+      "paused_steps": 0,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.onnx_detector.OnnxDetector",
+          "inference_options": {
+            "confidence_threshold": 0.25,
+            "iou_threshold": 0.45
+          },
+          "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+          "model_manifest": {
+            "class_names": [
+              "player",
+              "monster",
+              "loot",
+              "portal",
+              "npc",
+              "platform",
+              "ladder"
+            ],
+            "input_height": 320,
+            "input_width": 320,
+            "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+            "output_format": "raw_xywh",
+            "schema_version": 1,
+            "scope": "synthetic_fixture"
+          },
+          "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 0.9676103591918945,
+            "detections": [
+              {
+                "bbox": [
+                  8.035476684570312,
+                  131.99678802490234,
+                  28.005054473876953,
+                  168.0071792602539
+                ],
+                "class_id": "portal",
+                "confidence": 0.992280125617981
+              },
+              {
+                "bbox": [
+                  273.9996643066406,
+                  144.0221710205078,
+                  288.0116882324219,
+                  168.1267547607422
+                ],
+                "class_id": "npc",
+                "confidence": 0.9824764728546143
+              },
+              {
+                "bbox": [
+                  250.68460845947266,
+                  145.97479248046875,
+                  265.53304290771484,
+                  167.84396362304688
+                ],
+                "class_id": "player",
+                "confidence": 0.9676103591918945
+              },
+              {
+                "bbox": [
+                  212.0,
+                  94.0,
+                  270.0,
+                  98.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  86.0,
+                  118.0,
+                  152.0,
+                  122.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  115.0,
+                  118.0,
+                  125.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "cavern",
+            "mp_ratio": 0.36,
+            "sequence": 325,
+            "source_id": "onnx-objects+fixture-terrain-hud-v1",
+            "status": "known",
+            "timestamp_ms": 16250
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.2.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "94f1d3b41d11b7c80d71b9e4dea78d3eeff488b6995ea19551da56554c747639"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 16.25,
+      "status": "completed",
+      "steps": 325,
+      "visual_effects": {
+        "not_applicable": 47,
+        "observed": 258,
+        "unknown": 20
+      },
+      "wall_seconds": 5.911529
+    },
+    {
+      "actions": {
+        "attack": 12,
+        "buff": 2,
+        "idle": 47,
+        "interact": 2,
+        "loot": 6,
+        "move": 253,
+        "portal": 1,
+        "potion_mp": 2
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "dragon_knight",
+        "max_steps": 1000,
+        "record_stride": 16,
+        "seed": 1
+      },
+      "detector": "onnx",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "episode_capture": {
+        "full_action_observation_terminal_trace": true,
+        "mode": "original_single_execution",
+        "record_stride": 16,
+        "retained_bundle": null
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6,
+        "potion_mp": 2
+      },
+      "final_coins": 20,
+      "final_state_sha256": "c995425874cf3b291a8c2ccb929fa391148191e647b0c083de0f82d42c284ebe",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": {
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_height": 320,
+        "input_width": 320,
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "output_format": "raw_xywh",
+        "schema_version": 1,
+        "scope": "synthetic_fixture"
+      },
+      "paused_steps": 0,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.onnx_detector.OnnxDetector",
+          "inference_options": {
+            "confidence_threshold": 0.25,
+            "iou_threshold": 0.45
+          },
+          "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+          "model_manifest": {
+            "class_names": [
+              "player",
+              "monster",
+              "loot",
+              "portal",
+              "npc",
+              "platform",
+              "ladder"
+            ],
+            "input_height": 320,
+            "input_width": 320,
+            "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+            "output_format": "raw_xywh",
+            "schema_version": 1,
+            "scope": "synthetic_fixture"
+          },
+          "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 0.9676103591918945,
+            "detections": [
+              {
+                "bbox": [
+                  8.035476684570312,
+                  131.99678802490234,
+                  28.005054473876953,
+                  168.0071792602539
+                ],
+                "class_id": "portal",
+                "confidence": 0.992280125617981
+              },
+              {
+                "bbox": [
+                  273.9996643066406,
+                  144.0221710205078,
+                  288.0116882324219,
+                  168.1267547607422
+                ],
+                "class_id": "npc",
+                "confidence": 0.9824764728546143
+              },
+              {
+                "bbox": [
+                  250.68460845947266,
+                  145.97479248046875,
+                  265.53304290771484,
+                  167.84396362304688
+                ],
+                "class_id": "player",
+                "confidence": 0.9676103591918945
+              },
+              {
+                "bbox": [
+                  212.0,
+                  94.0,
+                  270.0,
+                  98.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  86.0,
+                  118.0,
+                  152.0,
+                  122.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  115.0,
+                  118.0,
+                  125.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "cavern",
+            "mp_ratio": 0.36,
+            "sequence": 325,
+            "source_id": "onnx-objects+fixture-terrain-hud-v1",
+            "status": "known",
+            "timestamp_ms": 16250
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.2.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "94f1d3b41d11b7c80d71b9e4dea78d3eeff488b6995ea19551da56554c747639"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 16.25,
+      "status": "completed",
+      "steps": 325,
+      "visual_effects": {
+        "not_applicable": 47,
+        "observed": 258,
+        "unknown": 20
+      },
+      "wall_seconds": 5.889344
+    },
+    {
+      "actions": {
+        "attack": 12,
+        "buff": 2,
+        "idle": 47,
+        "interact": 2,
+        "loot": 6,
+        "move": 253,
+        "portal": 1,
+        "potion_mp": 2
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "dragon_knight",
+        "max_steps": 1000,
+        "record_stride": 16,
+        "seed": 2
+      },
+      "detector": "onnx",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "episode_capture": {
+        "full_action_observation_terminal_trace": true,
+        "mode": "original_single_execution",
+        "record_stride": 16,
+        "retained_bundle": null
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6,
+        "potion_mp": 2
+      },
+      "final_coins": 18,
+      "final_state_sha256": "0bdaa758cff350acc22ddfbc2782ddcd161d78a0342f255892855dad6a0af5b8",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": {
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_height": 320,
+        "input_width": 320,
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "output_format": "raw_xywh",
+        "schema_version": 1,
+        "scope": "synthetic_fixture"
+      },
+      "paused_steps": 0,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.onnx_detector.OnnxDetector",
+          "inference_options": {
+            "confidence_threshold": 0.25,
+            "iou_threshold": 0.45
+          },
+          "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+          "model_manifest": {
+            "class_names": [
+              "player",
+              "monster",
+              "loot",
+              "portal",
+              "npc",
+              "platform",
+              "ladder"
+            ],
+            "input_height": 320,
+            "input_width": 320,
+            "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+            "output_format": "raw_xywh",
+            "schema_version": 1,
+            "scope": "synthetic_fixture"
+          },
+          "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 0.9676103591918945,
+            "detections": [
+              {
+                "bbox": [
+                  8.035476684570312,
+                  131.99678802490234,
+                  28.005054473876953,
+                  168.0071792602539
+                ],
+                "class_id": "portal",
+                "confidence": 0.992280125617981
+              },
+              {
+                "bbox": [
+                  273.9996643066406,
+                  144.0221710205078,
+                  288.0116882324219,
+                  168.1267547607422
+                ],
+                "class_id": "npc",
+                "confidence": 0.9824764728546143
+              },
+              {
+                "bbox": [
+                  250.68460845947266,
+                  145.97479248046875,
+                  265.53304290771484,
+                  167.84396362304688
+                ],
+                "class_id": "player",
+                "confidence": 0.9676103591918945
+              },
+              {
+                "bbox": [
+                  212.0,
+                  94.0,
+                  270.0,
+                  98.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  86.0,
+                  118.0,
+                  152.0,
+                  122.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  115.0,
+                  118.0,
+                  125.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "cavern",
+            "mp_ratio": 0.36,
+            "sequence": 325,
+            "source_id": "onnx-objects+fixture-terrain-hud-v1",
+            "status": "known",
+            "timestamp_ms": 16250
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.2.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "94f1d3b41d11b7c80d71b9e4dea78d3eeff488b6995ea19551da56554c747639"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 16.25,
+      "status": "completed",
+      "steps": 325,
+      "visual_effects": {
+        "not_applicable": 47,
+        "observed": 258,
+        "unknown": 20
+      },
+      "wall_seconds": 5.921828
+    },
+    {
+      "actions": {
+        "attack": 12,
+        "buff": 2,
+        "idle": 41,
+        "interact": 2,
+        "loot": 6,
+        "move": 253,
+        "portal": 1
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "cleric",
+        "max_steps": 1000,
+        "record_stride": 16,
+        "seed": 0
+      },
+      "detector": "onnx",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "episode_capture": {
+        "full_action_observation_terminal_trace": true,
+        "mode": "original_single_execution",
+        "record_stride": 16,
+        "retained_bundle": null
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6
+      },
+      "final_coins": 20,
+      "final_state_sha256": "c9b0ba3d6ad64f60c7048373dd48ced714a444005ea838a4e595cd33f3507a6e",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": {
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_height": 320,
+        "input_width": 320,
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "output_format": "raw_xywh",
+        "schema_version": 1,
+        "scope": "synthetic_fixture"
+      },
+      "paused_steps": 0,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.onnx_detector.OnnxDetector",
+          "inference_options": {
+            "confidence_threshold": 0.25,
+            "iou_threshold": 0.45
+          },
+          "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+          "model_manifest": {
+            "class_names": [
+              "player",
+              "monster",
+              "loot",
+              "portal",
+              "npc",
+              "platform",
+              "ladder"
+            ],
+            "input_height": 320,
+            "input_width": 320,
+            "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+            "output_format": "raw_xywh",
+            "schema_version": 1,
+            "scope": "synthetic_fixture"
+          },
+          "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 0.9676103591918945,
+            "detections": [
+              {
+                "bbox": [
+                  8.035476684570312,
+                  131.99678802490234,
+                  28.005054473876953,
+                  168.0071792602539
+                ],
+                "class_id": "portal",
+                "confidence": 0.992280125617981
+              },
+              {
+                "bbox": [
+                  273.9996643066406,
+                  144.0221710205078,
+                  288.0116882324219,
+                  168.1267547607422
+                ],
+                "class_id": "npc",
+                "confidence": 0.9824764728546143
+              },
+              {
+                "bbox": [
+                  250.68460845947266,
+                  145.97479248046875,
+                  265.53304290771484,
+                  167.84396362304688
+                ],
+                "class_id": "player",
+                "confidence": 0.9676103591918945
+              },
+              {
+                "bbox": [
+                  212.0,
+                  94.0,
+                  270.0,
+                  98.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  86.0,
+                  118.0,
+                  152.0,
+                  122.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  115.0,
+                  118.0,
+                  125.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "cavern",
+            "mp_ratio": 0.47,
+            "sequence": 317,
+            "source_id": "onnx-objects+fixture-terrain-hud-v1",
+            "status": "known",
+            "timestamp_ms": 15850
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.2.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "94f1d3b41d11b7c80d71b9e4dea78d3eeff488b6995ea19551da56554c747639"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 15.85,
+      "status": "completed",
+      "steps": 317,
+      "visual_effects": {
+        "not_applicable": 41,
+        "observed": 256,
+        "unknown": 20
+      },
+      "wall_seconds": 5.968341
+    },
+    {
+      "actions": {
+        "attack": 12,
+        "buff": 2,
+        "idle": 41,
+        "interact": 2,
+        "loot": 6,
+        "move": 275,
+        "portal": 1
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "cleric",
+        "max_steps": 1000,
+        "record_stride": 16,
+        "seed": 1
+      },
+      "detector": "onnx",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "episode_capture": {
+        "full_action_observation_terminal_trace": true,
+        "mode": "original_single_execution",
+        "record_stride": 16,
+        "retained_bundle": null
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6
+      },
+      "final_coins": 20,
+      "final_state_sha256": "00330644b6520dbfb1c645a519a8db93af395af40a0b1537a1f70ecae4ef4c68",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": {
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_height": 320,
+        "input_width": 320,
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "output_format": "raw_xywh",
+        "schema_version": 1,
+        "scope": "synthetic_fixture"
+      },
+      "paused_steps": 0,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.onnx_detector.OnnxDetector",
+          "inference_options": {
+            "confidence_threshold": 0.25,
+            "iou_threshold": 0.45
+          },
+          "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+          "model_manifest": {
+            "class_names": [
+              "player",
+              "monster",
+              "loot",
+              "portal",
+              "npc",
+              "platform",
+              "ladder"
+            ],
+            "input_height": 320,
+            "input_width": 320,
+            "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+            "output_format": "raw_xywh",
+            "schema_version": 1,
+            "scope": "synthetic_fixture"
+          },
+          "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 0.9676103591918945,
+            "detections": [
+              {
+                "bbox": [
+                  8.035476684570312,
+                  131.99678802490234,
+                  28.005054473876953,
+                  168.0071792602539
+                ],
+                "class_id": "portal",
+                "confidence": 0.992280125617981
+              },
+              {
+                "bbox": [
+                  273.9996643066406,
+                  144.0221710205078,
+                  288.0116882324219,
+                  168.1267547607422
+                ],
+                "class_id": "npc",
+                "confidence": 0.9824764728546143
+              },
+              {
+                "bbox": [
+                  250.68460845947266,
+                  145.97479248046875,
+                  265.53304290771484,
+                  167.84396362304688
+                ],
+                "class_id": "player",
+                "confidence": 0.9676103591918945
+              },
+              {
+                "bbox": [
+                  212.0,
+                  94.0,
+                  270.0,
+                  98.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  86.0,
+                  118.0,
+                  152.0,
+                  122.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  115.0,
+                  118.0,
+                  125.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "cavern",
+            "mp_ratio": 0.47,
+            "sequence": 339,
+            "source_id": "onnx-objects+fixture-terrain-hud-v1",
+            "status": "known",
+            "timestamp_ms": 16950
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.2.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "94f1d3b41d11b7c80d71b9e4dea78d3eeff488b6995ea19551da56554c747639"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 16.95,
+      "status": "completed",
+      "steps": 339,
+      "visual_effects": {
+        "not_applicable": 41,
+        "observed": 278,
+        "unknown": 20
+      },
+      "wall_seconds": 5.952326
+    },
+    {
+      "actions": {
+        "attack": 12,
+        "buff": 2,
+        "idle": 41,
+        "interact": 2,
+        "loot": 6,
+        "move": 253,
+        "portal": 1
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "cleric",
+        "max_steps": 1000,
+        "record_stride": 16,
+        "seed": 2
+      },
+      "detector": "onnx",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "episode_capture": {
+        "full_action_observation_terminal_trace": true,
+        "mode": "original_single_execution",
+        "record_stride": 16,
+        "retained_bundle": null
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6
+      },
+      "final_coins": 18,
+      "final_state_sha256": "cf32d7982b498600d5bf7cc6dba2bf659d2d27898d62cc888a89e30a0a290581",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": {
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_height": 320,
+        "input_width": 320,
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "output_format": "raw_xywh",
+        "schema_version": 1,
+        "scope": "synthetic_fixture"
+      },
+      "paused_steps": 0,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.onnx_detector.OnnxDetector",
+          "inference_options": {
+            "confidence_threshold": 0.25,
+            "iou_threshold": 0.45
+          },
+          "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+          "model_manifest": {
+            "class_names": [
+              "player",
+              "monster",
+              "loot",
+              "portal",
+              "npc",
+              "platform",
+              "ladder"
+            ],
+            "input_height": 320,
+            "input_width": 320,
+            "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+            "output_format": "raw_xywh",
+            "schema_version": 1,
+            "scope": "synthetic_fixture"
+          },
+          "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 0.9676103591918945,
+            "detections": [
+              {
+                "bbox": [
+                  8.035476684570312,
+                  131.99678802490234,
+                  28.005054473876953,
+                  168.0071792602539
+                ],
+                "class_id": "portal",
+                "confidence": 0.992280125617981
+              },
+              {
+                "bbox": [
+                  273.9996643066406,
+                  144.0221710205078,
+                  288.0116882324219,
+                  168.1267547607422
+                ],
+                "class_id": "npc",
+                "confidence": 0.9824764728546143
+              },
+              {
+                "bbox": [
+                  250.68460845947266,
+                  145.97479248046875,
+                  265.53304290771484,
+                  167.84396362304688
+                ],
+                "class_id": "player",
+                "confidence": 0.9676103591918945
+              },
+              {
+                "bbox": [
+                  212.0,
+                  94.0,
+                  270.0,
+                  98.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  86.0,
+                  118.0,
+                  152.0,
+                  122.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  115.0,
+                  118.0,
+                  125.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "cavern",
+            "mp_ratio": 0.47,
+            "sequence": 317,
+            "source_id": "onnx-objects+fixture-terrain-hud-v1",
+            "status": "known",
+            "timestamp_ms": 15850
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.2.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "94f1d3b41d11b7c80d71b9e4dea78d3eeff488b6995ea19551da56554c747639"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 15.85,
+      "status": "completed",
+      "steps": 317,
+      "visual_effects": {
+        "not_applicable": 41,
+        "observed": 256,
+        "unknown": 20
+      },
+      "wall_seconds": 5.55085
+    },
+    {
+      "actions": {
+        "attack": 10,
+        "buff": 2,
+        "idle": 59,
+        "interact": 2,
+        "jump_attack": 2,
+        "loot": 6,
+        "move": 251,
+        "portal": 1
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "brief_dropout",
+        "job": "assassin",
+        "max_steps": 500,
+        "record_stride": 16,
+        "seed": 0
+      },
+      "detector": "onnx",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "episode_capture": {
+        "full_action_observation_terminal_trace": true,
+        "mode": "original_single_execution",
+        "record_stride": 16,
+        "retained_bundle": "brief_dropout"
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "jump": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6
+      },
+      "final_coins": 20,
+      "final_state_sha256": "3b88eabf2e8f18dd345fd8fa9bb30445e753e06d8a5447e8af58785306537a28",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": {
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_height": 320,
+        "input_width": 320,
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "output_format": "raw_xywh",
+        "schema_version": 1,
+        "scope": "synthetic_fixture"
+      },
+      "output": "artifacts/v02-first-candidate-suite/brief_dropout",
+      "paused_steps": 6,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.onnx_detector.OnnxDetector",
+          "inference_options": {
+            "confidence_threshold": 0.25,
+            "iou_threshold": 0.45
+          },
+          "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+          "model_manifest": {
+            "class_names": [
+              "player",
+              "monster",
+              "loot",
+              "portal",
+              "npc",
+              "platform",
+              "ladder"
+            ],
+            "input_height": 320,
+            "input_width": 320,
+            "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+            "output_format": "raw_xywh",
+            "schema_version": 1,
+            "scope": "synthetic_fixture"
+          },
+          "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 0.9676103591918945,
+            "detections": [
+              {
+                "bbox": [
+                  8.035476684570312,
+                  131.99678802490234,
+                  28.005054473876953,
+                  168.0071792602539
+                ],
+                "class_id": "portal",
+                "confidence": 0.992280125617981
+              },
+              {
+                "bbox": [
+                  273.9996643066406,
+                  144.0221710205078,
+                  288.0116882324219,
+                  168.1267547607422
+                ],
+                "class_id": "npc",
+                "confidence": 0.9824764728546143
+              },
+              {
+                "bbox": [
+                  250.68460845947266,
+                  145.97479248046875,
+                  265.53304290771484,
+                  167.84396362304688
+                ],
+                "class_id": "player",
+                "confidence": 0.9676103591918945
+              },
+              {
+                "bbox": [
+                  212.0,
+                  94.0,
+                  270.0,
+                  98.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  86.0,
+                  118.0,
+                  152.0,
+                  122.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  115.0,
+                  118.0,
+                  125.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "cavern",
+            "mp_ratio": 0.33,
+            "sequence": 333,
+            "source_id": "onnx-objects+fixture-terrain-hud-v1",
+            "status": "known",
+            "timestamp_ms": 16650
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "replay": {
+        "files_checked": 27,
+        "independent_goal_check": true,
+        "perception_reproduced": false,
+        "runtime_identity_matches": true,
+        "scope": "deterministic_simulator",
+        "steps_replayed": 333,
+        "verified": true
+      },
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.2.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "94f1d3b41d11b7c80d71b9e4dea78d3eeff488b6995ea19551da56554c747639"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 16.65,
+      "status": "completed",
+      "steps": 333,
+      "visual_effects": {
+        "not_applicable": 52,
+        "observed": 256,
+        "unknown": 25
+      },
+      "wall_seconds": 6.217896
+    },
+    {
+      "actions": {
+        "buff": 1,
+        "idle": 23,
+        "jump_attack": 1,
+        "move": 6
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "persistent_dropout",
+        "job": "assassin",
+        "max_steps": 500,
+        "record_stride": 16,
+        "seed": 0
+      },
+      "detector": "onnx",
+      "dialogue_maps": [],
+      "drops_collected": 0,
+      "episode_capture": {
+        "full_action_observation_terminal_trace": true,
+        "mode": "original_single_execution",
+        "record_stride": 16,
+        "retained_bundle": "persistent_dropout"
+      },
+      "events": {
+        "attack": 1,
+        "attack_hit": 1,
+        "buff": 1,
+        "jump": 1
+      },
+      "final_coins": 0,
+      "final_state_sha256": "d1fe84eed34af7c22cbea275604b42fbb0b53e116182b9ccf01d62adc1f6077c",
+      "independent_goal_check": false,
+      "maps_visited": [
+        "meadow"
+      ],
+      "model_manifest": {
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_height": 320,
+        "input_width": 320,
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "output_format": "raw_xywh",
+        "schema_version": 1,
+        "scope": "synthetic_fixture"
+      },
+      "output": "artifacts/v02-first-candidate-suite/persistent_dropout",
+      "paused_steps": 11,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.onnx_detector.OnnxDetector",
+          "inference_options": {
+            "confidence_threshold": 0.25,
+            "iou_threshold": 0.45
+          },
+          "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+          "model_manifest": {
+            "class_names": [
+              "player",
+              "monster",
+              "loot",
+              "portal",
+              "npc",
+              "platform",
+              "ladder"
+            ],
+            "input_height": 320,
+            "input_width": 320,
+            "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+            "output_format": "raw_xywh",
+            "schema_version": 1,
+            "scope": "synthetic_fixture"
+          },
+          "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "supervisor",
+          "decision": null,
+          "guard": {
+            "reason": "unknown_observation",
+            "state": "stopped"
+          },
+          "observation": {
+            "confidence": 0.0,
+            "detections": [],
+            "dialogue_visible": false,
+            "hp_ratio": null,
+            "map_id": null,
+            "mp_ratio": null,
+            "sequence": 31,
+            "source_id": "onnx-objects+fixture-terrain-hud-v1",
+            "status": "unknown",
+            "timestamp_ms": 1550
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "unknown_observation",
+      "recoveries": 0,
+      "replay": {
+        "files_checked": 8,
+        "independent_goal_check": false,
+        "perception_reproduced": false,
+        "runtime_identity_matches": true,
+        "scope": "deterministic_simulator",
+        "steps_replayed": 31,
+        "verified": true
+      },
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.2.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "94f1d3b41d11b7c80d71b9e4dea78d3eeff488b6995ea19551da56554c747639"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 1.55,
+      "status": "stopped",
+      "steps": 31,
+      "visual_effects": {
+        "not_applicable": 11,
+        "observed": 7,
+        "unknown": 13
+      },
+      "wall_seconds": 0.540351
+    },
+    {
+      "actions": {
+        "attack": 10,
+        "buff": 2,
+        "idle": 59,
+        "interact": 2,
+        "jump_attack": 2,
+        "loot": 6,
+        "move": 251,
+        "portal": 1
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "duplicate_frames",
+        "job": "assassin",
+        "max_steps": 500,
+        "record_stride": 16,
+        "seed": 0
+      },
+      "detector": "onnx",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "episode_capture": {
+        "full_action_observation_terminal_trace": true,
+        "mode": "original_single_execution",
+        "record_stride": 16,
+        "retained_bundle": "duplicate_frames"
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "jump": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6
+      },
+      "final_coins": 20,
+      "final_state_sha256": "3b88eabf2e8f18dd345fd8fa9bb30445e753e06d8a5447e8af58785306537a28",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": {
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_height": 320,
+        "input_width": 320,
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "output_format": "raw_xywh",
+        "schema_version": 1,
+        "scope": "synthetic_fixture"
+      },
+      "output": "artifacts/v02-first-candidate-suite/duplicate_frames",
+      "paused_steps": 6,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.onnx_detector.OnnxDetector",
+          "inference_options": {
+            "confidence_threshold": 0.25,
+            "iou_threshold": 0.45
+          },
+          "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+          "model_manifest": {
+            "class_names": [
+              "player",
+              "monster",
+              "loot",
+              "portal",
+              "npc",
+              "platform",
+              "ladder"
+            ],
+            "input_height": 320,
+            "input_width": 320,
+            "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+            "output_format": "raw_xywh",
+            "schema_version": 1,
+            "scope": "synthetic_fixture"
+          },
+          "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 0.9676103591918945,
+            "detections": [
+              {
+                "bbox": [
+                  8.035476684570312,
+                  131.99678802490234,
+                  28.005054473876953,
+                  168.0071792602539
+                ],
+                "class_id": "portal",
+                "confidence": 0.992280125617981
+              },
+              {
+                "bbox": [
+                  273.9996643066406,
+                  144.0221710205078,
+                  288.0116882324219,
+                  168.1267547607422
+                ],
+                "class_id": "npc",
+                "confidence": 0.9824764728546143
+              },
+              {
+                "bbox": [
+                  250.68460845947266,
+                  145.97479248046875,
+                  265.53304290771484,
+                  167.84396362304688
+                ],
+                "class_id": "player",
+                "confidence": 0.9676103591918945
+              },
+              {
+                "bbox": [
+                  212.0,
+                  94.0,
+                  270.0,
+                  98.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  86.0,
+                  118.0,
+                  152.0,
+                  122.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  115.0,
+                  118.0,
+                  125.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "cavern",
+            "mp_ratio": 0.33,
+            "sequence": 333,
+            "source_id": "onnx-objects+fixture-terrain-hud-v1",
+            "status": "known",
+            "timestamp_ms": 16650
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "replay": {
+        "files_checked": 27,
+        "independent_goal_check": true,
+        "perception_reproduced": false,
+        "runtime_identity_matches": true,
+        "scope": "deterministic_simulator",
+        "steps_replayed": 333,
+        "verified": true
+      },
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.2.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "94f1d3b41d11b7c80d71b9e4dea78d3eeff488b6995ea19551da56554c747639"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 16.65,
+      "status": "completed",
+      "steps": 333,
+      "visual_effects": {
+        "not_applicable": 53,
+        "observed": 256,
+        "unknown": 24
+      },
+      "wall_seconds": 7.146071
+    },
+    {
+      "actions": {
+        "attack": 11,
+        "buff": 1,
+        "idle": 42,
+        "jump_attack": 1,
+        "move": 6
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "freeze_input",
+        "job": "assassin",
+        "max_steps": 500,
+        "record_stride": 16,
+        "seed": 0
+      },
+      "detector": "onnx",
+      "dialogue_maps": [],
+      "drops_collected": 0,
+      "episode_capture": {
+        "full_action_observation_terminal_trace": true,
+        "mode": "original_single_execution",
+        "record_stride": 16,
+        "retained_bundle": "freeze_input"
+      },
+      "events": {
+        "attack": 1,
+        "attack_hit": 1,
+        "buff": 1,
+        "jump": 1
+      },
+      "final_coins": 0,
+      "final_state_sha256": "4c30de626ac54700b7b291cd90c4810471d614425754137339ffe5cee3751a2f",
+      "independent_goal_check": false,
+      "maps_visited": [
+        "meadow"
+      ],
+      "model_manifest": {
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_height": 320,
+        "input_width": 320,
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "output_format": "raw_xywh",
+        "schema_version": 1,
+        "scope": "synthetic_fixture"
+      },
+      "output": "artifacts/v02-first-candidate-suite/freeze_input",
+      "paused_steps": 0,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.onnx_detector.OnnxDetector",
+          "inference_options": {
+            "confidence_threshold": 0.25,
+            "iou_threshold": 0.45
+          },
+          "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+          "model_manifest": {
+            "class_names": [
+              "player",
+              "monster",
+              "loot",
+              "portal",
+              "npc",
+              "platform",
+              "ladder"
+            ],
+            "input_height": 320,
+            "input_width": 320,
+            "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+            "output_format": "raw_xywh",
+            "schema_version": 1,
+            "scope": "synthetic_fixture"
+          },
+          "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "combat_progress_timeout",
+            "state": "failed",
+            "task": "fight"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 0.9502637386322021,
+            "detections": [
+              {
+                "bbox": [
+                  255.08377075195312,
+                  152.03018951416016,
+                  273.0616760253906,
+                  168.0321273803711
+                ],
+                "class_id": "monster",
+                "confidence": 0.9921678304672241
+              },
+              {
+                "bbox": [
+                  292.03330993652344,
+                  132.03609466552734,
+                  311.99073791503906,
+                  168.0086441040039
+                ],
+                "class_id": "portal",
+                "confidence": 0.9916579723358154
+              },
+              {
+                "bbox": [
+                  126.18431091308594,
+                  152.01292419433594,
+                  143.9004364013672,
+                  168.0731658935547
+                ],
+                "class_id": "monster",
+                "confidence": 0.990086555480957
+              },
+              {
+                "bbox": [
+                  209.1048583984375,
+                  152.00253295898438,
+                  226.990478515625,
+                  168.029052734375
+                ],
+                "class_id": "monster",
+                "confidence": 0.9889601469039917
+              },
+              {
+                "bbox": [
+                  47.71995162963867,
+                  145.99927520751953,
+                  62.02543258666992,
+                  167.91899871826172
+                ],
+                "class_id": "player",
+                "confidence": 0.9502637386322021
+              },
+              {
+                "bbox": [
+                  41.88645362854004,
+                  144.44210052490234,
+                  55.946584701538086,
+                  167.43851470947266
+                ],
+                "class_id": "npc",
+                "confidence": 0.9044266939163208
+              },
+              {
+                "bbox": [
+                  180.0,
+                  104.0,
+                  238.0,
+                  108.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  76.0,
+                  126.0,
+                  136.0,
+                  130.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  99.0,
+                  126.0,
+                  109.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": false,
+            "hp_ratio": 1.0,
+            "map_id": "meadow",
+            "mp_ratio": 0.83,
+            "sequence": 61,
+            "source_id": "onnx-objects+fixture-terrain-hud-v1",
+            "status": "known",
+            "timestamp_ms": 3050
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "combat_progress_timeout",
+      "recoveries": 0,
+      "replay": {
+        "files_checked": 10,
+        "independent_goal_check": false,
+        "perception_reproduced": false,
+        "runtime_identity_matches": true,
+        "scope": "deterministic_simulator",
+        "steps_replayed": 61,
+        "verified": true
+      },
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.2.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "94f1d3b41d11b7c80d71b9e4dea78d3eeff488b6995ea19551da56554c747639"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 3.05,
+      "status": "failed",
+      "steps": 61,
+      "visual_effects": {
+        "not_applicable": 42,
+        "observed": 7,
+        "unknown": 12
+      },
+      "wall_seconds": 1.138372
+    }
+  ],
+  "schema_version": 1,
+  "scope": "synthetic_fixture",
+  "simulated_seconds": 184.35
+}
