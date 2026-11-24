@@ -1,0 +1,2 @@
+# Data schemas
+SQLite tables: game_versions, source_records, sync_jobs, knowledge_snapshots, classes, advancements, skills, skill_levels, skill_effects, monsters, monster_drops, maps, map_connections, map_platforms, map_portals, items, equipment, consumables, npcs, quests, quest_requirements, asset_index, mechanics_rules, validation_evidence. Each record includes entity ID, version, source, timestamp, hash and verification status. Observations include frame ID, timestamp, confidence and validity. Unknown, stale and conflicted values are explicit.
