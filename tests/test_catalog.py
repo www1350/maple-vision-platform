@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import json
+import os
 import sqlite3
 from pathlib import Path
 
@@ -213,8 +214,22 @@ def test_import_requires_existing_initialized_catalog(tmp_path):
         import_catalog(missing, source(tmp_path, record()))
 
 
-def test_readonly_connection_and_uri_escaping(tmp_path):
-    path = tmp_path / "知识 ?#.sqlite"
+@pytest.mark.parametrize(
+    "filename",
+    [
+        pytest.param("知识 # 100%20.sqlite", id="portable_uri_escaping"),
+        pytest.param(
+            "知识 ?# 100%20.sqlite",
+            id="posix_question_mark",
+            marks=pytest.mark.skipif(
+                os.name == "nt",
+                reason="Windows filesystems do not allow '?' in a filename",
+            ),
+        ),
+    ],
+)
+def test_readonly_connection_and_uri_escaping(tmp_path, filename):
+    path = tmp_path / filename
     initialize_catalog(path)
     connection = open_catalog_readonly(path)
     with pytest.raises(sqlite3.OperationalError):
