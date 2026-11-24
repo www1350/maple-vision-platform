@@ -13,6 +13,7 @@ from typing import Any
 from PIL import Image
 
 from .catalog import strict_json
+from .map_pack import MapPack
 from .scene import CLASS_NAMES, RenderedSample, SceneRenderer
 from .sim_types import SimAction, SimSnapshot
 from .simulation import GROUND, MAP_IDS, Simulator
@@ -20,6 +21,7 @@ from .sprite_pack import SpritePack, verify_dataset_sprite_pack
 
 DATASET_VERSION = 1
 LIFECYCLE_DATASET_VERSION = 2
+MAP_DATASET_VERSION = 3
 LIFECYCLE_PHASES = ("spawn", "combat", "loot", "cleared", "dialogue", "transition")
 LIFECYCLE_TAGS = (
     "left_edge",
@@ -67,6 +69,7 @@ def generate_dataset(
     *,
     sprite_pack: SpritePack | None = None,
     profile: str = "legacy",
+    map_pack: MapPack | None = None,
 ) -> dict[str, object]:
     """Generate portable PNG/YOLO labels without sharing sessions between splits.
 
@@ -79,8 +82,13 @@ def generate_dataset(
     seed = _integer(seed, "seed", 0, 2**32 - 1)
     if not isinstance(profile, str) or profile not in {"legacy", "lifecycle"}:
         raise ValueError("profile must be legacy or lifecycle")
-    if profile == "lifecycle" and frames_per_session < 12:
-        raise ValueError("lifecycle requires at least 12 frames per session")
+    if map_pack is not None and not isinstance(map_pack, MapPack):
+        raise ValueError("map_pack must be a verified MapPack")
+    if map_pack is not None and profile != "lifecycle":
+        raise ValueError("external map packs require the lifecycle dataset profile")
+    minimum_frames = 6 * len(map_pack.map_ids) if map_pack is not None else 12
+    if profile == "lifecycle" and frames_per_session < minimum_frames:
+        raise ValueError(f"lifecycle requires at least {minimum_frames} frames per session")
     if sprite_pack is not None and not isinstance(sprite_pack, SpritePack):
         raise ValueError("sprite_pack must be a verified SpritePack")
     if sessions * frames_per_session > 100_000:
@@ -91,8 +99,12 @@ def generate_dataset(
     destination.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(mkdtemp(prefix=f".{destination.name}-", dir=destination.parent))
     try:
-        generator = _generate if profile == "legacy" else _generate_lifecycle
-        manifest = generator(staging, sessions, frames_per_session, seed, sprite_pack)
+        if profile == "legacy":
+            manifest = _generate(staging, sessions, frames_per_session, seed, sprite_pack)
+        else:
+            manifest = _generate_lifecycle(
+                staging, sessions, frames_per_session, seed, sprite_pack, map_pack=map_pack
+            )
         _json(staging / "manifest.json", manifest)
         summary = validate_dataset(staging)
         if destination.exists():
@@ -265,15 +277,16 @@ def _label_text(sample: RenderedSample) -> str:
 
 
 def _lifecycle_trajectory(
-    seed: int, job: str, minimum_frames: int
+    seed: int, job: str, minimum_frames: int, *, map_pack: MapPack | None = None
 ) -> tuple[list[SimAction], list[SimSnapshot]]:
     """Training-only scenario oracle: generate real actions, never policy observations.
 
     No simulator state is edited. A full round trip provides actual entry events
-    on both maps. Navigation and scenario selection may inspect training truth.
+    on every map. Navigation and scenario selection may inspect training truth.
     This is not a learned-agent task-success measurement.
     """
-    simulator = Simulator(seed=seed, job=job, map_id="meadow")
+    map_ids = map_pack.map_ids if map_pack is not None else MAP_IDS
+    simulator = Simulator(seed=seed, job=job, map_id=map_ids[0], map_pack=map_pack)
     actions: list[SimAction] = []
     snapshots = [simulator.snapshot()]
 
@@ -299,7 +312,7 @@ def _lifecycle_trajectory(
                 else SimAction()
             )
 
-    for map_id in MAP_IDS:
+    for map_id in map_ids:
         if snapshots[-1].map_id != map_id:
             raise ValueError("lifecycle trajectory did not reach the expected map")
         # The initial frame and actual first post-entry step are spawn examples.
@@ -400,12 +413,12 @@ def _lifecycle_facts(snapshot: SimSnapshot, first_entries: dict[str, int]) -> di
 
 
 def _selected_lifecycle_frames(
-    snapshots: list[SimSnapshot], count: int, seed: int
+    snapshots: list[SimSnapshot], count: int, seed: int, *, map_ids: tuple[str, ...] = MAP_IDS
 ) -> tuple[list[int], list[dict[str, Any]]]:
     first_entries: dict[str, int] = {}
     facts = [_lifecycle_facts(snapshot, first_entries) for snapshot in snapshots]
     selected: set[int] = set()
-    for map_id in MAP_IDS:
+    for map_id in map_ids:
         for phase in LIFECYCLE_PHASES:
             candidates = [
                 i
@@ -419,7 +432,7 @@ def _selected_lifecycle_frames(
             selected.add(candidates[0])
     # With at least 18 frames these genuine high/edge/climbing examples are reserved.
     for tag in ("high_platform", "right_edge", "not_grounded"):
-        for map_id in MAP_IDS:
+        for map_id in map_ids:
             if len(selected) >= count:
                 break
             candidates = [
@@ -436,7 +449,7 @@ def _selected_lifecycle_frames(
             for i, value in enumerate(facts)
             if i not in selected and (value["map_id"], value["phase"]) == (map_id, phase)
         ]
-        for map_id in MAP_IDS
+        for map_id in map_ids
         for phase in LIFECYCLE_PHASES
     ]
     for bucket in buckets:
@@ -478,7 +491,9 @@ def _lifecycle_splits(sessions: int, seed: int) -> dict[int, str]:
     return assignment
 
 
-def _coverage_summary(samples: list[dict[str, Any]]) -> dict[str, Any]:
+def _coverage_summary(
+    samples: list[dict[str, Any]], *, map_ids: tuple[str, ...] = MAP_IDS
+) -> dict[str, Any]:
     def empty() -> dict[str, Any]:
         return {
             "frames": 0,
@@ -489,7 +504,7 @@ def _coverage_summary(samples: list[dict[str, Any]]) -> dict[str, Any]:
         }
 
     by_split = {
-        split: {**empty(), "maps": {map_id: empty() for map_id in MAP_IDS}}
+        split: {**empty(), "maps": {map_id: empty() for map_id in map_ids}}
         for split in ("train", "val", "test")
     }
     for sample in samples:
@@ -523,7 +538,10 @@ def _generate_lifecycle(
     frames_per_session: int,
     seed: int,
     sprite_pack: SpritePack | None,
+    *,
+    map_pack: MapPack | None = None,
 ) -> dict[str, object]:
+    map_ids = map_pack.map_ids if map_pack is not None else MAP_IDS
     assignment = _lifecycle_splits(sessions, seed)
     for split in ("train", "val", "test"):
         (staging / "images" / split).mkdir(parents=True)
@@ -537,11 +555,18 @@ def _generate_lifecycle(
         style_seed = session_seed ^ 0xA571
         job = ("assassin", "dragon_knight", "cleric")[index % 3]
         split = assignment[index]
-        actions, snapshots = _lifecycle_trajectory(session_seed, job, frames_per_session)
+        # Keep the historical call path intact for schema 2 datasets.
+        actions, snapshots = (
+            _lifecycle_trajectory(session_seed, job, frames_per_session)
+            if map_pack is None
+            else _lifecycle_trajectory(session_seed, job, frames_per_session, map_pack=map_pack)
+        )
         total_steps += len(actions)
         if total_steps > LIFECYCLE_MAX_TOTAL_STEPS:
             raise ValueError("lifecycle dataset exceeds the total trajectory step limit")
-        selected, facts = _selected_lifecycle_frames(snapshots, frames_per_session, session_seed)
+        selected, facts = _selected_lifecycle_frames(
+            snapshots, frames_per_session, session_seed, map_ids=map_ids
+        )
         session_records.append(
             {
                 "id": session_id,
@@ -549,11 +574,11 @@ def _generate_lifecycle(
                 "seed": session_seed,
                 "style_seed": style_seed,
                 "job": job,
-                "map_id": "meadow",
+                "map_id": map_ids[0],
                 "trajectory": {"step_ms": 50, "actions": [asdict(action) for action in actions]},
             }
         )
-        renderer = SceneRenderer(style_seed=style_seed, sprite_pack=sprite_pack)
+        renderer = SceneRenderer(style_seed=style_seed, sprite_pack=sprite_pack, map_pack=map_pack)
         for frame_index, sequence in enumerate(selected):
             sample = renderer.render_sample(snapshots[sequence])
             stem = f"{session_id}_{frame_index:05d}"
@@ -583,23 +608,27 @@ def _generate_lifecycle(
             )
     _json(staging / "data.yaml", _data_config())
     manifest: dict[str, object] = {
-        "schema_version": LIFECYCLE_DATASET_VERSION,
+        "schema_version": MAP_DATASET_VERSION
+        if map_pack is not None
+        else LIFECYCLE_DATASET_VERSION,
         "origin": "synthetic-fixture-v1",
         "profile": "lifecycle",
-        "generator_version": "lifecycle-v1",
+        "generator_version": "lifecycle-map-pack-v1" if map_pack is not None else "lifecycle-v1",
         "seed": seed,
         "frames_per_session": frames_per_session,
         "classes": list(CLASS_NAMES),
         "split_unit": "session",
         "sessions": session_records,
         "samples": samples,
-        "coverage": _coverage_summary(samples),
+        "coverage": _coverage_summary(samples, map_ids=map_ids),
         "data_yaml_sha256": _hash(staging / "data.yaml"),
         "notes": (
             "Training-only truth-guided action scenarios; not a visual-agent success evaluation. "
             "Synthetic fixtures require separate real-recording validation."
         ),
     }
+    if map_pack is not None:
+        manifest["map_pack"] = map_pack.manifest()
     if sprite_pack is not None:
         sprite_pack.write_sources(staging)
         manifest["visual_origin"] = "synthetic_geometry_with_authorized_assets"
@@ -626,9 +655,15 @@ def _canonical(value: object) -> str:
 
 
 def _validate_lifecycle(
-    root: Path, manifest: dict[str, Any], sprite_pack: SpritePack | None
+    root: Path,
+    manifest: dict[str, Any],
+    sprite_pack: SpritePack | None,
+    *,
+    map_pack: MapPack | None = None,
 ) -> dict[str, Any]:
     """Replay each bounded session once, independently of the scenario planner."""
+    map_ids = map_pack.map_ids if map_pack is not None else MAP_IDS
+    generator_version = "lifecycle-map-pack-v1" if map_pack is not None else "lifecycle-v1"
     fields = {
         "schema_version",
         "origin",
@@ -646,13 +681,17 @@ def _validate_lifecycle(
     }
     if sprite_pack is not None:
         fields.update(("sprite_pack", "visual_origin"))
+    if map_pack is not None:
+        fields.add("map_pack")
     if set(manifest) != fields or (manifest.get("profile"), manifest.get("generator_version")) != (
         "lifecycle",
-        "lifecycle-v1",
+        generator_version,
     ):
         raise ValueError("unsupported lifecycle manifest fields or generator version")
     seed = _integer(manifest["seed"], "lifecycle seed", 0, 2**32 - 1)
-    frames_per_session = _integer(manifest["frames_per_session"], "lifecycle frames", 12, 1000)
+    frames_per_session = _integer(
+        manifest["frames_per_session"], "lifecycle frames", 6 * len(map_ids), 1000
+    )
     sessions = manifest["sessions"]
     _integer(len(sessions), "lifecycle sessions", 3, 1000)
     if len(sessions) * frames_per_session > 100_000:
@@ -692,7 +731,7 @@ def _validate_lifecycle(
             or session["seed"] != expected_seed
             or session["style_seed"] != expected_seed ^ 0xA571
             or session["job"] != ("assassin", "dragon_knight", "cleric")[index % 3]
-            or session["map_id"] != "meadow"
+            or session["map_id"] != map_ids[0]
             or session["split"] != expected_splits[index]
         ):
             raise ValueError("lifecycle session identity disagrees with seeded generation")
@@ -715,10 +754,14 @@ def _validate_lifecycle(
         by_sequence = {sample["sequence"]: sample for sample in records}
         if max(by_sequence) > len(trajectory["actions"]):
             raise ValueError("lifecycle frame is outside its recorded trajectory")
-        simulator = Simulator(session["seed"], session["job"], session["map_id"], step_ms=50)
-        renderer = SceneRenderer(style_seed=session["style_seed"], sprite_pack=sprite_pack)
+        simulator = Simulator(
+            session["seed"], session["job"], session["map_id"], step_ms=50, map_pack=map_pack
+        )
+        renderer = SceneRenderer(
+            style_seed=session["style_seed"], sprite_pack=sprite_pack, map_pack=map_pack
+        )
         first_entries: dict[str, int] = {}
-        phases: dict[str, set[str]] = {map_id: set() for map_id in MAP_IDS}
+        phases: dict[str, set[str]] = {map_id: set() for map_id in map_ids}
         selected_hit_maps: set[str] = set()
         observed_dialogues: set[str] = set()
         snapshot = simulator.snapshot()
@@ -765,24 +808,26 @@ def _validate_lifecycle(
                     raise ValueError("lifecycle trajectory contains a dead player")
         if any(found != set(LIFECYCLE_PHASES) for found in phases.values()):
             raise ValueError("lifecycle session is missing required map/phase coverage")
-        if selected_hit_maps != set(MAP_IDS):
+        if selected_hit_maps != set(map_ids):
             raise ValueError("lifecycle session lacks a selected combat attack_hit on each map")
         state = simulator.save()
         if (
-            set(observed_dialogues) != set(MAP_IDS)
-            or snapshot.map_id != "meadow"
+            set(observed_dialogues) != set(map_ids)
+            or snapshot.map_id != map_ids[0]
             or any(
                 world["drops"] or any(monster["hp"] for monster in world["monsters"])
                 for world in state["maps"].values()
             )
         ):
-            raise ValueError("lifecycle source trajectory did not finish its two-map round trip")
-    coverage = _coverage_summary(verified_samples)
+            raise ValueError(
+                "lifecycle source trajectory did not finish its complete map round trip"
+            )
+    coverage = _coverage_summary(verified_samples, map_ids=map_ids)
     if _canonical(manifest["coverage"]) != _canonical(coverage):
         raise ValueError("lifecycle coverage summary disagrees with verified frames")
     return {
         "profile": "lifecycle",
-        "generator_version": "lifecycle-v1",
+        "generator_version": generator_version,
         "coverage": coverage,
         "trajectory_steps_verified": total_steps,
         "trajectory_verification": "actions_pixels_labels_and_phase_facts",
@@ -799,10 +844,20 @@ def validate_dataset(output: str | Path) -> dict[str, object]:
     if (
         not isinstance(manifest, dict)
         or type(manifest.get("schema_version")) is not int
-        or manifest["schema_version"] not in (DATASET_VERSION, LIFECYCLE_DATASET_VERSION)
+        or manifest["schema_version"]
+        not in (DATASET_VERSION, LIFECYCLE_DATASET_VERSION, MAP_DATASET_VERSION)
     ):
         raise ValueError("unsupported dataset manifest")
     version = manifest["schema_version"]
+    map_pack = None
+    map_metadata: dict[str, object] = {}
+    if version == MAP_DATASET_VERSION:
+        map_pack = MapPack.from_manifest(manifest.get("map_pack"))
+        map_metadata = {"map_pack": map_pack.manifest()}
+    elif "map_pack" in manifest:
+        raise ValueError("external map packs require dataset schema version 3")
+    map_ids = map_pack.map_ids if map_pack is not None else MAP_IDS
+    lifecycle = version in (LIFECYCLE_DATASET_VERSION, MAP_DATASET_VERSION)
     if manifest.get("origin") != "synthetic-fixture-v1" or manifest.get("split_unit") != "session":
         raise ValueError("unsupported dataset provenance or split unit")
     if manifest.get("classes") != list(CLASS_NAMES):
@@ -836,7 +891,7 @@ def validate_dataset(output: str | Path) -> dict[str, object]:
     map_for: dict[str, str] = {}
     split_counts = {"train": 0, "val": 0, "test": 0}
     class_counts = {split: {name: 0 for name in CLASS_NAMES} for split in split_counts}
-    map_counts = {split: {"meadow": 0, "cavern": 0} for split in split_counts}
+    map_counts = {split: dict.fromkeys(map_ids, 0) for split in split_counts}
     for session in sessions:
         if not isinstance(session, dict) or not isinstance(session.get("id"), str):
             raise ValueError("invalid session")
@@ -850,7 +905,7 @@ def validate_dataset(output: str | Path) -> dict[str, object]:
             raise ValueError("invalid or duplicate session split")
         split_for[session_id] = split
         map_id = session.get("map_id")
-        if not isinstance(map_id, str) or map_id not in {"meadow", "cavern"}:
+        if not isinstance(map_id, str) or map_id not in map_ids:
             raise ValueError("unknown session map")
         if session.get("job") not in ("assassin", "dragon_knight", "cleric"):
             raise ValueError("unknown session class")
@@ -876,7 +931,7 @@ def validate_dataset(output: str | Path) -> dict[str, object]:
             raise ValueError("session leakage or unknown session")
         width = _integer(sample.get("width"), "width", 1, 8192)
         height = _integer(sample.get("height"), "height", 1, 8192)
-        if version == LIFECYCLE_DATASET_VERSION and (width, height) != (320, 192):
+        if lifecycle and (width, height) != (320, 192):
             raise ValueError("lifecycle image dimensions must match the 320x192 fixture")
         sequence = _integer(sample.get("sequence"), "sequence", 0, 2**63 - 1)
         timestamp = _integer(sample.get("timestamp_ms"), "timestamp_ms", 0, 2**63 - 1)
@@ -931,10 +986,8 @@ def validate_dataset(output: str | Path) -> dict[str, object]:
             class_counts[split][CLASS_NAMES[class_id]] += 1
         total_objects += object_count
         split_counts[split] += 1
-        sample_map = (
-            sample.get("map_id") if version == LIFECYCLE_DATASET_VERSION else map_for[session_id]
-        )
-        if not isinstance(sample_map, str) or sample_map not in MAP_IDS:
+        sample_map = sample.get("map_id") if lifecycle else map_for[session_id]
+        if not isinstance(sample_map, str) or sample_map not in map_ids:
             raise ValueError("unknown sample map")
         map_counts[split][sample_map] += 1
     if set(last_sequence) != set(split_for) or any(count == 0 for count in split_counts.values()):
@@ -948,12 +1001,11 @@ def validate_dataset(output: str | Path) -> dict[str, object]:
     if actual_paths != used_paths:
         raise ValueError("dataset contains unlisted image or label files")
     lifecycle_metadata = (
-        _validate_lifecycle(root, manifest, sprite_pack)
-        if version == LIFECYCLE_DATASET_VERSION
-        else {}
+        _validate_lifecycle(root, manifest, sprite_pack, map_pack=map_pack) if lifecycle else {}
     )
     return {
         **sprite_metadata,
+        **map_metadata,
         **lifecycle_metadata,
         "schema_version": version,
         "origin": "synthetic-fixture-v1",

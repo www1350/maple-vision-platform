@@ -75,6 +75,10 @@ def _parser() -> argparse.ArgumentParser:
                 subparser.add_argument(f"--{flag}", required=True)
         elif operation == "verify":
             subparser.add_argument("asset_id")
+    maps = commands.add_parser("maps", help="validate a bounded offline synthetic map pack")
+    map_commands = maps.add_subparsers(dest="operation", required=True)
+    map_check = map_commands.add_parser("check")
+    map_check.add_argument("path", type=Path)
     dataset = commands.add_parser(
         "dataset", help="generate or verify session-split fixture datasets"
     )
@@ -91,6 +95,7 @@ def _parser() -> argparse.ArgumentParser:
             subparser.add_argument("--profile", choices=("legacy", "lifecycle"), default="legacy")
             subparser.add_argument("--asset-registry", type=Path)
             subparser.add_argument("--sprite-map", type=Path)
+            subparser.add_argument("--map-pack", type=Path)
     vision = commands.add_parser("vision", help="observe local images or benchmark a dataset")
     vision_commands = vision.add_subparsers(dest="operation", required=True)
     for operation in ("observe", "benchmark"):
@@ -110,6 +115,7 @@ def _parser() -> argparse.ArgumentParser:
             subparser.add_argument(
                 "--terrain-source", choices=("fixture", "model"), default="fixture"
             )
+            subparser.add_argument("--map-pack", type=Path)
     ocr = vision_commands.add_parser("ocr", help="read text locally with installed Tesseract")
     ocr.add_argument("path", type=Path)
     ocr.add_argument("--language", default="eng")
@@ -210,6 +216,8 @@ def _parser() -> argparse.ArgumentParser:
         model_command.add_argument(
             "--terrain-source", choices=("fixture", "model"), default="fixture"
         )
+    for map_command in (run, suite, soak):
+        map_command.add_argument("--map-pack", type=Path)
     chat = commands.add_parser(
         "chat-draft", help="prepare a local human-reviewed reply; sends nothing"
     )
@@ -313,10 +321,21 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         if args.operation == "verify":
             return asdict(verify_asset(args.registry, args.asset_id))
         return {"assets": [asdict(item) for item in list_assets(args.registry)]}
+    if args.command == "maps":
+        from .map_pack import load_map_pack
+
+        checked_pack = load_map_pack(args.path)
+        return {
+            "verified": True,
+            "validation_scope": "bounded_structure_and_identity; task_solvability_not_proven",
+            "map_ids": list(checked_pack.map_ids),
+            "map_pack": checked_pack.manifest(),
+        }
     if args.command == "dataset":
         from .dataset import generate_dataset, validate_dataset
 
         if args.operation == "create":
+            from .map_pack import load_map_pack
             from .sprite_pack import load_sprite_pack
 
             if bool(args.asset_registry) != bool(args.sprite_map):
@@ -335,6 +354,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 args.seed,
                 sprite_pack=sprites,
                 profile=args.profile,
+                map_pack=load_map_pack(args.map_pack) if args.map_pack else None,
             )
         return validate_dataset(args.path)
     if args.command == "recording" and args.operation != "observe":
@@ -427,16 +447,22 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                     terrain_metrics=args.terrain_metrics,
                 )
             from .agent import HybridPerception
+            from .map_pack import load_map_pack
             from .scene import ImageFrame
             from .vision import PixelPerception
 
+            pack = load_map_pack(args.map_pack) if args.map_pack else None
+            markers = None if pack is None else pack.markers
             perception = (
-                PixelPerception()
+                PixelPerception(map_markers=markers)
                 if detector is None
-                else HybridPerception(detector, terrain_source=terrain_source)
+                else HybridPerception(detector, terrain_source=terrain_source, map_markers=markers)
             )
             return asdict(perception.observe(ImageFrame.from_file(args.path)))
         from .lab import RunConfig, run_episode, run_soak, run_suite, verify_run
+        from .map_pack import load_map_pack
+
+        pack = load_map_pack(args.map_pack) if getattr(args, "map_pack", None) else None
 
         if args.operation == "run":
             from .profiles import load_class_profile
@@ -462,10 +488,15 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 class_profile=profile,
                 sprite_pack=sprites,
                 terrain_source=terrain_source,
+                map_pack=pack,
             )
         if args.operation == "suite":
             return run_suite(
-                args.output, args.seeds, detector=detector, terrain_source=terrain_source
+                args.output,
+                args.seeds,
+                detector=detector,
+                terrain_source=terrain_source,
+                map_pack=pack,
             )
         if args.operation == "soak":
             return run_soak(
@@ -475,6 +506,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 resource_interval_seconds=args.resource_interval,
                 max_resource_samples=args.max_resource_samples,
                 terrain_source=terrain_source,
+                map_pack=pack,
             )
         if args.operation == "reinfer":
             from .lab import verify_perception

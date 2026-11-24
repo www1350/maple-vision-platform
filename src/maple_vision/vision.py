@@ -4,8 +4,10 @@ Exact-color detection is a reproducible plumbing baseline, not a learned YOLO
 model and not evidence of perception quality on real game recordings.
 """
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from math import isfinite
+from types import MappingProxyType
 from typing import Literal, Protocol, cast
 
 import numpy as np
@@ -193,6 +195,26 @@ def _merge_platforms(
 class PixelPerception:
     source_id = "synthetic-palette-v2"
 
+    def __init__(self, *, map_markers: Mapping[str, tuple[int, int, int]] | None = None) -> None:
+        """Bind static HUD colors only, without retaining map geometry or state."""
+        markers = MAP_MARKERS if map_markers is None else map_markers
+        if not isinstance(markers, Mapping) or not 1 <= len(markers) <= 8:
+            raise ValueError("map_markers must be a bounded mapping")
+        copied: dict[str, tuple[int, int, int]] = {}
+        for name, color in markers.items():
+            if not isinstance(name, str) or not name or len(name) > 40:
+                raise ValueError("map marker IDs must be nonempty short strings")
+            if (
+                not isinstance(color, tuple)
+                or len(color) != 3
+                or any(type(value) is not int or not 0 <= value <= 255 for value in color)
+                or color in copied.values()
+                or color in PALETTE.values()
+            ):
+                raise ValueError("map markers must use unique non-object RGB colors")
+            copied[name] = color
+        self.map_markers: Mapping[str, tuple[int, int, int]] = MappingProxyType(copied)
+
     def detect(self, frame: ImageFrame) -> tuple[Detection, ...]:
         rgb = np.frombuffer(frame.pixels, dtype=np.uint8).reshape(frame.height, frame.width, 3)
         # Pack exact RGB once instead of reducing three channels for every class.
@@ -232,7 +254,7 @@ class PixelPerception:
         map_id: str | None = None
         if frame.width >= 160 and frame.height >= 80:
             marker = rgb[6:18, frame.width - 20 : frame.width - 8]
-            for name, color in MAP_MARKERS.items():
+            for name, color in self.map_markers.items():
                 if np.all(marker == color):
                     map_id = name
         hp_ratio = self._bar(rgb, HP_Y, HP_COLOR)

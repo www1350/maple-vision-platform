@@ -1,9 +1,22 @@
-# 实施计划与 v0.3 开发进度
+# 实施计划与 v0.4 开发进度
 
 用户已于 2026-11-24 授权连续实施和测试，不再停在 P0。原 P0 已有独立验收，见 [P0_ACCEPTANCE.md](P0_ACCEPTANCE.md)；该历史记录和 [P0 合同](../engineering/p0-contract.yaml) 不因新版本而改写。
-当前目标是在已验收v0.2基础上完成v0.3工具交付。研究候选因平台召回0.819444＜0.98被拒绝，test及推广分支关闭。首轮远端native152通过/3失败暴露日志流生命周期问题；事后窄修复已通过完整本地 **834项、0失败/跳过**、同序155项、日志回归13项和重建wheel，实现提交 `3340d8f2453082aff002a62ae56f43123fa83c63`已通过[三组远端CI](https://github.com/www1350/maple-vision-platform/actions/runs/45421893081)。最终文档归档head仍需[PR #4](https://github.com/www1350/maple-vision-platform/pull/4)自己的CI通过。它不代表完整v8验收。
+当前目标是v0.4外部地图包与可移植验证。基线v0.3已经完成最终归档CI并通过[PR #4](https://github.com/www1350/maple-vision-platform/pull/4)合并为`493b7d24688c6aad22d7583f11e8098a28965567`，该轮不再有待补的收尾任务。研究候选因平台召回0.819444＜0.98被拒绝，test及推广分支继续关闭。
 
-依赖关系与状态见 [milestones.yaml](../engineering/milestones.yaml)，当前门禁见 [v03-contract.yaml](../engineering/v03-contract.yaml)，具体执行和当前证据分别见 [V0_3_PLAN.md](V0_3_PLAN.md) 与 [RELEASE_0_3_ACCEPTANCE.md](RELEASE_0_3_ACCEPTANCE.md)。本轮基于 `d11e285f6ba648c34f3bcabb1c3d193f63350da1` 开发，新代码不能继承上一轮的通过状态。
+依赖关系与状态见[milestones.yaml](../engineering/milestones.yaml)，当前工程合同为[v04-contract.yaml](../engineering/v04-contract.yaml)，执行与证据见[V0_4_PLAN.md](V0_4_PLAN.md)及[RELEASE_0_4_ACCEPTANCE.md](RELEASE_0_4_ACCEPTANCE.md)。本轮没有模型训练研究，新地图工程不能继承旧模型准确率或完整v8通过状态。
+
+## v0.4 当前增量
+
+| 阶段 | 本轮已经接通的接口 | 独立验收内容 |
+|---|---|---|
+| P3/P5 | 不可变地图包、实例级几何/出生/实体、固定画布渲染、存档schema3 | 严格格式、连接/碰撞、两端梯子恢复、交互垂直重叠、旧字节兼容 |
+| P4 | lifecycle schema3、每图六阶段、按实际地图ID评估 | 18×27帧、动作/像素/标签、源文件删除及重算哈希反例 |
+| P9/P11 | 路线ID驱动策略、声明目标数oracle、内嵌地图replay/reinfer | 三职业、完整N+1帧、错误初始世界/假完成/冲突副本拒绝 |
+| P12/P13 | 三图示例、CLI、可复现验收脚本与隔离安装 | 13场景、60秒短时资源运行、准确head的三组CI |
+
+以上功能均只作用于独立合成环境；准确测试和发布状态以本轮验收记录为准。结构合法仍可能因资源、遮挡或策略预算而失败。新地图上的学习模型泛化、任意世界和分支路线、动画、外部职业、任务DSL、真实域及24小时门禁仍待独立实施。
+
+下文v0.1/v0.2/v0.3表格保留当时的工程状态；其中“最终归档待CI”的历史叙述已由上述PR合并回执闭合，不是当前待办。
 
 v0.2 离线实现已经验收：本地工程、新验证器、所选模型合成混合管线，以及源代码/模型/测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492` 的[跨平台 CI](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)均已通过。其准确提交、计数、初次失败与修复仍由 [RELEASE_0_2_ACCEPTANCE.md](RELEASE_0_2_ACCEPTANCE.md) 和 [v02-contract.yaml](../engineering/v02-contract.yaml) 记录，最终归档与合并历史见 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)，不回写成 v0.3 证据。
 

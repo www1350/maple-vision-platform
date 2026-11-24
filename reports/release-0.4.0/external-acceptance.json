@@ -1,0 +1,246 @@
+{
+  "24h_wall_soak": "not_run",
+  "actual_wall_seconds": 89.495884,
+  "archive_layout": "results separated into referenced JSON files without dropping component fields",
+  "dataset_manifest_sha256": "4588290aec2d333ce6684ba207f753f53ab7660d33a8c6362870fe93c93a0f39",
+  "learned_model_evaluated": false,
+  "map_pack": {
+    "content": {
+      "ground": 168,
+      "height": 192,
+      "id": "three-map-fixture",
+      "license": "CC0-1.0",
+      "maps": [
+        {
+          "id": "grove",
+          "ladders": [
+            {
+              "h": 44,
+              "w": 10,
+              "x": 94,
+              "y": 124
+            }
+          ],
+          "marker": [
+            41,
+            157,
+            131
+          ],
+          "monster_x": [
+            130,
+            210,
+            258
+          ],
+          "npcs": [
+            {
+              "h": 24,
+              "id": "grove_guide",
+              "w": 14,
+              "x": 42,
+              "y": 144
+            }
+          ],
+          "platforms": [
+            {
+              "x1": 0,
+              "x2": 320,
+              "y": 168
+            },
+            {
+              "x1": 68,
+              "x2": 132,
+              "y": 124
+            },
+            {
+              "x1": 184,
+              "x2": 246,
+              "y": 100
+            }
+          ],
+          "portals": [
+            {
+              "destination": "quarry",
+              "h": 36,
+              "id": "to_quarry",
+              "w": 20,
+              "x": 292,
+              "y": 132
+            }
+          ],
+          "spawn_x": 24,
+          "theme": "meadow"
+        },
+        {
+          "id": "quarry",
+          "ladders": [
+            {
+              "h": 50,
+              "w": 10,
+              "x": 110,
+              "y": 118
+            }
+          ],
+          "marker": [
+            151,
+            93,
+            171
+          ],
+          "monster_x": [
+            74,
+            150,
+            224
+          ],
+          "npcs": [
+            {
+              "h": 24,
+              "id": "quarry_keeper",
+              "w": 14,
+              "x": 278,
+              "y": 144
+            }
+          ],
+          "platforms": [
+            {
+              "x1": 0,
+              "x2": 320,
+              "y": 168
+            },
+            {
+              "x1": 78,
+              "x2": 148,
+              "y": 118
+            },
+            {
+              "x1": 208,
+              "x2": 276,
+              "y": 94
+            }
+          ],
+          "portals": [
+            {
+              "destination": "ruins",
+              "h": 36,
+              "id": "to_ruins",
+              "w": 20,
+              "x": 8,
+              "y": 132
+            }
+          ],
+          "spawn_x": 268,
+          "theme": "cavern"
+        },
+        {
+          "id": "ruins",
+          "ladders": [
+            {
+              "h": 48,
+              "w": 10,
+              "x": 114,
+              "y": 120
+            }
+          ],
+          "marker": [
+            199,
+            143,
+            77
+          ],
+          "monster_x": [
+            120,
+            196,
+            258
+          ],
+          "npcs": [
+            {
+              "h": 24,
+              "id": "ruins_keeper",
+              "w": 14,
+              "x": 40,
+              "y": 144
+            }
+          ],
+          "platforms": [
+            {
+              "x1": 0,
+              "x2": 320,
+              "y": 168
+            },
+            {
+              "x1": 82,
+              "x2": 154,
+              "y": 120
+            },
+            {
+              "x1": 204,
+              "x2": 268,
+              "y": 96
+            }
+          ],
+          "portals": [
+            {
+              "destination": "grove",
+              "h": 36,
+              "id": "to_grove",
+              "w": 20,
+              "x": 292,
+              "y": 132
+            }
+          ],
+          "spawn_x": 24,
+          "theme": "cavern"
+        }
+      ],
+      "permission": "self_authored",
+      "route": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "source_uri": "urn:maple-vision:self-authored:three-map-fixture",
+      "version": "1.0.0",
+      "width": 320
+    },
+    "content_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+    "schema_version": 1
+  },
+  "original_combined_report_sha256": "4dda76e119615705be18af49e5bc8071fcf63c7bc46d97437afda147b0c54055",
+  "original_loader_path_removed": true,
+  "passed": true,
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "results": {
+    "dataset": {
+      "file": "dataset-coverage.json",
+      "sha256": "f8e553bcc9d8d187fbbe713dbfeb9afd8de7940d8fd333aa04ff77710fe0f6c5"
+    },
+    "jobs": {
+      "file": "external-jobs.json",
+      "sha256": "6c8662f3ccba1c5e855243891000e7b16919879f5b74473d6dc44a1b617ccdb2"
+    },
+    "pixel_validation": {
+      "file": "pixel-validation.json",
+      "sha256": "a7896333376ba95653380acf7402aaca120440e5e3c611c14ff678c5a5a220e0"
+    },
+    "soak": {
+      "file": "external-soak.json",
+      "sha256": "1f33208015de61739b52cdb5d1e83303b24e6858dfef10e23cff8f3f31957115"
+    },
+    "suite": {
+      "file": "external-suite.json",
+      "sha256": "bd3d1d54c13fc26ab239b7340f8df7b5d43ffe7c4fd976db6223e548f06f609a"
+    }
+  },
+  "runtime_identity": {
+    "packages": {
+      "Pillow": "13.0.0",
+      "maple-vision-platform": "0.4.0",
+      "numpy": "2.5.5",
+      "onnxruntime": "1.32.0"
+    },
+    "python": "3.12.14",
+    "source_sha256": "7737f0d827f93ebe6652bfcace2581b8cabefe998783dfbf40b358f167b468c6"
+  },
+  "schema_version": 1,
+  "scope": "synthetic_external_map_pixel_pipeline",
+  "unseen_map_model_generalization_claimed": false
+}

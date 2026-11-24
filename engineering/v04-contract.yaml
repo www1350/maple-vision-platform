@@ -1,0 +1,107 @@
+schema_version: 1
+release_version: "0.4.0"
+base_commit: 493b7d24688c6aad22d7583f11e8098a28965567
+scope: bounded_external_synthetic_map_content_and_portable_validation
+plan: docs/V0_4_PLAN.md
+format_reference: docs/MAP_PACKS.md
+acceptance_reference: docs/RELEASE_0_4_ACCEPTANCE.md
+criteria_timing: engineering_gates_written_after_early_integration_probes_not_model_preregistration
+
+content:
+  schema_version: 1
+  immutable: true
+  max_file_bytes: 131072
+  maps: {min: 2, max: 8}
+  world: {width: 320, height: 192, ground: 168}
+  route: every_map_once_with_one_exit_to_next_and_final_exit_to_entry
+  platforms_per_map: {min: 2, max: 8}
+  npcs_per_map: 1
+  portals_per_map: 1
+  ladders_per_map: {min: 1, max: 4}
+  ladder_x: {min: 2, max: 308}
+  ground_monsters_per_map: {min: 1, max: 6}
+  scripted_code: false
+  network_fetch: false
+  provenance: self_declared_source_permission_license_not_authenticated_ownership
+  hash: sha256_of_canonical_content
+  sample: examples/maps/three-map-fixture.json
+  sample_content_sha256: e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9
+  sample_maps: [grove, quarry, ruins]
+  sample_monsters: 9
+
+boundaries:
+  policy_inputs: [visual_observation, static_class_spec, ordered_map_ids]
+  perception_inputs: [rgb_frame, static_map_marker_colors]
+  hidden_simulator_state_to_policy: forbidden
+  oracle: independently_counts_declared_maps_monsters_actual_defeats_loot_dialogue_and_survival
+  structural_validity_implies_solvability: false
+  arbitrary_camera_worlds: false
+  new_class_plugins: false
+  ladder_driven_policy_navigation: false
+  model_generalization_acceptance: false
+  official_client_control: false
+  account_safety_claim: false
+
+compatibility:
+  no_map_pack: retain_builtin_behavior_state_and_rgb_bytes
+  legacy_simulator_schema: [1, 2]
+  external_simulator_schema: 3
+  legacy_dataset_schema: [1, 2]
+  external_dataset_schema: 3
+  run_bundle_schema: 1
+  run_map_sidecar: map-pack.json
+  perception_settings_binding: map_pack_sha256
+  restore_without_original_files: required
+  external_initial_state: exact_fresh_world_for_declared_seed_job_profile_and_pack
+  hashes_are_signatures: false
+
+verification:
+  test_suite: full_tree_with_native_extras_enabled_locally
+  legacy_golden_source: 493b7d24688c6aad22d7583f11e8098a28965567
+  strict_rejections:
+    - unknown_fields_duplicate_keys_invalid_types_and_oversize
+    - invalid_geometry_route_or_identity
+    - mismatched_embedded_file_summary_or_state
+    - rehashed_semantic_contradictions
+    - forged_initial_world_or_false_completion
+  sample_jobs: [assassin, dragon_knight, cleric]
+  separate_job_seed: 0
+  separate_job_actual_reinference: all_steps_plus_terminal_frame
+  matrix_seeds: [0, 1, 2]
+  normal_episodes: 9
+  fault_episodes: 4
+  expected_faults:
+    brief_dropout: completed
+    duplicate_frames: completed
+    persistent_dropout: stopped
+    freeze_input: failed
+  dataset:
+    profile: lifecycle
+    sessions: 18
+    frames_per_session: 27
+    seed: 20261125
+    expected_frames: 486
+    six_phases_on_each_map: true
+    validation: actions_pixels_labels_coverage_and_split_integrity
+  benchmark:
+    detector: pixel_fixture
+    split: val
+    metric_gate: none_descriptive_baseline_and_group_integrity_only
+    learned_model_inference: false
+  short_soak:
+    requested_wall_seconds: 60
+    resources: current_process_cpu_and_supported_rss_with_bounded_samples
+    full_24h_acceptance: false
+  packaging: isolated_installed_wheel_with_external_dataset_mission_and_reinference
+  remote_ci: [ubuntu_python312, windows_python312, ubuntu_native_training_export_video_ocr]
+  exact_final_head_must_pass_before_merge: true
+  final_head_receipt: pull_request_to_avoid_self_referential_archive_commits
+
+historical_model_contract:
+  v03_candidate: rejected_do_not_reopen
+  new_candidates: 0
+  v03_holdout_predictions_or_scoring: forbidden
+  v03_promotion_suite_reinfer_soak: intentionally_closed
+  native_one_epoch_engineering_tests: separate_from_research_candidates
+  accepted_hybrid_model: examples/lifecycle-model
+  historical_evidence_must_not_be_rewritten: true

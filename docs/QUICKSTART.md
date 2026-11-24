@@ -193,7 +193,7 @@ python -m ruff check .
 python -m mypy
 python -m pytest -q
 python -m build --wheel --no-isolation
-python scripts/wheel_smoke.py --wheel dist/maple_vision_platform-0.3.0-py3-none-any.whl
+python scripts/wheel_smoke.py --wheel dist/maple_vision_platform-0.4.0-py3-none-any.whl
 ```
 
 `wheel_smoke.py` 在仓库之外创建全新虚拟环境，只安装固定 NumPy/Pillow 与构建 wheel，验证 CLI、P0/v1 数据库、知识快照及增量计划、素材、legacy/lifecycle 数据、完整视觉任务和实际重新推理。它还检查两份模型配置均已打包，并用自定义检测器验证模型地形路线不依赖颜色检测或训练包。stdout 是一份 JSON，默认报告位于 `artifacts/wheel-smoke.json`；可用 `--output` 改路径。`dist` 只有一个 wheel 时可省略 `--wheel`。

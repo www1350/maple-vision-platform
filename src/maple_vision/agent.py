@@ -1,5 +1,7 @@
 """Bounded visual task policy. No simulator object or ground-truth state enters here."""
 
+import re
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
 from .contracts import Detection, Status
@@ -22,10 +24,16 @@ class HybridPerception:
     detector. Neither mode is a general real-game UI parser.
     """
 
-    def __init__(self, detector: Detector, *, terrain_source: TerrainSource = "fixture") -> None:
+    def __init__(
+        self,
+        detector: Detector,
+        *,
+        terrain_source: TerrainSource = "fixture",
+        map_markers: Mapping[str, tuple[int, int, int]] | None = None,
+    ) -> None:
         self.terrain_source = validate_terrain_source(terrain_source, detector)
         self.detector = detector
-        self.hud = PixelPerception()
+        self.hud = PixelPerception(map_markers=map_markers)
 
     def observe(self, frame: ImageFrame) -> VisualObservation:
         if self.terrain_source == "model":
@@ -150,11 +158,15 @@ class VisualAgent:
         if job not in CLASS_SPECS:
             raise ValueError("unknown fixture job")
         if (
-            not maps
-            or any(item not in {"meadow", "cavern"} for item in maps)
+            not isinstance(maps, tuple)
+            or not 1 <= len(maps) <= 8
+            or any(
+                not isinstance(item, str) or re.fullmatch(r"[a-z][a-z0-9_-]{0,39}", item) is None
+                for item in maps
+            )
             or len(set(maps)) != len(maps)
         ):
-            raise ValueError("mission maps must be distinct fixture maps")
+            raise ValueError("mission maps must be a tuple of 1..8 distinct bounded map IDs")
         if class_spec is not None and (
             not isinstance(class_spec, ClassSpec) or class_spec.id != job
         ):

@@ -22,9 +22,11 @@ from .dataset import (
     LIFECYCLE_DATASET_VERSION,
     LIFECYCLE_PHASES,
     LIFECYCLE_TAGS,
+    MAP_DATASET_VERSION,
     POSITION_BINS,
     validate_dataset,
 )
+from .map_pack import MapPack
 from .onnx_detector import OnnxDetector
 from .scene import CLASS_NAMES, ImageFrame
 from .vision import Detector, PixelPerception
@@ -301,6 +303,8 @@ def _grouped_metrics(
     samples: Sequence[EvaluationSample],
     confidence_threshold: float,
     iou_threshold: float,
+    *,
+    map_ids: tuple[str, ...] = ("meadow", "cavern"),
 ) -> dict[str, object]:
     """Reuse one inference per image; groups never change aggregate predictions."""
 
@@ -330,7 +334,7 @@ def _grouped_metrics(
         },
         "by_map": {
             map_id: group([i for i, record in enumerate(records) if record["map_id"] == map_id])
-            for map_id in ("meadow", "cavern")
+            for map_id in map_ids
         },
         "by_map_phase": {
             map_id: {
@@ -343,7 +347,7 @@ def _grouped_metrics(
                 )
                 for phase in LIFECYCLE_PHASES
             }
-            for map_id in ("meadow", "cavern")
+            for map_id in map_ids
         },
         "by_player_position": {
             position: group(
@@ -466,10 +470,15 @@ def benchmark_dataset(
             "Small image counts yield uncertain accuracy and latency estimates.",
         ],
     }
-    if manifest["schema_version"] == LIFECYCLE_DATASET_VERSION:
+    if manifest["schema_version"] in (LIFECYCLE_DATASET_VERSION, MAP_DATASET_VERSION):
         report["schema_version"] = 2
+        map_ids = (
+            MapPack.from_manifest(manifest["map_pack"]).map_ids
+            if manifest["schema_version"] == MAP_DATASET_VERSION
+            else ("meadow", "cavern")
+        )
         report["grouped_metrics"] = _grouped_metrics(
-            records, samples, confidence_threshold, iou_threshold
+            records, samples, confidence_threshold, iou_threshold, map_ids=map_ids
         )
     if terrain_metrics:
         from .terrain_metrics import evaluate_terrain_geometry

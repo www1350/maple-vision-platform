@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 import platform
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -420,6 +421,72 @@ print(json.dumps({'pipeline': observation.source_id, 'fixture_object_detection_c
             before_reinference == after_reinference, "re-inference modified the original bundle"
         )
         checks["reinference"] = reinference
+        # Author-supplied JSON is an input, while every implementation import and
+        # CLI invocation remains in the isolated installed environment.
+        map_source = scratch / "map-pack.json"
+        shutil.copyfile(checkout / "examples/maps/three-map-fixture.json", map_source)
+        map_check = cli("maps", "check", str(map_source))
+        require(map_check["map_ids"] == ["grove", "quarry", "ruins"], "external map route")
+        map_mission = scratch / "map-mission"
+        external = cli(
+            "lab",
+            "run",
+            "--output",
+            str(map_mission),
+            "--map-pack",
+            str(map_source),
+            "--record-stride",
+            "64",
+        )
+        require(
+            external["status"] == "completed" and external["independent_goal_check"],
+            "installed three-map mission failed",
+        )
+        require(external["drops_collected"] == 9, "external oracle must derive nine monsters")
+        map_dataset = scratch / "map-dataset"
+        created = cli(
+            "dataset",
+            "create",
+            str(map_dataset),
+            "--profile",
+            "lifecycle",
+            "--sessions",
+            "3",
+            "--frames",
+            "18",
+            "--map-pack",
+            str(map_source),
+        )
+        require(created["validated"], "installed external dataset validation failed")
+        require(
+            strict_json((map_dataset / "manifest.json").read_text(encoding="utf-8"))[
+                "schema_version"
+            ]
+            == 3,
+            "external dataset must use schema3",
+        )
+        map_source.unlink()
+        require(cli("dataset", "check", str(map_dataset))["validated"], "portable map dataset")
+        require(cli("lab", "replay", str(map_mission))["verified"], "portable map action replay")
+        map_reinfer = cli("lab", "reinfer", str(map_mission))
+        require(
+            map_reinfer["perception_reproduced"]
+            and map_reinfer["policy_reproduced"]
+            and map_reinfer["frames_reinferred"] == external["steps"] + 1,
+            "portable map perception reexecution",
+        )
+        checks["external_maps"] = {
+            "map_ids": map_check["map_ids"],
+            "content_sha256": map_check["map_pack"]["content_sha256"],
+            "status": external["status"],
+            "independent_goal_check": external["independent_goal_check"],
+            "steps": external["steps"],
+            "drops_collected": external["drops_collected"],
+            "dataset_frames": created["frames"],
+            "dataset_schema_version": 3,
+            "source_deleted_before_verification": True,
+            "frames_reinferred": map_reinfer["frames_reinferred"],
+        }
         # Exercise python -m as well as the console entry point, without sending messages.
         draft = strict_json(
             execute(

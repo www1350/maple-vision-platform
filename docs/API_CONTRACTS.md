@@ -1,7 +1,55 @@
 # API 合同
 
-本页先说明 v0.2/v0.3 增量接口，再列出继续兼容的 v0.1 接口与 P0 历史接口。数据字段及格式见 [DATA_SCHEMAS.md](DATA_SCHEMAS.md)，实现边界见 [ARCHITECTURE.md](ARCHITECTURE.md)。
+本页先说明 v0.4 外部地图接口，再列出 v0.2/v0.3 增量接口、继续兼容的 v0.1 接口与 P0 历史接口。历史代码块列出对应版本的调用方式；当前新增参数以前面的增量合同为准。数据字段及格式见 [DATA_SCHEMAS.md](DATA_SCHEMAS.md)，实现边界见 [ARCHITECTURE.md](ARCHITECTURE.md)。
 新 RGB 视觉链路与 P0 NoOp 链路分开：`scene.ImageFrame` 不是 `contracts.Frame`，`simulation.Simulator.step(action)` 也不是旧占位协议的 `step() -> Frame`。调用方应显式选择对应 API。
+
+## v0.4 外部地图接口
+
+```python
+# maple_vision.map_pack：输入为本地数据，不执行脚本，也不读取来源 URI
+load_map_pack(path: Path) -> MapPack
+MapPack.from_dict(value: object) -> MapPack
+MapPack.from_manifest(value: object) -> MapPack
+pack.get(map_id: str) -> MapDefinition
+pack.to_dict() -> dict[str, object]
+pack.manifest() -> dict[str, object]
+# 只读属性：map_ids / route、entry_map、markers、content_sha256、width / height / ground
+
+# 外部地图仍使用固定的 320×192 合成世界
+Simulator(seed=0, job="assassin", map_id="meadow", step_ms=50,
+          *, class_spec=None, map_pack=None)
+SceneRenderer(width=320, height=192, style_seed=0,
+              *, sprite_pack=None, map_pack=None)
+PixelPerception(*, map_markers=None)
+HybridPerception(detector, *, terrain_source="fixture", map_markers=None)
+VisualAgent(job="assassin", maps=("meadow", "cavern"), *, class_spec=None)
+
+# 数据集与闭环入口均可显式绑定同一个不可变 MapPack
+generate_dataset(output, sessions=9, frames_per_session=8, seed=0,
+                 *, sprite_pack=None, profile="legacy", map_pack=None) -> dict
+run_episode(output=None, config=None, detector=None, *, class_profile=None,
+            sprite_pack=None, map_pack=None, terrain_source="fixture") -> dict
+run_suite(output, seeds=3, detector=None, *, terrain_source="fixture",
+          map_pack=None) -> dict
+run_soak(output, seconds=60, detector=None, *, resource_interval_seconds=1.0,
+         max_resource_samples=1024, terrain_source="fixture", map_pack=None) -> dict
+```
+
+`load_map_pack` 接受不超过 128 KiB 的普通 UTF-8 JSON 文件，拒绝符号链接、重复键、未知字段和非法数值。`from_dict` 验证原始地图内容；`from_manifest` 接受 `{"schema_version":1,"content":...,"content_sha256":...}`，验证内容后重新计算摘要。`manifest()` 返回可独立恢复的完整内容，不能把它误当作 `load_map_pack` 所需的原始输入格式。哈希基于规范化 UTF-8 JSON，来源和许可字段也属于身份的一部分；它证明内容一致，不验证声明者的实际权利。
+
+地图包 v1 固定宽 320、高 192、地面 y=168，含 2–8 张地图。`route` 恰好遍历每张地图一次，每张地图的唯一传送门指向路线下一张，最后一张返回入口。`maps` 的保存顺序规范化为路线顺序。`MapDefinition` 包含 id、theme、marker、spawn_x、platforms、portals、npcs、ladders、monster_x；结构与数量约束见 [数据格式](DATA_SCHEMAS.md#外部地图包-v1)。内置 meadow/cavern 不会被外部同名数据替换。
+
+`Simulator` 的默认 map_id 仍是 `meadow`。因此绑定外部包时应显式调用 `Simulator(map_id=pack.entry_map, map_pack=pack)`；构造器也允许选择包内其它地图作为该实例的初始图。`reset()` 保留包和初始地图，传送门使用目标地图的 spawn_x。`simulator.map_pack` 和 `simulator.map_ids` 是只读静态数据属性。外部地图渲染器要求世界及视口均为 320×192，不能借助修改 width/height 引入未实现的宽世界探索能力。
+
+外部地图的 NPC 与传送门交互还要求角色和目标在垂直方向具有正面积交叠；传送门保留横向距离及角色着地检查。角色站在目标正上方的远处高台，或仅与目标边缘接触，不会触发交互。内置地图的历史动作行为保持原样。
+
+依赖边界保持明确：模拟器和渲染器接收完整包；`PixelPerception` / `HybridPerception` 只接收 `pack.markers` 的只读颜色映射；`VisualAgent` 只接收 `pack.map_ids` 的有序地图 ID，不接收平台坐标、出生点、怪物位置或 simulator。运行入口负责注入这些静态信息，策略仍只通过 RGB 产生的 `VisualObservation` 决策。地图标记解析属于合成 HUD，不是通用 OCR。
+
+外部数据集必须选择 `profile="lifecycle"`，使用 manifest schema3、`generator_version="lifecycle-map-pack-v1"`。每会话至少 `6 × 地图数` 帧，每张地图必须具有 spawn/combat/loot/cleared/dialogue/transition 六阶段，并保留实际命中的战斗帧。生成轨迹完成整条路线后返回入口；每会话最多 4096 个动作、整个数据集最多 1000000 个动作。结构合法不保证轨迹可解；资源、覆盖或步数不足会失败并清理暂存输出。校验器从嵌入包独立重放动作、像素、标签和阶段，不能仅通过重新计算哈希伪造覆盖。评估中的地图分组来自已验证包，按会话拆分不等于按地图留出泛化验证。
+
+运行包保存 `map-pack.json`，initial/final state 使用 schema3，summary 可选 `map_pack`，感知 settings 增加 `map_pack_sha256`。动作回放 `verify_run(output)` 与感知重执行 `verify_perception(output, detector=None, *, terrain_source="fixture")` 都从包内证据恢复地图，无需再提供原始 JSON。前者验证环境与像素，后者还检查地图绑定后的感知 settings 并真实重执行 N+1 帧感知与策略。suite/soak 使用同一地图身份及按路线设置的任务预算；运行完成仍须通过独立目标检查。
+
+`map_pack=None` 保留内置地图、旧保存版本和旧数据格式。新增地图不会改变既有模型的准入结论，也不会自动证明其在新地图上的识别能力。
 
 ## v0.2/v0.3 增量接口
 
@@ -138,7 +186,7 @@ fault 仅支持 none/brief_dropout/persistent_dropout/duplicate_frames/freeze_in
 运行任务状态为 completed/failed/stopped；completed 还必须满足独立 oracle，策略自称完成但真值不符会降为 failed。
 `output=None` 只返回摘要；指定输出则保存采样图片、完整动作轨迹、状态、摘要和文件 manifest；提供 sprite_pack 时同时保存其原始图片和元数据，回放时独立验证并恢复相同渲染。
 `verify_run()` 做动作/状态/像素回放，返回 `perception_reproduced=False`；不重新执行学习模型。
-suite 与 soak 目前固定用像素基线。带 ONNX 的闭环需调用 run_episode 或 `lab run`。
+v0.1 的 suite 与 soak 固定使用像素基线；当前版本可通过前述增量接口显式传入 detector 和 terrain_source。没有 detector 时仍使用像素基线。
 
 soak 的 seconds 是墙上时间预算，范围 1–604800；会完成当前 episode 后退出，可能多运行一个 episode 的时长。模拟时长单列，不能替代 24 小时真实进程运行。
 chat_draft 只封装 incoming 和 reply 为待人工确认的本地草稿，返回 `sent=False`；不生成语言模型回复、不发送消息。
@@ -191,18 +239,20 @@ OCR 使用已安装的本地 Tesseract 和语言包，不下载；crop 是原图
 | `knowledge snapshot DB OUTPUT` / `knowledge verify-snapshot DIR` | 生成和验证独立快照 |
 | `assets import REGISTRY SOURCE` | 必填 `--entity-id --game-version --source-uri --license --permission` |
 | `assets list REGISTRY` / `assets verify REGISTRY ID` | 列表和内容验证 |
-| `dataset create PATH` / `dataset check PATH` | create 可选 `--sessions --frames --seed`，成对的 `--asset-registry --sprite-map` |
+| `maps check FILE` | 校验本地原始地图 JSON，输出规范化身份及完整包；不验证任务可解性 |
+| `dataset create PATH` / `dataset check PATH` | create 可选 `--sessions --frames --seed --profile`，成对的 `--asset-registry --sprite-map`；外部地图使用 `--profile lifecycle --map-pack FILE` |
 | `vision ocr IMAGE` | `--language --binary --tessdata-dir --timeout --crop x1 y1 x2 y2`；需要本地 Tesseract |
 | `recording import SOURCE OUTPUT` | 必填来源/许可断言，PNG 目录需要 `--fps`，可选 `--max-frames` |
 | `recording check DIR` / `recording observe DIR --output DIR` | 完整性验证或离线逐帧观察；observe 可选模型对 |
-| `vision observe IMAGE` | 可选成对的 `--model --manifest` |
+| `vision observe IMAGE` | 可选成对的 `--model --manifest`、`--terrain-source`；`--map-pack FILE` 仅向感知提供静态地图标记 |
 | `vision benchmark DATASET --output FILE` | 可选模型对及 `--split train|val|test` |
 | `model train DATASET --output DIR` | `--config --epochs --image-size --batch --seed` |
 | `model export WEIGHTS --output DIR` | `--image-size --scope` |
-| `lab run --output DIR` | `--job --seed --max-steps --record-stride --fault`，可选模型对、`--knowledge-db --game-version` 及成对的 `--asset-registry --sprite-map` |
-| `lab suite --output DIR` | `--seeds` |
-| `lab replay DIR` | 校验记录包并回放动作 |
-| `lab soak --output DIR` | `--seconds` 为实际墙上时长 |
+| `lab run --output DIR` | `--job --seed --max-steps --record-stride --fault`；可选模型对、`--terrain-source --map-pack`、`--knowledge-db --game-version` 及成对的 `--asset-registry --sprite-map` |
+| `lab suite --output DIR` | `--seeds`；可选模型对、`--terrain-source --map-pack` |
+| `lab replay DIR` | 校验记录包并回放动作，外部地图从运行包恢复 |
+| `lab reinfer DIR` | 真实重执行感知及策略；可选同一模型对和 `--terrain-source`，地图从运行包恢复 |
+| `lab soak --output DIR` | `--seconds` 为实际墙上时长；可选模型对、`--terrain-source --map-pack`、`--resource-interval --max-resource-samples` |
 | `chat-draft --incoming TEXT --reply TEXT` | 输出本地草稿 JSON |
 
 `python -m maple_vision` 与安装后的 `maple-vision` 等价。正常 stdout 为一份 JSON 摘要；训练日志写 stderr。

@@ -15,6 +15,7 @@ import numpy as np
 from PIL import Image, ImageChops, ImageDraw
 
 from .contracts import Detection, nonnegative_int
+from .map_pack import MapPack
 from .sprite_pack import SpritePack
 
 if TYPE_CHECKING:
@@ -93,6 +94,7 @@ class SceneRenderer:
         style_seed: int = 0,
         *,
         sprite_pack: SpritePack | None = None,
+        map_pack: MapPack | None = None,
     ) -> None:
         if any(type(v) is not int or not 160 <= v <= 4096 for v in (width, height)):
             raise ValueError("viewport dimensions must be integers in [160, 4096]")
@@ -100,10 +102,16 @@ class SceneRenderer:
             raise ValueError("style_seed must be a non-negative integer")
         if sprite_pack is not None and not isinstance(sprite_pack, SpritePack):
             raise ValueError("sprite_pack must be a verified SpritePack")
+        if map_pack is not None and not isinstance(map_pack, MapPack):
+            raise ValueError("map_pack must be a verified MapPack")
+        if map_pack is not None and (width, height) != (320, 192):
+            raise ValueError("external map packs require a 320 x 192 viewport")
         self.width = width
         self.height = height
         self.style_seed = style_seed
         self.sprite_pack = sprite_pack
+        self.map_pack = map_pack
+        self.map_markers = MAP_MARKERS if map_pack is None else map_pack.markers
 
     def camera_x(self, snapshot: "SimSnapshot") -> int:
         center = snapshot.player.x + snapshot.player.w / 2
@@ -119,10 +127,16 @@ class SceneRenderer:
         return self._draw(snapshot, with_labels=True)
 
     def _draw(self, snapshot: "SimSnapshot", *, with_labels: bool) -> RenderedSample:
-        if snapshot.map_id not in MAP_MARKERS:
+        if snapshot.map_id not in self.map_markers:
             raise ValueError("renderer does not know this fixture map")
+        if self.map_pack is not None and (snapshot.width, snapshot.height) != (320, 192):
+            raise ValueError("external map snapshots require a 320 x 192 world")
         offset = self.camera_x(snapshot)
-        cavern = snapshot.map_id == "cavern"
+        cavern = (
+            snapshot.map_id == "cavern"
+            if self.map_pack is None
+            else self.map_pack.get(snapshot.map_id).theme == "cavern"
+        )
         sky = (27, 25, 48) if cavern else (30, 57, 76)
         image = Image.new("RGB", (self.width, self.height), sky)
         draw = ImageDraw.Draw(image)
@@ -217,7 +231,9 @@ class SceneRenderer:
             length = round(BAR_WIDTH * max(0, min(1, value / maximum))) if maximum > 0 else 0
             if length:
                 draw.rectangle((BAR_X, y, BAR_X + length - 1, y + 4), fill=color)
-        draw.rectangle((self.width - 20, 6, self.width - 9, 17), fill=MAP_MARKERS[snapshot.map_id])
+        draw.rectangle(
+            (self.width - 20, 6, self.width - 9, 17), fill=self.map_markers[snapshot.map_id]
+        )
         if with_labels:
             erase_labels((self.width - 20, 6, self.width - 9, 17))
         if snapshot.dialogue is not None:

@@ -17,6 +17,7 @@ from PIL import Image
 
 from .agent import AgentDecision, HybridPerception, Supervisor, VisualAgent, verify_visual_effect
 from .catalog import strict_json
+from .map_pack import MapPack
 from .onnx_detector import OnnxDetector
 from .profiles import LoadedClassProfile, parse_loaded_class_profile
 from .scene import ImageFrame, SceneRenderer
@@ -27,6 +28,7 @@ from .validation_resources import ProcessResourceMonitor
 from .vision import Detector, PixelPerception, TerrainSource, validate_terrain_source
 
 FAULTS = ("none", "brief_dropout", "persistent_dropout", "duplicate_frames", "freeze_input")
+_MAX_MAP_EVIDENCE_BYTES = 1024 * 1024
 
 
 def canonical(value: object) -> bytes:
@@ -123,6 +125,7 @@ def run_episode(
     *,
     class_profile: LoadedClassProfile | None = None,
     sprite_pack: SpritePack | None = None,
+    map_pack: MapPack | None = None,
     terrain_source: TerrainSource = "fixture",
 ) -> dict[str, Any]:
     return _execute_episode(
@@ -131,16 +134,20 @@ def run_episode(
         detector,
         class_profile=class_profile,
         sprite_pack=sprite_pack,
+        map_pack=map_pack,
         terrain_source=terrain_source,
     )
 
 
 def _perception_settings(
-    detector: Detector | None, *, terrain_source: TerrainSource = "fixture"
+    detector: Detector | None,
+    *,
+    terrain_source: TerrainSource = "fixture",
+    map_pack: MapPack | None = None,
 ) -> dict[str, Any]:
     validate_terrain_source(terrain_source, detector)
     if detector is None:
-        return {
+        settings: dict[str, Any] = {
             "pipeline": "pixel-fixture",
             "implementation": "maple_vision.vision.PixelPerception",
             "model_manifest": None,
@@ -148,10 +155,13 @@ def _perception_settings(
             "inference_options": None,
             "verifiable_model_binding": True,
         }
+        if map_pack is not None:
+            settings["map_pack_sha256"] = map_pack.content_sha256
+        return settings
     native = detector if type(detector) is OnnxDetector else None
     if native is not None and native.loaded_model_sha256 != native.manifest.model_sha256:
         raise ValueError("model manifest is not bound to the loaded model hash")
-    settings: dict[str, Any] = {
+    settings = {
         "pipeline": "onnx-all-objects+fixture-hud-v1"
         if terrain_source == "model"
         else "onnx-objects+fixture-terrain-hud-v1",
@@ -170,7 +180,22 @@ def _perception_settings(
         # Preserve the default v0.2 settings byte-for-byte. The opt-in source has
         # both a new pipeline identity and an explicit, checked source setting.
         settings["terrain_source"] = terrain_source
+    if map_pack is not None:
+        settings["map_pack_sha256"] = map_pack.content_sha256
     return settings
+
+
+def _mission_requirements(map_pack: MapPack | None) -> tuple[tuple[str, ...], int]:
+    """Static oracle expectations; hidden world state never enters the visual policy."""
+    if map_pack is None:
+        return ("meadow", "cavern"), 6
+    return map_pack.map_ids, sum(len(item.monster_x) for item in map_pack.maps)
+
+
+def _episode_budget(map_pack: MapPack | None, *, fault: bool = False) -> int:
+    if map_pack is None:
+        return 500 if fault else 1000
+    return max(1000, 500 * len(map_pack.map_ids))
 
 
 def _execute_episode(
@@ -180,33 +205,48 @@ def _execute_episode(
     *,
     class_profile: LoadedClassProfile | None = None,
     sprite_pack: SpritePack | None = None,
+    map_pack: MapPack | None = None,
     initial_state: dict[str, Any] | None = None,
     trace_consumer: Callable[[dict[str, Any]], None] | None = None,
     terrain_source: TerrainSource = "fixture",
 ) -> dict[str, Any]:
     config = config or RunConfig()
-    settings = _perception_settings(detector, terrain_source=terrain_source)
     spec = None if class_profile is None else class_profile.class_spec
     simulator = (
-        Simulator(config.seed, config.job, class_spec=spec)
+        Simulator(
+            config.seed,
+            config.job,
+            map_id="meadow" if map_pack is None else map_pack.entry_map,
+            class_spec=spec,
+            map_pack=map_pack,
+        )
         if initial_state is None
         else Simulator.restore(initial_state)
     )
-    renderer, fault_frames = SceneRenderer(sprite_pack=sprite_pack), _Frames(config.fault)
+    if map_pack is not None and simulator.map_pack != map_pack:
+        raise ValueError("requested map pack disagrees with embedded simulator content")
+    map_pack = simulator.map_pack
+    settings = _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
+    mission_maps, expected_drops = _mission_requirements(map_pack)
+    markers = None if map_pack is None else map_pack.markers
+    renderer = SceneRenderer(sprite_pack=sprite_pack, map_pack=map_pack)
+    fault_frames = _Frames(config.fault)
     if output is not None:
         if output.exists():
             raise FileExistsError(f"run output already exists: {output}")
         output.mkdir(parents=True)
         (output / "frames").mkdir()
     perception = (
-        PixelPerception()
+        PixelPerception(map_markers=markers)
         if detector is None
-        else HybridPerception(detector, terrain_source=terrain_source)
+        else HybridPerception(detector, terrain_source=terrain_source, map_markers=markers)
     )
-    policy, supervisor = VisualAgent(config.job, class_spec=spec), Supervisor()
+    policy, supervisor = VisualAgent(config.job, mission_maps, class_spec=spec), Supervisor()
     initial = simulator.save()
     if output:
         _write_json(output / "initial-state.json", initial)
+        if map_pack is not None:
+            _write_json(output / "map-pack.json", map_pack.manifest())
         if sprite_pack is not None:
             sprite_pack.write_sources(output)
             _write_json(output / "sprite-pack.json", sprite_pack.manifest())
@@ -299,17 +339,17 @@ def _execute_episode(
     cleared[final.map_id] = not final.monsters and not final.drops
     oracle_pass = (
         final.player.alive
-        and set(cleared) == {"meadow", "cavern"}
+        and set(cleared) == set(mission_maps)
         and all(cleared.values())
-        and dialogue_maps == {"meadow", "cavern"}
-        and events["monster_defeated"] == 6
-        and len(collected_drops) == 6
+        and dialogue_maps == set(mission_maps)
+        and events["monster_defeated"] == expected_drops
+        and len(collected_drops) == expected_drops
     )
     if status == "completed" and not oracle_pass:
         status, reason = "failed", "independent_goal_check_failed"
     elapsed = time.perf_counter() - wall_start
     if canonical(settings) != canonical(
-        _perception_settings(detector, terrain_source=terrain_source)
+        _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
     ):
         raise ValueError("detector settings changed during the episode")
     summary: dict[str, Any] = {
@@ -347,6 +387,8 @@ def _execute_episode(
     }
     if sprite_pack is not None:
         summary["sprite_pack"] = sprite_pack.manifest()
+    if map_pack is not None:
+        summary["map_pack"] = map_pack.manifest()
     if output:
         trace_path = output / "trace.jsonl"
         with trace_path.open("x", encoding="utf-8") as stream:
@@ -420,7 +462,17 @@ def verify_run(output: Path) -> dict[str, Any]:
         raise ValueError("run manifest omits required evidence")
     for relative, expected in files.items():
         target = _run_evidence_path(output, relative)
-        if hashlib.sha256(target.read_bytes()).hexdigest() != expected:
+        if relative == "map-pack.json":
+            # Bound the read before hashing, not only later during schema parsing.
+            if (output / relative).is_symlink():
+                raise ValueError("invalid run map pack manifest")
+            with target.open("rb") as source:
+                contents = source.read(_MAX_MAP_EVIDENCE_BYTES + 1)
+            if len(contents) > _MAX_MAP_EVIDENCE_BYTES:
+                raise ValueError("invalid run map pack manifest")
+        else:
+            contents = target.read_bytes()
+        if hashlib.sha256(contents).hexdigest() != expected:
             raise ValueError(f"run evidence checksum mismatch: {relative}")
     initial = json.loads((output / "initial-state.json").read_text(encoding="utf-8"))
     summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
@@ -429,18 +481,49 @@ def verify_run(output: Path) -> dict[str, Any]:
     profile_metadata = summary.get("class_profile")
     if profile_metadata is not None:
         profile = parse_loaded_class_profile(profile_metadata)
-        if initial.get("schema_version") != 2 or profile.class_spec != simulator.class_spec:
+        if "class_profile" not in initial or profile.class_spec != simulator.class_spec:
             raise ValueError("run profile provenance disagrees with embedded simulator rules")
-    elif initial.get("schema_version") == 2:
+    elif "class_profile" in initial:
         raise ValueError("run omits provenance for its injected class profile")
+    map_pack = simulator.map_pack
+    mission_maps, expected_drops = _mission_requirements(map_pack)
+    map_manifest_path = output / "map-pack.json"
+    if map_pack is not None:
+        if "map-pack.json" not in files:
+            raise ValueError("run manifest omits embedded map pack evidence")
+        if (
+            map_manifest_path.is_symlink()
+            or map_manifest_path.stat().st_size > _MAX_MAP_EVIDENCE_BYTES
+        ):
+            raise ValueError("invalid run map pack manifest")
+        embedded = MapPack.from_manifest(strict_json(map_manifest_path.read_text(encoding="utf-8")))
+        summary_pack = MapPack.from_manifest(summary.get("map_pack"))
+        if embedded != map_pack or summary_pack != map_pack:
+            raise ValueError("run map pack metadata disagrees with embedded simulator content")
+    elif (
+        summary.get("map_pack") is not None
+        or "map-pack.json" in files
+        or map_manifest_path.exists()
+    ):
+        raise ValueError("run contains unmanifested map pack evidence")
     if (
         simulator.seed != config.seed
         or simulator.job != config.job
         or simulator.snapshot().sequence != 0
-        or simulator.snapshot().map_id != "meadow"
+        or simulator.snapshot().map_id != mission_maps[0]
         or simulator.step_ms != 50
     ):
         raise ValueError("run config disagrees with initial simulator state")
+    if map_pack is not None:
+        expected_initial = Simulator(
+            config.seed,
+            config.job,
+            map_id=map_pack.entry_map,
+            class_spec=simulator.class_spec if "class_profile" in initial else None,
+            map_pack=map_pack,
+        ).save()
+        if canonical(simulator.save()) != canonical(expected_initial):
+            raise ValueError("map run initial state is not the declared fresh seeded world")
     sprite_pack = None
     sprite_manifest_path = output / "sprite-pack.json"
     if "sprite-pack.json" in files:
@@ -458,7 +541,8 @@ def verify_run(output: Path) -> dict[str, Any]:
         or (output / "sprite_objects").exists()
     ):
         raise ValueError("run contains unmanifested sprite evidence")
-    renderer, fault_frames = SceneRenderer(sprite_pack=sprite_pack), _Frames(config.fault)
+    renderer = SceneRenderer(sprite_pack=sprite_pack, map_pack=map_pack)
+    fault_frames = _Frames(config.fault)
     count = 0
     actions: Counter[str] = Counter()
     events: Counter[str] = Counter()
@@ -541,11 +625,11 @@ def verify_run(output: Path) -> dict[str, Any]:
         raise ValueError("replay final state mismatch")
     oracle_pass = (
         snapshot.player.alive
-        and set(cleared) == {"meadow", "cavern"}
+        and set(cleared) == set(mission_maps)
         and all(cleared.values())
-        and dialogue_maps == {"meadow", "cavern"}
-        and events["monster_defeated"] == 6
-        and len(collected_drops) == 6
+        and dialogue_maps == set(mission_maps)
+        and events["monster_defeated"] == expected_drops
+        and len(collected_drops) == expected_drops
     )
     if summary.get("status") not in {"completed", "failed", "stopped"}:
         raise ValueError("invalid run status")
@@ -631,7 +715,10 @@ def verify_perception(
         )
     if detector is not None and type(detector) is not OnnxDetector:
         raise ValueError("custom detector identity cannot be verified; supply OnnxDetector")
-    settings = _perception_settings(detector, terrain_source=terrain_source)
+    map_pack = (
+        None if summary.get("map_pack") is None else MapPack.from_manifest(summary["map_pack"])
+    )
+    settings = _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
     if detector is not None:
         assert isinstance(detector, OnnxDetector)
         if detector.loaded_model_sha256 != detector.manifest.model_sha256:
@@ -691,6 +778,7 @@ def verify_perception(
             detector=detector,
             class_profile=profile,
             sprite_pack=sprite_pack,
+            map_pack=map_pack,
             initial_state=initial,
             trace_consumer=compare_trace,
             terrain_source=terrain_source,
@@ -730,6 +818,7 @@ def verify_perception(
         "final_state_sha256",
         "model_manifest",
         "class_profile",
+        "map_pack",
     ):
         if canonical(reproduced.get(key)) != canonical(summary.get(key)):
             raise ValueError(f"perception replay summary mismatch: {key}")
@@ -772,12 +861,15 @@ def _record_episode(
     *,
     failure_name: str,
     terrain_source: TerrainSource = "fixture",
+    map_pack: MapPack | None = None,
 ) -> dict[str, Any]:
     """Capture exactly once; retain the actual failure rather than executing a rerun."""
     staging = output / "active-episode"
     # run_episode refuses an existing path, so cleanup only targets the directory
     # created by this particular call in this already-new validation output.
-    result = run_episode(staging, config, detector, terrain_source=terrain_source)
+    result = run_episode(
+        staging, config, detector, terrain_source=terrain_source, map_pack=map_pack
+    )
     if result["status"] == "completed":
         shutil.rmtree(staging)
         result.pop("output", None)
@@ -816,10 +908,11 @@ def run_suite(
     detector: Detector | None = None,
     *,
     terrain_source: TerrainSource = "fixture",
+    map_pack: MapPack | None = None,
 ) -> dict[str, Any]:
     if type(seeds) is not int or not 1 <= seeds <= 1000:
         raise ValueError("seeds must be in [1, 1000]")
-    settings = _perception_settings(detector, terrain_source=terrain_source)
+    settings = _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
     if output.exists():
         raise FileExistsError(f"suite output already exists: {output}")
     output.mkdir(parents=True)
@@ -828,9 +921,11 @@ def run_suite(
     source_options: dict[str, Any] = (
         {} if terrain_source == "fixture" else {"terrain_source": "model"}
     )
+    if map_pack is not None:
+        source_options["map_pack"] = map_pack
     for job in CLASS_SPECS:
         for seed in range(seeds):
-            config = RunConfig(seed, job, record_stride=16)
+            config = RunConfig(seed, job, max_steps=_episode_budget(map_pack), record_stride=16)
             result = _record_episode(
                 output, config, detector, failure_name=f"failure-{job}-{seed}", **source_options
             )
@@ -838,9 +933,12 @@ def run_suite(
     for fault in FAULTS[1:]:
         result = run_episode(
             output / fault,
-            RunConfig(fault=fault, max_steps=500, record_stride=16),
+            RunConfig(
+                fault=fault, max_steps=_episode_budget(map_pack, fault=True), record_stride=16
+            ),
             detector,
             terrain_source=terrain_source,
+            map_pack=map_pack,
         )
         result["episode_capture"] = {
             "mode": "original_single_execution",
@@ -859,7 +957,7 @@ def run_suite(
     }
     passed = all(row["status"] == expected[row["config"]["fault"]] for row in rows)
     if canonical(settings) != canonical(
-        _perception_settings(detector, terrain_source=terrain_source)
+        _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
     ):
         raise ValueError("detector settings changed during the suite")
     report = {
@@ -878,6 +976,8 @@ def run_suite(
         "episode_capture": _capture_contract(),
         "results": rows,
     }
+    if map_pack is not None:
+        report["map_pack"] = map_pack.manifest()
     _write_json(output / "suite.json", report)
     return report
 
@@ -890,6 +990,7 @@ def run_soak(
     resource_interval_seconds: float = 1.0,
     max_resource_samples: int = 1024,
     terrain_source: TerrainSource = "fixture",
+    map_pack: MapPack | None = None,
 ) -> dict[str, Any]:
     """Wall-clock soak, checkpointed after each mission (up to one episode overrun).
 
@@ -900,7 +1001,7 @@ def run_soak(
     if type(seconds) is not int or not 1 <= seconds <= 7 * 24 * 3600:
         raise ValueError("soak seconds must be in [1, 604800]")
     resources = ProcessResourceMonitor(resource_interval_seconds, max_resource_samples)
-    settings = _perception_settings(detector, terrain_source=terrain_source)
+    settings = _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
     if output.exists():
         raise FileExistsError(f"soak output already exists: {output}")
     output.mkdir(parents=True)
@@ -913,12 +1014,16 @@ def run_soak(
     source_options: dict[str, Any] = (
         {} if terrain_source == "fixture" else {"terrain_source": "model"}
     )
+    if map_pack is not None:
+        source_options["map_pack"] = map_pack
     resources.start()
     try:
         with (output / "episodes.jsonl").open("x", encoding="utf-8") as stream:
             while time.monotonic() - start < seconds:
                 job = tuple(CLASS_SPECS)[completed % len(CLASS_SPECS)]
-                config = RunConfig(seed=completed, job=job, record_stride=16)
+                config = RunConfig(
+                    seed=completed, job=job, max_steps=_episode_budget(map_pack), record_stride=16
+                )
                 result = _record_episode(
                     output,
                     config,
@@ -927,7 +1032,7 @@ def run_soak(
                     **source_options,
                 )
                 if canonical(settings) != canonical(
-                    _perception_settings(detector, terrain_source=terrain_source)
+                    _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
                 ):
                     raise ValueError("detector settings changed during the soak")
                 stream.write(canonical(result).decode() + "\n")
@@ -977,6 +1082,8 @@ def run_soak(
             if (output / "active-episode").exists()
             else None,
         }
+        if map_pack is not None:
+            report["map_pack"] = map_pack.manifest()
         _write_json(output / "soak.json", report)
     return report
 

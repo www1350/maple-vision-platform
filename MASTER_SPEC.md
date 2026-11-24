@@ -1,6 +1,6 @@
 # Maple Vision Platform v8.0
 
-完整架构、从零执行步骤与 AI 接手指南见 [docs/FINAL_PLAN.md](docs/FINAL_PLAN.md)。当前版本为 **v0.3 地形研究与模型对象管线，工具工程验收进行中**。唯一候选已经完成训练并在val失败，不推广、不评分test；执行合同见 [docs/V0_3_PLAN.md](docs/V0_3_PLAN.md)，实际结果与待完成的工程门禁见 [docs/RELEASE_0_3_ACCEPTANCE.md](docs/RELEASE_0_3_ACCEPTANCE.md)。v0.2 已验收证据保留在 [docs/RELEASE_0_2_ACCEPTANCE.md](docs/RELEASE_0_2_ACCEPTANCE.md)，v0.1 历史记录保留在 [docs/RELEASE_ACCEPTANCE.md](docs/RELEASE_ACCEPTANCE.md)。本文件保留总体规格，具体交付范围以版本验收记录为准；版本号不代表完整 v8 已完成。
+完整架构、从零执行步骤与 AI 接手指南见 [docs/FINAL_PLAN.md](docs/FINAL_PLAN.md)。当前版本为 **v0.4 外部地图包与可移植验证**，执行合同见 [docs/V0_4_PLAN.md](docs/V0_4_PLAN.md)，实际工程结果见 [docs/RELEASE_0_4_ACCEPTANCE.md](docs/RELEASE_0_4_ACCEPTANCE.md)。v0.3 工具已完成最终 CI 并合并，其唯一研究候选在 val 失败，不推广、不评分 test；[历史验收](docs/RELEASE_0_3_ACCEPTANCE.md)保留。v0.2/v0.1 记录同样保留。本文件是总体规格，具体交付范围以版本验收记录为准；版本号不代表完整 v8 已完成。
 
 ## 项目范围
 面向冒险岛风格的离线视觉研究和独立模拟器。正式游戏仅限符合规则的只读观察；不提供正式客户端自动控制、反作弊绕过、封包拦截、内存操纵或输入伪装。独立验证不能证明正式账号安全。
@@ -13,6 +13,8 @@
 
 ## 素材与地图
 授权动画、图标、背景、地图结构独立存储，按实体 ID 关联。MapleNecrocer 为待评估候选工具，须验证许可及兼容性。分离地图坐标、镜头坐标、远景视差、装饰、地形、动态对象和特效。地图包包含 manifest、geometry、layers、portals、validation。逻辑结构不等同背景图。
+
+v0.4 已实现其有界子集：不可变 MapPack JSON、2–8 图单出口循环路线、平台/梯子/NPC/地面怪物与出生点，固定 320×192 和地面 y=168。主题复用现有背景，静态素材仍由独立 SpritePack 提供；任意图层编辑、动画和大世界镜头未实现。外部存档与 lifecycle 数据使用 schema3，运行包完整嵌入地图，支持删除原文件后的动作重放与实际感知/策略复验。结构校验不保证任意地图在当前资源/策略预算内可完成。[地图包合同](docs/MAP_PACKS.md)
 
 ## 数据集与视觉
 合成数据优先，自动标签，独立真实录像评估。按会话和场景划分，防止相邻帧泄漏。对比通用检测、细粒度分类、两阶段检测分类及 nano/small/medium 模型。评估像素画适用增强、背景捷径、跨地图泛化、技能遮挡、小目标、延迟。禁用不符合目标域的大幅透视和旋转作为初始基线。训练与推理分离，验证后导出 ONNX。OpenCV 负责固定 UI，YOLO 负责动态对象，OCR 负责文字。状态具有时间戳、来源、置信度和有效期。
@@ -37,4 +39,4 @@ Python 3.12、SQLite、Pydantic、OpenCV、Pillow、Ultralytics YOLO、ONNX Runt
 ## 交付阶段
 P0 工程合同与 CI；P1 知识同步；P2 素材；P3 地图渲染；P4 数据集；P5 模拟器；P6 模型评估；P7 视觉状态；P8 职业能力；P9 模拟器任务与验证；P10 Supervisor；P11 回归；P12 扩展；P13 发布。每阶段独立测试、审查和验收。P0 已验收；用户于 2026-11-24 授权连续实施、测试并交付后续离线平台。真实素材、真实录像、已核实规则和长稳验收须分别记录，不能用合成测试冒充。
 
-当前已经归档v0.3唯一候选失败与关闭的推广分支，日志修复后的实现提交已通过本地、安装及三组远端CI；下一步是最终文档与证据归档提交的独立CI，通过后再合并。最终head和检查由[PR #4](https://github.com/www1350/maple-vision-platform/pull/4)记录，不预称尚未完成的归档提交通过。模型推广已明确未通过。网络小册子适配、真实数据、外部地图/职业包、时序跟踪、任务DSL、梯子驱动导航和24小时长稳保持未完成。
+v0.3 最终归档 head `f1c9fc143c35e4ce7849410d6b13df3bcf0a3df6` 已通过 CI 45423871093，并经 [PR #4](https://github.com/www1350/maple-vision-platform/pull/4) 合并为 `493b7d24688c6aad22d7583f11e8098a28965567`；该交付已经闭合，不重新打开拒绝模型或为旧记录再加自引用归档。v0.4 单独验收外部地图工程。网络小册子适配、真实数据、动画和更广地图机制、外部职业包、时序跟踪、任务 DSL、梯子驱动导航和 24 小时长稳仍未完成。
