@@ -4,7 +4,7 @@
 
 **完整方案入口：[完整方案与 AI 落地指南](docs/FINAL_PLAN.md)**。其中集中说明架构、数据流、从零实施顺序、各阶段完成标准，以及下一位编程 AI 接手时应遵守的接口与验证要求。
 
-**v0.2.0 已完成本地工程与合成混合管线模型验收，最终发布提交的远端 CI 待确认。** 本轮新增生命周期数据集与分组评估、本地知识增量计划、指定模型的套件/长稳，以及实际感知与策略重新执行。新模型位于 `examples/lifecycle-model/`；其验收范围是 YOLO 动态对象加像素地形/HUD。当前发布进度见 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)、[v0.2 执行补充](docs/V0_2_PLAN.md) 和 [v0.2 发布验收](docs/RELEASE_0_2_ACCEPTANCE.md)。[v0.1 历史验收](docs/RELEASE_ACCEPTANCE.md) 保持独立。
+**v0.2.0 离线实现已验收：本地工程、合成混合管线模型与 Ubuntu/Windows/原生训练 CI 均通过。** 本轮新增生命周期数据集与分组评估、本地知识增量计划、指定模型的套件/长稳，以及实际感知与策略重新执行。新模型位于 `examples/lifecycle-model/`；其验收范围是 YOLO 动态对象加像素地形/HUD。当前发布进度见 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)、[v0.2 执行补充](docs/V0_2_PLAN.md) 和 [v0.2 发布验收](docs/RELEASE_0_2_ACCEPTANCE.md)。[v0.1 历史验收](docs/RELEASE_ACCEPTANCE.md) 保持独立。
 
 默认任务使用可解释的像素颜色基线，便于独立检查工程闭环。可选的 tiny YOLO 从本地配置随机初始化训练；训练完成、导出成功、检测效果、任务完成是四项不同的验收，不会互相冒充。当前规则和画面都是项目自行构造的 `synthetic_fixture`，不代表已经核实的国服数据或正式游戏操作。
 
@@ -80,7 +80,7 @@ python -m maple_vision lab suite --output artifacts/v02-model-suite --seeds 3 --
 python -m maple_vision lab soak --output artifacts/v02-model-soak --seconds 60 --resource-interval 1 --max-resource-samples 1024 --model examples/lifecycle-model/model.onnx --manifest examples/lifecycle-model/manifest.json
 ```
 
-`lab replay` 保持动作与环境重放语义；`lab reinfer` 额外执行真实感知与策略，只支持包含新版证据的运行包，旧包继续使用 replay。预检/文件变化边界和保留实际失败轮次一次已有本地审查与回归证据；实现和限制见 [模型验证](docs/MODEL_VALIDATION.md)。最终提交仍需自己的远端 CI。60 秒长稳是短时验证，不是 24 小时验收。
+`lab replay` 保持动作与环境重放语义；`lab reinfer` 额外执行真实感知与策略，只支持包含新版证据的运行包，旧包继续使用 replay。预检/文件变化边界和保留实际失败轮次一次已有本地审查与回归证据；实现和限制见 [模型验证](docs/MODEL_VALIDATION.md)。源代码、模型及测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492` 的[跨平台 CI](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)已通过；后续文档归档提交在 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3) 执行同一套检查。60 秒长稳是短时验证，不是 24 小时验收。
 
 ## 模型与发布证据
 

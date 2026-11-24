@@ -1,12 +1,12 @@
 # Maple Vision Platform 最终实施方案
 
-**用途：交给另一名程序员或编程 AI，即可复现当前实现，并继续完成剩余工程。** 本文统筹 [v8 总规格](../MASTER_SPEC.md)、[实际架构](ARCHITECTURE.md)、[v0.1 历史验收](RELEASE_ACCEPTANCE.md) 与当前 **v0.2.0 发布候选**。本轮执行顺序和门禁见 [V0_2_PLAN.md](V0_2_PLAN.md)，准确提交的最终结果见 [v0.2 发布验收](RELEASE_0_2_ACCEPTANCE.md)。旧版本验收、新实现可运行、当前版本发布通过、完整 v8 完成是不同状态。
+**用途：交给另一名程序员或编程 AI，即可复现当前实现，并继续完成剩余工程。** 本文统筹 [v8 总规格](../MASTER_SPEC.md)、[实际架构](ARCHITECTURE.md)、[v0.1 历史验收](RELEASE_ACCEPTANCE.md) 与当前 **v0.2.0 已验收离线实现**。本轮执行顺序和门禁见 [V0_2_PLAN.md](V0_2_PLAN.md)，准确提交的最终结果见 [v0.2 发布验收](RELEASE_0_2_ACCEPTANCE.md)。旧版本验收、新实现可运行、当前版本发布通过、完整 v8 完成是不同状态。
 
 ## 1. 交付目标与当前结论
 
 建立一个本机可运行的闭环：有来源的知识与素材进入独立模拟世界；渲染生成图像，视觉模块理解图像，策略决定动作，模拟器执行动作，独立验证器核查结果。使用者能自己复现成功和失败，不需要拿正式账号试错。
 
-当前具备 SQLite 知识目录、静态素材登记与渲染、会话级合成数据集、实际 YOLO 训练和 ONNX 推理、三职业两地图任务、故障测试、动作重放、录像观察与本地 OCR。v0.2 增加本地知识增量计划、生命周期数据与分组评估、指定模型的 suite/soak、资源采样和真实感知/策略重新执行。本地工程、新验证器预检/文件变化防护与实际失败保留已通过，所选 lifecycle 模型完成合成混合管线本地门禁；最终发布提交的远端 CI 仍待确认。内置规则与画面仍为 `synthetic_fixture`，没有将小册子最新资料、正式地图物理或真实图像效果冒充为已核实内容。
+当前具备 SQLite 知识目录、静态素材登记与渲染、会话级合成数据集、实际 YOLO 训练和 ONNX 推理、三职业两地图任务、故障测试、动作重放、录像观察与本地 OCR。v0.2 增加本地知识增量计划、生命周期数据与分组评估、指定模型的 suite/soak、资源采样和真实感知/策略重新执行。本地工程、新验证器预检/文件变化防护与实际失败保留已通过，所选 lifecycle 模型完成合成混合管线本地门禁；源代码、模型及测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492` 的[三项远端 CI](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)均已通过；后续文档归档提交在 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3) 继续执行同一套检查。内置规则与画面仍为 `synthetic_fixture`，没有将小册子最新资料、正式地图物理或真实图像效果冒充为已核实内容。
 
 本项目执行对象是独立 Python 模拟器。正式客户端控制、系统按键注入、输入伪装、封包/内存修改和反作弊绕过不在交付范围内；独立验证也不能证明正式账号不会被封。玩家回复只产出待人工确认的本地草稿。依赖安装后，默认运行、训练、推理和 OCR 使用本地计算，不调用 LLM API，不消耗运行时 LLM token；编程 AI 开发本身的计费另算。
 
@@ -212,7 +212,7 @@ python -m maple_vision lab suite --output artifacts/plan-model-suite --seeds 3 -
 python -m maple_vision lab soak --output artifacts/plan-model-soak --seconds 60 --resource-interval 1 --max-resource-samples 1024 --model artifacts/plan-export/model.onnx --manifest artifacts/plan-export/manifest.json
 ```
 
-输出包括实际墙钟、进程 CPU 和支持平台上的 RSS 来源与单位；未知内存保持 `null`。资源样本有界保留，最大采样值不能冒充精确瞬时峰值。预检/文件变化防护和原始失败包保留已有本地回归证据；最终发布提交仍需远端 CI。
+输出包括实际墙钟、进程 CPU 和支持平台上的 RSS 来源与单位；未知内存保持 `null`。资源样本有界保留，最大采样值不能冒充精确瞬时峰值。预检/文件变化防护和原始失败包保留已有本地回归证据；实现及模型测试提交的远端 CI 已通过；后续文档归档提交继续执行同一套检查。
 
 ### 8.4 本地录像、OCR 与草稿
 
@@ -232,7 +232,7 @@ OCR 需要本机 Tesseract 与对应语言包；中文需自行安装并验证 `
 
 按此表继续现有仓库，不重建已经通过的基础设施。实际机器可并行处理独立模块；集成前先冻结合同。机器可读依赖见 [milestones.yaml](../engineering/milestones.yaml)。
 
-| 阶段 | 前置 | 当前实现与本地验证（最终提交 CI 待确认） | 完整目标仍需的工作 |
+| 阶段 | 前置 | 当前已验收离线实现 | 完整目标仍需的工作 |
 |---|---|---|---|
 | P0 工程基础 | 无 | 合同、CLI、v1 SQLite、CI 与兼容回归 | 保留历史验收，不改写旧成绩 |
 | P1 知识 | P0 | v2 导入/冲突/快照、职业配置注入、本地增量计划与原子应用 | 网络来源与持续调度、最新核实数据、其余规则映射 |
@@ -247,7 +247,7 @@ OCR 需要本机 Tesseract 与对应语言包；中文需自行安装并验证 `
 | P10 监督 | P9 | 新鲜度、未知/恢复预算、失败停止 | 更丰富故障与恢复证据 |
 | P11 回归 | P10 | 动作重放、故障集、录像观察、实际模型/策略重新执行与边界回归 | 真实 Golden Recording |
 | P12 扩展 | P11 | 三职业两地图组合 | 第三方内容包、管理 UI |
-| P13 发布 | P12 | wheel/CI、指定模型的 suite/soak、进程资源测量 | v0.2 准确提交 CI、完整 24 小时墙钟和真实域发布门禁 |
+| P13 发布 | P12 | wheel/CI、指定模型的 suite/soak、进程资源测量 | 完整 24 小时墙钟和真实域发布门禁 |
 
 每项交给编程 AI 时，任务单写清：输入版本、允许修改的文件、当前接口、预期行为、独立失败案例、验收命令和证据位置。先补能暴露问题的案例，再实现和审查；修复尝试有预算，失败保留最小复现，不降低断言掩盖问题。新增格式必须有版本和迁移，不能修改旧证据使其“适配”新实现。
 
@@ -281,9 +281,11 @@ python -m maple_vision lab soak --output artifacts/plan-soak --seconds 60
 
 v8 中地图识别 99%、平台定位 98%、核心任务 98%、拾取 95%、生存 99%、恢复 95% 是**建议目标**，不是当前实测成绩。实施前须定义分母、任务分布、样本量和不确定性；检测 AP 不能替代任务成功率。当前门禁见 [v02-contract.yaml](../engineering/v02-contract.yaml)；[platform-contract.yaml](../engineering/platform-contract.yaml) 与 [RELEASE_ACCEPTANCE.md](RELEASE_ACCEPTANCE.md) 保留 v0.1 归档状态。
 
+v0.2 的源代码、模型与测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492`（tree `96de98b2e95ccd8fef04b0052b11f60bee63fe35`）已通过 [CI 45394348732](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)：Ubuntu 631 passed/3 skipped，Windows 627 passed/7 skipped，原生训练 107 passed/0 skipped；本地为 634 passed/0 skipped。Windows 已通过源自 v0.1 的严格 RGB/文本/manifest 语义指纹检查，生产源码未因该修正而改变。[远端证据](../reports/release-0.2.0/remote-ci.json)保留首轮失败和第二轮成功；后续文档归档提交仍由 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3) 承载相同 CI，不提前声称这些后续检查通过。
+
 ## 11. 下一轮工程的明确优先级
 
-1. **完成 v0.2 最终提交 CI。** 数据、模型与源码已冻结，本地工程、混合管线选模、保留 test、三职业闭环和实际重新推理已完成；把最终测试与文档收口后的提交送入 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3) 的远端检查。纯 YOLO 地形仍需新的独立工程研究，不因本轮混合准入而改写结论。
+1. **开展专门的地形研究。** 以实际回归范围、细长地板的正样本锚点和 CPU 成本为前置条件，设计新的受控地形实验；先验证可学习性，再训练和评估。保留本轮混合管线与冻结 test，不以改标签、合并碎框或降低 IoU 冒充纯 YOLO 地形通过。
 2. **扩展经授权的知识闭环。** 本地静态导出的计划/应用已实现；后续为获准来源增加网络适配和持续调度，完成真实资料映射审查，再把地图/怪物/技能规则逐项接入。不把目录条目存在当作玩法已经生效。
 3. **扩展外部内容。** 在现有静态 SpritePack 上添加动画/锚点和地图包验证；用全新内容包测试加载、碰撞、可见标签及旧版本重放，之后再扩展职业。
 4. **建设真实录像评估集。** 按独立录制会话和地图留出，人工标注对象、HUD 和文字；记录画面尺度、遮挡与版本，真实域误差单独报告。需要精确时序时先补逐帧 PTS 合同。

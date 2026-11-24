@@ -24,17 +24,18 @@ delivery:
   active_milestone: P13
   scope: offline_synthetic_fixture_platform
   release_version: "0.2.0"
-  release_status: local_accepted_pending_final_remote_ci
+  release_status: accepted_offline_fixture_implementation
   result_source: docs/RELEASE_0_2_ACCEPTANCE.md
   execution_plan: docs/V0_2_PLAN.md
-  local_evidence: docs/RELEASE_0_2_ACCEPTANCE.md
+  local_evidence: reports/release-0.2.0/local-verification.json
   local_evidence_archive: reports/release-0.2.0
-  remote_evidence: null
-  implementation_commit: 4e9914411c1b3f49b2f8eb81d7c17948af8ddb82
-  implementation_commit_role: initial_remote_implementation_before_final_test_model_and_evidence_followups
-  final_release_commit: null
+  remote_evidence: reports/release-0.2.0/remote-ci.json
+  implementation_commit: f17e7487f5938acfaf312e05b8eecb242f06a492
+  implementation_tree: 96de98b2e95ccd8fef04b0052b11f60bee63fe35
+  implementation_commit_role: verified_source_model_and_tests_commit
+  evidence_archive_followups: require_same_ci_at_final_pull_request_head
   final_head_checks: https://github.com/www1350/maple-vision-platform/pull/3
-  pending_gates: [windows_legacy_manifest_hash_regression, final_release_commit_remote_ci]
+  pending_gates: []
   p0_result_source: docs/P0_ACCEPTANCE.md
   p0_contract_is_historical: true
   user_authorization_date: "2026-11-24"
@@ -55,9 +56,10 @@ historical_releases:
     full_v8_spec_acceptance: false
 
 current_verification:
-  local_full_tree: passed_final_count_recorded_in_release_evidence
-  remote_ubuntu_windows_and_native: final_release_commit_pending
-  initial_remote_windows_issue: original_v0_1_portable_content_regression_added_actual_windows_confirmation_pending
+  local_full_tree: passed_634_no_skips_216_97_seconds
+  remote_ubuntu_windows_and_native: passed_for_named_implementation_commit
+  remote_run_url: https://github.com/www1350/maple-vision-platform/actions/runs/45394348732
+  initial_remote_windows_issue: resolved_original_v0_1_rgb_text_manifest_fingerprints_confirmed_on_windows
   selected_model_promotion: accepted_local_synthetic_hybrid_pipeline
   selected_model: examples/lifecycle-model
   selected_model_sha256: 7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3
@@ -76,7 +78,7 @@ phase_status:
   P1:
     implementation: local_catalog_verified_fixture_profiles_and_atomic_local_sync_plans
     historical_v0_1_fixture_verification: passed_local_and_remote_ubuntu_windows
-    v0_2_verification: passed_local_review_and_full_regression_final_remote_pending
+    v0_2_verification: passed_local_review_and_remote_ubuntu_windows
     real_domain_gate: blocked_external_verified_data
     remaining_engineering: [network_source_adapters, continuous_source_scheduling, remaining_catalog_rule_types]
   P2:
@@ -92,7 +94,7 @@ phase_status:
   P4:
     implementation: legacy_v1_and_replay_verified_lifecycle_v2_session_split_datasets
     historical_v0_1_fixture_verification: integrity_and_declared_coverage_tests_passed_local
-    v0_2_verification: frozen_864_frame_data_passed_local_initial_windows_legacy_hash_issue_open
+    v0_2_verification: frozen_864_frame_data_and_original_v0_1_content_fingerprints_passed_local_and_remote
     real_domain_gate: blocked_independent_real_recordings_and_labels
     remaining_engineering: [unseen_map_holdout, broader_occlusion_and_real_domain_coverage]
   P5:
@@ -142,7 +144,7 @@ phase_status:
   P13:
     implementation: packaging_cli_ci_model_aware_wall_soak_and_bounded_process_resources
     historical_v0_1_fixture_verification: passed_local_and_remote_installation_plus_local_60_second_smoke
-    v0_2_verification: local_tools_61_second_model_soak_resources_and_original_failure_passed_final_remote_pending
+    v0_2_verification: passed_local_model_soak_resources_original_failure_and_remote_implementation_ci
     real_domain_gate: not_accepted
     wall_clock_24h_soak: not_completed
     remaining_engineering: [full_24_hour_wall_clock_endurance]

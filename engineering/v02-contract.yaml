@@ -2,15 +2,16 @@ contract_version: 1
 spec_version: "8.0"
 release_version: "0.2.0"
 scope: offline_synthetic_fixture_platform
-status: local_accepted_pending_final_remote_ci
+status: accepted_offline_fixture_implementation
 result_source: docs/RELEASE_0_2_ACCEPTANCE.md
 execution_plan: docs/V0_2_PLAN.md
-implementation_commit: 4e9914411c1b3f49b2f8eb81d7c17948af8ddb82
-implementation_commit_role: initial_remote_implementation_before_final_test_model_and_evidence_followups
-final_release_commit: null
-local_evidence: docs/RELEASE_0_2_ACCEPTANCE.md
+implementation_commit: f17e7487f5938acfaf312e05b8eecb242f06a492
+implementation_tree: 96de98b2e95ccd8fef04b0052b11f60bee63fe35
+implementation_commit_role: verified_source_model_and_tests_commit
+evidence_archive_followups: require_same_ci_at_final_pull_request_head
+local_evidence: reports/release-0.2.0/local-verification.json
 local_evidence_archive: reports/release-0.2.0
-remote_evidence: null
+remote_evidence: reports/release-0.2.0/remote-ci.json
 final_head_checks: https://github.com/www1350/maple-vision-platform/pull/3
 full_spec_acceptance: false
 historical_contracts:
@@ -25,7 +26,7 @@ current_authorization:
   action: continue_implementation_testing_and_delivery
   scope_source: latest_user_request_and_AGENTS
 
-candidate_surfaces:
+implemented_surfaces:
   knowledge_sync:
     modules: [knowledge_sync.py, catalog.py]
     commands: [knowledge_plan_sync, knowledge_apply_sync]
@@ -33,7 +34,7 @@ candidate_surfaces:
     plan_schema_version: 1
     database_schema_version: 2
     local_review: completed_with_transaction_growth_budget_regression
-    final_verification: passed_local_final_remote_ci_pending
+    final_verification: passed_local_and_remote_for_named_implementation_commit
     invariants:
       - Capture original source bytes and derived provenance inside one self-contained plan.
       - Bind the complete catalog and legacy-source baseline to a deterministic logical fingerprint.
@@ -53,7 +54,7 @@ candidate_surfaces:
     generator_version: lifecycle-v1
     legacy_profile_and_schema_preserved: true
     local_review: completed_with_selected_combat_hit_coverage_regression
-    final_verification: passed_local_final_remote_ci_pending
+    final_verification: passed_local_and_remote_for_named_implementation_commit
     phases: [spawn, combat, loot, cleared, dialogue, transition]
     validation_basis: actual_bounded_action_replay_pixels_labels_and_coverage
     boundary: training_scenario_truth_does_not_enter_runtime_detector_or_policy
@@ -63,7 +64,7 @@ candidate_surfaces:
     report_schema_version: 2
     groups: [phase, map, map_phase, player_position, overlapping_coverage_tag]
     aggregate_predictions_preserved: true
-    final_verification: passed_local_final_remote_ci_pending
+    final_verification: passed_local_and_remote_for_named_implementation_commit
     metric_definition: single_iou_101_point_interpolated_ap_after_declared_confidence_cutoff
     empty_truth_false_positives_counted: true
     unseen_map_or_real_domain_acceptance: false
@@ -185,16 +186,16 @@ required_release_gates:
       - python -m ruff format --check .
       - python -m ruff check .
       - python -m mypy
-    status: passed_local_final_remote_ci_pending
+    status: passed_local_and_remote_for_named_implementation_commit
   - id: full_unit_integration_and_legacy_regression
     command: python -m pytest -q
-    status: passed_local_final_count_recorded_in_release_evidence
+    status: passed_local_634_no_skips_and_remote_ubuntu_windows
   - id: atomic_knowledge_sync
     requirement: Verify deltas, history, status/version separation, tamper, staleness, concurrency and complete rollback including logical growth budget.
     status: passed_local_review_and_full_regression
   - id: lifecycle_and_grouped_metrics
     requirement: Preserve frozen data and legacy bytes; verify replayed phase/coverage, selected combat hits, isolation, forged evidence rejection and grouped/aggregate metrics.
-    status: passed_local_review_and_full_regression_initial_windows_legacy_hash_issue_open
+    status: passed_local_and_remote_with_original_v0_1_content_fingerprints
   - id: actual_perception_and_policy_reinference
     requirement: Match all N+1 perceptions and real decisions, enforce model identity before detection, handle termination and faults, reject stale or over-budget evidence.
     status: passed_local_review_regression_and_actual_selected_model_reinference
@@ -206,34 +207,53 @@ required_release_gates:
     status: passed_local_selected_model_13_scenarios_and_61_second_10_episode_soak
   - id: native_training_export_and_inference
     requirement: Execute local CPU training, ONNX export, actual native inference and adapter regressions against the current commit.
-    status: passed_local_training_export_inference_and_native_regressions
+    status: passed_local_and_remote_training_export_inference_and_native_regressions
   - id: clean_wheel_installation
     requirement: Install the 0.2.0 wheel in a clean environment and execute outside the checkout on Ubuntu and Windows.
-    status: local_verified_final_remote_ubuntu_windows_commit_pending
+    status: passed_local_and_remote_ubuntu_windows_clean_installation
   - id: independent_review
     requirement: Preserve concrete review findings, fixes, regression evidence and unresolved limits.
     status: passed_local_including_preflight_race_and_original_failure_retention
 
 remote_release_gates:
-  status: initial_windows_legacy_hash_failure_final_release_commit_pending
-  commit_sha: null
-  run_url: null
+  status: passed_for_named_implementation_model_test_commit
+  commit_sha: f17e7487f5938acfaf312e05b8eecb242f06a492
+  tree_sha: 96de98b2e95ccd8fef04b0052b11f60bee63fe35
+  run_url: https://github.com/www1350/maple-vision-platform/actions/runs/45394348732
+  evidence: reports/release-0.2.0/remote-ci.json
   final_pull_request: https://github.com/www1350/maple-vision-platform/pull/3
+  evidence_only_followups: require_same_checks_at_final_pull_request_head
   initial_implementation_commit: 4e9914411c1b3f49b2f8eb81d7c17948af8ddb82
   initial_run_url: https://github.com/www1350/maple-vision-platform/actions/runs/45390705416
   initial_run_observation:
     ubuntu: passed
     native_training: passed
     windows: failed_legacy_exact_manifest_hash_regression
-    issue: Linux raw PNG/text hash was assumed portable. Original v0.1 and current outputs match byte-for-byte within fixed LF and CRLF environments; strict original-content fingerprints now replace the invalid cross-encoder byte expectation. Actual Windows confirmation pending.
+    issue: Linux raw PNG/text hash was assumed portable. Original v0.1 and current outputs match byte-for-byte within fixed LF and CRLF environments; strict original RGB, text and manifest-content fingerprints replace the invalid cross-encoder byte expectation.
+    corrective_status: confirmed_by_second_remote_windows_run
     corrective_evidence: reports/release-0.2.0/legacy-content-diagnosis.json
     production_source_changed_for_fix: false
+    raw_hash_allowlist_used: false
     no_skip_or_weakened_assertion_as_resolution: true
   jobs:
-    - {id: ubuntu_python312, status: pending_final_head}
-    - {id: windows_python312, status: pending_final_head}
-    - {id: ubuntu_cpu_training_and_native_adapters, status: pending_final_head}
-  boundary: historical_green_checks_do_not_cover_new_changes
+    - id: ubuntu_python312
+      status: passed
+      passed: 631
+      skipped: 3
+      pytest_seconds: 66.18
+      wheel_smoke_seconds: 10.126
+    - id: windows_python312
+      status: passed
+      passed: 627
+      skipped: 7
+      pytest_seconds: 116.72
+      wheel_smoke_seconds: 20.453
+    - id: ubuntu_cpu_training_and_native_adapters
+      status: passed
+      passed: 107
+      skipped: 0
+      pytest_seconds: 7.30
+  boundary: results_cover_the_named_implementation_commit_not_unrun_document_archive_followups
 
 separate_acceptance_gates:
   learned_model_promotion:

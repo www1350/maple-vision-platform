@@ -1,6 +1,6 @@
 # v0.2 离线平台交付验收
 
-**当前状态：本地工程与合成混合管线模型已通过，最终发布提交的远端 CI 正在收口。** 首轮 Ubuntu 与原生训练已通过，Windows 发现旧数据精确字节哈希的跨平台差异，正在核对旧版本行为。完整架构见 [FINAL_PLAN.md](FINAL_PLAN.md)，本轮步骤见 [V0_2_PLAN.md](V0_2_PLAN.md)，机器可读合同见 [v02-contract.yaml](../engineering/v02-contract.yaml)。
+**v0.2 离线实现和所选合成混合模型已验收，Ubuntu、Windows 与原生训练检查全部通过。** 本页记录已验证的实现/模型/测试提交；后续文档归档提交仍须自己的检查，最终 head 与合并结果见 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)。完整架构见 [FINAL_PLAN.md](FINAL_PLAN.md)，本轮步骤见 [V0_2_PLAN.md](V0_2_PLAN.md)，机器可读合同见 [v02-contract.yaml](../engineering/v02-contract.yaml)。
 
 ## 本轮交付
 
@@ -16,7 +16,7 @@
 | 检查 | 已实际完成的结果 |
 |---|---|
 | Ruff、mypy、依赖检查 | 通过；28 个源模块 |
-| 完整本地测试（显式启用真实训练） | 633 passed，0 skipped；107.45 秒，2 条上游弃用警告 |
+| 完整本地测试（显式启用真实训练） | 634 passed，0 skipped；216.97 秒，2 条上游弃用警告 |
 | 干净 wheel 安装与新 CLI | 通过，18.864 秒；无 Torch/ONNX Runtime 的基础环境 |
 | 原生训练、ONNX 和训练副本回归 | 49 passed，0 skipped；JUnit 7.341 秒 |
 | 旧模型接入新 suite | 13 个预期结果全部通过；9 个正常任务全部完成；78.311717 秒实际墙钟 |
@@ -27,7 +27,7 @@
 
 故障场景的“通过”表示符合约定结果：短暂黑屏和重复帧恢复完成，持续黑屏停止，输入冻结有界失败。测试间存在覆盖重叠，不将各组数量相加当作独立测试总数。并发训练环境的耗时不作为空闲机器性能基准。
 
-最新完整本地测试把新旧两个 ONNX 检查点都纳入实际任务、重新推理和身份错误拒绝。该计数发生在 Windows 哈希差异修复之前，最终检查会按修复后证据更新。[本地命令、文件指纹和计数](../reports/release-0.2.0/local-verification.json) · [完整 JUnit](../reports/release-0.2.0/local-pytest.xml)
+最新完整本地测试把新旧两个 ONNX 检查点都纳入实际任务、重新推理和身份错误拒绝。本地计数包含跨平台历史内容回归修复；真实 Windows 也已通过同一组严格内容指纹检查。[本地命令、文件指纹和计数](../reports/release-0.2.0/local-verification.json) · [完整 JUnit](../reports/release-0.2.0/local-pytest.xml)
 
 干净 wheel 实测知识计划只读、删除源文件后仍可 apply、重复应用幂等；3×12 生命周期数据覆盖六阶段；325 步 pixel 任务实际重新感知 326 帧，原包字节不变。本地 wheel SHA-256 为 `145ba260e5521e2b9044ba7a3fe521aa6844241ef9dc1aa94c71961366eb0905`，构建于最终文档汇总前。28 个包内 Python 文件与构建时源码逐字节相同；最终远端提交另行构建并验证安装包。[安装报告](../reports/release-0.2.0/wheel-smoke.json)
 
@@ -75,15 +75,27 @@ soak 请求 60 秒，实际 **61.510525 秒**，完成 **10 轮**，累计模拟
 6. 知识导入可能超过目录大小预算而留下以后无法使用的数据库：事务内同时检查导入后逻辑大小，越界整体回滚。
 7. 模型漏检不能只凭经验追加网络层：检查真实导出模型的表达上限和本机正样本分配，保留失败证据，限制模型推广范围。
 
-## 最终发布门禁
+## 远端 CI 与最终归档
 
-实现提交为 [`4e9914411c1b3f49b2f8eb81d7c17948af8ddb82`](https://github.com/www1350/maple-vision-platform/commit/4e9914411c1b3f49b2f8eb81d7c17948af8ddb82)，tree 为 `8e7801c1564646c08339f1ca7ea74042a24bb443`。首轮 [CI 45390705416](https://github.com/www1350/maple-vision-platform/actions/runs/45390705416) 中 Ubuntu 为 626 passed、3 skipped；原生训练/录像/OCR 为 107 passed、0 skipped；Windows 为 621 passed、7 skipped、1 failed，因此尚不具备合并条件。
+完整源代码、两个模型、新测试与发布内容的实现提交为 [`f17e7487f5938acfaf312e05b8eecb242f06a492`](https://github.com/www1350/maple-vision-platform/commit/f17e7487f5938acfaf312e05b8eecb242f06a492)，tree 为 `96de98b2e95ccd8fef04b0052b11f60bee63fe35`。[CI 45394348732](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732) 的三个作业全部成功。
 
-失败仅在 legacy 原始 manifest 哈希：Linux 参考为 `ecc0...`，Windows 为 `b04f...`。原 v0.1 与当前生成器分别在固定 LF、CRLF 环境中，578 个文件逐字节一致。测试改为来自原 v0.1 的严格 RGB、标签/YAML 与完整 manifest 语义黄金指纹，仍逐个验证原始文件哈希和同环境字节确定性；额外反例保证像素、标签或时间戳变化会失败。没有跳过 Windows 或白名单接受新哈希。CRLF 单独无法复现 Windows 原始哈希，具体编码差异未采证；下一轮 CI 直接验证内容一致性。[独立基线对照](../reports/release-0.2.0/legacy-content-diagnosis.json)
+| 实际远端环境 | 测试结果 | 干净 wheel 安装 |
+|---|---|---|
+| Ubuntu，Python 3.12.16 | 631 passed、3 skipped，66.18 秒 | 通过，10.126 秒 |
+| Windows，Python 3.12.10 | 627 passed、7 skipped，116.72 秒 | 通过，20.453 秒 |
+| Ubuntu 原生 CPU 训练/导出/录像/OCR | 107 passed、0 skipped，7.30 秒；2 条上游弃用警告 | 前两项独立覆盖 |
 
-最终修复、模型、方案和报告进入 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)，其最终 head 的三个作业必须全部通过后才合并。[远端逐次证据](../reports/release-0.2.0/remote-ci.json)
+新旧两个 ONNX 都实际参加基础作业的完整任务、逐帧复验和错误身份拒绝检查。两种干净安装环境只含基础运行依赖，实际执行知识 plan/apply、生命周期数据和 326 帧 pixel 重新推理。各平台可选依赖、符号链接权限和文件系统规则不同，跳过项不计作通过；原生训练、视频和 OCR 由显式安装依赖的独立作业执行。
 
-各平台可选依赖、符号链接权限和文件系统规则不同，跳过项不计作通过；原生训练、视频和 OCR 由显式安装这些依赖的独立作业实际执行。
+### 首轮 Windows 问题与修复证据
+
+初始实现提交 `4e9914411c1b3f49b2f8eb81d7c17948af8ddb82` 的 [CI 45390705416](https://github.com/www1350/maple-vision-platform/actions/runs/45390705416) 中，Ubuntu 626 passed、3 skipped，原生 107 passed、0 skipped；Windows 为 621 passed、7 skipped、1 failed。没有合并这个失败状态。
+
+失败是测试将 Linux 的 legacy 原始 manifest 哈希 `ecc0...` 假定为跨平台黄金值，而 Windows 为 `b04f...`。从原 v0.1 提取生成器后，在分别固定的 LF、CRLF 环境中，原版和当前的 578 个文件全部逐字节一致。测试改为原 v0.1 派生的严格 RGB、标签/YAML 与完整 manifest 语义黄金指纹，同时逐个验证原始文件哈希，并保留同环境字节确定性。反例证实修改单个像素、标签或时间戳仍会失败。
+
+**真实 Windows 已通过这组内容指纹；生产生成器、冻结数据和模型均未因此修改，也没有跳过 Windows 或白名单接受新哈希。** CRLF 单独不能重现初次 Windows 原始哈希，具体 PNG 容器编码差异没有采证，不将推测写成确定根因。[独立原版对照与 Windows 复核](../reports/release-0.2.0/legacy-content-diagnosis.json)
+
+[远端逐次报告](../reports/release-0.2.0/remote-ci.json) 保存失败与成功的提交、作业、计数及安装证据。该实现验收之后的归档提交只更新文档、合同与结果文件；它也运行相同 CI，只有最终 head 的三个作业全部通过才合并。为避免在文件中嵌入它自身未知的提交哈希，最终归档 head、Actions 链接和合并记录统一保存在 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)。
 
 ## 仍未获得的结论
 

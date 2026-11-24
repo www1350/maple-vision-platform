@@ -1,15 +1,15 @@
-# 实施计划与 v0.2.0 候选范围
+# 实施计划与 v0.2.0 离线实现
 
 用户已于 2026-11-24 授权连续实施和测试，不再停在 P0。原 P0 已有独立验收，见 [P0_ACCEPTANCE.md](P0_ACCEPTANCE.md)；该历史记录和 [P0 合同](../engineering/p0-contract.yaml) 不因新版本而改写。
 当前目标是在 v0.1 离线合成平台上完成 v0.2.0 的数据覆盖、知识增量计划和模型验证补充。它覆盖 P1–P13 的若干工程工作，但不能称为全部 v8.0 真实场景验收完成。
 
-依赖关系与状态见 [milestones.yaml](../engineering/milestones.yaml)，当前门禁见 [v02-contract.yaml](../engineering/v02-contract.yaml)，具体执行与验收补充见 [V0_2_PLAN.md](V0_2_PLAN.md)。v0.2 的本地工程、新验证器和所选模型的合成混合管线门禁已通过；最终发布提交的远端 CI 仍待确认。[RELEASE_0_2_ACCEPTANCE.md](RELEASE_0_2_ACCEPTANCE.md) 统一记录准确提交与最终测试计数，本文不提前固化正在收口的计数。
+依赖关系与状态见 [milestones.yaml](../engineering/milestones.yaml)，当前门禁见 [v02-contract.yaml](../engineering/v02-contract.yaml)，具体执行与验收补充见 [V0_2_PLAN.md](V0_2_PLAN.md)。v0.2 离线实现已验收：本地工程、新验证器、所选模型合成混合管线，以及源代码/模型/测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492` 的[跨平台 CI](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)均已通过。后续文档归档提交在 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3) 继续执行相同检查。[RELEASE_0_2_ACCEPTANCE.md](RELEASE_0_2_ACCEPTANCE.md) 统一记录准确提交与最终测试计数，测试计数、耗时和跳过原因以该证据记录为准。
 
 v0.1 已通过的本地审查、Ubuntu/Windows 安装验证和原生训练 CI 保存在 [RELEASE_ACCEPTANCE.md](RELEASE_ACCEPTANCE.md) 与 [platform-contract.yaml](../engineering/platform-contract.yaml)，只覆盖其中标明的历史提交。旧证据不因版本前进而改写，也不自动授予新代码通过状态。
 
 ## 阶段对应的实际交付
 
-| 阶段 | 当前实现与本地验证；最终提交 CI 待确认 | 命令或模块 | 尚缺的完整规格内容 |
+| 阶段 | 当前已验收离线实现 | 命令或模块 | 尚缺的完整规格内容 |
 |---|---|---|---|
 | P0 | 已验收的接口、NoOp、v1 SQLite、CLI、CI | `demo`、`db` | 保留历史验收，后续变更仍需回归 |
 | P1 | v2 目录与职业参数加载；本地导出适配、自包含差异计划、完整基线与原子应用 | `knowledge plan-sync/apply-sync`、`knowledge_sync.py` | 小册子当前数据、网络适配和持续调度；其它知识类型尚未驱动规则 |
@@ -24,7 +24,7 @@ v0.1 已通过的本地审查、Ubuntu/Windows 安装验证和原生训练 CI �
 | P10 | 连续未知暂停/停止、时序检查、卡住恢复预算、战斗进度限额 | `Supervisor`、故障适配器 | 更广泛恢复策略与真实观测失效样本 |
 | P11 | 动作回放、4 类故障、录像观察；实际感知/监督/策略重新执行与预检/文件变化回归通过 | `lab replay/reinfer/suite`、`recording` | 真实 Golden Recording 精度与实时录像采集 |
 | P12 | 三职业、两地图组合运行 | `lab suite` | 任意第三方内容包和插件兼容性、更多地图/职业验收 |
-| P13 | 包、CLI、模型 suite/soak、有界资源测量；保留原始失败轮次一次已本地验证 | wheel、CI、`lab suite/soak --model ... --manifest ...` | v0.2 最终提交 CI、24 小时墙钟与真实域准入 |
+| P13 | 包、CLI、模型 suite/soak、有界资源测量；保留原始失败轮次一次已本地验证 | wheel、CI、`lab suite/soak --model ... --manifest ...` | 24 小时墙钟与真实域准入 |
 
 ## v0.2 连续交付顺序
 
@@ -32,9 +32,9 @@ v0.1 已通过的本地审查、Ubuntu/Windows 安装验证和原生训练 CI �
 2. 验证知识计划的完整源字节/基线、差异、原子回滚与严格幂等；知识应用不热替换运行规则。
 3. 冻结 18×48 lifecycle 数据和 manifest SHA-256，验证阶段、位置、标签、会话隔离与实际轨迹。模型训练使用私有输入副本，不改冻结数据。
 4. 在同一新 val 上比较旧模型和候选，固定选择后再评估保留 test。本轮工程准则是在首个候选 val 后制定，不称预注册；选择于 2026-11-24 12:06:01 UTC 固定，之后不根据 test 调参。详情见 [本轮实验](YOLO_LIFECYCLE_EXPERIMENT.md)。
-5. 指定模型 suite/soak、资源采样和实际 reinfer 已完成本地回归；预检预算、文件变化、模型身份和保留原始失败轮次一次也已审查通过。新增/更新测试与发布文档仍要纳入最终提交 CI。
+5. 指定模型 suite/soak、资源采样和实际 reinfer 已完成本地回归；预检预算、文件变化、模型身份和保留原始失败轮次一次也已审查通过。这些回归已进入通过的实现提交；后续测试或文档归档提交仍运行相同 CI。
 6. 运行全树测试、实际 CPU 训练/导出/推理、干净 wheel 安装和准确提交的 Ubuntu/Windows CI。针对真实缺陷补反例，不降低断言或排除失败样本。
-7. 所选 lifecycle 模型的本地推广仅覆盖合成混合管线，新样例与旧模型分目录保存。纯 YOLO 地形未通过；完整 v8、真实域与 24 小时长稳继续单列，工程发布以最终提交 CI 为准。
+7. 所选 lifecycle 模型的本地推广仅覆盖合成混合管线，新样例与旧模型分目录保存。纯 YOLO 地形未通过；完整 v8、真实域与 24 小时长稳继续单列，本版实现提交的 CI 已通过；后续归档提交的检查由 PR #3 单独追踪。
 
 ## 接下来可独立实施的工作
 

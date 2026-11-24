@@ -17,5 +17,7 @@
   "wall_clock_24h_acceptance": false,
   "legacy_model_preserved": "examples/fixture-model/",
   "runtime_default": "pixel_fixture",
-  "engineering_final_commit_ci": "pending"
+  "engineering_final_commit_ci": "passed_for_source_model_and_tests",
+  "engineering_verified_commit": "f17e7487f5938acfaf312e05b8eecb242f06a492",
+  "engineering_ci_run": "https://github.com/www1350/maple-vision-platform/actions/runs/45394348732"
 }
