@@ -69,11 +69,11 @@ def test_soak_counts_wall_time_not_accelerated_simulation(tmp_path, monkeypatch)
     clock = [0.0]
     monkeypatch.setattr("maple_vision.lab.time.monotonic", lambda: clock[0])
 
-    def episode(*, config):
+    def episode(output, config, detector, *, failure_name):
         clock[0] += 0.4
         return {"status": "completed", "simulated_seconds": 86400, "job": config.job}
 
-    monkeypatch.setattr("maple_vision.lab.run_episode", episode)
+    monkeypatch.setattr("maple_vision.lab._record_episode", episode)
     result = run_soak(tmp_path / "soak", seconds=1)
     assert result["episodes"] == 3
     assert result["actual_wall_seconds"] == pytest.approx(1.2)

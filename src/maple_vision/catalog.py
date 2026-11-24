@@ -347,48 +347,55 @@ def load_import(source: str | Path) -> tuple[CatalogRecord, ...]:
     return tuple(_parse_record(record) for record in records)
 
 
+def _import_records(
+    connection: sqlite3.Connection, records: tuple[CatalogRecord, ...]
+) -> ImportResult:
+    """Apply already parsed records without committing an outer caller transaction."""
+    _validate_schema(connection)
+    imported = 0
+    affected: set[tuple[str, str, str]] = set()
+    with _savepoint(connection):
+        for record in records:
+            existing = connection.execute(
+                f"SELECT {_COLUMNS} FROM catalog_records WHERE record_id = ?",
+                (record.record_id,),
+            ).fetchone()
+            if existing is not None:
+                stored = _decode_record(existing)
+                if replace(stored, verification_status=stored.declared_status) != record:
+                    raise ValueError("record hash collision or corrupt existing record")
+            else:
+                connection.execute(
+                    f"INSERT INTO catalog_records ({_COLUMNS}) VALUES ({','.join(['?'] * 13)})",
+                    tuple(asdict(record).values()),
+                )
+                imported += 1
+            affected.add((record.kind, record.entity_id, record.game_version))
+        conflicts = 0
+        for key in sorted(affected):
+            hashes = connection.execute(
+                "SELECT COUNT(DISTINCT payload_sha256) FROM catalog_records "
+                "WHERE kind = ? AND entity_id = ? AND game_version = ?",
+                key,
+            ).fetchone()[0]
+            if hashes > 1:
+                conflicts += 1
+                connection.execute(
+                    "UPDATE catalog_records SET verification_status = 'CONFLICTED' "
+                    "WHERE kind = ? AND entity_id = ? AND game_version = ?",
+                    key,
+                )
+        total = connection.execute("SELECT COUNT(*) FROM catalog_records").fetchone()[0]
+    return ImportResult(imported, len(records) - imported, conflicts, total)
+
+
 def import_catalog(path: str | Path, source: str | Path) -> ImportResult:
     """Validate an entire import before one transaction; never overwrite evidence."""
     records = load_import(source)
     # Require initialization: a typo must not create an empty database during import.
     uri = Path(path).resolve().as_uri() + "?mode=rw"
     with closing(sqlite3.connect(uri, uri=True)) as connection:
-        _validate_schema(connection)
-        imported = 0
-        affected: set[tuple[str, str, str]] = set()
-        with _savepoint(connection):
-            for record in records:
-                existing = connection.execute(
-                    f"SELECT {_COLUMNS} FROM catalog_records WHERE record_id = ?",
-                    (record.record_id,),
-                ).fetchone()
-                if existing is not None:
-                    stored = _decode_record(existing)
-                    if replace(stored, verification_status=stored.declared_status) != record:
-                        raise ValueError("record hash collision or corrupt existing record")
-                else:
-                    connection.execute(
-                        f"INSERT INTO catalog_records ({_COLUMNS}) VALUES ({','.join(['?'] * 13)})",
-                        tuple(asdict(record).values()),
-                    )
-                    imported += 1
-                affected.add((record.kind, record.entity_id, record.game_version))
-            conflicts = 0
-            for key in sorted(affected):
-                hashes = connection.execute(
-                    "SELECT COUNT(DISTINCT payload_sha256) FROM catalog_records "
-                    "WHERE kind = ? AND entity_id = ? AND game_version = ?",
-                    key,
-                ).fetchone()[0]
-                if hashes > 1:
-                    conflicts += 1
-                    connection.execute(
-                        "UPDATE catalog_records SET verification_status = 'CONFLICTED' "
-                        "WHERE kind = ? AND entity_id = ? AND game_version = ?",
-                        key,
-                    )
-            total = connection.execute("SELECT COUNT(*) FROM catalog_records").fetchone()[0]
-        return ImportResult(imported, len(records) - imported, conflicts, total)
+        return _import_records(connection, records)
 
 
 def query_catalog(

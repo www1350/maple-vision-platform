@@ -18,7 +18,13 @@ from pathlib import Path
 from typing import Any
 
 from .contracts import Detection
-from .dataset import validate_dataset
+from .dataset import (
+    LIFECYCLE_DATASET_VERSION,
+    LIFECYCLE_PHASES,
+    LIFECYCLE_TAGS,
+    POSITION_BINS,
+    validate_dataset,
+)
 from .onnx_detector import OnnxDetector
 from .scene import CLASS_NAMES, ImageFrame
 from .vision import Detector, PixelPerception
@@ -272,6 +278,72 @@ def _ground_truth(path: Path, width: int, height: int) -> tuple[Detection, ...]:
     return tuple(objects)
 
 
+def _grouped_metrics(
+    records: Sequence[dict[str, Any]],
+    samples: Sequence[EvaluationSample],
+    confidence_threshold: float,
+    iou_threshold: float,
+) -> dict[str, object]:
+    """Reuse one inference per image; groups never change aggregate predictions."""
+
+    def group(indices: list[int]) -> dict[str, object]:
+        return {
+            **evaluate_predictions(
+                [samples[index] for index in indices],
+                confidence_threshold=confidence_threshold,
+                iou_threshold=iou_threshold,
+            ),
+            "sessions": len({records[index]["session_id"] for index in indices}),
+        }
+
+    return {
+        "schema_version": 1,
+        "basis": "replay-validated lifecycle metadata; not inferred by the detector",
+        "partitions": ["by_phase", "by_map", "by_player_position"],
+        "overlapping_groups": ["by_coverage_tag"],
+        "interpretation": (
+            "Each partition assigns each image once. Coverage tags overlap; do not sum them. "
+            "Each group independently reranks its predictions for AP; group AP is not additive. "
+            "Frames from one session are correlated, and these are descriptive subgroup results."
+        ),
+        "by_phase": {
+            phase: group([i for i, record in enumerate(records) if record["phase"] == phase])
+            for phase in LIFECYCLE_PHASES
+        },
+        "by_map": {
+            map_id: group([i for i, record in enumerate(records) if record["map_id"] == map_id])
+            for map_id in ("meadow", "cavern")
+        },
+        "by_map_phase": {
+            map_id: {
+                phase: group(
+                    [
+                        i
+                        for i, record in enumerate(records)
+                        if record["map_id"] == map_id and record["phase"] == phase
+                    ]
+                )
+                for phase in LIFECYCLE_PHASES
+            }
+            for map_id in ("meadow", "cavern")
+        },
+        "by_player_position": {
+            position: group(
+                [
+                    i
+                    for i, record in enumerate(records)
+                    if record["coverage"]["position_bin"] == position
+                ]
+            )
+            for position, _, _ in POSITION_BINS
+        },
+        "by_coverage_tag": {
+            tag: group([i for i, record in enumerate(records) if tag in record["coverage"]["tags"]])
+            for tag in LIFECYCLE_TAGS
+        },
+    }
+
+
 def benchmark_dataset(
     dataset: Path,
     output: Path,
@@ -352,6 +424,11 @@ def benchmark_dataset(
             "Small image counts yield uncertain accuracy and latency estimates.",
         ],
     }
+    if manifest["schema_version"] == LIFECYCLE_DATASET_VERSION:
+        report["schema_version"] = 2
+        report["grouped_metrics"] = _grouped_metrics(
+            records, samples, confidence_threshold, iou_threshold
+        )
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("x", encoding="utf-8") as stream:
         json.dump(report, stream, ensure_ascii=True, sort_keys=True, indent=2, allow_nan=False)

@@ -204,6 +204,11 @@ def decode(
 class OnnxDetector:
     """CPU inference with explicit metadata and no automatic weights download."""
 
+    @property
+    def loaded_model_sha256(self) -> str:
+        """Identity of the exact bytes supplied to the native inference session."""
+        return self._loaded_model_sha256
+
     def __init__(
         self,
         model: Path,
@@ -214,8 +219,10 @@ class OnnxDetector:
     ) -> None:
         self.manifest = ModelManifest.load(manifest)
         model_bytes = model.read_bytes()
-        if hashlib.sha256(model_bytes).hexdigest() != self.manifest.model_sha256:
+        loaded_hash = hashlib.sha256(model_bytes).hexdigest()
+        if loaded_hash != self.manifest.model_sha256:
             raise ValueError("model checksum mismatch")
+        self._loaded_model_sha256 = loaded_hash
         # Validate thresholds even before loading an optional native dependency.
         for threshold in (confidence_threshold, iou_threshold):
             if (

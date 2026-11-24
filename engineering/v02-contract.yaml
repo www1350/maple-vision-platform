@@ -1,0 +1,210 @@
+contract_version: 1
+spec_version: "8.0"
+release_version: "0.2.0"
+scope: offline_synthetic_fixture_platform
+status: candidate_pending_final_validation
+result_source: docs/RELEASE_0_2_ACCEPTANCE.md
+execution_plan: docs/V0_2_PLAN.md
+implementation_commit: null
+local_evidence: null
+remote_evidence: null
+final_head_checks: null
+full_spec_acceptance: false
+historical_contracts:
+  p0: engineering/p0-contract.yaml
+  platform_v0_1: engineering/platform-contract.yaml
+historical_evidence:
+  p0: docs/P0_ACCEPTANCE.md
+  platform_v0_1: docs/RELEASE_ACCEPTANCE.md
+  model_v0_1: docs/YOLO_EXPERIMENT.md
+current_authorization:
+  date: "2026-11-24"
+  action: continue_implementation_testing_and_delivery
+  scope_source: latest_user_request_and_AGENTS
+
+candidate_surfaces:
+  knowledge_sync:
+    modules: [knowledge_sync.py, catalog.py]
+    commands: [knowledge_plan_sync, knowledge_apply_sync]
+    adapter: local_catalog_json_v1
+    plan_schema_version: 1
+    database_schema_version: 2
+    local_review: completed_with_transaction_growth_budget_regression
+    final_verification: pending_exact_commit_tests_and_ci
+    invariants:
+      - Capture original source bytes and derived provenance inside one self-contained plan.
+      - Bind the complete catalog and legacy-source baseline to a deterministic logical fingerprint.
+      - Recompute deltas and expected state from captured evidence before applying.
+      - Check baseline, import and verify postconditions within one BEGIN IMMEDIATE transaction.
+      - Retain missing and changed history; never auto-verify evidence or resolve conflicts.
+      - Reapply only when the complete catalog equals the exact expected after-state.
+      - Reject journal sidecars, direct symlinks and growth beyond the logical database byte budget.
+    network_source_adapter: not_implemented
+    live_booklet_data: not_collected_or_verified
+    runtime_rule_hot_swap: not_implemented
+    reference: docs/KNOWLEDGE_SYNC.md
+  lifecycle_dataset:
+    module: dataset.py
+    profile: lifecycle
+    manifest_schema_version: 2
+    generator_version: lifecycle-v1
+    legacy_profile_and_schema_preserved: true
+    local_review: completed_with_selected_combat_hit_coverage_regression
+    final_verification: pending_exact_commit_tests_and_ci
+    phases: [spawn, combat, loot, cleared, dialogue, transition]
+    validation_basis: actual_bounded_action_replay_pixels_labels_and_coverage
+    boundary: training_scenario_truth_does_not_enter_runtime_detector_or_policy
+    reference: docs/DATASET_LIFECYCLE.md
+  grouped_evaluation:
+    module: evaluation.py
+    report_schema_version: 2
+    groups: [phase, map, map_phase, player_position, overlapping_coverage_tag]
+    aggregate_predictions_preserved: true
+    final_verification: pending_exact_commit_tests_and_ci
+    metric_definition: single_iou_101_point_interpolated_ap_after_declared_confidence_cutoff
+    empty_truth_false_positives_counted: true
+    unseen_map_or_real_domain_acceptance: false
+  model_validation:
+    modules: [lab.py, validation_resources.py, onnx_detector.py]
+    commands: [lab_suite_with_model, lab_soak_with_model, lab_reinfer]
+    final_verification: pending_preflight_race_and_actual_failure_retention_gates
+    intended_final_behavior:
+      reinfer: actually_execute_every_perception_supervisor_and_policy_step_including_terminal_frame
+      identity: compare_loaded_model_hash_full_manifest_and_thresholds_before_first_detect
+      evidence_preflight: enforce_bounded_inputs_and_reject_evidence_changes_during_verification
+      failure_retention: capture_actual_failed_episode_once_without_a_substitute_rerun
+      resources: bounded_process_wall_cpu_and_supported_rss_samples_with_explicit_sources_and_units
+    legacy_action_replay_perception_reproduced: false
+    legacy_bundle_reinfer: reject_missing_versioned_evidence_without_modification
+    default_detector: pixel_fixture
+    model_pipeline: onnx_dynamic_objects_plus_fixture_pixel_terrain_and_hud
+    reference: docs/MODEL_VALIDATION.md
+
+frozen_experiment_input:
+  origin: synthetic_fixture_lifecycle_v2
+  local_path: artifacts/v02-experiment/dataset
+  sessions: 18
+  frames_per_session: 48
+  frames: 864
+  objects: 7098
+  seed: 20261125
+  manifest_sha256: 670f6dae181f0f4b3107ba6a47cb733f19cfbc216c4e8e8c23f96b756601b3ff
+  split_frames: {train: 480, val: 192, test: 192}
+  jobs: [assassin, dragon_knight, cleric]
+  maps: [meadow, cavern]
+  phases: [spawn, combat, loot, cleared, dialogue, transition]
+  positions: [left_edge, left, middle, right, right_edge]
+  class_count: 7
+  training_uses_private_input_copy: true
+  test_policy: evaluate_after_candidate_choice_and_do_not_tune_against_the_holdout
+  reference: docs/DATASET_LIFECYCLE.md
+
+prior_model_on_new_validation:
+  status: measured_local_baseline_not_new_model_result
+  model_sha256: 56cafce92c63d284744b9030d661486911e30c46b03000c605b530bc91d9ae04
+  dataset_manifest_sha256: 670f6dae181f0f4b3107ba6a47cb733f19cfbc216c4e8e8c23f96b756601b3ff
+  split: val
+  frames: 192
+  confidence_threshold: 0.25
+  iou_threshold: 0.5
+  ap50: 0.9006968211992472
+  platform_recall: 0.4670138888888889
+  local_evidence: artifacts/v02-experiment/prior-model-validation.json
+  comparability: compare_candidates_on_this_same_validation_set_not_to_v0_1_old_test_scores
+
+required_release_gates:
+  - id: formatting_lint_and_types
+    commands:
+      - python -m ruff format --check .
+      - python -m ruff check .
+      - python -m mypy
+    status: pending_exact_commit_execution_and_evidence
+  - id: full_unit_integration_and_legacy_regression
+    command: python -m pytest -q
+    status: pending_exact_commit_execution_and_evidence
+  - id: atomic_knowledge_sync
+    requirement: Verify deltas, history, status/version separation, tamper, staleness, concurrency and complete rollback including logical growth budget.
+    status: local_focused_review_complete_final_tree_and_ci_pending
+  - id: lifecycle_and_grouped_metrics
+    requirement: Preserve frozen data and legacy bytes; verify replayed phase/coverage, selected combat hits, isolation, forged evidence rejection and grouped/aggregate metrics.
+    status: local_focused_review_complete_final_tree_and_ci_pending
+  - id: actual_perception_and_policy_reinference
+    requirement: Match all N+1 perceptions and real decisions, enforce model identity before detection, handle termination and faults, reject stale or over-budget evidence.
+    status: pending_final_verifier_review_and_exact_commit_validation
+  - id: original_failed_episode_retention
+    requirement: Retain the actual failed episode and its failure context once, with no replacement rerun and bounded successful-episode storage.
+    status: pending_final_validation
+  - id: model_suite_and_short_resource_soak
+    requirement: Record explicit model hash, actual task/fault outcomes, wall duration, process resource sources/units/unknowns and bounded samples.
+    status: pending_final_model_and_environment_evidence
+  - id: native_training_export_and_inference
+    requirement: Execute local CPU training, ONNX export, actual native inference and adapter regressions against the current commit.
+    status: pending_final_execution_and_evidence
+  - id: clean_wheel_installation
+    requirement: Install the 0.2.0 wheel in a clean environment and execute outside the checkout on Ubuntu and Windows.
+    status: pending_final_execution_and_evidence
+  - id: independent_review
+    requirement: Preserve concrete review findings, fixes, regression evidence and unresolved limits.
+    status: in_progress_final_verifier_and_release_review_pending
+
+remote_release_gates:
+  status: pending_exact_release_commit
+  commit_sha: null
+  run_url: null
+  final_pull_request: null
+  jobs:
+    - {id: ubuntu_python312, status: pending}
+    - {id: windows_python312, status: pending}
+    - {id: ubuntu_cpu_training_and_native_adapters, status: pending}
+  boundary: historical_green_checks_do_not_cover_new_changes
+
+separate_acceptance_gates:
+  learned_model_promotion:
+    status: pending_candidate_selection_and_acceptance
+    requires: [declared_selection_criteria, same_dataset_validation, post_selection_test, grouped_errors, multiclass_two_map_closed_loop, actual_reinference, model_and_data_hashes]
+    unsuccessful_candidate_policy: retain_results_without_promoting_or_overwriting_historical_evidence
+  real_domain_validation:
+    status: incomplete_external_data_and_calibration
+    requires: [authorized_assets, verified_mechanics, independent_real_recordings, human_labels]
+  wall_clock_24h_soak:
+    status: not_completed
+    requires: [requested_seconds_at_least_86400, actual_wall_seconds_at_least_86400, fixed_environment_and_model, successful_task_checks, failure_and_resource_evidence]
+  full_v8_scope:
+    status: incomplete
+    remaining: [network_booklet_source_adapters, continuous_source_scheduling, verified_current_game_data, remaining_catalog_rule_types, animation_state_and_anchor_packs, external_map_and_class_packages, real_game_ui_ocr_calibration, tracking_and_belief_state, task_dsl, management_ui, real_recording_labels_and_accuracy]
+
+compatibility:
+  p0_apis_and_v1_database: preserve
+  direct_catalog_import_query_snapshot: preserve
+  legacy_dataset_v1_default_and_bytes: preserve
+  legacy_action_replay: preserve
+  legacy_evidence_and_reports: immutable_historical_records
+  new_formats: explicitly_versioned
+  shipped_model_replacement: requires_explicit_selection_hashes_and_updated_evidence
+
+invariants:
+  - Runtime vision and policy receive pixels and observations, never simulator dynamic truth.
+  - Full baseline comparison, catalog mutation and expected-state check are one atomic transaction.
+  - Knowledge-plan hashes and artifact hashes are integrity identifiers, not signatures or approvals.
+  - Dataset coverage is replayed evidence, not a learned-agent success measurement.
+  - Group AP is recomputed within groups and cannot be added; overlapping tags cannot be summed.
+  - Action replay, actual perception/policy reinference and task completion are distinct conclusions.
+  - Reproducing a recorded failure does not turn that episode into a successful mission.
+  - Process resource measurements identify sources and units, and unsupported readings remain unknown.
+  - Exact-commit engineering acceptance does not grant model promotion, real-domain or 24-hour acceptance.
+  - All actions execute in the independent simulator; no official-client controller exists.
+
+excluded:
+  - official_client_automation
+  - anti_cheat_bypass
+  - account_safety_guarantees
+  - automatic_message_sending
+  - claims_that_synthetic_metrics_establish_real_game_performance
+
+acceptance:
+  python: "3.12"
+  operating_systems: [ubuntu-latest, windows-latest]
+  required_evidence: [commit_sha, commands, actual_results, environment, ci_urls, limitations]
+  pending_gates_must_remain_explicit: true
+  plan_values_are_not_measured_success: true
+  unsuccessful_models_must_not_be_promoted: true

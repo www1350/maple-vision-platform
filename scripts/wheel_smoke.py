@@ -3,6 +3,7 @@
 Only this script's standard-library imports run in the build environment. All package
 checks run as subprocesses in a separate virtual environment, and stdout is one JSON
 report. It intentionally does not train a model; CI has a separate opt-in CPU smoke.
+The runtime checks include v0.2 local sync, lifecycle data and pixel re-inference.
 """
 
 import argparse
@@ -52,6 +53,7 @@ def smoke(wheel: Path, checkout: Path) -> dict[str, Any]:
         clean_env.pop("PYTHONHOME", None)
         clean_env["PYTHONNOUSERSITE"] = "1"
         clean_env["PYTHONDONTWRITEBYTECODE"] = "1"
+        clean_env["ORT_DISABLE_TELEMETRY"] = "1"
 
         def execute(arguments: list[str]) -> str:
             result = subprocess.run(
@@ -183,6 +185,60 @@ def smoke(wheel: Path, checkout: Path) -> dict[str, Any]:
         )
         checks["catalog_snapshot"] = manifest["summary"]
 
+        sync_source = scratch / "sync-source.json"
+        sync_record = json.loads(source.read_text(encoding="utf-8"))["records"][0]
+        sync_record["entity_id"] = "wheel.synced-fixture"
+        sync_record["payload"] = {"label": "standalone wheel sync fixture"}
+        sync_source.write_text(
+            json.dumps({"schema_version": 1, "records": [sync_record]}), encoding="utf-8"
+        )
+        sync_hash = hashlib.sha256(sync_source.read_bytes()).hexdigest()
+        sync_plan = scratch / "sync-plan.json"
+        planned = cli("knowledge", "plan-sync", str(knowledge), str(sync_source), str(sync_plan))
+        require(planned["status"] == "planned", "sync plan status")
+        require(planned["delta_counts"]["added"] == 1, "sync plan must add one fixture")
+        require(planned["source_sha256"] == sync_hash, "sync plan source identity")
+        require(
+            not cli(
+                "knowledge",
+                "query",
+                str(knowledge),
+                "items",
+                "wheel.synced-fixture",
+                "wheel-smoke-v1",
+            )["records"],
+            "planning must not apply the new record",
+        )
+        sync_source.unlink()
+        applied = cli("knowledge", "apply-sync", str(knowledge), str(sync_plan))
+        require(applied["status"] == "applied" and applied["imported"] == 1, "sync application")
+        require(applied["plan_id"] == planned["plan_id"], "sync applied a different plan")
+        synced = cli(
+            "knowledge", "query", str(knowledge), "items", "wheel.synced-fixture", "wheel-smoke-v1"
+        )
+        require(
+            len(synced["records"]) == 1
+            and strict_json(synced["records"][0]["payload_json"]) == sync_record["payload"],
+            "sync result must be queryable from the installed catalog",
+        )
+        repeated = cli("knowledge", "apply-sync", str(knowledge), str(sync_plan))
+        require(
+            repeated["status"] == "already_applied" and repeated["imported"] == 0,
+            "sync reapplication must be idempotent",
+        )
+        require(repeated["records_total"] == 2, "sync must retain the original fixture")
+        checks["catalog_sync"] = {
+            "plan_id": planned["plan_id"],
+            "source_sha256": sync_hash,
+            "delta_counts": planned["delta_counts"],
+            "status": applied["status"],
+            "imported": applied["imported"],
+            "records_total": repeated["records_total"],
+            "reapply_status": repeated["status"],
+            "source_removed_before_apply": True,
+            "verified_query": True,
+        }
+
         dataset = scratch / "dataset"
         created = cli(
             "dataset", "create", str(dataset), "--sessions", "6", "--frames", "2", "--seed", "7"
@@ -191,6 +247,57 @@ def smoke(wheel: Path, checkout: Path) -> dict[str, Any]:
         validated = cli("dataset", "check", str(dataset))
         require(validated["sessions"] == 6 and validated["frames"] == 12, "dataset validation")
         checks["dataset"] = validated
+
+        lifecycle = scratch / "lifecycle-dataset"
+        lifecycle_created = cli(
+            "dataset",
+            "create",
+            str(lifecycle),
+            "--profile",
+            "lifecycle",
+            "--sessions",
+            "3",
+            "--frames",
+            "12",
+            "--seed",
+            "7",
+        )
+        require(
+            lifecycle_created["schema_version"] == 2
+            and lifecycle_created["validated"]
+            and lifecycle_created["frames"] == 36,
+            "lifecycle dataset generation",
+        )
+        lifecycle_checked = cli("dataset", "check", str(lifecycle))
+        require(
+            lifecycle_checked["schema_version"] == 2
+            and lifecycle_checked["sessions"] == 3
+            and lifecycle_checked["frames"] == 36
+            and lifecycle_checked["validated"],
+            "lifecycle dataset validation",
+        )
+        phases = ("spawn", "combat", "loot", "cleared", "dialogue", "transition")
+        phase_counts = {
+            split: lifecycle_checked["coverage"]["by_split"][split]["phase_counts"]
+            for split in ("train", "val", "test")
+        }
+        require(
+            all(counts.get(phase, 0) > 0 for counts in phase_counts.values() for phase in phases),
+            "lifecycle minimum data must cover all phases in every split",
+        )
+        require(
+            lifecycle_checked["visual_agent_success_evaluated"] is False,
+            "lifecycle data validation must not claim visual policy success",
+        )
+        checks["lifecycle_dataset"] = {
+            "schema_version": lifecycle_checked["schema_version"],
+            "profile": "lifecycle",
+            "sessions": lifecycle_checked["sessions"],
+            "frames": lifecycle_checked["frames"],
+            "validated": lifecycle_checked["validated"],
+            "phase_counts_by_split": phase_counts,
+            "visual_agent_success_evaluated": False,
+        }
         dataset_manifest = json.loads((dataset / "manifest.json").read_text(encoding="utf-8"))
         sprite = dataset / dataset_manifest["samples"][0]["image"]
         registry = scratch / "registry"
@@ -241,6 +348,36 @@ def smoke(wheel: Path, checkout: Path) -> dict[str, Any]:
             )
         }
         checks["replay"] = replay
+        before_reinference = {
+            path.relative_to(mission_dir).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in mission_dir.rglob("*")
+            if path.is_file()
+        }
+        reinference = cli("lab", "reinfer", str(mission_dir))
+        require(
+            reinference["verified"]
+            and reinference["perception_reproduced"]
+            and reinference["policy_reproduced"]
+            and reinference["runtime_identity_matches"],
+            "installed pixel perception/policy re-inference",
+        )
+        require(
+            reinference["trace_steps_compared"] == mission["steps"]
+            and reinference["frames_reinferred"] == mission["steps"] + 1
+            and reinference["terminal_observation_compared"]
+            and reinference["terminal_decision_compared"],
+            "installed re-inference must include every frame and terminal policy",
+        )
+        require(reinference["model_hash_verified"] is False, "pixel smoke is not ONNX validation")
+        after_reinference = {
+            path.relative_to(mission_dir).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in mission_dir.rglob("*")
+            if path.is_file()
+        }
+        require(
+            before_reinference == after_reinference, "re-inference modified the original bundle"
+        )
+        checks["reinference"] = reinference
         # Exercise python -m as well as the console entry point, without sending messages.
         draft = strict_json(
             execute(
@@ -286,7 +423,14 @@ def main() -> int:
             require(len(wheels) == 1, "dist must contain exactly one wheel, or specify --wheel")
             wheel = wheels[0]
         report = smoke(wheel.resolve(), checkout)
-    except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
+    except (
+        ValueError,
+        KeyError,
+        TypeError,
+        OSError,
+        RuntimeError,
+        subprocess.SubprocessError,
+    ) as exc:
         traceback.print_exc(file=sys.stderr)
         report = {"schema_version": 1, "passed": False, "error": str(exc)}
     args.output.parent.mkdir(parents=True, exist_ok=True)
