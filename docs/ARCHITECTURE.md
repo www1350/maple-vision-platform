@@ -1,0 +1,2 @@
+# Architecture
+Separate data-platform, vision-platform, domain packages, simulator, validation and engineering. Dependencies flow from immutable data snapshots to rendering/datasets, model registry, observation, world state, simulator task intent and verification. No raw frame access by policy; no detection access by controller; no ground truth access by visual agent. Runtime has no external LLM dependency. Simulator-only execution; replay and read-only modes have no controller.
