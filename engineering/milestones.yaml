@@ -26,17 +26,22 @@ delivery:
   active_increment_phases: [P6, P7, P11, P13]
   scope: bounded_offline_synthetic_terrain_research_and_model_object_pipeline
   release_version: "0.3.0"
-  release_status: candidate_rejected_post_runtime_fix_local_passed_remote_ci_pending
+  release_status: accepted_offline_tools_candidate_rejected
   result_source: docs/RELEASE_0_3_ACCEPTANCE.md
   execution_plan: docs/V0_3_PLAN.md
   evidence_archive: reports/release-0.3.0
   local_evidence: reports/release-0.3.0/local-verification.json
   preregistration: reports/release-0.3.0/preregistration.json
   base_commit: d11e285f6ba648c34f3bcabb1c3d193f63350da1
-  final_implementation_commit_status: pending
-  final_ci_status: pending
-  pending_gates:
-    - exact_commit_ubuntu_windows_native_ci
+  final_implementation_commit_status: passed
+  implementation_commit: 3340d8f2453082aff002a62ae56f43123fa83c63
+  implementation_tree: 88b077072ba4835ebe269bbf935ae67082f8f2a7
+  remote_run_url: https://github.com/www1350/maple-vision-platform/actions/runs/45421893081
+  final_head_checks: https://github.com/www1350/maple-vision-platform/pull/4
+  final_archive_head_must_pass_before_merge: true
+  final_ci_status: implementation_commit_passed_archive_head_checked_separately_in_pr
+  pending_gates: []
+  pending_gates_scope: implementation_commit_final_archive_still_requires_own_ci
   p0_result_source: docs/P0_ACCEPTANCE.md
   p0_contract_is_historical: true
   user_authorization_date: "2026-11-24"
@@ -83,7 +88,7 @@ historical_releases:
 current_verification:
   local_full_tree: passed_post_runtime_fix_834_zero_failures_errors_or_skips_110_65_seconds
   historical_before_runtime_fix_evidence: reports/release-0.3.0/local-verification-before-runtime-fix.json
-  remote_ubuntu_windows_and_native: initial_base_jobs_passed_native_failed_repaired_commit_pending
+  remote_ubuntu_windows_and_native: passed_repaired_exact_commit_all_three_jobs_initial_native_failure_retained
   remote_evidence: reports/release-0.3.0/remote-ci.json
   clean_wheel_installation: passed_post_runtime_fix_local_isolated_0_3_0_20_961_seconds
   wheel_sha256: f0b7603f2cd2589127d27bd3c05ae310973c6b45e7b4c07a8feb08d3235c719f
@@ -114,7 +119,7 @@ current_verification:
   input_isolation: new_sessions_no_decoded_rgb_duplicates_or_shared_session_seeds_against_prior_two_datasets
   structural_preflight: actual_regmax16_strides4_8_16_and_ten_complete_ground_anchors_verified
   geometry_review: early_21_tests_and_100_parity_cases_passed_current_26_tests_in_full_834
-  explicit_model_terrain_source: passed_local_contract_regression_candidate_not_accepted_remote_ci_pending
+  explicit_model_terrain_source: passed_local_contract_and_remote_ci_candidate_quality_rejected
   current_candidate_validation:
     evidence: reports/release-0.3.0/terrain-model-validation.json
     gates_evidence: reports/release-0.3.0/validation-gates.json
@@ -192,7 +197,7 @@ phase_status:
     implementation: pixel_or_onnx_objects_fixture_hud_and_local_tesseract_adapter
     historical_v0_1_fixture_verification: fixture_pixels_onnx_and_native_ocr_tests_passed_local
     v0_3_implementation: explicit_model_source_for_all_seven_objects_fixture_hud_context_preserved
-    v0_3_verification: local_pipeline_contract_passed_remote_ci_pending_candidate_quality_rejected
+    v0_3_verification: local_pipeline_contract_and_remote_ci_passed_candidate_quality_rejected
     real_domain_gate: no_real_hud_or_ocr_acceptance
     remaining_engineering: [real_game_ui_ocr_calibration, tracking, belief_state_fusion]
   P8:
@@ -230,7 +235,7 @@ phase_status:
     historical_v0_1_fixture_verification: passed_local_and_remote_installation_plus_local_60_second_smoke
     v0_2_verification: passed_local_model_soak_resources_original_failure_and_remote_implementation_ci
     v0_3_implementation: cli_contracts_packaging_and_audit_preallocation_guard_implemented
-    v0_3_verification: runtime_fix_full834_native155_and_rebuilt_wheel_passed_remote_ci_pending_candidate_soak_not_executed
+    v0_3_verification: runtime_fix_full834_native155_rebuilt_wheel_and_exact_commit_ci_passed_candidate_soak_not_executed
     real_domain_gate: not_accepted
     wall_clock_24h_soak: not_completed
     remaining_engineering: [full_24_hour_wall_clock_endurance]

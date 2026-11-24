@@ -8,7 +8,7 @@
 
 当前具备 SQLite 知识目录、静态素材登记与渲染、会话级合成数据集、实际 YOLO 训练和 ONNX 推理、三职业两地图任务、故障测试、动作重放、录像观察与本地 OCR。v0.2 的知识增量计划、生命周期数据与分组评估、模型 suite/soak、资源采样和实际感知/策略重新执行已经验收；所选 lifecycle 模型只取得合成混合管线准入。其源代码、模型及测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492` 的[三项远端 CI](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)均已通过，最终归档与合并历史见 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)。
 
-v0.3增加结构审查、schema3几何评分和显式模型对象模式；候选14项阈值通过13项，但平台召回0.819444＜0.98，依协议不推广、不评分test、不执行候选推广任务或再训第二候选。首轮远端原生CI发现日志流生命周期缺陷，独立工程修复后完整本地 **834通过、0失败/跳过**，同序原生155项与重建wheel通过；新准确提交的远端CI仍待完成。[本地验证](../reports/release-0.3.0/local-verification.json)不代表真实域准确率，也不改变模型拒绝结论。
+v0.3增加结构审查、schema3几何评分和显式模型对象模式；候选14项阈值通过13项，但平台召回0.819444＜0.98，依协议不推广、不评分test、不执行候选推广任务或再训第二候选。首轮远端原生CI发现日志流生命周期缺陷，独立工程修复后完整本地 **834通过、0失败/跳过**，同序原生155项与重建wheel通过；实现提交 `3340d8f2453082aff002a62ae56f43123fa83c63`已通过[三组远端CI](https://github.com/www1350/maple-vision-platform/actions/runs/45421893081)。最终归档head仍须由[PR #4](https://github.com/www1350/maple-vision-platform/pull/4)的独立CI确认。[本地验证](../reports/release-0.3.0/local-verification.json)不代表真实域准确率，也不改变模型拒绝结论。
 
 本项目执行对象是独立 Python 模拟器。正式客户端控制、系统按键注入、输入伪装、封包/内存修改和反作弊绕过不在交付范围内；独立验证也不能证明正式账号不会被封。玩家回复只产出待人工确认的本地草稿。依赖安装后，默认运行、训练、推理和 OCR 使用本地计算，不调用 LLM API，不消耗运行时 LLM token；编程 AI 开发本身的计费另算。
 
@@ -122,7 +122,7 @@ v0.1 样例与历史数据仍保留在 `examples/fixture-model/` 和 [YOLO_EXPER
 
 按预注册，候选推广13场景、三职业reinfer、soak及test均不执行，不增加第二候选。新test字节允许用于完整性核对与训练副本复制，但没有产生模型预测或分数。这是已经执行的失败出口，不是接手AI应补做的遗漏步骤。
 
-正式40epoch训练与val评分期间，五项冻结源码保持预注册字节，1730个输入副本文件一致；历史训练实现可从 `ff357c8951da8e84265d31c5a8b86a48934a4f01`读取。实验结束后，CI顺序触发日志handler关闭流问题，`training.py`另作工程修复；该修复不追溯进入实验，原模型和报告不变。后加审查预算同样不能追溯计入早期审查。修复后完整834项、同序155项、日志13项及重建wheel均通过，新准确提交的远端CI仍待结果。[修复来源与回归](../reports/release-0.3.0/runtime-stream-fix.json)
+正式40epoch训练与val评分期间，五项冻结源码保持预注册字节，1730个输入副本文件一致；历史训练实现可从 `ff357c8951da8e84265d31c5a8b86a48934a4f01`读取。实验结束后，CI顺序触发日志handler关闭流问题，`training.py`另作工程修复；该修复不追溯进入实验，原模型和报告不变。后加审查预算同样不能追溯计入早期审查。修复后完整834项、同序155项、日志13项及重建wheel均通过，实现提交3340d8f的三组远端CI也已通过；最终归档提交仍需自身检查。[修复来源与回归](../reports/release-0.3.0/runtime-stream-fix.json)
 
 ## 6. 职业能力、任务与有界监督
 
@@ -314,11 +314,11 @@ python -m maple_vision lab soak --output artifacts/plan-soak --seconds 60
 
 v8 中地图识别 99%、平台定位 98%、核心任务 98%、拾取 95%、生存 99%、恢复 95% 是**建议目标**，不是当前实测成绩。实施前须定义分母、任务分布、样本量和不确定性；检测 AP 不能替代任务成功率。当前固定门禁见 [v03-contract.yaml](../engineering/v03-contract.yaml)；[v02-contract.yaml](../engineering/v02-contract.yaml)、[platform-contract.yaml](../engineering/platform-contract.yaml)及对应验收保留历史状态。
 
-v0.2 的源代码、模型与测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492`（tree `96de98b2e95ccd8fef04b0052b11f60bee63fe35`）已通过 [CI 45394348732](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)：Ubuntu 631 passed/3 skipped，Windows 627 passed/7 skipped，原生训练 107 passed/0 skipped；本地为 634 passed/0 skipped。Windows 已通过源自 v0.1 的严格 RGB/文本/manifest 语义指纹检查，生产源码未因该修正而改变。[远端证据](../reports/release-0.2.0/remote-ci.json)保留首轮失败和第二轮成功，最终归档与合并历史由 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)保存。v0.3日志修复后已另行取得834项本地回归、同序原生155项和重建隔离安装证据；修复版远端准确提交CI仍待完成，不继承以上旧版绿灯。
+v0.2 的源代码、模型与测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492`（tree `96de98b2e95ccd8fef04b0052b11f60bee63fe35`）已通过 [CI 45394348732](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)：Ubuntu 631 passed/3 skipped，Windows 627 passed/7 skipped，原生训练 107 passed/0 skipped；本地为 634 passed/0 skipped。Windows 已通过源自 v0.1 的严格 RGB/文本/manifest 语义指纹检查，生产源码未因该修正而改变。[远端证据](../reports/release-0.2.0/remote-ci.json)保留首轮失败和第二轮成功，最终归档与合并历史由 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)保存。v0.3日志修复后已另行取得834项本地回归、同序原生155项和重建隔离安装证据；实现提交3340d8f的远端Ubuntu827通过/7跳过、Windows823通过/11跳过、native155通过/0跳过及两基础wheel均通过，详见[v0.3远端证据](../reports/release-0.3.0/remote-ci.json)。最终归档head检查仍由PR #4单独记录。
 
 ## 11. 接手后的执行优先级
 
-1. **完成日志修复后准确提交的远端CI与归档。** 研究候选失败与关闭分支保持不变；修复后本地834项、原生同序155项与重建wheel已通过，接手者继续新提交的Ubuntu/Windows/native CI，不拿首轮基础作业绿灯覆盖修复版。保留失败候选，不追加40epoch训练、不降低阈值。后续研究须另立协议。
+1. **核对最终证据归档head的CI与合并状态。** 日志修复后的实现提交3340d8f已通过本地、重建wheel和三组远端CI；最终文档归档提交仍须自己的检查通过，准确head由PR #4记录。若该head检查通过且PR已合并，本轮即已闭合，直接从下一项扩展继续；不为记录自身SHA再新增归档提交。研究候选失败与关闭分支保持不变；保留失败候选，不追加40epoch训练、不降低阈值。后续研究须另立协议。
 2. **扩展经授权的知识闭环。** 本地静态导出的计划/应用已实现；后续为获准来源增加网络适配和持续调度，完成真实资料映射审查，再把地图/怪物/技能规则逐项接入。不把目录条目存在当作玩法已经生效。
 3. **扩展外部内容。** 在现有静态 SpritePack 上添加动画/锚点和地图包验证；用全新内容包测试加载、碰撞、可见标签及旧版本重放，之后再扩展职业。
 4. **建设真实录像评估集。** 按独立录制会话和地图留出，人工标注对象、HUD 和文字；记录画面尺度、遮挡与版本，真实域误差单独报告。需要精确时序时先补逐帧 PTS 合同。

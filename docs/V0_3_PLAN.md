@@ -2,7 +2,7 @@
 
 本轮检验一个明确问题：**在保留现有离线模拟器和训练数据合同的前提下，修复模型对宽而薄的平台的表达限制，并让七类对象全部来自指定 ONNX 模型。** 血量、魔量、地图标记和对话状态仍由 fixture 像素解析器读取。因此本轮称“模型对象管线”，不称所有视觉信息均由 YOLO 取得。
 
-当前状态：唯一候选完成训练和val，**模型准入失败**。平台召回472/576=0.819444低于0.98，14项通过13项也不推广，不评分test、不执行候选推广任务、不训练第二候选。工具首轮远端native暴露日志流问题；事后窄修复后完整本地834项、同序原生155项、日志13项及重建wheel通过，修复版远端CI仍待结果。实际结果见 [RELEASE_0_3_ACCEPTANCE.md](RELEASE_0_3_ACCEPTANCE.md)，合同见 [v03-contract.yaml](../engineering/v03-contract.yaml)。v0.2与原实验证据保持历史内容。
+当前状态：唯一候选完成训练和val，**模型准入失败**。平台召回472/576=0.819444低于0.98，14项通过13项也不推广，不评分test、不执行候选推广任务、不训练第二候选。工具首轮远端native暴露日志流问题；事后窄修复后完整本地834项、同序原生155项、日志13项及重建wheel通过，实现提交 `3340d8f2453082aff002a62ae56f43123fa83c63`也已通过[三组远端CI](https://github.com/www1350/maple-vision-platform/actions/runs/45421893081)。最终归档head须在[PR #4](https://github.com/www1350/maple-vision-platform/pull/4)通过独立CI后合并。实际结果见 [RELEASE_0_3_ACCEPTANCE.md](RELEASE_0_3_ACCEPTANCE.md)，合同见 [v03-contract.yaml](../engineering/v03-contract.yaml)。v0.2与原实验证据保持历史内容。
 
 ## 1. 预注册与有限预算
 
@@ -144,7 +144,7 @@ maple-vision lab soak --output artifacts/v03-repeat/soak --seconds 60 --model ar
 
 另两职业同样运行及实际复验。`model audit-terrain` 只接受 train/val，并在随机权重下检查实际检测头及锚点，不能当作候选质量评分。上例审查新复现数据的 train；正式冻结前的历史审查使用的是旧 v0.2 val，两个来源在报告中分别保留。`vision benchmark` 直接评估检测器输出，不接收 terrain source 参数，也不会使用混合感知补全地形；它的默认 split 是 test，候选比较必须明确写 `--split val`。
 
-本轮已执行val失败出口；原条件式test门禁保留而没有执行。日志工程修复后完整本地为 **834 passed、0 failed/error/skipped，110.65秒**，JUnit110.497秒，6条上游warning；重建wheel20.961秒通过。旧823项/旧wheel另存修复前历史，不能覆盖新源码。当前剩余是修复后准确提交的Ubuntu/Windows/native CI与归档，模型推广仍未通过。[本地证据](../reports/release-0.3.0/local-verification.json)
+本轮已执行val失败出口；原条件式test门禁保留而没有执行。日志工程修复后完整本地为 **834 passed、0 failed/error/skipped，110.65秒**，JUnit110.497秒，6条上游warning；重建wheel20.961秒通过。旧823项/旧wheel另存修复前历史，不能覆盖新源码。实现提交3340d8f的远端Ubuntu为827通过/7跳过、110.69秒，Windows为823通过/11跳过、136.15秒，native为155通过/0跳过、5条warning、5.68秒；两基础作业wheel均通过。当前剩余是最终文档与证据归档head自己的CI和合并，模型推广仍未通过。[本地证据](../reports/release-0.3.0/local-verification.json) · [远端证据](../reports/release-0.3.0/remote-ci.json)
 
 ## 8. 本轮以外
 

@@ -2,12 +2,12 @@ contract_version: 1
 spec_version: "8.0"
 release_version: "0.3.0"
 scope: bounded_offline_synthetic_terrain_research_and_model_object_pipeline
-status: candidate_rejected_post_runtime_fix_local_passed_remote_ci_pending
+status: engineering_accepted_candidate_rejected
 base_commit: d11e285f6ba648c34f3bcabb1c3d193f63350da1
 execution_plan: docs/V0_3_PLAN.md
 result_source: docs/RELEASE_0_3_ACCEPTANCE.md
 full_spec_acceptance: false
-engineering_acceptance: passed_post_runtime_fix_local_pending_exact_commit_remote_ci
+engineering_acceptance: passed_local_and_exact_implementation_commit_remote_ci
 model_promotion: rejected_frozen_platform_recall_gate_failed
 historical_contract: engineering/v02-contract.yaml
 historical_model: examples/lifecycle-model
@@ -235,7 +235,7 @@ model_object_pipeline:
   context_source: fixture_pixel_hp_mp_map_dialogue
   default_terrain_source: fixture
   default_v0_2_pipeline_preserved: true
-  status: local_implementation_regression_passed_remote_ci_pending
+  status: local_implementation_regression_and_exact_commit_remote_ci_passed
   scenario_gates:
     normal_jobs: [assassin, dragon_knight, cleric]
     normal_seeds: [0, 1, 2]
@@ -271,17 +271,21 @@ holdout_policy:
   selection_identity_and_timestamp_required: true
 
 engineering_release_gates:
-  exact_commit_recorded: pending
+  exact_commit_recorded: 3340d8f2453082aff002a62ae56f43123fa83c63
+  verified_tree: 88b077072ba4835ebe269bbf935ae67082f8f2a7
+  workflow_run: https://github.com/www1350/maple-vision-platform/actions/runs/45421893081
+  final_archive_head_checks: https://github.com/www1350/maple-vision-platform/pull/4
+  final_archive_head_must_pass_before_merge: true
   lint_types_full_local_tests: passed_post_runtime_fix_834_zero_failures_errors_or_skips
   native_training_export_inference: passed_post_fix_exact_ci_order_155_no_failures_or_skips
   audit_preallocation_guard: passed_local_preflight_actual_native_and_restoration_tests
   audit_reuses_existing_training_offline_runtime: true
   retrofit_new_allocation_guard_into_earlier_audits_or_training: forbidden
   independent_geometry_review: passed_and_included_in_full_local_regression
-  independent_pipeline_review: local_contract_regression_passed_remote_commit_pending
-  ubuntu_ci: initial_ff357_passed_post_fix_exact_commit_pending
-  windows_ci: initial_ff357_passed_post_fix_exact_commit_pending
-  cpu_native_ci: initial_ff357_failed_post_fix_exact_commit_pending
+  independent_pipeline_review: local_contract_regression_and_exact_commit_remote_ci_passed
+  ubuntu_ci: passed_repaired_exact_commit_827_tests_7_optional_skips_and_isolated_wheel
+  windows_ci: passed_repaired_exact_commit_823_tests_11_optional_skips_and_isolated_wheel
+  cpu_native_ci: passed_repaired_exact_commit_155_tests_no_skips
   clean_wheel_installation: passed_post_runtime_fix_local_isolated_0_3_0_without_torch_or_ort
   evidence_archive: reports/release-0.3.0
   no_unrun_commit_success_claim: true
@@ -347,7 +351,7 @@ local_engineering_evidence:
     ort_installed: false
     model_terrain_route_check: custom_detector_without_fixture_object_detection
     actual_failed_candidate_promotion_evaluated: false
-  remote_exact_commit_ci: pending
+  remote_exact_commit_ci: passed_at_3340d8f2453082aff002a62ae56f43123fa83c63
   local_success_does_not_override_candidate_rejection: true
 
 post_experiment_logging_fix:
@@ -385,7 +389,7 @@ post_experiment_logging_fix:
   experiment_reports_and_model_modified: false
   additional_40_epoch_research_candidate: false
   full_current_tree_regression: passed_834_zero_failures_errors_or_skips_110_65_seconds
-  remote_repaired_commit_ci: pending
+  remote_repaired_commit_ci: passed_at_3340d8f2453082aff002a62ae56f43123fa83c63
 
 remote_ci_history:
   report: reports/release-0.3.0/remote-ci.json
@@ -397,7 +401,13 @@ remote_ci_history:
   initial_ubuntu: {passed: 816, failed: 0, skipped: 7, seconds: 85.93, wheel: passed}
   initial_windows: {passed: 812, failed: 0, skipped: 11, seconds: 107.03, wheel: passed}
   initial_native: {passed: 152, failed: 3, skipped: 0, seconds: 6.25}
-  repaired_exact_commit_status: pending
+  repaired_exact_commit_status: passed
+  repaired_commit: 3340d8f2453082aff002a62ae56f43123fa83c63
+  repaired_tree: 88b077072ba4835ebe269bbf935ae67082f8f2a7
+  repaired_run: https://github.com/www1350/maple-vision-platform/actions/runs/45421893081
+  repaired_ubuntu: {passed: 827, failed: 0, skipped: 7, seconds: 110.69, wheel: passed}
+  repaired_windows: {passed: 823, failed: 0, skipped: 11, seconds: 136.15, wheel: passed}
+  repaired_native: {passed: 155, failed: 0, skipped: 0, warnings: 5, seconds: 5.68}
 
 separate_incomplete_acceptance:
   pure_model_object_quality: rejected_platform_recall_gate_failed

@@ -1,7 +1,7 @@
 # 实施计划与 v0.3 开发进度
 
 用户已于 2026-11-24 授权连续实施和测试，不再停在 P0。原 P0 已有独立验收，见 [P0_ACCEPTANCE.md](P0_ACCEPTANCE.md)；该历史记录和 [P0 合同](../engineering/p0-contract.yaml) 不因新版本而改写。
-当前目标是在已验收v0.2基础上完成v0.3工具交付。研究候选因平台召回0.819444＜0.98被拒绝，test及推广分支关闭。首轮远端native152通过/3失败暴露日志流生命周期问题；事后窄修复已通过完整本地 **834项、0失败/跳过**、同序155项、日志回归13项和重建wheel，修复后准确提交的远端CI仍待结果。它不代表完整v8验收。
+当前目标是在已验收v0.2基础上完成v0.3工具交付。研究候选因平台召回0.819444＜0.98被拒绝，test及推广分支关闭。首轮远端native152通过/3失败暴露日志流生命周期问题；事后窄修复已通过完整本地 **834项、0失败/跳过**、同序155项、日志回归13项和重建wheel，实现提交 `3340d8f2453082aff002a62ae56f43123fa83c63`已通过[三组远端CI](https://github.com/www1350/maple-vision-platform/actions/runs/45421893081)。最终文档归档head仍需[PR #4](https://github.com/www1350/maple-vision-platform/pull/4)自己的CI通过。它不代表完整v8验收。
 
 依赖关系与状态见 [milestones.yaml](../engineering/milestones.yaml)，当前门禁见 [v03-contract.yaml](../engineering/v03-contract.yaml)，具体执行和当前证据分别见 [V0_3_PLAN.md](V0_3_PLAN.md) 与 [RELEASE_0_3_ACCEPTANCE.md](RELEASE_0_3_ACCEPTANCE.md)。本轮基于 `d11e285f6ba648c34f3bcabb1c3d193f63350da1` 开发，新代码不能继承上一轮的通过状态。
 
@@ -42,12 +42,12 @@ v0.1 已通过的本地审查、Ubuntu/Windows 安装验证和原生训练 CI �
 
 | 工作 | 当前实现或证据 | 本轮尚待完成的验收 |
 |---|---|---|
-| 结构与成本审查 | `model audit-terrain`，仅train/val；实际DFL/stride、锚点、完整四边目标和恢复均通过本地回归 | 准确提交的远端原生CI |
-| 地形几何评分 | schema3同批预测与分层；当前26项专项包含在修复后834项中，候选地板192/192及边界误差达标 | 远端CI；几何单项通过不能覆盖总体平台召回失败 |
-| 显式模型地形 | 来源身份与七类对象合同通过本地回归；HUD保留fixture | 远端CI；失败候选推广13场景/reinfer/soak按协议不执行 |
+| 结构与成本审查 | `model audit-terrain`，仅train/val；实际DFL/stride、锚点、完整四边目标和恢复通过本地及实现提交远端回归 | 最终归档head独立CI |
+| 地形几何评分 | schema3同批预测与分层；当前26项专项包含在修复后834项中，实现提交远端CI通过；候选地板192/192及边界误差达标 | 几何单项通过不能覆盖总体平台召回失败 |
+| 显式模型地形 | 来源身份与七类对象合同通过本地及实现提交远端回归；HUD保留fixture | 失败候选推广13场景/reinfer/soak按协议不执行 |
 | 新会话实验 | 18×48、7091对象；单候选40epoch实际1467.923792秒；导出并完成同新val门禁 | 模型结论已是失败而非待测；保留失败产物与未评分test，不加候选 |
-| 构建前分配保护 | 复用既有离线运行域，构建前预算、真实审查/训练导出及恢复通过本地验证 | 准确提交的远端原生CI |
-| 工程发布 | Ruff格式113文件、检查通过，mypy30文件通过；日志修复后834项及重建wheel通过 | 修复后Ubuntu/Windows/native CI与准确提交归档 |
+| 构建前分配保护 | 复用既有离线运行域，构建前预算、真实审查/训练导出及恢复通过本地及实现提交远端验证 | 最终归档head独立CI |
+| 工程发布 | Ruff格式113文件、检查通过，mypy30文件通过；日志修复后834项、重建wheel及实现提交Ubuntu/Windows/native CI通过 | 最终归档head独立CI与合并 |
 
 正式训练和评分期间，五项冻结源码保持预注册字节，1730个输入副本文件一致，历史训练实现为 `ff357c8951da8e84265d31c5a8b86a48934a4f01`。之后`training.py`的日志生命周期修复属于工程维护，没有参与这次实验；原[来源报告](../reports/release-0.3.0/training-input-provenance.json)、模型和门禁均不改写。构建前分配预算也不能追溯计入早期审查报告。模型失败证据见 [terrain-model-validation.json](../reports/release-0.3.0/terrain-model-validation.json) 和 [validation-gates.json](../reports/release-0.3.0/validation-gates.json)。
 
@@ -58,7 +58,7 @@ v0.1 已通过的本地审查、Ubuntu/Windows 安装验证和原生训练 CI �
 3. **保留同新val的确定失败。** confidence0.25、NMS0.45、匹配IoU0.5下，AP50=0.964624510、microP=0.999315068、R=0.929891651；全宽地板192/192和边界误差达标，平台整体472/576低于0.98。ORT1线程p95=24.986154ms达标。14项阈值中唯一失败已足够拒绝推广，不修改门禁。
 4. **关闭失败候选的推广分支。** 不运行其13场景、三职业reinfer或soak来寻求替代性通过；工具模式身份和真实重新推理的工程回归仍可独立验证。当前策略无梯子驱动攀爬，检测分数也不表示导航交付。
 5. **保持新holdout未评分。** 按预注册，val失败后test不进行模型预测或评分。完整性校验和训练副本可读取test字节，不将该事实误写成模型评分。这个分支已经执行完毕，不是下一名AI应补做的任务。
-6. **完成修复后准确提交的远端门禁。** 修复后完整本地834项、CI同序155项、日志回归13项与重建wheel均已通过，覆盖重叠不相加；旧823项和旧wheel另存历史。继续修复后Ubuntu/Windows/native CI与归档，不用旧绿灯覆盖新源码。这些工程检查不训练第二个40epoch研究候选。[本地报告](../reports/release-0.3.0/local-verification.json) · [日志修复](../reports/release-0.3.0/runtime-stream-fix.json)
+6. **完成最终归档提交的独立门禁。** 修复后完整本地834项、CI同序155项、日志回归13项与重建wheel均已通过，覆盖重叠不相加；旧823项和旧wheel另存历史。实现提交3340d8f的三组远端CI已通过；最终文档与证据归档head须在PR #4取得自身CI通过后合并，不继承实现提交的绿灯。这些工程检查不训练第二个40epoch研究候选。[本地报告](../reports/release-0.3.0/local-verification.json) · [日志修复](../reports/release-0.3.0/runtime-stream-fix.json) · [远端证据](../reports/release-0.3.0/remote-ci.json)
 7. **分别交付工具和失败研究结果。** 工程接口可独立验收，失败候选不能覆盖原 `examples/lifecycle-model` 已验收混合模型。归档原始结果、限制和CI，随后再进入后续扩展。
 
 本轮新test为4个会话的192帧，两张地图及机制与训练相同；无重复RGB和新会话种子不能证明未见地图或真实域泛化。更换数据或门禁的下一项研究必须另立合同，不能借“继续开发”悄悄增加本轮搜索预算。

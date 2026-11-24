@@ -61,5 +61,7 @@
   "experimental_artifacts_changed": false,
   "research_candidate_retrained": false,
   "test_model_predictions_or_scoring_performed": false,
-  "experiment_relationship": "This code repair occurred after the registered 40-epoch experiment and did not execute in it. The registered sources, inputs, checkpoint, ONNX, validation reports, thresholds and rejection remain historical immutable evidence. Native one-epoch smoke tests validate engineering execution only."
+  "experiment_relationship": "This code repair occurred after the registered 40-epoch experiment and did not execute in it. The registered sources, inputs, checkpoint, ONNX, validation reports, thresholds and rejection remain historical immutable evidence. Native one-epoch smoke tests validate engineering execution only.",
+  "repair_commit": "3340d8f2453082aff002a62ae56f43123fa83c63",
+  "verified_remote_ci": "https://github.com/www1350/maple-vision-platform/actions/runs/45421893081"
 }

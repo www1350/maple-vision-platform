@@ -247,5 +247,7 @@
     "mode": "separate read-only agent",
     "evidence": "runtime-stream-fix.json",
     "no_additional_model_inference_or_training_by_reviewer": true
-  }
+  },
+  "verified_source_and_model_commit": "3340d8f2453082aff002a62ae56f43123fa83c63",
+  "verified_remote_ci": "https://github.com/www1350/maple-vision-platform/actions/runs/45421893081"
 }
