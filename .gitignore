@@ -10,3 +10,15 @@ failures/
 *.db
 *.sqlite
 *.wz
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+reports/local/
+artifacts/
+*.jsonl
+*.db-journal
+*.db-wal
+*.db-shm

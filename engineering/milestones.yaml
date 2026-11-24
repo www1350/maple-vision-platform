@@ -13,3 +13,11 @@ milestones:
   P11: [P10]
   P12: [P11]
   P13: [P12]
+
+contracts:
+  P0: engineering/p0-contract.yaml
+
+delivery:
+  active_milestone: P0
+  result_source: docs/P0_ACCEPTANCE.md
+  future_milestones_status: not_started

@@ -1,0 +1,96 @@
+contract_version: 1
+spec_version: "8.0"
+milestone: P0
+scope: offline_foundation
+evidence_status: passed
+evidence:
+  source_commit: "06deaa52dc9f938efb4f7741d21601fdab7e301a"
+  ci_url: "https://github.com/www1350/maple-vision-platform/actions/runs/45367311402"
+  tests_per_platform: 70
+  operating_systems: [ubuntu-latest, windows-latest]
+  independent_review: completed
+stop_after_acceptance: true
+
+deliverables:
+  - installable_python_package
+  - typed_domain_and_provider_contracts
+  - validated_noop_pipeline
+  - compatible_run_once_api
+  - sqlite_migration_and_readonly_access
+  - toml_configuration
+  - demo_and_database_cli
+  - jsonl_trace_and_json_summary
+  - linux_windows_ci
+  - usage_and_interface_documentation
+  - acceptance_report
+
+tasks:
+  P0.1:
+    depends_on: []
+    output: package_and_entrypoints
+    evidence: [editable_install, isolated_wheel_install]
+  P0.2:
+    depends_on: [P0.1]
+    output: domain_and_provider_contracts
+    evidence: [contract_validation, legacy_api_compatibility]
+  P0.3:
+    depends_on: [P0.2]
+    output: noop_pipeline
+    evidence: [end_to_end_trace, stale_observation_marking, mismatched_observation_rejection]
+  P0.4:
+    depends_on: [P0.1]
+    output: sqlite_foundation
+    evidence: [idempotence, rollback, schema_validation, readonly_access]
+  P0.5:
+    depends_on: [P0.3, P0.4]
+    output: cli_and_configuration
+    evidence: [cli_subprocess_tests, valid_jsonl, invalid_input_rejection]
+  P0.6:
+    depends_on: [P0.5]
+    output: acceptance_evidence
+    evidence: [local_checks, linux_ci, windows_ci, package_smoke, review]
+
+checks:
+  - id: formatting
+    command: python -m ruff format --check .
+  - id: lint
+    command: python -m ruff check .
+  - id: types
+    command: python -m mypy
+  - id: tests
+    command: python -m pytest -q
+  - id: demo
+    command: python -m maple_vision demo --frames 3 --output artifacts/demo.jsonl
+  - id: database_init
+    command: python -m maple_vision db init artifacts/knowledge.db
+  - id: database_check
+    command: python -m maple_vision db check artifacts/knowledge.db
+  - id: package_smoke
+    requirement: Build a wheel; install into a clean venv; run outside the checkout.
+
+invariants:
+  - Unknown observations remain unknown.
+  - NoOp execution is SKIPPED and verification is NOT_APPLICABLE, never game success.
+  - Observation identity and timestamps are checked before execution.
+  - No operating-system input or official-client controller exists in P0.
+  - Replay or read-only processing has no external execution side effect.
+  - Migrations preserve valid existing data and caller transaction ownership.
+  - Future or incompatible database schemas are rejected without mutation.
+  - Runtime needs no network, GPU, model weights or LLM credentials.
+  - Existing tests are preserved; failed checks cannot be waived by lowering criteria.
+
+excluded:
+  - live_game_control
+  - yolo_training_or_inference
+  - booklet_crawling
+  - asset_extraction
+  - game_physics_or_combat
+  - claims_of_game_account_safety
+
+acceptance:
+  required_operating_systems: [ubuntu-latest, windows-latest]
+  required_python: "3.12"
+  required_checks: all
+  evidence_must_include: [commit_sha, commands, actual_results, environment, limitations]
+  failures: fix_or_report_blocked
+  pass_record: docs/P0_ACCEPTANCE.md

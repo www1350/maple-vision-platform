@@ -1,2 +1,59 @@
-# Implementation plan
-P0 contracts, CI and no-op pipeline; P1 knowledge; P2 assets; P3 map renderer; P4 dataset factory; P5 simulator; P6 model benchmark; P7 visual state; P8 class capabilities; P9 simulator tasks and verification; P10 supervisor; P11 regression; P12 expansion; P13 release. Start with P0 only. Each milestone defines inputs, outputs, dependencies, tests, risks and acceptance evidence.
+# 实施计划
+
+## 当前交付边界
+
+当前只实施 **P0 工程基础**。P0 通过后，项目应当能安装、运行一条完整的 NoOp 管线、初始化和检查本地数据库，并产生可检查的 JSONL 记录。它不代表视觉识别、游戏模拟器或职业行为已经实现。
+
+项目级依赖位于 [milestones.yaml](../engineering/milestones.yaml)，P0 的机器可读验收合同比较具体，位于 [p0-contract.yaml](../engineering/p0-contract.yaml)。验收结果以同一提交的本地测试记录、CI 和报告为准；计划文档不预先宣称 PASS。
+
+## P0 任务分解
+
+| ID | 依赖 | 实现与交付 | 独立验收依据 |
+|---|---|---|---|
+| P0.1 | 无 | Python 3.12 工程、可安装包、开发依赖、命令入口 | editable 安装及独立 wheel 安装均能导入并运行 |
+| P0.2 | P0.1 | Frame、Observation、WorldState、Intent、执行及验证结果；数据源、感知、知识源、素材及模拟器协议 | 无效数据被拒绝；接口边界清晰；原 run_once 调用仍可用 |
+| P0.3 | P0.2 | 状态估计、NoOp 策略、NoOp 执行器、结果验证、完整单步管线 | UNKNOWN 不被提升为已知状态；帧与意图关联可追溯；过期或不匹配的数据不产生虚假的成功 |
+| P0.4 | P0.1 | SQLite 初始化、迁移、兼容性检查、只读打开 | 幂等、版本拒绝、失败回滚、已有数据和调用方事务不被意外修改 |
+| P0.5 | P0.3、P0.4 | TOML 配置、demo/db CLI、JSONL 记录及 JSON 摘要 | 子进程运行 CLI；有效 JSONL；非法参数失败；从仓库外运行已安装 wheel |
+| P0.6 | P0.5 | Ubuntu/Windows CI、使用说明、接口说明、P0 验收报告 | Ruff、格式、mypy、pytest、CLI、wheel smoke 均有真实执行证据 |
+
+P0.3 与 P0.4 可以并行；P0.6 的配置可以提前准备，但其验收必须等前置任务完成。每个子任务的失败都应给出可复现输入或命令，不以修改验收阈值代替修复。
+
+## P0 运行路径
+
+1. 创建 Python 3.12 虚拟环境，安装工程和开发依赖。
+2. 运行 `python -m maple_vision --help`，确认 CLI 注册成功。
+3. 运行 `python -m maple_vision demo --frames 3 --output artifacts/demo.jsonl`，检查三帧的完整 NoOp 轨迹和摘要。
+4. 运行 `python -m maple_vision db init artifacts/knowledge.db`，再运行 `python -m maple_vision db check artifacts/knowledge.db`。重复初始化不得清空数据。
+5. 运行 `python -m ruff format --check .`、`python -m ruff check .`、`python -m mypy` 和 `python -m pytest -q`。
+6. 构建 wheel，在另一虚拟环境、另一工作目录中安装并运行相同 CLI，排除 `pythonpath=src` 掩盖打包缺陷。
+7. 核对 CI 的提交 SHA、操作系统、Python 版本和结果，更新验收报告。
+
+NoOp 执行记录为 `SKIPPED`，对应验证结果为 `NOT_APPLICABLE`。管线运行成功不能用于宣称一次游戏动作成功，也不能给未知视觉内容提供真实性保证。
+
+## 后续阶段依赖与交付
+
+| 阶段 | 前置依赖 | 计划交付 | 需要的外部输入 |
+|---|---|---|---|
+| P1 | P0 | 知识来源适配、规范化、不可变 SQLite 快照与差异报告 | 获准访问的数据源、版本与来源证据 |
+| P2 | P0 | 素材导入、哈希、版本及实体关联 | 获准使用的静态素材 |
+| P3 | P1、P2 | 地图逻辑、分层渲染、镜头与视差模型 | 可验证的地图和参考画面 |
+| P4 | P3 | 场景合成、自动标注、数据集版本及切分 | 标注策略、独立真实测试集 |
+| P5 | P0、P3 | 固定时步模拟器与独立验证真值 | 经过校验的物理和机制规则 |
+| P6 | P4 | 模型比较、误差分组、ONNX 导出与一致性检查 | 训练预算、测试硬件、保留测试集 |
+| P7 | P5、P6 | 视觉观察、跟踪、时序融合、世界状态 | 模型包、地图包、视觉场景 |
+| P8 | P1、P5 | 职业能力、技能和组合动作声明 | 已验证的职业及技能资料 |
+| P9 | P7、P8 | 模拟器内任务、调度和动作验证闭环 | 多职业、多地图场景 |
+| P10 | P9 | 监督、有限恢复、会话停止与失败记录 | 可重复的故障注入案例 |
+| P11 | P10 | Golden Replay、差异测试与回归证据 | 独立基准与历史失败案例 |
+| P12 | P11 | 多职业、多地图扩展验证 | 额外内容包与独立测试集 |
+| P13 | P12 | 性能、长稳、发布清单与最终验收 | 完整发布证据和审查结果 |
+
+这些后续阶段尚未因为 P0 完成而自动通过。总体规格中的识别率、恢复率与 24 小时目标只适用于后续验证，不作为 P0 的已有成绩。
+
+## 交付证据规则
+
+- 一个提交对应明确的测试命令与结果；新的修改不能继承旧提交的 CI 成功状态。
+- 报告列出已完成、未实现和未验证项目，区分本地验证与远程 CI。
+- 不将空操作、模拟数据或未加载的模型包装成真实识别和游戏操作能力。
+- 本阶段结束后按 `AGENTS.md` 停在 P0 验收，P1 另行开始。
