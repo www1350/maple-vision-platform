@@ -4,20 +4,23 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "maple-vision-platform"
-version = "0.0.1"
-description = "Offline visual research and deterministic simulation foundation"
+version = "0.1.0"
+description = "Offline visual research, reproducible datasets and deterministic simulation"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["Pillow>=12,<14", "numpy>=2,<3"]
 
 [project.scripts]
 maple-vision = "maple_vision.cli:main"
 
 [project.optional-dependencies]
-dev = ["pytest>=8,<9", "ruff>=0.9,<1", "mypy>=1.13,<2", "build>=1,<2", "PyYAML>=6,<7"]
+dev = ["pytest>=8,<9", "ruff>=0.9,<1", "mypy>=1.13,<2", "build>=1,<2", "PyYAML>=6,<7", "hypothesis>=6,<7", "onnx>=1.17,<2", "onnxruntime>=1.32,<2"]
+inference = ["onnxruntime>=1.32,<2"]
+video = ["opencv-python>=4.7,<6"]
+training = ["ultralytics>=8.3,<9", "onnx>=1.17,<2", "onnxruntime>=1.32,<2"]
 
 [tool.setuptools.package-data]
-maple_vision = ["py.typed"]
+maple_vision = ["py.typed", "resources/*.yaml"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

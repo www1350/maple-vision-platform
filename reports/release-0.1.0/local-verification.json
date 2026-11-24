@@ -1,0 +1,281 @@
+{
+  "schema_version": 1,
+  "release_version": "0.1.0",
+  "scope": "offline_synthetic_fixture_platform",
+  "recorded_at_utc": "2026-11-24T10:57:22.089497+00:00",
+  "local_gates_status": "passed",
+  "full_v8_spec_acceptance": false,
+  "commit_identity": {
+    "status": "pending_published_exact_commit",
+    "commit_sha": null,
+    "note": "Local evidence describes the frozen implementation worktree; release documentation and evidence were archived afterwards. Exact published commit CI remains separate."
+  },
+  "environment": {
+    "interpreter": ".venv/bin/python",
+    "python": "3.12.14",
+    "implementation": "CPython",
+    "system": "Linux",
+    "kernel": "6.18.57",
+    "machine": "x86_64",
+    "distribution": "Debian GNU/Linux 13 (trixie)",
+    "packages": {
+      "numpy": "2.5.5",
+      "pillow": "13.0.0",
+      "onnx": "1.23.2",
+      "onnxruntime": "1.32.0",
+      "torch": "2.15.0+cpu",
+      "torchvision": "0.29.2+cpu",
+      "ultralytics": "8.4.218",
+      "pytest": "8.4.2",
+      "ruff": "0.17.6",
+      "mypy": "1.20.2",
+      "hypothesis": "6.170.17",
+      "opencv-python": "5.1.0.95",
+      "build": "1.6.1"
+    },
+    "native_environment": {
+      "ORT_DISABLE_TELEMETRY": "1"
+    }
+  },
+  "checks": {
+    "formatting": {
+      "status": "passed_local",
+      "command": ".venv/bin/python -m ruff format --check .",
+      "result_source": "release_runner_completed_command"
+    },
+    "lint": {
+      "status": "passed_local",
+      "command": ".venv/bin/python -m ruff check .",
+      "result_source": "release_runner_completed_command"
+    },
+    "types": {
+      "status": "passed_local",
+      "command": ".venv/bin/python -m mypy",
+      "checked_modules": 26,
+      "result_source": "release_runner_completed_command"
+    },
+    "dependency_consistency": {
+      "status": "passed_local",
+      "command": ".venv/bin/python -m pip check",
+      "result_source": "release_runner_completed_command"
+    },
+    "default_pytest": {
+      "status": "passed",
+      "counts": {
+        "tests": 500,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 1,
+        "passed": 499
+      },
+      "junit_seconds": 35.913,
+      "suite_timestamps": [
+        "2026-11-24T02:50:52.839172-08:00"
+      ],
+      "test_modules": {
+        "tests.test_agent_review": 10,
+        "tests.test_asset_registry": 17,
+        "tests.test_catalog": 40,
+        "tests.test_cli": 16,
+        "tests.test_contracts": 14,
+        "tests.test_data_review": 16,
+        "tests.test_dataset": 15,
+        "tests.test_evaluation": 22,
+        "tests.test_extension_cli": 3,
+        "tests.test_foundation": 4,
+        "tests.test_hybrid_perception": 2,
+        "tests.test_knowledge": 21,
+        "tests.test_lab": 15,
+        "tests.test_lab_review": 10,
+        "tests.test_ocr": 31,
+        "tests.test_offline_runtime": 2,
+        "tests.test_onnx_detector": 8,
+        "tests.test_pipeline": 12,
+        "tests.test_platform_cli": 6,
+        "tests.test_profiles": 40,
+        "tests.test_recordings": 40,
+        "tests.test_review": 3,
+        "tests.test_scene": 9,
+        "tests.test_shipped_model": 3,
+        "tests.test_simulation": 60,
+        "tests.test_sprite_lab": 8,
+        "tests.test_sprite_pack": 14,
+        "tests.test_training": 36,
+        "tests.test_vision": 23
+      },
+      "skipped_cases": [
+        {
+          "module": "tests.test_training",
+          "name": "test_real_cpu_training_export_and_adapter_inference",
+          "reason": "opt-in real CPU training/export smoke"
+        }
+      ],
+      "junit_report": "reports/release-0.1.0/release-pytest.xml",
+      "junit_sha256": "3f3e764a6e652b4f0bc7cde986745f26fc2c59e75135543b7883ec7fac3842f2",
+      "command": "ORT_DISABLE_TELEMETRY=1 .venv/bin/python -m pytest -q --junitxml=artifacts/release-pytest.xml",
+      "command_basis": "exact_invocation_reported_by_release_runner",
+      "reported_console_seconds": 36.05,
+      "scope": "all_default_tests_including_native_onnx_and_shipped_model; opt_in_training_separately_executed"
+    },
+    "opt_in_native_pytest": {
+      "status": "passed",
+      "counts": {
+        "tests": 107,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "passed": 107
+      },
+      "junit_seconds": 6.55,
+      "suite_timestamps": [
+        "2026-11-24T02:49:31.392261-08:00"
+      ],
+      "test_modules": {
+        "tests.test_ocr": 31,
+        "tests.test_recordings": 40,
+        "tests.test_training": 36
+      },
+      "skipped_cases": [],
+      "junit_report": "reports/release-0.1.0/native-pillow-fix.xml",
+      "junit_sha256": "754333295d14b5ab851c0eb2a0994afc12053f3ebebd71387973033eab860e41",
+      "command": "ORT_DISABLE_TELEMETRY=1 MAPLE_TRAINING_SMOKE=1 .venv/bin/python -m pytest tests/test_training.py tests/test_recordings.py tests/test_ocr.py -q --junitxml=artifacts/native-pillow-fix.xml",
+      "command_basis": "normalized_reproduction_command; incidental_runner_flags_omitted",
+      "scope": "actual_cpu_training_export_inference_local_mp4_and_local_tesseract_plus_regressions",
+      "overlap_note": "These modules overlap the default suite; do not add their counts as unique test coverage."
+    },
+    "fixture_mission_and_fault_suite": {
+      "status": "passed_local",
+      "command": ".venv/bin/python -m maple_vision lab suite --output artifacts/final-release-suite --seeds 3",
+      "report": "reports/release-0.1.0/scenario-suite.json",
+      "normal_episodes": 9,
+      "total_episodes": 13,
+      "actual_wall_seconds": 9.075381,
+      "simulated_seconds": 181.35,
+      "fault_outcomes": [
+        {
+          "fault": "brief_dropout",
+          "status": "completed",
+          "reason": "dialogue_observed",
+          "independent_goal_check": true
+        },
+        {
+          "fault": "persistent_dropout",
+          "status": "stopped",
+          "reason": "unknown_observation",
+          "independent_goal_check": false
+        },
+        {
+          "fault": "duplicate_frames",
+          "status": "completed",
+          "reason": "dialogue_observed",
+          "independent_goal_check": true
+        },
+        {
+          "fault": "freeze_input",
+          "status": "failed",
+          "reason": "combat_progress_timeout",
+          "independent_goal_check": false
+        }
+      ]
+    },
+    "short_wall_soak": {
+      "status": "passed_local",
+      "command": ".venv/bin/python -m maple_vision lab soak --output artifacts/final-release-soak --seconds 60",
+      "report": "reports/release-0.1.0/wall-soak-smoke.json",
+      "requested_wall_seconds": 60,
+      "actual_wall_seconds": 60.488174,
+      "simulated_seconds": 1291.7,
+      "episodes": 80,
+      "full_24h_status": "not_completed"
+    },
+    "isolated_installed_wheel": {
+      "status": "passed_local",
+      "command": ".venv/bin/python -m build --wheel --no-isolation && .venv/bin/python scripts/wheel_smoke.py --wheel dist/maple_vision_platform-0.1.0-py3-none-any.whl --output artifacts/release-wheel-smoke.json",
+      "command_basis": "normalized_reproduction_commands",
+      "report": "reports/release-0.1.0/wheel-smoke.json",
+      "wheel": "maple_vision_platform-0.1.0-py3-none-any.whl",
+      "wheel_sha256": "3790fc884c8d2bcdf94a594a994c8c385e17194dcbd75bb04b84f005a32e1dcf",
+      "platform": "Linux",
+      "actual_wall_seconds": 13.638,
+      "scope": "isolated_installed_runtime; training_and_accuracy_are_separate_gates",
+      "packaged_source_bytes_match_current_source": true,
+      "packaged_readme_matches_current_readme": true,
+      "package_content_check_source": "release_runner_byte_comparison_after_final_build"
+    },
+    "independent_review": {
+      "status": "approved_local",
+      "scope": [
+        "catalog_and_asset_integrity",
+        "supervisor_and_effect_verification",
+        "model_hash_and_output_contract",
+        "profile_and_sprite_injection_and_independent_replay",
+        "recording_and_ocr_cli",
+        "ci_and_evidence_claims"
+      ],
+      "findings_and_fixes": "docs/RELEASE_ACCEPTANCE.md"
+    }
+  },
+  "remote_ci": {
+    "status": "pending_exact_commit_run",
+    "workflow": ".github/workflows/ci.yml",
+    "commit_sha": null,
+    "run_url": null,
+    "jobs": [
+      {
+        "platform": "ubuntu-latest",
+        "job": "test",
+        "status": "pending"
+      },
+      {
+        "platform": "windows-latest",
+        "job": "test",
+        "status": "pending"
+      },
+      {
+        "platform": "ubuntu-latest",
+        "job": "training-smoke",
+        "status": "pending"
+      }
+    ]
+  },
+  "evidence_files": [
+    {
+      "path": "reports/release-0.1.0/scenario-suite.json",
+      "source": "artifacts/final-release-suite/suite.json",
+      "sha256": "c529903ec632ea4500b03111a0b0bc210237f417e08c82c06403278cf1648c18",
+      "copied_without_changes": true
+    },
+    {
+      "path": "reports/release-0.1.0/wall-soak-smoke.json",
+      "source": "artifacts/final-release-soak/soak.json",
+      "sha256": "f0677f784c54a900dc2c6ebb5aefafed812fe12e5737524c04fc4e4ad4b0a8e7",
+      "copied_without_changes": true
+    },
+    {
+      "path": "reports/release-0.1.0/wheel-smoke.json",
+      "source": "artifacts/release-wheel-smoke.json",
+      "sha256": "3543706fd3e9eb52f6792ec04f9061bc73cd1f8cad9c6098b789a86d2468450e",
+      "copied_without_changes": true
+    },
+    {
+      "path": "reports/release-0.1.0/release-pytest.xml",
+      "source": "artifacts/release-pytest.xml",
+      "sha256": "3f3e764a6e652b4f0bc7cde986745f26fc2c59e75135543b7883ec7fac3842f2",
+      "copied_without_changes": true
+    },
+    {
+      "path": "reports/release-0.1.0/native-pillow-fix.xml",
+      "source": "artifacts/native-pillow-fix.xml",
+      "sha256": "754333295d14b5ab851c0eb2a0994afc12053f3ebebd71387973033eab860e41",
+      "copied_without_changes": true
+    }
+  ],
+  "limitations": [
+    "Local Linux checks do not establish Ubuntu or Windows exact-commit CI success.",
+    "Synthetic detection metrics and hybrid fixture missions do not establish real-game accuracy.",
+    "Recordings validate observed frames, not counterfactual action effects; no real recording accuracy acceptance is claimed.",
+    "The 60-second smoke is not a 24-hour wall-clock endurance test.",
+    "Full v8 acceptance and real-data calibration remain incomplete.",
+    "Content hashes provide integrity, not authenticated evidence signatures or account safety guarantees."
+  ]
+}

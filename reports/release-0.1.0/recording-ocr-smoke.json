@@ -1,0 +1,92 @@
+{
+  "import": {
+    "schema_version": 1,
+    "session_id": "d8566bd89a5ab148f748cf3920862452aff9dd26b5dd46e2acd6b13a845b19ff",
+    "scope": "user_supplied_recording",
+    "source_kind": "png_directory",
+    "frame_count": 1,
+    "fps": 10.0,
+    "timebase": "nominal_fps_user",
+    "width": 500,
+    "height": 100,
+    "truncated": false,
+    "completion_reason": "directory_complete",
+    "validated": true,
+    "timing_accuracy": "nominal_fps_only",
+    "output": "/workspace/scratch/3968a72df173/maple-vision-platform/artifacts/recording-ocr-smoke/recording"
+  },
+  "observation": {
+    "schema_version": 1,
+    "session_id": "d8566bd89a5ab148f748cf3920862452aff9dd26b5dd46e2acd6b13a845b19ff",
+    "mode": "perception_only_replay",
+    "detector": "synthetic-palette-v2",
+    "detector_metadata": {
+      "implementation": "synthetic-palette-v2"
+    },
+    "observations_sha256": "188198e9cd1c8966396f35373cbdff4b90e3845b5baf88946022304b2c648708",
+    "frames_processed": 1,
+    "frames_with_detections": 0,
+    "status_counts": {
+      "unknown": 1
+    },
+    "detections_by_class": {},
+    "accuracy_metrics_available": false,
+    "effect_success_rate": null,
+    "action_execution": "none",
+    "timing_accuracy": "nominal_fps_only",
+    "limitations": [
+      "fixed recordings cannot verify counterfactual action outcomes",
+      "no ground-truth labels: detection accuracy is not measured",
+      "fixture palette/HUD rules do not establish real-game state or rules"
+    ],
+    "output": "/workspace/scratch/3968a72df173/maple-vision-platform/artifacts/recording-ocr-smoke/observation"
+  },
+  "ocr_runtime": {
+    "binary": "/usr/bin/tesseract",
+    "version": "tesseract 5.5.0",
+    "language": "eng",
+    "available_languages": [
+      "eng",
+      "osd"
+    ],
+    "psm": 6,
+    "timeout_seconds": 5.0,
+    "tessdata_dir": null
+  },
+  "ocr_result": {
+    "sequence": 0,
+    "timestamp_ms": 0,
+    "language": "eng",
+    "source_id": "tesseract 5.5.0",
+    "crop": [
+      0,
+      0,
+      500,
+      100
+    ],
+    "words": [
+      {
+        "text": "MAPLE",
+        "bbox": [
+          25,
+          34,
+          177,
+          67
+        ],
+        "confidence": 0.9661904099999999
+      },
+      {
+        "text": "123",
+        "bbox": [
+          194,
+          33,
+          270,
+          68
+        ],
+        "confidence": 0.96342979
+      }
+    ],
+    "text": "MAPLE 123"
+  },
+  "scope": "authored_text_smoke_not_game_accuracy"
+}

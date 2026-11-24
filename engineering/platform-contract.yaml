@@ -1,0 +1,143 @@
+contract_version: 1
+spec_version: "8.0"
+release_version: "0.1"
+scope: offline_synthetic_fixture_platform
+status: local_gates_passed_remote_ci_pending
+result_source: docs/RELEASE_ACCEPTANCE.md
+local_evidence: reports/release-0.1.0/local-verification.json
+full_spec_acceptance: false
+stop_after_p0: false
+historical_p0_contract: engineering/p0-contract.yaml
+historical_p0_evidence: docs/P0_ACCEPTANCE.md
+current_authorization:
+  date: "2026-11-24"
+  action: continue_implementation_testing_and_delivery
+  scope_source: latest_user_request_and_AGENTS
+
+implemented_surfaces:
+  catalog:
+    modules: [catalog.py, profiles.py]
+    commands: [knowledge_init, knowledge_check, knowledge_import, knowledge_query, knowledge_snapshot, knowledge_verify_snapshot]
+    boundary: only_complete_verified_synthetic_class_profiles_are_explicitly_loaded
+  assets:
+    modules: [asset_registry.py, sprite_pack.py]
+    commands: [assets_import, assets_list, assets_verify]
+    boundary: optional_static_rgba_connects_registry_renderer_dataset_and_run_replay_not_animation_or_real_rules
+  fixture_world:
+    modules: [sim_types.py, simulation.py, scene.py]
+    ruleset: synthetic-fixture-v1
+    classes: [assassin, dragon_knight, cleric]
+    maps: [meadow, cavern]
+    boundary: authored_fixture_rules_and_shapes_not_official_game_data
+  datasets:
+    modules: [dataset.py]
+    commands: [dataset_create, dataset_check]
+    boundary: synthetic_session_split_data_only
+  vision_and_models:
+    modules: [vision.py, onnx_detector.py, training.py, evaluation.py]
+    commands: [vision_observe, vision_benchmark, model_train, model_export]
+    default_detector: pixel_fixture
+    boundary: onnx_objects_still_use_fixture_hud_for_closed_loop
+  recordings_and_ocr:
+    modules: [recordings.py, ocr.py]
+    commands: [recording_import, recording_check, recording_observe, vision_ocr]
+    boundary: bounded_local_adapters_without_real_game_accuracy_acceptance
+  tasks_and_validation:
+    modules: [agent.py, lab.py]
+    commands: [lab_run, lab_suite, lab_replay, lab_soak, chat_draft]
+    replay_scope: deterministic_applied_action_and_state_replay
+    perception_reproduced_by_replay: false
+    chat_scope: local_user_supplied_reply_draft_only
+
+required_release_gates:
+  - id: formatting
+    command: python -m ruff format --check .
+    status: passed_local
+  - id: lint
+    command: python -m ruff check .
+    status: passed_local
+  - id: types
+    command: python -m mypy
+    status: passed_local
+  - id: unit_integration_and_regression
+    command: python -m pytest -q
+    status: passed_local_499_passed_1_opt_in_skip
+  - id: fixture_mission_and_fault_suite
+    command: python -m maple_vision lab suite --output artifacts/final-release-suite --seeds 3
+    expectation: nine_normal_missions_plus_four_expected_fault_outcomes
+    status: passed_local_13_expected_outcomes
+    evidence: reports/release-0.1.0/scenario-suite.json
+  - id: evidence_replay
+    requirement: Recompute applied actions, simulator states, sampled pixels and independent goal checks from recorded bundles.
+    status: passed_local
+  - id: package_installation
+    requirement: Build wheel, install into a clean virtual environment, execute outside checkout on Ubuntu and Windows.
+    status: passed_local_linux_remote_platforms_pending
+    evidence: reports/release-0.1.0/wheel-smoke.json
+  - id: optional_model_tool_smoke
+    requirement: Record actual local CPU training, ONNX export and real inference separately from model-quality acceptance.
+    status: passed_local_107_native_tests_no_skips
+    evidence: reports/release-0.1.0/native-pillow-fix.xml
+  - id: short_wall_soak
+    requirement: Record actual wall duration and completed episodes; never label accelerated simulation as wall uptime.
+    status: passed_local_60_second_smoke
+    evidence: reports/release-0.1.0/wall-soak-smoke.json
+  - id: independent_review
+    requirement: Record discovered issues, fixes and remaining limitations against the release commit.
+    status: approved_local
+
+remote_release_gates:
+  status: pending_exact_published_commit_ci
+  commit_sha: null
+  run_url: null
+  jobs:
+    - id: ubuntu_python312
+      status: pending
+    - id: windows_python312
+      status: pending
+    - id: ubuntu_cpu_training_and_native_adapters
+      status: pending
+  boundary: local_debian_results_do_not_establish_remote_ubuntu_or_windows_success
+
+separate_acceptance_gates:
+  learned_model_promotion:
+    status: not_granted_by_platform_release
+    requires: [held_out_metrics, lifecycle_coverage, multiclass_two_map_closed_loop, model_and_data_hashes]
+  real_domain_validation:
+    status: blocked_external_data
+    requires: [authorized_assets, verified_mechanics, independent_real_recordings, human_labels]
+  wall_clock_24h_soak:
+    status: not_completed
+    requires: [actual_wall_seconds_at_least_86400, fixed_environment, failure_and_resource_evidence]
+  full_v8_scope:
+    status: incomplete
+    remaining: [source_sync_adapters, remaining_catalog_rule_types, animation_state_packs, external_content_plugins, real_game_ui_ocr_calibration, tracking_and_belief_state, task_dsl, management_ui, real_recording_labels_and_accuracy]
+
+invariants:
+  - VisualAgent receives VisualObservation, not simulator snapshots or ground truth.
+  - Builtin or explicitly loaded VERIFIED synthetic ClassSpec is static knowledge, not privileged runtime state.
+  - All execution goes to the independent simulator; no OS input or official-client controller exists.
+  - Unknown, stale, ambiguous or repeated observations do not become verified success.
+  - A completed policy requires a separate truth-based mission oracle.
+  - SQLite upgrades are explicit, atomic, provenance preserving and fail on incompatible schemas.
+  - Importing knowledge or assets does not imply they are consumed by simulation or rendering.
+  - Model hashes, dataset hashes, class ordering and output layout are explicit.
+  - Session splits and integrity checks do not prove full lifecycle or real-domain coverage.
+  - Pixel baseline, learned detector, action replay and real-recording results remain distinct.
+  - Hashes detect content changes but are not authenticated evidence signatures.
+  - Short soak, simulated duration and 24-hour wall-clock acceptance remain distinct.
+  - Existing P0 audit evidence remains unchanged; current code still runs P0 regression tests.
+
+excluded:
+  - official_client_automation
+  - anti_cheat_bypass
+  - account_safety_guarantees
+  - automatic_message_sending
+  - claims_that_synthetic_metrics_establish_real_game_performance
+
+acceptance:
+  python: "3.12"
+  operating_systems: [ubuntu-latest, windows-latest]
+  required_evidence: [commit_sha, commands, actual_results, environment, ci_urls, limitations]
+  pending_gates_must_remain_explicit: true
+  unsuccessful_models_must_not_be_promoted: true

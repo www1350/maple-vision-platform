@@ -1,0 +1,3 @@
+# Minimal offline fixture runtime, validated with Python 3.12.
+numpy==2.5.5
+Pillow==13.0.0

@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "records": [
+    {
+      "kind": "classes",
+      "entity_id": "assassin",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:maple-vision:self-authored:fixture-v1",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "id": "assassin",
+        "max_hp": 100,
+        "max_mp": 60,
+        "attack_damage": 18,
+        "attack_range": 92,
+        "attack_mp_cost": 2,
+        "attack_cooldown_ms": 200,
+        "ammo_cost": 1,
+        "can_jump_attack": true,
+        "heal_amount": 0,
+        "walk_speed": 80,
+        "jump_speed": 280
+      }
+    },
+    {
+      "kind": "classes",
+      "entity_id": "dragon_knight",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:maple-vision:self-authored:fixture-v1",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "id": "dragon_knight",
+        "max_hp": 150,
+        "max_mp": 50,
+        "attack_damage": 24,
+        "attack_range": 42,
+        "attack_mp_cost": 0,
+        "attack_cooldown_ms": 300,
+        "ammo_cost": 0,
+        "can_jump_attack": true,
+        "heal_amount": 0,
+        "walk_speed": 80,
+        "jump_speed": 280
+      }
+    },
+    {
+      "kind": "classes",
+      "entity_id": "cleric",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:maple-vision:self-authored:fixture-v1",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "id": "cleric",
+        "max_hp": 95,
+        "max_mp": 120,
+        "attack_damage": 16,
+        "attack_range": 76,
+        "attack_mp_cost": 4,
+        "attack_cooldown_ms": 250,
+        "ammo_cost": 0,
+        "can_jump_attack": true,
+        "heal_amount": 35,
+        "walk_speed": 80,
+        "jump_speed": 280
+      }
+    },
+    {
+      "kind": "skills",
+      "entity_id": "fixture.throw",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:maple-vision:self-authored:fixture-v1",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "label": "Throw fixture",
+        "damage": 10,
+        "note": "Not an official skill value"
+      }
+    },
+    {
+      "kind": "monsters",
+      "entity_id": "fixture.slime",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:maple-vision:self-authored:fixture-v1",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "label": "Geometric slime fixture",
+        "hp": 20
+      }
+    },
+    {
+      "kind": "maps",
+      "entity_id": "fixture.meadow",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:maple-vision:self-authored:fixture-v1",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "label": "Meadow fixture",
+        "coordinate_units": "pixels"
+      }
+    },
+    {
+      "kind": "items",
+      "entity_id": "fixture.health_potion",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:maple-vision:self-authored:fixture-v1",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "label": "Health potion fixture",
+        "restore_hp": 30
+      }
+    },
+    {
+      "kind": "npcs",
+      "entity_id": "fixture.guide",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:maple-vision:self-authored:fixture-v1",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "label": "Guide fixture",
+        "dialogue": [
+          "Welcome to the offline lab."
+        ]
+      }
+    },
+    {
+      "kind": "quests",
+      "entity_id": "fixture.collect",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:maple-vision:self-authored:fixture-v1",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "label": "Collect fixture",
+        "target_item": "fixture.coin",
+        "target_count": 3
+      }
+    },
+    {
+      "kind": "mechanics",
+      "entity_id": "fixture.physics",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:maple-vision:self-authored:fixture-v1",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "label": "Physics fixture",
+        "fixed_step_ms": 50,
+        "official_accuracy": "unverified"
+      }
+    }
+  ]
+}
