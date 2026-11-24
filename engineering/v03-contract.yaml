@@ -1,0 +1,434 @@
+contract_version: 1
+spec_version: "8.0"
+release_version: "0.3.0"
+scope: bounded_offline_synthetic_terrain_research_and_model_object_pipeline
+status: engineering_accepted_candidate_rejected
+base_commit: d11e285f6ba648c34f3bcabb1c3d193f63350da1
+execution_plan: docs/V0_3_PLAN.md
+result_source: docs/RELEASE_0_3_ACCEPTANCE.md
+full_spec_acceptance: false
+engineering_acceptance: passed_local_and_exact_implementation_commit_remote_ci
+model_promotion: rejected_frozen_platform_recall_gate_failed
+historical_contract: engineering/v02-contract.yaml
+historical_model: examples/lifecycle-model
+
+preregistration:
+  evidence: reports/release-0.3.0/preregistration.json
+  sha256: 751baa9fae9832f4d76ef19ceef11f5c9d1371c368d8887d1f8be4b6976a6a47
+  recorded_at_utc: "2026-11-24T13:51:15.597437+00:00"
+  stage: before_candidate_training_and_candidate_validation
+  baseline_validation_observed_before_freeze: true
+  candidate_validation_observed_before_freeze: false
+  mutable_after_results: false
+  hash_semantics: integrity_identifier_not_signature_or_approval
+
+frozen_dataset:
+  profile: lifecycle
+  generator_version: lifecycle-v1
+  manifest_schema_version: 2
+  origin: synthetic-fixture-v1
+  local_path: artifacts/v03-experiment/dataset
+  manifest_sha256: f73d7390980fa6aedea3b3a12ada2f0a8f3658519e0ca435ca93414bbd02aac4
+  seed: 2026112603
+  sessions: 18
+  frames_per_session: 48
+  frames: 864
+  objects: 7091
+  split_sessions: {train: 10, val: 4, test: 4}
+  split_frames: {train: 480, val: 192, test: 192}
+  jobs: [assassin, dragon_knight, cleric]
+  maps: [meadow, cavern]
+  phases: [spawn, combat, loot, cleared, dialogue, transition]
+  trajectory_steps_verified: 11080
+  validation_status: passed_input_actions_pixels_labels_and_coverage
+  evidence: reports/release-0.3.0/dataset-coverage.json
+  unseen_maps: false
+  real_domain: false
+  integrity_read_and_private_copy_include_test: true
+  test_model_predictions_before_selection: forbidden
+
+input_isolation:
+  status: checked_without_test_model_predictions_or_scoring
+  evidence: reports/release-0.3.0/dataset-isolation.json
+  comparison: decoded_rgb_and_session_seeds
+  prior_v0_1_images: 288
+  prior_v0_2_images: 864
+  duplicate_rgb_against_v0_1: 0
+  duplicate_rgb_against_v0_2: 0
+  shared_session_seeds_against_prior_datasets: []
+  within_new_dataset_cross_split_rgb_duplicates: 0
+  limitation: same_two_map_layouts_and_mechanics_and_correlated_frames_within_sessions
+
+candidate_budget:
+  configurations_trained_maximum: 1
+  training_runs_maximum: 1
+  config: configs/terrain-yolo.yaml
+  packaged_config: src/maple_vision/resources/terrain-yolo.yaml
+  config_sha256: b4a42896b69b9a55d1fc2324e2c4b55cc12d8fdd4ac69ab26583957b00839111
+  epochs: 40
+  image_size: 320
+  batch: 8
+  seed: 42
+  device: cpu
+  torch_threads: 2
+  pretrained: false
+  checkpoint_selection: existing_trainer_best_pt_validation_fitness
+  augmentation_options: preregistered_options_unchanged_during_registered_experiment
+  source_fingerprints: reports/release-0.3.0/preregistration.json
+  extend_epochs_after_validation: false
+  adaptive_second_candidate: false
+
+architecture_preflight:
+  status: passed_structure_and_bounded_random_weight_cost_probe
+  evidence: reports/release-0.3.0/preliminary-terrain-audit.json
+  geometry_source: previous_v0_2_validation_not_new_holdout_predictions
+  actual_reg_max: 16
+  dfl_bin_min: 0
+  dfl_bin_max: 15
+  actual_strides: [4, 8, 16]
+  parameters: 398357
+  prior_parameters: 165798
+  terrain_boxes_checked: 768
+  terrain_boxes_with_complete_unclipped_training_anchor: 768
+  full_floor_stride16_eligible_anchors: 20
+  full_floor_stride16_complete_unclipped_anchors: 10
+  full_floor_stride16_complete_anchor_x: [88, 104, 120, 136, 152, 168, 184, 200, 216, 232]
+  four_side_training_limit: (reg_max_minus_1_minus_0.01)_times_stride
+  candidate_torch_forward_p50_ms: 22.058882
+  prior_torch_forward_p50_ms: 17.473624
+  random_weight_probe_torch_threads: 2
+  inference_quality_measured_by_probe: false
+  deployed_onnx_latency_measured_by_probe: false
+
+baseline_on_new_validation:
+  status: measured_before_preregistration
+  model: examples/lifecycle-model
+  model_sha256: 7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3
+  evidence: reports/release-0.3.0/lifecycle-baseline-validation.json
+  split: val
+  frames: 192
+  ground_truth: 1569
+  tp: 1371
+  fp: 1
+  fn: 198
+  macro_ap50: 0.9448299740688355
+  micro_precision: 0.999271137026239
+  micro_recall: 0.8738049713193117
+  platform_recall: 0.6649305555555556
+  ladder_recall: 0.9947916666666666
+  dynamic_recall: {player: 1.0, monster: 1.0, loot: 0.96, portal: 1.0, npc: 1.0}
+  compared_against_prior_dataset_scores: false
+
+evaluation_protocol:
+  confidence_threshold: 0.25
+  matching_iou_threshold: 0.5
+  detector_nms_iou: 0.45
+  ap: confidence_filtered_single_iou_101_point_interpolated_macro_average
+  coco_map50_95: false
+  ort_intra_op_threads: 1
+  warmup_calls_excluded: 3
+  measurements_per_split: 192
+  no_parallel_training_during_timing: true
+  latency_scope: detect_including_preprocess_infer_decode_excluding_png_io
+  latency_interpretation: current_host_engineering_budget_not_end_to_end_realtime_guarantee
+  grouped_reporting: [phase, map, map_phase, player_position, overlapping_coverage_tag]
+  independent_test_units: four_sessions_not_192_independent_scenes
+
+validation_gates:
+  status: failed_platform_recall_only
+  threshold_checks: {passed: 13, failed: 1, total: 14}
+  evidence: reports/release-0.3.0/validation-gates.json
+  platform_recall_min: 0.98
+  ladder_recall_min: 0.98
+  full_width_floor_recall_min: 0.98
+  matched_floor_top_abs_error_p95_max_pixels: 1.0
+  matched_floor_left_abs_error_p95_max_pixels: 4.0
+  matched_floor_right_abs_error_p95_max_pixels: 4.0
+  dynamic_classes: [player, monster, loot, portal, npc]
+  each_dynamic_recall_min_baseline_minus: 0.01
+  expanded_dynamic_recall_min: {player: 0.99, monster: 0.99, loot: 0.95, portal: 0.99, npc: 0.99}
+  macro_ap50_min_same_val_baseline: 0.9448299740688355
+  micro_precision_min: 0.98
+  detect_latency_p95_max_ms: 75.0
+
+candidate_result:
+  status: failed_validation_retained_without_promotion
+  retained_directory: examples/terrain-candidate
+  accepted_hybrid_model_unchanged: examples/lifecycle-model
+  training_completed: true
+  training_runs: 1
+  epochs_completed: 40
+  training_wall_seconds: 1467.923792
+  training_evidence: reports/release-0.3.0/training.json
+  training_input_provenance: reports/release-0.3.0/training-input-provenance.json
+  training_sources_unchanged_during_registered_experiment: true
+  historical_training_source_commit: ff357c8951da8e84265d31c5a8b86a48934a4f01
+  historical_training_module_sha256: f15fd0a5051780225b9952505c98e45cbb61c34ef4ba15efe97957fd9b09e8d6
+  post_experiment_logging_fix_participated_in_experiment: false
+  source_and_training_copy_identical_files: 1730
+  weights_sha256: 85a4b789dae6b33940f1f5cf22b7c1f6a080f595f23925cb7e589ea784fd4748
+  export_completed: true
+  export_evidence: reports/release-0.3.0/export.json
+  model_sha256: be5cd99bce0f52b0cdfc7e033251f2c919e14d203c8b72d394a18d7a067751f0
+  input_shape: [1, 3, 320, 320]
+  output_shape: [1, 11, 8400]
+  validation_evidence: reports/release-0.3.0/terrain-model-validation.json
+  validation_generated_at_utc: "2026-11-24T14:17:48.674405+00:00"
+  validation_frames: 192
+  ground_truth: 1569
+  tp: 1459
+  fp: 1
+  fn: 110
+  macro_ap50: 0.9646245103193939
+  micro_precision: 0.9993150684931507
+  micro_recall: 0.9298916507329509
+  platform: {ground_truth: 576, tp: 472, fp: 0, fn: 104, recall: 0.8194444444444444}
+  ladder: {ground_truth: 192, tp: 190, fp: 1, fn: 2, recall: 0.9895833333333334}
+  dynamic_recall: {player: 1.0, monster: 1.0, loot: 0.96, portal: 1.0, npc: 1.0}
+  full_width_floor:
+    ground_truth: 192
+    tp: 192
+    fn: 0
+    recall: 1.0
+    top_abs_error_p95_pixels: 0.00003147757811916563
+    left_abs_error_p95_pixels: 0.4719100952148432
+    right_abs_error_p95_pixels: 0.15177917480468744
+  detect_latency_ms: {p50: 22.607094500000002, p95: 24.986153549999997, samples: 192}
+  sole_failed_gate: platform_recall_below_0_98
+  decision_evidence: reports/release-0.3.0/model-decision.json
+  model_promotion_granted: false
+  test_evaluations: 0
+  promotion_suite_executed: false
+  promotion_reinference_executed: false
+  promotion_resource_soak_executed: false
+  second_candidate_trained: false
+  downstream_gates_status: deliberately_not_executed_after_validation_failure_not_pending_work
+  full_floor_success_overrides_platform_failure: false
+
+floor_geometry_protocol:
+  module: src/maple_vision/terrain_metrics.py
+  benchmark_option: --terrain-metrics
+  benchmark_report_schema_version: 3
+  reuse_existing_predictions_without_reinference: true
+  default_old_report_contract_preserved: true
+  independent_review: passed_matching_stratification_missing_population_units_and_linear_percentiles
+  focused_tests: {passed: 21, seconds: 0.64}
+  independent_matching_parity_cases: 100
+  ground_truth: visible_yolo_labels_in_original_image_coordinates
+  full_width_definition: left_equals_zero_and_right_equals_image_width
+  absolute_tolerance: 0.000001
+  matching: confidence_ranked_one_to_one_all_platforms_then_stratify_by_full_width_truth
+  matching_iou_min: 0.5
+  errors: absolute_top_left_right_differences_among_matched_full_width_floors
+  endpoints_reported_separately: true
+  percentile_method: linear_interpolation
+  unmatched_in_recall_denominator: true
+  nonempty_floor_population_required: true
+  undefined_geometry_metric_is_passing: false
+  hidden_geometry_inferred_from_simulator: false
+
+model_object_pipeline:
+  requested_cli_mode: --terrain-source model
+  pipeline_id: onnx-all-objects+fixture-hud-v1
+  model_classes: [player, monster, loot, portal, npc, platform, ladder]
+  missing_terrain_pixel_fallback: forbidden
+  context_source: fixture_pixel_hp_mp_map_dialogue
+  default_terrain_source: fixture
+  default_v0_2_pipeline_preserved: true
+  status: local_implementation_regression_and_exact_commit_remote_ci_passed
+  scenario_gates:
+    normal_jobs: [assassin, dragon_knight, cleric]
+    normal_seeds: [0, 1, 2]
+    faults: [brief_dropout, persistent_dropout, duplicate_frames, freeze_input]
+    expected_outcomes_required: 13
+    actual_reinference_jobs: [assassin, dragon_knight, cleric]
+    actual_reinference_seed: 0
+    include_terminal_observation: true
+    verify_model_and_pipeline_before_first_detection: true
+    requested_short_resource_soak_seconds: 60
+    status: not_executed_for_rejected_candidate_per_preregistration
+  ladder_driven_closed_loop_navigation_accepted: false
+
+holdout_policy:
+  status: not_scored_due_to_validation_failure
+  test_predictions_or_scores_before_selection: forbidden
+  integrity_read_and_copy_allowed: true
+  evaluations_maximum: 1
+  baseline_test_evaluation: false
+  test_gates:
+    platform_recall_min: 0.98
+    ladder_recall_min: 0.98
+    full_width_floor_recall_min: 0.98
+    matched_floor_top_abs_error_p95_max_pixels: 1.0
+    matched_floor_left_abs_error_p95_max_pixels: 4.0
+    matched_floor_right_abs_error_p95_max_pixels: 4.0
+    each_dynamic_recall_min: 0.95
+    macro_ap50_min: 0.97
+    micro_precision_min: 0.98
+    detect_latency_p95_max_ms: 75.0
+  if_validation_fails: retain_evidence_do_not_score_test_or_promote
+  if_test_fails: retain_once_scored_result_do_not_tune_or_replace_accepted_model
+  selection_identity_and_timestamp_required: true
+
+engineering_release_gates:
+  exact_commit_recorded: 3340d8f2453082aff002a62ae56f43123fa83c63
+  verified_tree: 88b077072ba4835ebe269bbf935ae67082f8f2a7
+  workflow_run: https://github.com/www1350/maple-vision-platform/actions/runs/45421893081
+  final_archive_head_checks: https://github.com/www1350/maple-vision-platform/pull/4
+  final_archive_head_must_pass_before_merge: true
+  lint_types_full_local_tests: passed_post_runtime_fix_834_zero_failures_errors_or_skips
+  native_training_export_inference: passed_post_fix_exact_ci_order_155_no_failures_or_skips
+  audit_preallocation_guard: passed_local_preflight_actual_native_and_restoration_tests
+  audit_reuses_existing_training_offline_runtime: true
+  retrofit_new_allocation_guard_into_earlier_audits_or_training: forbidden
+  independent_geometry_review: passed_and_included_in_full_local_regression
+  independent_pipeline_review: local_contract_regression_and_exact_commit_remote_ci_passed
+  ubuntu_ci: passed_repaired_exact_commit_827_tests_7_optional_skips_and_isolated_wheel
+  windows_ci: passed_repaired_exact_commit_823_tests_11_optional_skips_and_isolated_wheel
+  cpu_native_ci: passed_repaired_exact_commit_155_tests_no_skips
+  clean_wheel_installation: passed_post_runtime_fix_local_isolated_0_3_0_without_torch_or_ort
+  evidence_archive: reports/release-0.3.0
+  no_unrun_commit_success_claim: true
+
+local_engineering_evidence:
+  full_suite_stage: current_after_runtime_logging_fix
+  report: reports/release-0.3.0/local-verification.json
+  pytest_xml: reports/release-0.3.0/local-pytest.xml
+  pytest_log: reports/release-0.3.0/local-pytest.log
+  passed: 834
+  failed: 0
+  errors: 0
+  skipped: 0
+  upstream_warnings: 6
+  pytest_reported_seconds: 110.65
+  junit_suite_seconds: 110.497
+  ruff_format_files: 113
+  ruff_check: passed
+  mypy_source_files: 30
+  mypy: passed
+  actual_native_audit_training_export_inference_included: true
+  targeted_native_audit:
+    stage: historical_before_runtime_logging_fix
+    report: reports/release-0.3.0/native-terrain-audit.xml
+    passed: 48
+    failed: 0
+    skipped: 0
+    junit_suite_seconds: 8.634
+    overlaps_full_suite: true
+  before_runtime_fix_full_suite:
+    report: reports/release-0.3.0/local-verification-before-runtime-fix.json
+    pytest_xml: reports/release-0.3.0/local-pytest-before-runtime-fix.xml
+    pytest_log: reports/release-0.3.0/local-pytest-before-runtime-fix.log
+    passed: 823
+    failed: 0
+    errors: 0
+    skipped: 0
+    upstream_warnings: 6
+    pytest_reported_seconds: 106.26
+    junit_suite_seconds: 106.129
+    covers_repaired_training_source: false
+  initial_failure:
+    xml: reports/release-0.3.0/local-pytest-initial.xml
+    log: reports/release-0.3.0/local-pytest-initial.log
+    passed: 821
+    failed: 2
+    skipped: 0
+    cause: two_native_audit_tests_expected_one_floor_across_two_val_images
+    correction: independently_check_both_map_labels_each_has_one_floor_then_assert_total_two
+    production_model_or_quality_threshold_changed: false
+  wheel_smoke:
+    report: reports/release-0.3.0/wheel-smoke.json
+    passed: true
+    version: "0.3.0"
+    stage: rebuilt_after_runtime_logging_fix
+    wall_seconds: 20.961
+    wheel_sha256: f0b7603f2cd2589127d27bd3c05ae310973c6b45e7b4c07a8feb08d3235c719f
+    package_python_files_matching_current_source: 30
+    packaged_yamls_matching_current_source: 2
+    historical_before_fix_report: reports/release-0.3.0/wheel-smoke-before-runtime-fix.json
+    both_model_configs_packaged: true
+    torch_installed: false
+    ort_installed: false
+    model_terrain_route_check: custom_detector_without_fixture_object_detection
+    actual_failed_candidate_promotion_evaluated: false
+  remote_exact_commit_ci: passed_at_3340d8f2453082aff002a62ae56f43123fa83c63
+  local_success_does_not_override_candidate_rejection: true
+
+post_experiment_logging_fix:
+  scope: narrow_training_offline_runtime_logger_handler_lifecycle
+  report: reports/release-0.3.0/runtime-stream-fix.json
+  source_files_changed: [src/maple_vision/training.py, tests/test_offline_runtime.py]
+  reason: setting_logger_stream_flushed_closed_capture_stream_from_preceding_native_test
+  historical_experiment_commit: ff357c8951da8e84265d31c5a8b86a48934a4f01
+  historical_training_sha256: f15fd0a5051780225b9952505c98e45cbb61c34ef4ba15efe97957fd9b09e8d6
+  repaired_training_sha256: c1f6be9c6d5b9a028e089fa59a892adaf8c2e60c2e793d52be0823767fb2c739
+  independent_review: completed_without_blocking_findings
+  before_fix_same_order:
+    xml: reports/release-0.3.0/local-native-order-before-fix.xml
+    passed: 152
+    failed: 3
+    skipped: 0
+    pytest_seconds: 10.28
+  after_fix_same_order:
+    xml: reports/release-0.3.0/ci-native-order-after-fix.xml
+    log: reports/release-0.3.0/ci-native-order-after-fix.log
+    passed: 155
+    failed: 0
+    skipped: 0
+    warnings: 5
+    pytest_seconds: 10.83
+    junit_seconds: 10.681
+  runtime_regressions:
+    xml: reports/release-0.3.0/runtime-stream-fix-tests.xml
+    passed: 13
+    failed: 0
+    skipped: 0
+    new_cases: 11
+    pytest_seconds: 0.45
+    junit_seconds: 0.305
+  experiment_reports_and_model_modified: false
+  additional_40_epoch_research_candidate: false
+  full_current_tree_regression: passed_834_zero_failures_errors_or_skips_110_65_seconds
+  remote_repaired_commit_ci: passed_at_3340d8f2453082aff002a62ae56f43123fa83c63
+
+remote_ci_history:
+  report: reports/release-0.3.0/remote-ci.json
+  pull_request: https://github.com/www1350/maple-vision-platform/pull/4
+  initial_commit: ff357c8951da8e84265d31c5a8b86a48934a4f01
+  initial_tree: 10e5339a03a2d9fa0dde0bb416821899038587d5
+  initial_run: https://github.com/www1350/maple-vision-platform/actions/runs/45417925554
+  initial_conclusion: failed_native_logging_stream_lifecycle
+  initial_ubuntu: {passed: 816, failed: 0, skipped: 7, seconds: 85.93, wheel: passed}
+  initial_windows: {passed: 812, failed: 0, skipped: 11, seconds: 107.03, wheel: passed}
+  initial_native: {passed: 152, failed: 3, skipped: 0, seconds: 6.25}
+  repaired_exact_commit_status: passed
+  repaired_commit: 3340d8f2453082aff002a62ae56f43123fa83c63
+  repaired_tree: 88b077072ba4835ebe269bbf935ae67082f8f2a7
+  repaired_run: https://github.com/www1350/maple-vision-platform/actions/runs/45421893081
+  repaired_ubuntu: {passed: 827, failed: 0, skipped: 7, seconds: 110.69, wheel: passed}
+  repaired_windows: {passed: 823, failed: 0, skipped: 11, seconds: 136.15, wheel: passed}
+  repaired_native: {passed: 155, failed: 0, skipped: 0, warnings: 5, seconds: 5.68}
+
+separate_incomplete_acceptance:
+  pure_model_object_quality: rejected_platform_recall_gate_failed
+  real_domain: not_validated
+  unseen_map_generalization: not_validated
+  ladder_navigation: not_implemented
+  wall_clock_24h_soak: not_completed
+  full_v8: incomplete
+  network_booklet_adapter: not_implemented
+
+invariants:
+  - Preserve old v0.1 and v0.2 APIs, models and historical evidence.
+  - Do not pass dynamic simulator truth to the runtime detector or policy.
+  - Freeze protocol before candidate training and report the observed baseline honestly.
+  - Keep complete source hashes, input hashes, original failures and unmodified preregistration.
+  - Structural capacity and training completion do not establish learned accuracy.
+  - New sessions with distinct pixels do not establish unseen-map or real-domain performance.
+  - A platform aggregate can hide full-floor failures; match all platforms before stratification.
+  - Conditional geometry errors must be accompanied by full-floor recall and nonempty counts.
+  - Pipeline identity binds the terrain source as well as model bytes and thresholds.
+  - Actual reinference must execute perception, supervisor and policy through the terminal frame.
+  - Engineering acceptance and model promotion are separate results.
+  - Failed validation does not authorize another candidate or peeking at holdout scores.
+  - All actions execute in the independent simulator only.

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "scope": "validation_fixture_evidence_illustration_not_benchmark",
+  "image": "diagnosis-first-miss-comparison.png",
+  "image_sha256": "847418c8fe6cce2399def2a3dff5f7b3defcb2cfd70639d6196188a61cdbdee4",
+  "bytes": 92211,
+  "source_image": "images/val/s0002_00000.png",
+  "source_sha256": "ec839bdb5c7ae4bdb736c6907e8108d28b5b25df628fef97f1c355ae08c729cd",
+  "source_metadata_sha256": "23663f95fedd31f4876519017f3653e24347d2bfa646c036e17bf3742b1248e1",
+  "selection_rule": "first val image in the formal benchmark order containing an unmatched platform",
+  "panels": [
+    {
+      "panel": "真值：3 个平台",
+      "platforms_shown": 3,
+      "matched_ground_truth": 3
+    },
+    {
+      "panel": "原 v0.2 模型",
+      "platforms_shown": 2,
+      "matched_ground_truth": 2
+    },
+    {
+      "panel": "v0.3 候选：未通过准入",
+      "platforms_shown": 2,
+      "matched_ground_truth": 2
+    }
+  ],
+  "additional_inference_calls": 0
+}

@@ -6,7 +6,7 @@ model and not evidence of perception quality on real game recordings.
 
 from dataclasses import dataclass
 from math import isfinite
-from typing import Protocol
+from typing import Literal, Protocol, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -30,6 +30,35 @@ from .scene import (
 
 class Detector(Protocol):
     def detect(self, frame: ImageFrame) -> tuple[Detection, ...]: ...
+
+
+TerrainSource = Literal["fixture", "model"]
+TERRAIN_SOURCES = ("fixture", "model")
+
+
+def validate_terrain_source(terrain_source: str, detector: Detector | None) -> TerrainSource:
+    """Validate the explicit object source without invoking the detector.
+
+    Model terrain uses the same seven object classes as the fixture contract.
+    A declared manifest must advertise all of them; an arbitrary custom detector
+    may be used for experiments but cannot provide hash-bound replay identity.
+    """
+    if not isinstance(terrain_source, str) or terrain_source not in TERRAIN_SOURCES:
+        raise ValueError("terrain_source must be 'fixture' or 'model'")
+    if terrain_source == "model":
+        if detector is None:
+            raise ValueError("terrain_source='model' requires a detector")
+        manifest = getattr(detector, "manifest", None)
+        if manifest is not None:
+            classes = getattr(manifest, "class_names", None)
+            if (
+                not isinstance(classes, tuple)
+                or any(not isinstance(name, str) for name in classes)
+                or len(classes) != len(PALETTE)
+                or set(classes) != set(PALETTE)
+            ):
+                raise ValueError("model terrain requires all seven fixture object classes")
+    return cast(TerrainSource, terrain_source)
 
 
 @dataclass(frozen=True)
@@ -185,7 +214,20 @@ class PixelPerception:
         )
 
     def observe(self, frame: ImageFrame) -> VisualObservation:
-        detections = self.detect(frame)
+        return self._observe(frame, self.detect(frame), self.source_id)
+
+    def observe_hud(self, frame: ImageFrame) -> VisualObservation:
+        """Read only synthetic resource/map/dialogue cues, never object colors.
+
+        The returned observation has no object evidence and remains UNKNOWN.
+        A caller can compose it with a detector without running this class's
+        object detector or manufacturing terrain from the fixture palette.
+        """
+        return self._observe(frame, (), "synthetic-fixture-hud-v1")
+
+    def _observe(
+        self, frame: ImageFrame, detections: tuple[Detection, ...], source_id: str
+    ) -> VisualObservation:
         rgb = np.frombuffer(frame.pixels, dtype=np.uint8).reshape(frame.height, frame.width, 3)
         map_id: str | None = None
         if frame.width >= 160 and frame.height >= 80:
@@ -216,6 +258,7 @@ class PixelPerception:
             mp_ratio,
             map_id,
             dialogue,
+            source_id,
         )
 
     @staticmethod

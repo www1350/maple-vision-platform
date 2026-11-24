@@ -24,7 +24,7 @@ from .sim_types import CLASS_SPECS, RULESET, SimAction
 from .simulation import Simulator
 from .sprite_pack import SpritePack, verify_dataset_sprite_pack
 from .validation_resources import ProcessResourceMonitor
-from .vision import Detector, PixelPerception
+from .vision import Detector, PixelPerception, TerrainSource, validate_terrain_source
 
 FAULTS = ("none", "brief_dropout", "persistent_dropout", "duplicate_frames", "freeze_input")
 
@@ -123,13 +123,22 @@ def run_episode(
     *,
     class_profile: LoadedClassProfile | None = None,
     sprite_pack: SpritePack | None = None,
+    terrain_source: TerrainSource = "fixture",
 ) -> dict[str, Any]:
     return _execute_episode(
-        output, config, detector, class_profile=class_profile, sprite_pack=sprite_pack
+        output,
+        config,
+        detector,
+        class_profile=class_profile,
+        sprite_pack=sprite_pack,
+        terrain_source=terrain_source,
     )
 
 
-def _perception_settings(detector: Detector | None) -> dict[str, Any]:
+def _perception_settings(
+    detector: Detector | None, *, terrain_source: TerrainSource = "fixture"
+) -> dict[str, Any]:
+    validate_terrain_source(terrain_source, detector)
     if detector is None:
         return {
             "pipeline": "pixel-fixture",
@@ -142,8 +151,10 @@ def _perception_settings(detector: Detector | None) -> dict[str, Any]:
     native = detector if type(detector) is OnnxDetector else None
     if native is not None and native.loaded_model_sha256 != native.manifest.model_sha256:
         raise ValueError("model manifest is not bound to the loaded model hash")
-    return {
-        "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+    settings: dict[str, Any] = {
+        "pipeline": "onnx-all-objects+fixture-hud-v1"
+        if terrain_source == "model"
+        else "onnx-objects+fixture-terrain-hud-v1",
         "implementation": f"{type(detector).__module__}.{type(detector).__qualname__}",
         "model_manifest": asdict(detector.manifest) if hasattr(detector, "manifest") else None,
         "loaded_model_sha256": native.loaded_model_sha256 if native is not None else None,
@@ -155,6 +166,11 @@ def _perception_settings(detector: Detector | None) -> dict[str, Any]:
         else None,
         "verifiable_model_binding": native is not None,
     }
+    if terrain_source == "model":
+        # Preserve the default v0.2 settings byte-for-byte. The opt-in source has
+        # both a new pipeline identity and an explicit, checked source setting.
+        settings["terrain_source"] = terrain_source
+    return settings
 
 
 def _execute_episode(
@@ -166,22 +182,27 @@ def _execute_episode(
     sprite_pack: SpritePack | None = None,
     initial_state: dict[str, Any] | None = None,
     trace_consumer: Callable[[dict[str, Any]], None] | None = None,
+    terrain_source: TerrainSource = "fixture",
 ) -> dict[str, Any]:
     config = config or RunConfig()
+    settings = _perception_settings(detector, terrain_source=terrain_source)
     spec = None if class_profile is None else class_profile.class_spec
     simulator = (
         Simulator(config.seed, config.job, class_spec=spec)
         if initial_state is None
         else Simulator.restore(initial_state)
     )
-    settings = _perception_settings(detector)
     renderer, fault_frames = SceneRenderer(sprite_pack=sprite_pack), _Frames(config.fault)
     if output is not None:
         if output.exists():
             raise FileExistsError(f"run output already exists: {output}")
         output.mkdir(parents=True)
         (output / "frames").mkdir()
-    perception = PixelPerception() if detector is None else HybridPerception(detector)
+    perception = (
+        PixelPerception()
+        if detector is None
+        else HybridPerception(detector, terrain_source=terrain_source)
+    )
     policy, supervisor = VisualAgent(config.job, class_spec=spec), Supervisor()
     initial = simulator.save()
     if output:
@@ -287,7 +308,9 @@ def _execute_episode(
     if status == "completed" and not oracle_pass:
         status, reason = "failed", "independent_goal_check_failed"
     elapsed = time.perf_counter() - wall_start
-    if canonical(settings) != canonical(_perception_settings(detector)):
+    if canonical(settings) != canonical(
+        _perception_settings(detector, terrain_source=terrain_source)
+    ):
         raise ValueError("detector settings changed during the episode")
     summary: dict[str, Any] = {
         "schema_version": 1,
@@ -575,7 +598,12 @@ def _compare_observation(actual: object, expected: object, location: str) -> Non
         raise ValueError(f"perception observation mismatch at {location}")
 
 
-def verify_perception(output: Path, detector: Detector | None = None) -> dict[str, Any]:
+def verify_perception(
+    output: Path,
+    detector: Detector | None = None,
+    *,
+    terrain_source: TerrainSource = "fixture",
+) -> dict[str, Any]:
     """Actually re-infer every frame and re-run supervisor/policy, including termination.
 
     This reads the bundle without modifying it. Versioned terminal evidence and
@@ -583,6 +611,7 @@ def verify_perception(output: Path, detector: Detector | None = None) -> dict[st
     Only the built-in pixel pipeline or the hash-bound OnnxDetector is eligible for
     a model reproduction claim. Arbitrary custom detectors have no proven identity.
     """
+    validate_terrain_source(terrain_source, detector)
     manifest_bytes = _run_evidence_path(output, "manifest.json").read_bytes()
     replay = verify_run(output)
     if _run_evidence_path(output, "manifest.json").read_bytes() != manifest_bytes:
@@ -602,13 +631,15 @@ def verify_perception(output: Path, detector: Detector | None = None) -> dict[st
         )
     if detector is not None and type(detector) is not OnnxDetector:
         raise ValueError("custom detector identity cannot be verified; supply OnnxDetector")
-    settings = _perception_settings(detector)
+    settings = _perception_settings(detector, terrain_source=terrain_source)
     if detector is not None:
         assert isinstance(detector, OnnxDetector)
         if detector.loaded_model_sha256 != detector.manifest.model_sha256:
             raise ValueError("supplied model manifest is not bound to the loaded model hash")
     if canonical(settings) != canonical(evidence["settings"]):
-        raise ValueError("supplied model/hash, full manifest or inference options do not match run")
+        raise ValueError(
+            "supplied terrain mode, model/hash, full manifest or inference options do not match run"
+        )
     if canonical(summary.get("model_manifest")) != canonical(settings["model_manifest"]):
         raise ValueError("run model manifest disagrees with perception evidence")
     if summary.get("detector") != ("pixel-fixture" if detector is None else "onnx"):
@@ -662,6 +693,7 @@ def verify_perception(output: Path, detector: Detector | None = None) -> dict[st
             sprite_pack=sprite_pack,
             initial_state=initial,
             trace_consumer=compare_trace,
+            terrain_source=terrain_source,
         )
         if stream.readline():
             raise ValueError("perception replay terminated before all recorded steps")
@@ -739,12 +771,13 @@ def _record_episode(
     detector: Detector | None,
     *,
     failure_name: str,
+    terrain_source: TerrainSource = "fixture",
 ) -> dict[str, Any]:
     """Capture exactly once; retain the actual failure rather than executing a rerun."""
     staging = output / "active-episode"
     # run_episode refuses an existing path, so cleanup only targets the directory
     # created by this particular call in this already-new validation output.
-    result = run_episode(staging, config, detector)
+    result = run_episode(staging, config, detector, terrain_source=terrain_source)
     if result["status"] == "completed":
         shutil.rmtree(staging)
         result.pop("output", None)
@@ -777,23 +810,37 @@ def _capture_contract() -> dict[str, Any]:
     }
 
 
-def run_suite(output: Path, seeds: int = 3, detector: Detector | None = None) -> dict[str, Any]:
+def run_suite(
+    output: Path,
+    seeds: int = 3,
+    detector: Detector | None = None,
+    *,
+    terrain_source: TerrainSource = "fixture",
+) -> dict[str, Any]:
     if type(seeds) is not int or not 1 <= seeds <= 1000:
         raise ValueError("seeds must be in [1, 1000]")
+    settings = _perception_settings(detector, terrain_source=terrain_source)
     if output.exists():
         raise FileExistsError(f"suite output already exists: {output}")
     output.mkdir(parents=True)
     started = time.monotonic()
-    settings = _perception_settings(detector)
     rows: list[dict[str, Any]] = []
+    source_options: dict[str, Any] = (
+        {} if terrain_source == "fixture" else {"terrain_source": "model"}
+    )
     for job in CLASS_SPECS:
         for seed in range(seeds):
             config = RunConfig(seed, job, record_stride=16)
-            result = _record_episode(output, config, detector, failure_name=f"failure-{job}-{seed}")
+            result = _record_episode(
+                output, config, detector, failure_name=f"failure-{job}-{seed}", **source_options
+            )
             rows.append(result)
     for fault in FAULTS[1:]:
         result = run_episode(
-            output / fault, RunConfig(fault=fault, max_steps=500, record_stride=16), detector
+            output / fault,
+            RunConfig(fault=fault, max_steps=500, record_stride=16),
+            detector,
+            terrain_source=terrain_source,
         )
         result["episode_capture"] = {
             "mode": "original_single_execution",
@@ -811,7 +858,9 @@ def run_suite(output: Path, seeds: int = 3, detector: Detector | None = None) ->
         "freeze_input": "failed",
     }
     passed = all(row["status"] == expected[row["config"]["fault"]] for row in rows)
-    if canonical(settings) != canonical(_perception_settings(detector)):
+    if canonical(settings) != canonical(
+        _perception_settings(detector, terrain_source=terrain_source)
+    ):
         raise ValueError("detector settings changed during the suite")
     report = {
         "schema_version": 1,
@@ -840,6 +889,7 @@ def run_soak(
     *,
     resource_interval_seconds: float = 1.0,
     max_resource_samples: int = 1024,
+    terrain_source: TerrainSource = "fixture",
 ) -> dict[str, Any]:
     """Wall-clock soak, checkpointed after each mission (up to one episode overrun).
 
@@ -850,7 +900,7 @@ def run_soak(
     if type(seconds) is not int or not 1 <= seconds <= 7 * 24 * 3600:
         raise ValueError("soak seconds must be in [1, 604800]")
     resources = ProcessResourceMonitor(resource_interval_seconds, max_resource_samples)
-    settings = _perception_settings(detector)
+    settings = _perception_settings(detector, terrain_source=terrain_source)
     if output.exists():
         raise FileExistsError(f"soak output already exists: {output}")
     output.mkdir(parents=True)
@@ -860,6 +910,9 @@ def run_soak(
     passed = True
     report: dict[str, Any] = {}
     run_error: str | None = None
+    source_options: dict[str, Any] = (
+        {} if terrain_source == "fixture" else {"terrain_source": "model"}
+    )
     resources.start()
     try:
         with (output / "episodes.jsonl").open("x", encoding="utf-8") as stream:
@@ -867,9 +920,15 @@ def run_soak(
                 job = tuple(CLASS_SPECS)[completed % len(CLASS_SPECS)]
                 config = RunConfig(seed=completed, job=job, record_stride=16)
                 result = _record_episode(
-                    output, config, detector, failure_name=f"failure-{completed + 1}"
+                    output,
+                    config,
+                    detector,
+                    failure_name=f"failure-{completed + 1}",
+                    **source_options,
                 )
-                if canonical(settings) != canonical(_perception_settings(detector)):
+                if canonical(settings) != canonical(
+                    _perception_settings(detector, terrain_source=terrain_source)
+                ):
                     raise ValueError("detector settings changed during the soak")
                 stream.write(canonical(result).decode() + "\n")
                 stream.flush()

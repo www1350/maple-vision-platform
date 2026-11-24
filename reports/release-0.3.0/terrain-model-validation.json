@@ -1,0 +1,7046 @@
+{
+  "dataset": {
+    "class_counts": {
+      "test": {
+        "ladder": 192,
+        "loot": 109,
+        "monster": 144,
+        "npc": 176,
+        "platform": 576,
+        "player": 192,
+        "portal": 192
+      },
+      "train": {
+        "ladder": 480,
+        "loot": 243,
+        "monster": 380,
+        "npc": 438,
+        "platform": 1440,
+        "player": 480,
+        "portal": 480
+      },
+      "val": {
+        "ladder": 192,
+        "loot": 100,
+        "monster": 144,
+        "npc": 173,
+        "platform": 576,
+        "player": 192,
+        "portal": 192
+      }
+    },
+    "coverage": {
+      "basis": "replayed_training_scenario_truth_and_visible_rendered_labels",
+      "by_split": {
+        "test": {
+          "class_counts": {
+            "ladder": 192,
+            "loot": 109,
+            "monster": 144,
+            "npc": 176,
+            "platform": 576,
+            "player": 192,
+            "portal": 192
+          },
+          "frames": 192,
+          "maps": {
+            "cavern": {
+              "class_counts": {
+                "ladder": 88,
+                "loot": 45,
+                "monster": 69,
+                "npc": 80,
+                "platform": 264,
+                "player": 88,
+                "portal": 88
+              },
+              "frames": 88,
+              "phase_counts": {
+                "cleared": 32,
+                "combat": 20,
+                "dialogue": 8,
+                "loot": 20,
+                "spawn": 4,
+                "transition": 4
+              },
+              "player_position_bins": {
+                "left": 24,
+                "left_edge": 11,
+                "middle": 19,
+                "right": 29,
+                "right_edge": 5
+              },
+              "tag_counts": {
+                "attack_hit": 10,
+                "cleared": 40,
+                "dialogue_visible": 8,
+                "high_platform": 4,
+                "left_edge": 11,
+                "loot_collected": 5,
+                "loot_present": 29,
+                "map_transition": 4,
+                "monsters_present": 28,
+                "not_grounded": 7,
+                "right_edge": 5
+              }
+            },
+            "meadow": {
+              "class_counts": {
+                "ladder": 104,
+                "loot": 64,
+                "monster": 75,
+                "npc": 96,
+                "platform": 312,
+                "player": 104,
+                "portal": 104
+              },
+              "frames": 104,
+              "phase_counts": {
+                "cleared": 36,
+                "combat": 24,
+                "dialogue": 8,
+                "loot": 24,
+                "spawn": 8,
+                "transition": 4
+              },
+              "player_position_bins": {
+                "left": 30,
+                "left_edge": 11,
+                "middle": 28,
+                "right": 27,
+                "right_edge": 8
+              },
+              "tag_counts": {
+                "attack_hit": 12,
+                "cleared": 48,
+                "dialogue_visible": 8,
+                "high_platform": 4,
+                "left_edge": 11,
+                "loot_collected": 4,
+                "loot_present": 38,
+                "map_transition": 4,
+                "monsters_present": 32,
+                "not_grounded": 5,
+                "right_edge": 8
+              }
+            }
+          },
+          "phase_counts": {
+            "cleared": 68,
+            "combat": 44,
+            "dialogue": 16,
+            "loot": 44,
+            "spawn": 12,
+            "transition": 8
+          },
+          "player_position_bins": {
+            "left": 54,
+            "left_edge": 22,
+            "middle": 47,
+            "right": 56,
+            "right_edge": 13
+          },
+          "tag_counts": {
+            "attack_hit": 22,
+            "cleared": 88,
+            "dialogue_visible": 16,
+            "high_platform": 8,
+            "left_edge": 22,
+            "loot_collected": 9,
+            "loot_present": 67,
+            "map_transition": 8,
+            "monsters_present": 60,
+            "not_grounded": 12,
+            "right_edge": 13
+          }
+        },
+        "train": {
+          "class_counts": {
+            "ladder": 480,
+            "loot": 243,
+            "monster": 380,
+            "npc": 438,
+            "platform": 1440,
+            "player": 480,
+            "portal": 480
+          },
+          "frames": 480,
+          "maps": {
+            "cavern": {
+              "class_counts": {
+                "ladder": 220,
+                "loot": 111,
+                "monster": 181,
+                "npc": 199,
+                "platform": 660,
+                "player": 220,
+                "portal": 220
+              },
+              "frames": 220,
+              "phase_counts": {
+                "cleared": 80,
+                "combat": 50,
+                "dialogue": 20,
+                "loot": 50,
+                "spawn": 10,
+                "transition": 10
+              },
+              "player_position_bins": {
+                "left": 52,
+                "left_edge": 30,
+                "middle": 73,
+                "right": 52,
+                "right_edge": 13
+              },
+              "tag_counts": {
+                "attack_hit": 24,
+                "cleared": 100,
+                "dialogue_visible": 20,
+                "high_platform": 13,
+                "left_edge": 30,
+                "loot_collected": 14,
+                "loot_present": 69,
+                "map_transition": 10,
+                "monsters_present": 70,
+                "not_grounded": 14,
+                "right_edge": 13
+              }
+            },
+            "meadow": {
+              "class_counts": {
+                "ladder": 260,
+                "loot": 132,
+                "monster": 199,
+                "npc": 239,
+                "platform": 780,
+                "player": 260,
+                "portal": 260
+              },
+              "frames": 260,
+              "phase_counts": {
+                "cleared": 90,
+                "combat": 60,
+                "dialogue": 20,
+                "loot": 60,
+                "spawn": 20,
+                "transition": 10
+              },
+              "player_position_bins": {
+                "left": 89,
+                "left_edge": 29,
+                "middle": 69,
+                "right": 61,
+                "right_edge": 12
+              },
+              "tag_counts": {
+                "attack_hit": 23,
+                "cleared": 120,
+                "dialogue_visible": 20,
+                "high_platform": 11,
+                "left_edge": 29,
+                "loot_collected": 11,
+                "loot_present": 92,
+                "map_transition": 10,
+                "monsters_present": 80,
+                "not_grounded": 16,
+                "right_edge": 12
+              }
+            }
+          },
+          "phase_counts": {
+            "cleared": 170,
+            "combat": 110,
+            "dialogue": 40,
+            "loot": 110,
+            "spawn": 30,
+            "transition": 20
+          },
+          "player_position_bins": {
+            "left": 141,
+            "left_edge": 59,
+            "middle": 142,
+            "right": 113,
+            "right_edge": 25
+          },
+          "tag_counts": {
+            "attack_hit": 47,
+            "cleared": 220,
+            "dialogue_visible": 40,
+            "high_platform": 24,
+            "left_edge": 59,
+            "loot_collected": 25,
+            "loot_present": 161,
+            "map_transition": 20,
+            "monsters_present": 150,
+            "not_grounded": 30,
+            "right_edge": 25
+          }
+        },
+        "val": {
+          "class_counts": {
+            "ladder": 192,
+            "loot": 100,
+            "monster": 144,
+            "npc": 173,
+            "platform": 576,
+            "player": 192,
+            "portal": 192
+          },
+          "frames": 192,
+          "maps": {
+            "cavern": {
+              "class_counts": {
+                "ladder": 88,
+                "loot": 44,
+                "monster": 70,
+                "npc": 77,
+                "platform": 264,
+                "player": 88,
+                "portal": 88
+              },
+              "frames": 88,
+              "phase_counts": {
+                "cleared": 32,
+                "combat": 20,
+                "dialogue": 8,
+                "loot": 20,
+                "spawn": 4,
+                "transition": 4
+              },
+              "player_position_bins": {
+                "left": 16,
+                "left_edge": 13,
+                "middle": 24,
+                "right": 30,
+                "right_edge": 5
+              },
+              "tag_counts": {
+                "attack_hit": 9,
+                "cleared": 40,
+                "dialogue_visible": 8,
+                "high_platform": 5,
+                "left_edge": 13,
+                "loot_collected": 6,
+                "loot_present": 29,
+                "map_transition": 4,
+                "monsters_present": 28,
+                "not_grounded": 4,
+                "right_edge": 5
+              }
+            },
+            "meadow": {
+              "class_counts": {
+                "ladder": 104,
+                "loot": 56,
+                "monster": 74,
+                "npc": 96,
+                "platform": 312,
+                "player": 104,
+                "portal": 104
+              },
+              "frames": 104,
+              "phase_counts": {
+                "cleared": 36,
+                "combat": 24,
+                "dialogue": 8,
+                "loot": 24,
+                "spawn": 8,
+                "transition": 4
+              },
+              "player_position_bins": {
+                "left": 23,
+                "left_edge": 13,
+                "middle": 38,
+                "right": 25,
+                "right_edge": 5
+              },
+              "tag_counts": {
+                "attack_hit": 10,
+                "cleared": 48,
+                "dialogue_visible": 8,
+                "high_platform": 5,
+                "left_edge": 13,
+                "loot_collected": 6,
+                "loot_present": 38,
+                "map_transition": 4,
+                "monsters_present": 32,
+                "not_grounded": 5,
+                "right_edge": 5
+              }
+            }
+          },
+          "phase_counts": {
+            "cleared": 68,
+            "combat": 44,
+            "dialogue": 16,
+            "loot": 44,
+            "spawn": 12,
+            "transition": 8
+          },
+          "player_position_bins": {
+            "left": 39,
+            "left_edge": 26,
+            "middle": 62,
+            "right": 55,
+            "right_edge": 10
+          },
+          "tag_counts": {
+            "attack_hit": 19,
+            "cleared": 88,
+            "dialogue_visible": 16,
+            "high_platform": 10,
+            "left_edge": 26,
+            "loot_collected": 12,
+            "loot_present": 67,
+            "map_transition": 8,
+            "monsters_present": 60,
+            "not_grounded": 9,
+            "right_edge": 10
+          }
+        }
+      },
+      "position_axis": "player sprite upper-left x in the 320-pixel fixture world",
+      "position_bins": [
+        {
+          "maximum_exclusive": 40,
+          "minimum_inclusive": 0,
+          "name": "left_edge"
+        },
+        {
+          "maximum_exclusive": 120,
+          "minimum_inclusive": 40,
+          "name": "left"
+        },
+        {
+          "maximum_exclusive": 200,
+          "minimum_inclusive": 120,
+          "name": "middle"
+        },
+        {
+          "maximum_exclusive": 280,
+          "minimum_inclusive": 200,
+          "name": "right"
+        },
+        {
+          "maximum_exclusive": 307,
+          "minimum_inclusive": 280,
+          "name": "right_edge"
+        }
+      ],
+      "required_phases_per_map_per_session": [
+        "spawn",
+        "combat",
+        "loot",
+        "cleared",
+        "dialogue",
+        "transition"
+      ],
+      "schema_version": 1,
+      "tags_overlap": true
+    },
+    "frames": 864,
+    "generator_version": "lifecycle-v1",
+    "manifest_sha256": "f73d7390980fa6aedea3b3a12ada2f0a8f3658519e0ca435ca93414bbd02aac4",
+    "missing_classes": {
+      "test": [],
+      "train": [],
+      "val": []
+    },
+    "missing_maps": {
+      "test": [],
+      "train": [],
+      "val": []
+    },
+    "objects": 7091,
+    "origin": "synthetic-fixture-v1",
+    "profile": "lifecycle",
+    "schema_version": 2,
+    "sessions": 18,
+    "split_frames": {
+      "test": 192,
+      "train": 480,
+      "val": 192
+    },
+    "split_maps": {
+      "test": {
+        "cavern": 88,
+        "meadow": 104
+      },
+      "train": {
+        "cavern": 220,
+        "meadow": 260
+      },
+      "val": {
+        "cavern": 88,
+        "meadow": 104
+      }
+    },
+    "split_sessions": {
+      "test": 4,
+      "train": 10,
+      "val": 4
+    },
+    "trajectory_steps_verified": 11080,
+    "trajectory_verification": "actions_pixels_labels_and_phase_facts",
+    "validated": true,
+    "visual_agent_success_evaluated": false
+  },
+  "dataset_manifest_sha256": "f73d7390980fa6aedea3b3a12ada2f0a8f3658519e0ca435ca93414bbd02aac4",
+  "dataset_origin": "synthetic-fixture-v1",
+  "dataset_split_role": "val",
+  "detector": {
+    "class_names": [
+      "player",
+      "monster",
+      "loot",
+      "portal",
+      "npc",
+      "platform",
+      "ladder"
+    ],
+    "decoder_confidence_threshold": 0.25,
+    "decoder_nms_iou_threshold": 0.45,
+    "full_model_manifest": {
+      "class_names": [
+        "player",
+        "monster",
+        "loot",
+        "portal",
+        "npc",
+        "platform",
+        "ladder"
+      ],
+      "input_height": 320,
+      "input_width": 320,
+      "model_sha256": "be5cd99bce0f52b0cdfc7e033251f2c919e14d203c8b72d394a18d7a067751f0",
+      "output_format": "raw_xywh",
+      "schema_version": 1,
+      "scope": "synthetic_fixture"
+    },
+    "implementation": "maple_vision.onnx_detector.OnnxDetector",
+    "inference_runtime": {
+      "execution_mode": "ExecutionMode.ORT_SEQUENTIAL",
+      "inter_op_num_threads": 0,
+      "intra_op_num_threads": 1,
+      "providers": [
+        "CPUExecutionProvider"
+      ]
+    },
+    "loaded_model_sha256": "be5cd99bce0f52b0cdfc7e033251f2c919e14d203c8b72d394a18d7a067751f0",
+    "method": "onnx_cpu",
+    "model_sha256": "be5cd99bce0f52b0cdfc7e033251f2c919e14d203c8b72d394a18d7a067751f0",
+    "output_format": "raw_xywh",
+    "scope": "synthetic_fixture"
+  },
+  "detector_binding_checked_before_and_after": true,
+  "environment": {
+    "dependencies": {
+      "Pillow": "13.0.0",
+      "maple-vision-platform": "0.3.0",
+      "numpy": "2.5.5",
+      "onnxruntime": "1.32.0"
+    },
+    "logical_cpus": 9,
+    "machine": "x86_64",
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "processor": "unreported",
+    "python": "3.12.14"
+  },
+  "generated_at": "2026-11-24T14:17:48.674405+00:00",
+  "grouped_metrics": {
+    "basis": "replay-validated lifecycle metadata; not inferred by the detector",
+    "by_coverage_tag": {
+      "attack_hit": {
+        "ap_classes_with_ground_truth": 7,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 19,
+        "iou_threshold": 0.5,
+        "map50": 0.966053748231966,
+        "map50_95": null,
+        "map_at_iou": 0.966053748231966,
+        "micro": {
+          "f1": 0.967391304347826,
+          "fn": 11,
+          "fp": 1,
+          "ground_truth": 189,
+          "precision": 0.994413407821229,
+          "predictions": 179,
+          "recall": 0.9417989417989417,
+          "tp": 178
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.9405940594059405,
+            "ap_at_iou": 0.9405940594059405,
+            "f1": 0.9473684210526315,
+            "fn": 1,
+            "fp": 1,
+            "ground_truth": 19,
+            "precision": 0.9473684210526315,
+            "predictions": 19,
+            "recall": 0.9473684210526315,
+            "tp": 18
+          },
+          "loot": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 27,
+            "precision": 1.0,
+            "predictions": 27,
+            "recall": 1.0,
+            "tp": 27
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 29,
+            "precision": 1.0,
+            "predictions": 29,
+            "recall": 1.0,
+            "tp": 29
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 19,
+            "precision": 1.0,
+            "predictions": 19,
+            "recall": 1.0,
+            "tp": 19
+          },
+          "platform": {
+            "ap50": 0.8217821782178217,
+            "ap_at_iou": 0.8217821782178217,
+            "f1": 0.9038461538461539,
+            "fn": 10,
+            "fp": 0,
+            "ground_truth": 57,
+            "precision": 1.0,
+            "predictions": 47,
+            "recall": 0.8245614035087719,
+            "tp": 47
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 19,
+            "precision": 1.0,
+            "predictions": 19,
+            "recall": 1.0,
+            "tp": 19
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 19,
+            "precision": 1.0,
+            "predictions": 19,
+            "recall": 1.0,
+            "tp": 19
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "cleared": {
+        "ap_classes_with_ground_truth": 5,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 88,
+        "iou_threshold": 0.5,
+        "map50": 0.9584158415841584,
+        "map50_95": null,
+        "map_at_iou": 0.9584158415841584,
+        "micro": {
+          "f1": 0.9572052401746725,
+          "fn": 49,
+          "fp": 0,
+          "ground_truth": 597,
+          "precision": 1.0,
+          "predictions": 548,
+          "recall": 0.9179229480737019,
+          "tp": 548
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.9801980198019802,
+            "ap_at_iou": 0.9801980198019802,
+            "f1": 0.9942857142857143,
+            "fn": 1,
+            "fp": 0,
+            "ground_truth": 88,
+            "precision": 1.0,
+            "predictions": 87,
+            "recall": 0.9886363636363636,
+            "tp": 87
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 69,
+            "precision": 1.0,
+            "predictions": 69,
+            "recall": 1.0,
+            "tp": 69
+          },
+          "platform": {
+            "ap50": 0.8118811881188119,
+            "ap_at_iou": 0.8118811881188119,
+            "f1": 0.9,
+            "fn": 48,
+            "fp": 0,
+            "ground_truth": 264,
+            "precision": 1.0,
+            "predictions": 216,
+            "recall": 0.8181818181818182,
+            "tp": 216
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 88,
+            "precision": 1.0,
+            "predictions": 88,
+            "recall": 1.0,
+            "tp": 88
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 88,
+            "precision": 1.0,
+            "predictions": 88,
+            "recall": 1.0,
+            "tp": 88
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "dialogue_visible": {
+        "ap_classes_with_ground_truth": 4,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 16,
+        "iou_threshold": 0.5,
+        "map50": 0.9579207920792079,
+        "map50_95": null,
+        "map_at_iou": 0.9579207920792079,
+        "micro": {
+          "f1": 0.9565217391304348,
+          "fn": 8,
+          "fp": 0,
+          "ground_truth": 96,
+          "precision": 1.0,
+          "predictions": 88,
+          "recall": 0.9166666666666666,
+          "tp": 88
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 16,
+            "precision": 1.0,
+            "predictions": 16,
+            "recall": 1.0,
+            "tp": 16
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "platform": {
+            "ap50": 0.8316831683168316,
+            "ap_at_iou": 0.8316831683168316,
+            "f1": 0.9090909090909091,
+            "fn": 8,
+            "fp": 0,
+            "ground_truth": 48,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 0.8333333333333334,
+            "tp": 40
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 16,
+            "precision": 1.0,
+            "predictions": 16,
+            "recall": 1.0,
+            "tp": 16
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 16,
+            "precision": 1.0,
+            "predictions": 16,
+            "recall": 1.0,
+            "tp": 16
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "high_platform": {
+        "ap_classes_with_ground_truth": 5,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 10,
+        "iou_threshold": 0.5,
+        "map50": 0.9663366336633663,
+        "map50_95": null,
+        "map_at_iou": 0.9663366336633663,
+        "micro": {
+          "f1": 0.9629629629629629,
+          "fn": 5,
+          "fp": 0,
+          "ground_truth": 70,
+          "precision": 1.0,
+          "predictions": 65,
+          "recall": 0.9285714285714286,
+          "tp": 65
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 10,
+            "precision": 1.0,
+            "predictions": 10,
+            "recall": 1.0,
+            "tp": 10
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 10,
+            "precision": 1.0,
+            "predictions": 10,
+            "recall": 1.0,
+            "tp": 10
+          },
+          "platform": {
+            "ap50": 0.8316831683168316,
+            "ap_at_iou": 0.8316831683168316,
+            "f1": 0.9090909090909091,
+            "fn": 5,
+            "fp": 0,
+            "ground_truth": 30,
+            "precision": 1.0,
+            "predictions": 25,
+            "recall": 0.8333333333333334,
+            "tp": 25
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 10,
+            "precision": 1.0,
+            "predictions": 10,
+            "recall": 1.0,
+            "tp": 10
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 10,
+            "precision": 1.0,
+            "predictions": 10,
+            "recall": 1.0,
+            "tp": 10
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "left_edge": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 26,
+        "iou_threshold": 0.5,
+        "map50": 0.9719471947194719,
+        "map50_95": null,
+        "map_at_iou": 0.9719471947194719,
+        "micro": {
+          "f1": 0.9740518962075848,
+          "fn": 13,
+          "fp": 0,
+          "ground_truth": 257,
+          "precision": 1.0,
+          "predictions": 244,
+          "recall": 0.9494163424124513,
+          "tp": 244
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 26,
+            "precision": 1.0,
+            "predictions": 26,
+            "recall": 1.0,
+            "tp": 26
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 75,
+            "precision": 1.0,
+            "predictions": 75,
+            "recall": 1.0,
+            "tp": 75
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 26,
+            "precision": 1.0,
+            "predictions": 26,
+            "recall": 1.0,
+            "tp": 26
+          },
+          "platform": {
+            "ap50": 0.8316831683168316,
+            "ap_at_iou": 0.8316831683168316,
+            "f1": 0.9090909090909091,
+            "fn": 13,
+            "fp": 0,
+            "ground_truth": 78,
+            "precision": 1.0,
+            "predictions": 65,
+            "recall": 0.8333333333333334,
+            "tp": 65
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 26,
+            "precision": 1.0,
+            "predictions": 26,
+            "recall": 1.0,
+            "tp": 26
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 26,
+            "precision": 1.0,
+            "predictions": 26,
+            "recall": 1.0,
+            "tp": 26
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "loot_collected": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 0.9719471947194719,
+        "map50_95": null,
+        "map_at_iou": 0.9719471947194719,
+        "micro": {
+          "f1": 0.9651162790697675,
+          "fn": 6,
+          "fp": 0,
+          "ground_truth": 89,
+          "precision": 1.0,
+          "predictions": 83,
+          "recall": 0.9325842696629213,
+          "tp": 83
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 5,
+            "precision": 1.0,
+            "predictions": 5,
+            "recall": 1.0,
+            "tp": 5
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "platform": {
+            "ap50": 0.8316831683168316,
+            "ap_at_iou": 0.8316831683168316,
+            "f1": 0.9090909090909091,
+            "fn": 6,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 30,
+            "recall": 0.8333333333333334,
+            "tp": 30
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "loot_present": {
+        "ap_classes_with_ground_truth": 7,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 67,
+        "iou_threshold": 0.5,
+        "map50": 0.9674681753889675,
+        "map50_95": null,
+        "map_at_iou": 0.9674681753889675,
+        "micro": {
+          "f1": 0.963855421686747,
+          "fn": 42,
+          "fp": 0,
+          "ground_truth": 602,
+          "precision": 1.0,
+          "predictions": 560,
+          "recall": 0.9302325581395349,
+          "tp": 560
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 67,
+            "precision": 1.0,
+            "predictions": 67,
+            "recall": 1.0,
+            "tp": 67
+          },
+          "loot": {
+            "ap50": 0.9603960396039604,
+            "ap_at_iou": 0.9603960396039604,
+            "f1": 0.9795918367346939,
+            "fn": 4,
+            "fp": 0,
+            "ground_truth": 100,
+            "precision": 1.0,
+            "predictions": 96,
+            "recall": 0.96,
+            "tp": 96
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 33,
+            "precision": 1.0,
+            "predictions": 33,
+            "recall": 1.0,
+            "tp": 33
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 67,
+            "precision": 1.0,
+            "predictions": 67,
+            "recall": 1.0,
+            "tp": 67
+          },
+          "platform": {
+            "ap50": 0.8118811881188119,
+            "ap_at_iou": 0.8118811881188119,
+            "f1": 0.8956043956043956,
+            "fn": 38,
+            "fp": 0,
+            "ground_truth": 201,
+            "precision": 1.0,
+            "predictions": 163,
+            "recall": 0.8109452736318408,
+            "tp": 163
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 67,
+            "precision": 1.0,
+            "predictions": 67,
+            "recall": 1.0,
+            "tp": 67
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 67,
+            "precision": 1.0,
+            "predictions": 67,
+            "recall": 1.0,
+            "tp": 67
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "map_transition": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 8,
+        "iou_threshold": 0.5,
+        "map50": 0.9719471947194719,
+        "map50_95": null,
+        "map_at_iou": 0.9719471947194719,
+        "micro": {
+          "f1": 0.9696969696969697,
+          "fn": 4,
+          "fp": 0,
+          "ground_truth": 68,
+          "precision": 1.0,
+          "predictions": 64,
+          "recall": 0.9411764705882353,
+          "tp": 64
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 8,
+            "precision": 1.0,
+            "predictions": 8,
+            "recall": 1.0,
+            "tp": 8
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 8,
+            "precision": 1.0,
+            "predictions": 8,
+            "recall": 1.0,
+            "tp": 8
+          },
+          "platform": {
+            "ap50": 0.8316831683168316,
+            "ap_at_iou": 0.8316831683168316,
+            "f1": 0.9090909090909091,
+            "fn": 4,
+            "fp": 0,
+            "ground_truth": 24,
+            "precision": 1.0,
+            "predictions": 20,
+            "recall": 0.8333333333333334,
+            "tp": 20
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 8,
+            "precision": 1.0,
+            "predictions": 8,
+            "recall": 1.0,
+            "tp": 8
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 8,
+            "precision": 1.0,
+            "predictions": 8,
+            "recall": 1.0,
+            "tp": 8
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "monsters_present": {
+        "ap_classes_with_ground_truth": 7,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 60,
+        "iou_threshold": 0.5,
+        "map50": 0.9547383309759547,
+        "map50_95": null,
+        "map_at_iou": 0.9547383309759547,
+        "micro": {
+          "f1": 0.9672413793103448,
+          "fn": 37,
+          "fp": 1,
+          "ground_truth": 598,
+          "precision": 0.998220640569395,
+          "predictions": 562,
+          "recall": 0.9381270903010034,
+          "tp": 561
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.9801980198019802,
+            "ap_at_iou": 0.9801980198019802,
+            "f1": 0.9833333333333333,
+            "fn": 1,
+            "fp": 1,
+            "ground_truth": 60,
+            "precision": 0.9833333333333333,
+            "predictions": 60,
+            "recall": 0.9833333333333333,
+            "tp": 59
+          },
+          "loot": {
+            "ap50": 0.8811881188118812,
+            "ap_at_iou": 0.8811881188118812,
+            "f1": 0.9375,
+            "fn": 4,
+            "fp": 0,
+            "ground_truth": 34,
+            "precision": 1.0,
+            "predictions": 30,
+            "recall": 0.8823529411764706,
+            "tp": 30
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 144,
+            "precision": 1.0,
+            "predictions": 144,
+            "recall": 1.0,
+            "tp": 144
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 60,
+            "precision": 1.0,
+            "predictions": 60,
+            "recall": 1.0,
+            "tp": 60
+          },
+          "platform": {
+            "ap50": 0.8217821782178217,
+            "ap_at_iou": 0.8217821782178217,
+            "f1": 0.9024390243902439,
+            "fn": 32,
+            "fp": 0,
+            "ground_truth": 180,
+            "precision": 1.0,
+            "predictions": 148,
+            "recall": 0.8222222222222222,
+            "tp": 148
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 60,
+            "precision": 1.0,
+            "predictions": 60,
+            "recall": 1.0,
+            "tp": 60
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 60,
+            "precision": 1.0,
+            "predictions": 60,
+            "recall": 1.0,
+            "tp": 60
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "not_grounded": {
+        "ap_classes_with_ground_truth": 5,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 9,
+        "iou_threshold": 0.5,
+        "map50": 0.9386138613861386,
+        "map50_95": null,
+        "map_at_iou": 0.9386138613861386,
+        "micro": {
+          "f1": 0.95,
+          "fn": 6,
+          "fp": 0,
+          "ground_truth": 63,
+          "precision": 1.0,
+          "predictions": 57,
+          "recall": 0.9047619047619048,
+          "tp": 57
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.8811881188118812,
+            "ap_at_iou": 0.8811881188118812,
+            "f1": 0.9411764705882353,
+            "fn": 1,
+            "fp": 0,
+            "ground_truth": 9,
+            "precision": 1.0,
+            "predictions": 8,
+            "recall": 0.8888888888888888,
+            "tp": 8
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 9,
+            "precision": 1.0,
+            "predictions": 9,
+            "recall": 1.0,
+            "tp": 9
+          },
+          "platform": {
+            "ap50": 0.8118811881188119,
+            "ap_at_iou": 0.8118811881188119,
+            "f1": 0.8979591836734694,
+            "fn": 5,
+            "fp": 0,
+            "ground_truth": 27,
+            "precision": 1.0,
+            "predictions": 22,
+            "recall": 0.8148148148148148,
+            "tp": 22
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 9,
+            "precision": 1.0,
+            "predictions": 9,
+            "recall": 1.0,
+            "tp": 9
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 9,
+            "precision": 1.0,
+            "predictions": 9,
+            "recall": 1.0,
+            "tp": 9
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "right_edge": {
+        "ap_classes_with_ground_truth": 5,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 10,
+        "iou_threshold": 0.5,
+        "map50": 0.9663366336633663,
+        "map50_95": null,
+        "map_at_iou": 0.9663366336633663,
+        "micro": {
+          "f1": 0.9629629629629629,
+          "fn": 5,
+          "fp": 0,
+          "ground_truth": 70,
+          "precision": 1.0,
+          "predictions": 65,
+          "recall": 0.9285714285714286,
+          "tp": 65
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 10,
+            "precision": 1.0,
+            "predictions": 10,
+            "recall": 1.0,
+            "tp": 10
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 10,
+            "precision": 1.0,
+            "predictions": 10,
+            "recall": 1.0,
+            "tp": 10
+          },
+          "platform": {
+            "ap50": 0.8316831683168316,
+            "ap_at_iou": 0.8316831683168316,
+            "f1": 0.9090909090909091,
+            "fn": 5,
+            "fp": 0,
+            "ground_truth": 30,
+            "precision": 1.0,
+            "predictions": 25,
+            "recall": 0.8333333333333334,
+            "tp": 25
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 10,
+            "precision": 1.0,
+            "predictions": 10,
+            "recall": 1.0,
+            "tp": 10
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 10,
+            "precision": 1.0,
+            "predictions": 10,
+            "recall": 1.0,
+            "tp": 10
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      }
+    },
+    "by_map": {
+      "cavern": {
+        "ap_classes_with_ground_truth": 7,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 88,
+        "iou_threshold": 0.5,
+        "map50": 0.9929278642149929,
+        "map50_95": null,
+        "map_at_iou": 0.9929278642149929,
+        "micro": {
+          "f1": 0.9986072423398329,
+          "fn": 2,
+          "fp": 0,
+          "ground_truth": 719,
+          "precision": 1.0,
+          "predictions": 717,
+          "recall": 0.9972183588317107,
+          "tp": 717
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 88,
+            "precision": 1.0,
+            "predictions": 88,
+            "recall": 1.0,
+            "tp": 88
+          },
+          "loot": {
+            "ap50": 0.9504950495049505,
+            "ap_at_iou": 0.9504950495049505,
+            "f1": 0.9767441860465116,
+            "fn": 2,
+            "fp": 0,
+            "ground_truth": 44,
+            "precision": 1.0,
+            "predictions": 42,
+            "recall": 0.9545454545454546,
+            "tp": 42
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 70,
+            "precision": 1.0,
+            "predictions": 70,
+            "recall": 1.0,
+            "tp": 70
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 77,
+            "precision": 1.0,
+            "predictions": 77,
+            "recall": 1.0,
+            "tp": 77
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 264,
+            "precision": 1.0,
+            "predictions": 264,
+            "recall": 1.0,
+            "tp": 264
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 88,
+            "precision": 1.0,
+            "predictions": 88,
+            "recall": 1.0,
+            "tp": 88
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 88,
+            "precision": 1.0,
+            "predictions": 88,
+            "recall": 1.0,
+            "tp": 88
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "meadow": {
+        "ap_classes_with_ground_truth": 7,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 104,
+        "iou_threshold": 0.5,
+        "map50": 0.9433679845099628,
+        "map50_95": null,
+        "map_at_iou": 0.9433679845099628,
+        "micro": {
+          "f1": 0.9315756434400502,
+          "fn": 108,
+          "fp": 1,
+          "ground_truth": 850,
+          "precision": 0.9986541049798116,
+          "predictions": 743,
+          "recall": 0.8729411764705882,
+          "tp": 742
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.9798135153321159,
+            "ap_at_iou": 0.9798135153321159,
+            "f1": 0.9855072463768116,
+            "fn": 2,
+            "fp": 1,
+            "ground_truth": 104,
+            "precision": 0.9902912621359223,
+            "predictions": 103,
+            "recall": 0.9807692307692307,
+            "tp": 102
+          },
+          "loot": {
+            "ap50": 0.9603960396039604,
+            "ap_at_iou": 0.9603960396039604,
+            "f1": 0.9818181818181818,
+            "fn": 2,
+            "fp": 0,
+            "ground_truth": 56,
+            "precision": 1.0,
+            "predictions": 54,
+            "recall": 0.9642857142857143,
+            "tp": 54
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 74,
+            "precision": 1.0,
+            "predictions": 74,
+            "recall": 1.0,
+            "tp": 74
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 96,
+            "precision": 1.0,
+            "predictions": 96,
+            "recall": 1.0,
+            "tp": 96
+          },
+          "platform": {
+            "ap50": 0.6633663366336634,
+            "ap_at_iou": 0.6633663366336634,
+            "f1": 0.8,
+            "fn": 104,
+            "fp": 0,
+            "ground_truth": 312,
+            "precision": 1.0,
+            "predictions": 208,
+            "recall": 0.6666666666666666,
+            "tp": 208
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 104,
+            "precision": 1.0,
+            "predictions": 104,
+            "recall": 1.0,
+            "tp": 104
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 104,
+            "precision": 1.0,
+            "predictions": 104,
+            "recall": 1.0,
+            "tp": 104
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      }
+    },
+    "by_map_phase": {
+      "cavern": {
+        "cleared": {
+          "ap_classes_with_ground_truth": 5,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 32,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 221,
+            "precision": 1.0,
+            "predictions": 221,
+            "recall": 1.0,
+            "tp": 221
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 32,
+              "precision": 1.0,
+              "predictions": 32,
+              "recall": 1.0,
+              "tp": 32
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 29,
+              "precision": 1.0,
+              "predictions": 29,
+              "recall": 1.0,
+              "tp": 29
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 96,
+              "precision": 1.0,
+              "predictions": 96,
+              "recall": 1.0,
+              "tp": 96
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 32,
+              "precision": 1.0,
+              "predictions": 32,
+              "recall": 1.0,
+              "tp": 32
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 32,
+              "precision": 1.0,
+              "predictions": 32,
+              "recall": 1.0,
+              "tp": 32
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "combat": {
+          "ap_classes_with_ground_truth": 7,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 20,
+          "iou_threshold": 0.5,
+          "map50": 0.9773691654879774,
+          "map50_95": null,
+          "map_at_iou": 0.9773691654879774,
+          "micro": {
+            "f1": 0.9949494949494949,
+            "fn": 2,
+            "fp": 0,
+            "ground_truth": 199,
+            "precision": 1.0,
+            "predictions": 197,
+            "recall": 0.9899497487437185,
+            "tp": 197
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 20,
+              "precision": 1.0,
+              "predictions": 20,
+              "recall": 1.0,
+              "tp": 20
+            },
+            "loot": {
+              "ap50": 0.8415841584158416,
+              "ap_at_iou": 0.8415841584158416,
+              "f1": 0.9166666666666666,
+              "fn": 2,
+              "fp": 0,
+              "ground_truth": 13,
+              "precision": 1.0,
+              "predictions": 11,
+              "recall": 0.8461538461538461,
+              "tp": 11
+            },
+            "monster": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 46,
+              "precision": 1.0,
+              "predictions": 46,
+              "recall": 1.0,
+              "tp": 46
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 20,
+              "precision": 1.0,
+              "predictions": 20,
+              "recall": 1.0,
+              "tp": 20
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 60,
+              "precision": 1.0,
+              "predictions": 60,
+              "recall": 1.0,
+              "tp": 60
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 20,
+              "precision": 1.0,
+              "predictions": 20,
+              "recall": 1.0,
+              "tp": 20
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 20,
+              "precision": 1.0,
+              "predictions": 20,
+              "recall": 1.0,
+              "tp": 20
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "dialogue": {
+          "ap_classes_with_ground_truth": 4,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 8,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 48,
+            "precision": 1.0,
+            "predictions": 48,
+            "recall": 1.0,
+            "tp": 48
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 8,
+              "precision": 1.0,
+              "predictions": 8,
+              "recall": 1.0,
+              "tp": 8
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 24,
+              "precision": 1.0,
+              "predictions": 24,
+              "recall": 1.0,
+              "tp": 24
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 8,
+              "precision": 1.0,
+              "predictions": 8,
+              "recall": 1.0,
+              "tp": 8
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 8,
+              "precision": 1.0,
+              "predictions": 8,
+              "recall": 1.0,
+              "tp": 8
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "loot": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 20,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 171,
+            "precision": 1.0,
+            "predictions": 171,
+            "recall": 1.0,
+            "tp": 171
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 20,
+              "precision": 1.0,
+              "predictions": 20,
+              "recall": 1.0,
+              "tp": 20
+            },
+            "loot": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 31,
+              "precision": 1.0,
+              "predictions": 31,
+              "recall": 1.0,
+              "tp": 31
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 20,
+              "precision": 1.0,
+              "predictions": 20,
+              "recall": 1.0,
+              "tp": 20
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 60,
+              "precision": 1.0,
+              "predictions": 60,
+              "recall": 1.0,
+              "tp": 60
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 20,
+              "precision": 1.0,
+              "predictions": 20,
+              "recall": 1.0,
+              "tp": 20
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 20,
+              "precision": 1.0,
+              "predictions": 20,
+              "recall": 1.0,
+              "tp": 20
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "spawn": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 40,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 1.0,
+            "tp": 40
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "transition": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 40,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 1.0,
+            "tp": 40
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        }
+      },
+      "meadow": {
+        "cleared": {
+          "ap_classes_with_ground_truth": 5,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 36,
+          "iou_threshold": 0.5,
+          "map50": 0.9267326732673267,
+          "map50_95": null,
+          "map_at_iou": 0.9267326732673267,
+          "micro": {
+            "f1": 0.9207708779443254,
+            "fn": 37,
+            "fp": 0,
+            "ground_truth": 252,
+            "precision": 1.0,
+            "predictions": 215,
+            "recall": 0.8531746031746031,
+            "tp": 215
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 0.9702970297029703,
+              "ap_at_iou": 0.9702970297029703,
+              "f1": 0.9859154929577465,
+              "fn": 1,
+              "fp": 0,
+              "ground_truth": 36,
+              "precision": 1.0,
+              "predictions": 35,
+              "recall": 0.9722222222222222,
+              "tp": 35
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 36,
+              "precision": 1.0,
+              "predictions": 36,
+              "recall": 1.0,
+              "tp": 36
+            },
+            "platform": {
+              "ap50": 0.6633663366336634,
+              "ap_at_iou": 0.6633663366336634,
+              "f1": 0.8,
+              "fn": 36,
+              "fp": 0,
+              "ground_truth": 108,
+              "precision": 1.0,
+              "predictions": 72,
+              "recall": 0.6666666666666666,
+              "tp": 72
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 36,
+              "precision": 1.0,
+              "predictions": 36,
+              "recall": 1.0,
+              "tp": 36
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 36,
+              "precision": 1.0,
+              "predictions": 36,
+              "recall": 1.0,
+              "tp": 36
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "combat": {
+          "ap_classes_with_ground_truth": 7,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 24,
+          "iou_threshold": 0.5,
+          "map50": 0.9306930693069307,
+          "map50_95": null,
+          "map_at_iou": 0.9306930693069307,
+          "micro": {
+            "f1": 0.9380530973451328,
+            "fn": 27,
+            "fp": 1,
+            "ground_truth": 239,
+            "precision": 0.9953051643192489,
+            "predictions": 213,
+            "recall": 0.8870292887029289,
+            "tp": 212
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 0.9504950495049505,
+              "ap_at_iou": 0.9504950495049505,
+              "f1": 0.9583333333333334,
+              "fn": 1,
+              "fp": 1,
+              "ground_truth": 24,
+              "precision": 0.9583333333333334,
+              "predictions": 24,
+              "recall": 0.9583333333333334,
+              "tp": 23
+            },
+            "loot": {
+              "ap50": 0.900990099009901,
+              "ap_at_iou": 0.900990099009901,
+              "f1": 0.95,
+              "fn": 2,
+              "fp": 0,
+              "ground_truth": 21,
+              "precision": 1.0,
+              "predictions": 19,
+              "recall": 0.9047619047619048,
+              "tp": 19
+            },
+            "monster": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 50,
+              "precision": 1.0,
+              "predictions": 50,
+              "recall": 1.0,
+              "tp": 50
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 24,
+              "precision": 1.0,
+              "predictions": 24,
+              "recall": 1.0,
+              "tp": 24
+            },
+            "platform": {
+              "ap50": 0.6633663366336634,
+              "ap_at_iou": 0.6633663366336634,
+              "f1": 0.8,
+              "fn": 24,
+              "fp": 0,
+              "ground_truth": 72,
+              "precision": 1.0,
+              "predictions": 48,
+              "recall": 0.6666666666666666,
+              "tp": 48
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 24,
+              "precision": 1.0,
+              "predictions": 24,
+              "recall": 1.0,
+              "tp": 24
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 24,
+              "precision": 1.0,
+              "predictions": 24,
+              "recall": 1.0,
+              "tp": 24
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "dialogue": {
+          "ap_classes_with_ground_truth": 4,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 8,
+          "iou_threshold": 0.5,
+          "map50": 0.9158415841584159,
+          "map50_95": null,
+          "map_at_iou": 0.9158415841584159,
+          "micro": {
+            "f1": 0.9090909090909091,
+            "fn": 8,
+            "fp": 0,
+            "ground_truth": 48,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 0.8333333333333334,
+            "tp": 40
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 8,
+              "precision": 1.0,
+              "predictions": 8,
+              "recall": 1.0,
+              "tp": 8
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "platform": {
+              "ap50": 0.6633663366336634,
+              "ap_at_iou": 0.6633663366336634,
+              "f1": 0.8,
+              "fn": 8,
+              "fp": 0,
+              "ground_truth": 24,
+              "precision": 1.0,
+              "predictions": 16,
+              "recall": 0.6666666666666666,
+              "tp": 16
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 8,
+              "precision": 1.0,
+              "predictions": 8,
+              "recall": 1.0,
+              "tp": 8
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 8,
+              "precision": 1.0,
+              "predictions": 8,
+              "recall": 1.0,
+              "tp": 8
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "loot": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 24,
+          "iou_threshold": 0.5,
+          "map50": 0.9438943894389439,
+          "map50_95": null,
+          "map_at_iou": 0.9438943894389439,
+          "micro": {
+            "f1": 0.93717277486911,
+            "fn": 24,
+            "fp": 0,
+            "ground_truth": 203,
+            "precision": 1.0,
+            "predictions": 179,
+            "recall": 0.8817733990147784,
+            "tp": 179
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 24,
+              "precision": 1.0,
+              "predictions": 24,
+              "recall": 1.0,
+              "tp": 24
+            },
+            "loot": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 35,
+              "precision": 1.0,
+              "predictions": 35,
+              "recall": 1.0,
+              "tp": 35
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 24,
+              "precision": 1.0,
+              "predictions": 24,
+              "recall": 1.0,
+              "tp": 24
+            },
+            "platform": {
+              "ap50": 0.6633663366336634,
+              "ap_at_iou": 0.6633663366336634,
+              "f1": 0.8,
+              "fn": 24,
+              "fp": 0,
+              "ground_truth": 72,
+              "precision": 1.0,
+              "predictions": 48,
+              "recall": 0.6666666666666666,
+              "tp": 48
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 24,
+              "precision": 1.0,
+              "predictions": 24,
+              "recall": 1.0,
+              "tp": 24
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 24,
+              "precision": 1.0,
+              "predictions": 24,
+              "recall": 1.0,
+              "tp": 24
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "spawn": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 8,
+          "iou_threshold": 0.5,
+          "map50": 0.9438943894389439,
+          "map50_95": null,
+          "map_at_iou": 0.9438943894389439,
+          "micro": {
+            "f1": 0.9473684210526315,
+            "fn": 8,
+            "fp": 0,
+            "ground_truth": 80,
+            "precision": 1.0,
+            "predictions": 72,
+            "recall": 0.9,
+            "tp": 72
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 8,
+              "precision": 1.0,
+              "predictions": 8,
+              "recall": 1.0,
+              "tp": 8
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 24,
+              "precision": 1.0,
+              "predictions": 24,
+              "recall": 1.0,
+              "tp": 24
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 8,
+              "precision": 1.0,
+              "predictions": 8,
+              "recall": 1.0,
+              "tp": 8
+            },
+            "platform": {
+              "ap50": 0.6633663366336634,
+              "ap_at_iou": 0.6633663366336634,
+              "f1": 0.8,
+              "fn": 8,
+              "fp": 0,
+              "ground_truth": 24,
+              "precision": 1.0,
+              "predictions": 16,
+              "recall": 0.6666666666666666,
+              "tp": 16
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 8,
+              "precision": 1.0,
+              "predictions": 8,
+              "recall": 1.0,
+              "tp": 8
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 8,
+              "precision": 1.0,
+              "predictions": 8,
+              "recall": 1.0,
+              "tp": 8
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "transition": {
+          "ap_classes_with_ground_truth": 5,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 0.9326732673267326,
+          "map50_95": null,
+          "map_at_iou": 0.9326732673267326,
+          "micro": {
+            "f1": 0.9230769230769231,
+            "fn": 4,
+            "fp": 0,
+            "ground_truth": 28,
+            "precision": 1.0,
+            "predictions": 24,
+            "recall": 0.8571428571428571,
+            "tp": 24
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 0.6633663366336634,
+              "ap_at_iou": 0.6633663366336634,
+              "f1": 0.8,
+              "fn": 4,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 8,
+              "recall": 0.6666666666666666,
+              "tp": 8
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        }
+      }
+    },
+    "by_phase": {
+      "cleared": {
+        "ap_classes_with_ground_truth": 5,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 68,
+        "iou_threshold": 0.5,
+        "map50": 0.9603960396039604,
+        "map50_95": null,
+        "map_at_iou": 0.9603960396039604,
+        "micro": {
+          "f1": 0.9592959295929593,
+          "fn": 37,
+          "fp": 0,
+          "ground_truth": 473,
+          "precision": 1.0,
+          "predictions": 436,
+          "recall": 0.9217758985200846,
+          "tp": 436
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.9801980198019802,
+            "ap_at_iou": 0.9801980198019802,
+            "f1": 0.9925925925925926,
+            "fn": 1,
+            "fp": 0,
+            "ground_truth": 68,
+            "precision": 1.0,
+            "predictions": 67,
+            "recall": 0.9852941176470589,
+            "tp": 67
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 65,
+            "precision": 1.0,
+            "predictions": 65,
+            "recall": 1.0,
+            "tp": 65
+          },
+          "platform": {
+            "ap50": 0.8217821782178217,
+            "ap_at_iou": 0.8217821782178217,
+            "f1": 0.9032258064516129,
+            "fn": 36,
+            "fp": 0,
+            "ground_truth": 204,
+            "precision": 1.0,
+            "predictions": 168,
+            "recall": 0.8235294117647058,
+            "tp": 168
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 68,
+            "precision": 1.0,
+            "predictions": 68,
+            "recall": 1.0,
+            "tp": 68
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 68,
+            "precision": 1.0,
+            "predictions": 68,
+            "recall": 1.0,
+            "tp": 68
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "combat": {
+        "ap_classes_with_ground_truth": 7,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 44,
+        "iou_threshold": 0.5,
+        "map50": 0.9519094766619519,
+        "map50_95": null,
+        "map_at_iou": 0.9519094766619519,
+        "micro": {
+          "f1": 0.964622641509434,
+          "fn": 29,
+          "fp": 1,
+          "ground_truth": 438,
+          "precision": 0.9975609756097561,
+          "predictions": 410,
+          "recall": 0.9337899543378996,
+          "tp": 409
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.9702970297029703,
+            "ap_at_iou": 0.9702970297029703,
+            "f1": 0.9772727272727273,
+            "fn": 1,
+            "fp": 1,
+            "ground_truth": 44,
+            "precision": 0.9772727272727273,
+            "predictions": 44,
+            "recall": 0.9772727272727273,
+            "tp": 43
+          },
+          "loot": {
+            "ap50": 0.8811881188118812,
+            "ap_at_iou": 0.8811881188118812,
+            "f1": 0.9375,
+            "fn": 4,
+            "fp": 0,
+            "ground_truth": 34,
+            "precision": 1.0,
+            "predictions": 30,
+            "recall": 0.8823529411764706,
+            "tp": 30
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 96,
+            "precision": 1.0,
+            "predictions": 96,
+            "recall": 1.0,
+            "tp": 96
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 44,
+            "precision": 1.0,
+            "predictions": 44,
+            "recall": 1.0,
+            "tp": 44
+          },
+          "platform": {
+            "ap50": 0.8118811881188119,
+            "ap_at_iou": 0.8118811881188119,
+            "f1": 0.9,
+            "fn": 24,
+            "fp": 0,
+            "ground_truth": 132,
+            "precision": 1.0,
+            "predictions": 108,
+            "recall": 0.8181818181818182,
+            "tp": 108
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 44,
+            "precision": 1.0,
+            "predictions": 44,
+            "recall": 1.0,
+            "tp": 44
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 44,
+            "precision": 1.0,
+            "predictions": 44,
+            "recall": 1.0,
+            "tp": 44
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "dialogue": {
+        "ap_classes_with_ground_truth": 4,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 16,
+        "iou_threshold": 0.5,
+        "map50": 0.9579207920792079,
+        "map50_95": null,
+        "map_at_iou": 0.9579207920792079,
+        "micro": {
+          "f1": 0.9565217391304348,
+          "fn": 8,
+          "fp": 0,
+          "ground_truth": 96,
+          "precision": 1.0,
+          "predictions": 88,
+          "recall": 0.9166666666666666,
+          "tp": 88
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 16,
+            "precision": 1.0,
+            "predictions": 16,
+            "recall": 1.0,
+            "tp": 16
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "platform": {
+            "ap50": 0.8316831683168316,
+            "ap_at_iou": 0.8316831683168316,
+            "f1": 0.9090909090909091,
+            "fn": 8,
+            "fp": 0,
+            "ground_truth": 48,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 0.8333333333333334,
+            "tp": 40
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 16,
+            "precision": 1.0,
+            "predictions": 16,
+            "recall": 1.0,
+            "tp": 16
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 16,
+            "precision": 1.0,
+            "predictions": 16,
+            "recall": 1.0,
+            "tp": 16
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "loot": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 44,
+        "iou_threshold": 0.5,
+        "map50": 0.9686468646864687,
+        "map50_95": null,
+        "map_at_iou": 0.9686468646864687,
+        "micro": {
+          "f1": 0.9668508287292817,
+          "fn": 24,
+          "fp": 0,
+          "ground_truth": 374,
+          "precision": 1.0,
+          "predictions": 350,
+          "recall": 0.9358288770053476,
+          "tp": 350
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 44,
+            "precision": 1.0,
+            "predictions": 44,
+            "recall": 1.0,
+            "tp": 44
+          },
+          "loot": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 66,
+            "precision": 1.0,
+            "predictions": 66,
+            "recall": 1.0,
+            "tp": 66
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 44,
+            "precision": 1.0,
+            "predictions": 44,
+            "recall": 1.0,
+            "tp": 44
+          },
+          "platform": {
+            "ap50": 0.8118811881188119,
+            "ap_at_iou": 0.8118811881188119,
+            "f1": 0.9,
+            "fn": 24,
+            "fp": 0,
+            "ground_truth": 132,
+            "precision": 1.0,
+            "predictions": 108,
+            "recall": 0.8181818181818182,
+            "tp": 108
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 44,
+            "precision": 1.0,
+            "predictions": 44,
+            "recall": 1.0,
+            "tp": 44
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 44,
+            "precision": 1.0,
+            "predictions": 44,
+            "recall": 1.0,
+            "tp": 44
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "spawn": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 0.962046204620462,
+        "map50_95": null,
+        "map_at_iou": 0.962046204620462,
+        "micro": {
+          "f1": 0.9655172413793104,
+          "fn": 8,
+          "fp": 0,
+          "ground_truth": 120,
+          "precision": 1.0,
+          "predictions": 112,
+          "recall": 0.9333333333333333,
+          "tp": 112
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "platform": {
+            "ap50": 0.7722772277227723,
+            "ap_at_iou": 0.7722772277227723,
+            "f1": 0.875,
+            "fn": 8,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 28,
+            "recall": 0.7777777777777778,
+            "tp": 28
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "transition": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 8,
+        "iou_threshold": 0.5,
+        "map50": 0.9719471947194719,
+        "map50_95": null,
+        "map_at_iou": 0.9719471947194719,
+        "micro": {
+          "f1": 0.9696969696969697,
+          "fn": 4,
+          "fp": 0,
+          "ground_truth": 68,
+          "precision": 1.0,
+          "predictions": 64,
+          "recall": 0.9411764705882353,
+          "tp": 64
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 8,
+            "precision": 1.0,
+            "predictions": 8,
+            "recall": 1.0,
+            "tp": 8
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 8,
+            "precision": 1.0,
+            "predictions": 8,
+            "recall": 1.0,
+            "tp": 8
+          },
+          "platform": {
+            "ap50": 0.8316831683168316,
+            "ap_at_iou": 0.8316831683168316,
+            "f1": 0.9090909090909091,
+            "fn": 4,
+            "fp": 0,
+            "ground_truth": 24,
+            "precision": 1.0,
+            "predictions": 20,
+            "recall": 0.8333333333333334,
+            "tp": 20
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 8,
+            "precision": 1.0,
+            "predictions": 8,
+            "recall": 1.0,
+            "tp": 8
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 8,
+            "precision": 1.0,
+            "predictions": 8,
+            "recall": 1.0,
+            "tp": 8
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      }
+    },
+    "by_player_position": {
+      "left": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 39,
+        "iou_threshold": 0.5,
+        "map50": 0.9566614556192462,
+        "map50_95": null,
+        "map_at_iou": 0.9566614556192462,
+        "micro": {
+          "f1": 0.9550173010380623,
+          "fn": 25,
+          "fp": 1,
+          "ground_truth": 301,
+          "precision": 0.9963898916967509,
+          "predictions": 277,
+          "recall": 0.9169435215946844,
+          "tp": 276
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.9379885356956748,
+            "ap_at_iou": 0.9379885356956748,
+            "f1": 0.961038961038961,
+            "fn": 2,
+            "fp": 1,
+            "ground_truth": 39,
+            "precision": 0.9736842105263158,
+            "predictions": 38,
+            "recall": 0.9487179487179487,
+            "tp": 37
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 31,
+            "precision": 1.0,
+            "predictions": 31,
+            "recall": 1.0,
+            "tp": 31
+          },
+          "platform": {
+            "ap50": 0.801980198019802,
+            "ap_at_iou": 0.801980198019802,
+            "f1": 0.8909952606635071,
+            "fn": 23,
+            "fp": 0,
+            "ground_truth": 117,
+            "precision": 1.0,
+            "predictions": 94,
+            "recall": 0.8034188034188035,
+            "tp": 94
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 39,
+            "precision": 1.0,
+            "predictions": 39,
+            "recall": 1.0,
+            "tp": 39
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 39,
+            "precision": 1.0,
+            "predictions": 39,
+            "recall": 1.0,
+            "tp": 39
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "left_edge": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 26,
+        "iou_threshold": 0.5,
+        "map50": 0.9719471947194719,
+        "map50_95": null,
+        "map_at_iou": 0.9719471947194719,
+        "micro": {
+          "f1": 0.9740518962075848,
+          "fn": 13,
+          "fp": 0,
+          "ground_truth": 257,
+          "precision": 1.0,
+          "predictions": 244,
+          "recall": 0.9494163424124513,
+          "tp": 244
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 26,
+            "precision": 1.0,
+            "predictions": 26,
+            "recall": 1.0,
+            "tp": 26
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 75,
+            "precision": 1.0,
+            "predictions": 75,
+            "recall": 1.0,
+            "tp": 75
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 26,
+            "precision": 1.0,
+            "predictions": 26,
+            "recall": 1.0,
+            "tp": 26
+          },
+          "platform": {
+            "ap50": 0.8316831683168316,
+            "ap_at_iou": 0.8316831683168316,
+            "f1": 0.9090909090909091,
+            "fn": 13,
+            "fp": 0,
+            "ground_truth": 78,
+            "precision": 1.0,
+            "predictions": 65,
+            "recall": 0.8333333333333334,
+            "tp": 65
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 26,
+            "precision": 1.0,
+            "predictions": 26,
+            "recall": 1.0,
+            "tp": 26
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 26,
+            "precision": 1.0,
+            "predictions": 26,
+            "recall": 1.0,
+            "tp": 26
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "middle": {
+        "ap_classes_with_ground_truth": 7,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 62,
+        "iou_threshold": 0.5,
+        "map50": 0.9603960396039604,
+        "map50_95": null,
+        "map_at_iou": 0.9603960396039604,
+        "micro": {
+          "f1": 0.9582504970178927,
+          "fn": 42,
+          "fp": 0,
+          "ground_truth": 524,
+          "precision": 1.0,
+          "predictions": 482,
+          "recall": 0.9198473282442748,
+          "tp": 482
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 62,
+            "precision": 1.0,
+            "predictions": 62,
+            "recall": 1.0,
+            "tp": 62
+          },
+          "loot": {
+            "ap50": 0.9306930693069307,
+            "ap_at_iou": 0.9306930693069307,
+            "f1": 0.9661016949152542,
+            "fn": 4,
+            "fp": 0,
+            "ground_truth": 61,
+            "precision": 1.0,
+            "predictions": 57,
+            "recall": 0.9344262295081968,
+            "tp": 57
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 29,
+            "precision": 1.0,
+            "predictions": 29,
+            "recall": 1.0,
+            "tp": 29
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 62,
+            "precision": 1.0,
+            "predictions": 62,
+            "recall": 1.0,
+            "tp": 62
+          },
+          "platform": {
+            "ap50": 0.7920792079207921,
+            "ap_at_iou": 0.7920792079207921,
+            "f1": 0.8862275449101796,
+            "fn": 38,
+            "fp": 0,
+            "ground_truth": 186,
+            "precision": 1.0,
+            "predictions": 148,
+            "recall": 0.7956989247311828,
+            "tp": 148
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 62,
+            "precision": 1.0,
+            "predictions": 62,
+            "recall": 1.0,
+            "tp": 62
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 62,
+            "precision": 1.0,
+            "predictions": 62,
+            "recall": 1.0,
+            "tp": 62
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "right": {
+        "ap_classes_with_ground_truth": 7,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 55,
+        "iou_threshold": 0.5,
+        "map50": 0.9773691654879774,
+        "map50_95": null,
+        "map_at_iou": 0.9773691654879774,
+        "micro": {
+          "f1": 0.969097651421508,
+          "fn": 25,
+          "fp": 0,
+          "ground_truth": 417,
+          "precision": 1.0,
+          "predictions": 392,
+          "recall": 0.9400479616306955,
+          "tp": 392
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 55,
+            "precision": 1.0,
+            "predictions": 55,
+            "recall": 1.0,
+            "tp": 55
+          },
+          "loot": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 39,
+            "precision": 1.0,
+            "predictions": 39,
+            "recall": 1.0,
+            "tp": 39
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 4,
+            "precision": 1.0,
+            "predictions": 4,
+            "recall": 1.0,
+            "tp": 4
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 44,
+            "precision": 1.0,
+            "predictions": 44,
+            "recall": 1.0,
+            "tp": 44
+          },
+          "platform": {
+            "ap50": 0.8415841584158416,
+            "ap_at_iou": 0.8415841584158416,
+            "f1": 0.9180327868852459,
+            "fn": 25,
+            "fp": 0,
+            "ground_truth": 165,
+            "precision": 1.0,
+            "predictions": 140,
+            "recall": 0.8484848484848485,
+            "tp": 140
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 55,
+            "precision": 1.0,
+            "predictions": 55,
+            "recall": 1.0,
+            "tp": 55
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 55,
+            "precision": 1.0,
+            "predictions": 55,
+            "recall": 1.0,
+            "tp": 55
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "right_edge": {
+        "ap_classes_with_ground_truth": 5,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 10,
+        "iou_threshold": 0.5,
+        "map50": 0.9663366336633663,
+        "map50_95": null,
+        "map_at_iou": 0.9663366336633663,
+        "micro": {
+          "f1": 0.9629629629629629,
+          "fn": 5,
+          "fp": 0,
+          "ground_truth": 70,
+          "precision": 1.0,
+          "predictions": 65,
+          "recall": 0.9285714285714286,
+          "tp": 65
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 10,
+            "precision": 1.0,
+            "predictions": 10,
+            "recall": 1.0,
+            "tp": 10
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 10,
+            "precision": 1.0,
+            "predictions": 10,
+            "recall": 1.0,
+            "tp": 10
+          },
+          "platform": {
+            "ap50": 0.8316831683168316,
+            "ap_at_iou": 0.8316831683168316,
+            "f1": 0.9090909090909091,
+            "fn": 5,
+            "fp": 0,
+            "ground_truth": 30,
+            "precision": 1.0,
+            "predictions": 25,
+            "recall": 0.8333333333333334,
+            "tp": 25
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 10,
+            "precision": 1.0,
+            "predictions": 10,
+            "recall": 1.0,
+            "tp": 10
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 10,
+            "precision": 1.0,
+            "predictions": 10,
+            "recall": 1.0,
+            "tp": 10
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      }
+    },
+    "interpretation": "Each partition assigns each image once. Coverage tags overlap; do not sum them. Each group independently reranks its predictions for AP; group AP is not additive. Frames from one session are correlated, and these are descriptive subgroup results.",
+    "overlapping_groups": [
+      "by_coverage_tag"
+    ],
+    "partitions": [
+      "by_phase",
+      "by_map",
+      "by_player_position"
+    ],
+    "schema_version": 1
+  },
+  "latency_ms": {
+    "clock": "perf_counter_ns",
+    "max": 27.542684,
+    "mean": 22.748406119791667,
+    "min": 20.596424,
+    "p50": 22.607094500000002,
+    "p95": 24.986153549999997,
+    "samples": 192,
+    "timing_scope": "detect(frame) only; includes detector preprocessing/decoding, excludes PNG I/O",
+    "warmup_calls_excluded": 3
+  },
+  "limitations": [
+    "Synthetic fixture results do not establish accuracy on real recordings.",
+    "A split named test does not prove the model never saw those images elsewhere.",
+    "AP uses a declared confidence cutoff and one IoU; this is not COCO mAP50-95.",
+    "Small image counts yield uncertain accuracy and latency estimates."
+  ],
+  "metrics": {
+    "ap_classes_with_ground_truth": 7,
+    "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+    "class_count": 7,
+    "classes": [
+      "player",
+      "monster",
+      "loot",
+      "portal",
+      "npc",
+      "platform",
+      "ladder"
+    ],
+    "confidence_threshold": 0.25,
+    "images": 192,
+    "iou_threshold": 0.5,
+    "map50": 0.9646245103193939,
+    "map50_95": null,
+    "map_at_iou": 0.9646245103193939,
+    "micro": {
+      "f1": 0.9633542423241994,
+      "fn": 110,
+      "fp": 1,
+      "ground_truth": 1569,
+      "precision": 0.9993150684931507,
+      "predictions": 1460,
+      "recall": 0.9298916507329509,
+      "tp": 1459
+    },
+    "per_class": {
+      "ladder": {
+        "ap50": 0.9800943445129853,
+        "ap_at_iou": 0.9800943445129853,
+        "f1": 0.9921671018276762,
+        "fn": 2,
+        "fp": 1,
+        "ground_truth": 192,
+        "precision": 0.9947643979057592,
+        "predictions": 191,
+        "recall": 0.9895833333333334,
+        "tp": 190
+      },
+      "loot": {
+        "ap50": 0.9603960396039604,
+        "ap_at_iou": 0.9603960396039604,
+        "f1": 0.9795918367346939,
+        "fn": 4,
+        "fp": 0,
+        "ground_truth": 100,
+        "precision": 1.0,
+        "predictions": 96,
+        "recall": 0.96,
+        "tp": 96
+      },
+      "monster": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 144,
+        "precision": 1.0,
+        "predictions": 144,
+        "recall": 1.0,
+        "tp": 144
+      },
+      "npc": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 173,
+        "precision": 1.0,
+        "predictions": 173,
+        "recall": 1.0,
+        "tp": 173
+      },
+      "platform": {
+        "ap50": 0.8118811881188119,
+        "ap_at_iou": 0.8118811881188119,
+        "f1": 0.9007633587786259,
+        "fn": 104,
+        "fp": 0,
+        "ground_truth": 576,
+        "precision": 1.0,
+        "predictions": 472,
+        "recall": 0.8194444444444444,
+        "tp": 472
+      },
+      "player": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 192,
+        "precision": 1.0,
+        "predictions": 192,
+        "recall": 1.0,
+        "tp": 192
+      },
+      "portal": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 192,
+        "precision": 1.0,
+        "predictions": 192,
+        "recall": 1.0,
+        "tp": 192
+      }
+    },
+    "predictions_below_confidence_threshold": 0,
+    "unrecognized_prediction_classes": []
+  },
+  "model_training_overlap_verified": false,
+  "schema_version": 3,
+  "scope": "synthetic_fixture",
+  "split": "val",
+  "terrain_geometry": {
+    "confidence_threshold": 0.25,
+    "coordinate_space": "original_image_pixels",
+    "error_population": "matched ground-truth targets only; inspect recall separately",
+    "floor_false_positives": "not defined for a ground-truth stratum; inspect overall platform false positives",
+    "full_width_floor": {
+      "absolute_error_pixels": {
+        "bottom": {
+          "max": 0.04777494855466102,
+          "mean": 0.02198555541135268,
+          "p50": 0.022411026435520398,
+          "p95": 0.03942800946774696,
+          "samples": 192
+        },
+        "height": {
+          "max": 0.04782168492184269,
+          "mean": 0.021998515286021814,
+          "p50": 0.02240817173824894,
+          "p95": 0.039462157333952065,
+          "samples": 192
+        },
+        "left": {
+          "max": 0.797515869140625,
+          "mean": 0.19019746780395508,
+          "p50": 0.1967010498046875,
+          "p95": 0.4719100952148432,
+          "samples": 192
+        },
+        "right": {
+          "max": 0.8426513671875,
+          "mean": 0.02813609441121419,
+          "p50": 0.0,
+          "p95": 0.15177917480468744,
+          "samples": 192
+        },
+        "top": {
+          "max": 4.673636718166563e-05,
+          "mean": 1.4468804723814325e-05,
+          "p50": 8.589394525415628e-06,
+          "p95": 3.147757811916563e-05,
+          "samples": 192
+        },
+        "width": {
+          "max": 0.8426513671875,
+          "mean": 0.21833356221516928,
+          "p50": 0.19732666015625,
+          "p95": 0.5353637695312496,
+          "samples": 192
+        }
+      },
+      "examples_are_capped_at": 20,
+      "fn": 0,
+      "fp": null,
+      "ground_truth": 192,
+      "matched_iou": {
+        "max": 0.9992743515818895,
+        "mean": 0.9938614250788281,
+        "p50": 0.9936498983242992,
+        "p95": 0.9974686155524358,
+        "samples": 192
+      },
+      "missing_examples": [],
+      "recall": 1.0,
+      "tp": 192,
+      "worst_matched_examples": [
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.023749985175754773,
+            "height": 0.02375857457028019,
+            "left": 0.0,
+            "right": 0.8426513671875,
+            "top": 8.589394525415628e-06,
+            "width": 0.8426513671875
+          },
+          "confidence": 0.9542186260223389,
+          "image_index": 173,
+          "iou": 0.9914931055399575,
+          "prediction_bbox": [
+            0.0,
+            167.99999237060547,
+            319.1573486328125,
+            172.02375030517578
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.023864426093723523,
+            "height": 0.02386538609371769,
+            "left": 0.797515869140625,
+            "right": 0.0,
+            "top": 9.599999941656279e-07,
+            "width": 0.797515869140625
+          },
+          "confidence": 0.9646298885345459,
+          "image_index": 28,
+          "iou": 0.9916062402591833,
+          "prediction_bbox": [
+            0.797515869140625,
+            168.0,
+            320,
+            172.02386474609375
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.03947416730466102,
+            "height": 0.03952090367184269,
+            "left": 0.768646240234375,
+            "right": 0.0,
+            "top": 4.673636718166563e-05,
+            "width": 0.768646240234375
+          },
+          "confidence": 0.9442296028137207,
+          "image_index": 100,
+          "iou": 0.9878611321894707,
+          "prediction_bbox": [
+            0.768646240234375,
+            167.9999542236328,
+            320,
+            172.0394744873047
+          ],
+          "prediction_index": 7,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.017730392890598523,
+            "height": 0.01773135289059269,
+            "left": 0.0,
+            "right": 0.723175048828125,
+            "top": 9.599999941656279e-07,
+            "width": 0.723175048828125
+          },
+          "confidence": 0.9442797899246216,
+          "image_index": 89,
+          "iou": 0.9933466833399103,
+          "prediction_bbox": [
+            0.0,
+            168.0,
+            319.2768249511719,
+            172.01773071289062
+          ],
+          "prediction_index": 3,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.022613205390598523,
+            "height": 0.02261416539059269,
+            "left": 0.0,
+            "right": 0.629638671875,
+            "top": 9.599999941656279e-07,
+            "width": 0.629638671875
+          },
+          "confidence": 0.9506869316101074,
+          "image_index": 141,
+          "iou": 0.9924326590283953,
+          "prediction_bbox": [
+            0.0,
+            168.0,
+            319.370361328125,
+            172.02261352539062
+          ],
+          "prediction_index": 3,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.013396896796848523,
+            "height": 0.013428374374967689,
+            "left": 0.0,
+            "right": 0.584716796875,
+            "top": 3.147757811916563e-05,
+            "width": 0.584716796875
+          },
+          "confidence": 0.9455525875091553,
+          "image_index": 70,
+          "iou": 0.9948390940843798,
+          "prediction_bbox": [
+            0.0,
+            167.99996948242188,
+            319.415283203125,
+            172.01339721679688
+          ],
+          "prediction_index": 5,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.026374496894504773,
+            "height": 0.02638308628903019,
+            "left": 0.583587646484375,
+            "right": 0.0,
+            "top": 8.589394525415628e-06,
+            "width": 0.583587646484375
+          },
+          "confidence": 0.9599193930625916,
+          "image_index": 77,
+          "iou": 0.991647535251211,
+          "prediction_bbox": [
+            0.583587646484375,
+            167.99999237060547,
+            320,
+            172.02637481689453
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.010780014472629773,
+            "height": 0.010819121445280189,
+            "left": 0.57366943359375,
+            "right": 0.0,
+            "top": 3.910697265041563e-05,
+            "width": 0.57366943359375
+          },
+          "confidence": 0.9079734086990356,
+          "image_index": 164,
+          "iou": 0.9955194483167551,
+          "prediction_bbox": [
+            0.57366943359375,
+            167.99996185302734,
+            320,
+            172.01078033447266
+          ],
+          "prediction_index": 4,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.017203964667942273,
+            "height": 0.01719729527340519,
+            "left": 0.54986572265625,
+            "right": 0.0,
+            "top": 6.669394537084372e-06,
+            "width": 0.54986572265625
+          },
+          "confidence": 0.9638162851333618,
+          "image_index": 124,
+          "iou": 0.9940121134005615,
+          "prediction_bbox": [
+            0.54986572265625,
+            168.00000762939453,
+            320,
+            172.01720428466797
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.017203964667942273,
+            "height": 0.01719729527340519,
+            "left": 0.54986572265625,
+            "right": 0.0,
+            "top": 6.669394537084372e-06,
+            "width": 0.54986572265625
+          },
+          "confidence": 0.9638162851333618,
+          "image_index": 125,
+          "iou": 0.9940121134005615,
+          "prediction_bbox": [
+            0.54986572265625,
+            168.00000762939453,
+            320,
+            172.01720428466797
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.018798508124973523,
+            "height": 0.01882998570309269,
+            "left": 0.52349853515625,
+            "right": 0.0,
+            "top": 3.147757811916563e-05,
+            "width": 0.52349853515625
+          },
+          "confidence": 0.9502896070480347,
+          "image_index": 51,
+          "iou": 0.9936939083925782,
+          "prediction_bbox": [
+            0.52349853515625,
+            167.99996948242188,
+            320,
+            172.018798828125
+          ],
+          "prediction_index": 7,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.018798508124973523,
+            "height": 0.01882998570309269,
+            "left": 0.52349853515625,
+            "right": 0.0,
+            "top": 3.147757811916563e-05,
+            "width": 0.52349853515625
+          },
+          "confidence": 0.9502896070480347,
+          "image_index": 52,
+          "iou": 0.9936939083925782,
+          "prediction_bbox": [
+            0.52349853515625,
+            167.99996948242188,
+            320,
+            172.018798828125
+          ],
+          "prediction_index": 7,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.03340879865231727,
+            "height": 0.03343264683590519,
+            "left": 0.51092529296875,
+            "right": 0.0,
+            "top": 2.3848183587915628e-05,
+            "width": 0.51092529296875
+          },
+          "confidence": 0.9586349725723267,
+          "image_index": 4,
+          "iou": 0.9901408135208608,
+          "prediction_bbox": [
+            0.51092529296875,
+            167.9999771118164,
+            320,
+            172.03340911865234
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.027473129707004773,
+            "height": 0.02748171910153019,
+            "left": 0.499420166015625,
+            "right": 0.0,
+            "top": 8.589394525415628e-06,
+            "width": 0.499420166015625
+          },
+          "confidence": 0.9666389226913452,
+          "image_index": 27,
+          "iou": 0.9916369716405455,
+          "prediction_bbox": [
+            0.499420166015625,
+            167.99999237060547,
+            320,
+            172.02747344970703
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.028350510078098523,
+            "height": 0.02835147007809269,
+            "left": 0.44940185546875,
+            "right": 0.0,
+            "top": 9.599999941656279e-07,
+            "width": 0.44940185546875
+          },
+          "confidence": 0.9669758081436157,
+          "image_index": 25,
+          "iou": 0.9915773196269897,
+          "prediction_bbox": [
+            0.44940185546875,
+            168.0,
+            320,
+            172.02835083007812
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.028350510078098523,
+            "height": 0.02835147007809269,
+            "left": 0.44940185546875,
+            "right": 0.0,
+            "top": 9.599999941656279e-07,
+            "width": 0.44940185546875
+          },
+          "confidence": 0.9669758081436157,
+          "image_index": 26,
+          "iou": 0.9915773196269897,
+          "prediction_bbox": [
+            0.44940185546875,
+            168.0,
+            320,
+            172.02835083007812
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.010315261406276477,
+            "height": 0.010314301406282311,
+            "left": 0.42974853515625,
+            "right": 0.0,
+            "top": 9.599999941656279e-07,
+            "width": 0.42974853515625
+          },
+          "confidence": 0.9682971239089966,
+          "image_index": 126,
+          "iou": 0.9960814445821006,
+          "prediction_bbox": [
+            0.42974853515625,
+            168.0,
+            320,
+            171.98968505859375
+          ],
+          "prediction_index": 7,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.016327224296901477,
+            "height": 0.01632626429690731,
+            "left": 0.425567626953125,
+            "right": 0.0,
+            "top": 9.599999941656279e-07,
+            "width": 0.425567626953125
+          },
+          "confidence": 0.9548121690750122,
+          "image_index": 174,
+          "iou": 0.9945934844434425,
+          "prediction_bbox": [
+            0.425567626953125,
+            168.0,
+            320,
+            171.98367309570312
+          ],
+          "prediction_index": 7,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.016997971015598523,
+            "height": 0.01699893101559269,
+            "left": 0.402587890625,
+            "right": 0.0,
+            "top": 9.599999941656279e-07,
+            "width": 0.402587890625
+          },
+          "confidence": 0.9649299383163452,
+          "image_index": 123,
+          "iou": 0.9945207818646695,
+          "prediction_bbox": [
+            0.402587890625,
+            168.0,
+            320,
+            172.01699829101562
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.009826340156223523,
+            "height": 0.009827300156217689,
+            "left": 0.4005126953125,
+            "right": 0.0,
+            "top": 9.599999941656279e-07,
+            "width": 0.4005126953125
+          },
+          "confidence": 0.9647141695022583,
+          "image_index": 76,
+          "iou": 0.9963037171188861,
+          "prediction_bbox": [
+            0.4005126953125,
+            168.0,
+            320,
+            172.00982666015625
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        }
+      ]
+    },
+    "full_width_floor_definition": "platform left=0 and right=image_width, absolute tolerance 1e-6",
+    "images": 192,
+    "iou_threshold": 0.5,
+    "ladder": {
+      "absolute_error_pixels": {
+        "bottom": {
+          "max": 0.30217742919921875,
+          "mean": 0.03855978193390324,
+          "p50": 0.00711822509765625,
+          "p95": 0.17379021296679986,
+          "samples": 190
+        },
+        "height": {
+          "max": 0.2938690185546875,
+          "mean": 0.05099265292865192,
+          "p50": 0.0308074951171875,
+          "p95": 0.1937872610937319,
+          "samples": 190
+        },
+        "left": {
+          "max": 0.2416839599609375,
+          "mean": 0.029156855532997534,
+          "p50": 0.0210723876953125,
+          "p95": 0.10181808471679688,
+          "samples": 190
+        },
+        "right": {
+          "max": 0.21247482299804688,
+          "mean": 0.021357365658408716,
+          "p50": 0.0155029296875,
+          "p95": 0.09416007995605424,
+          "samples": 190
+        },
+        "top": {
+          "max": 0.059608139472643984,
+          "mean": 0.024713910113378364,
+          "p50": 0.0052337646484375,
+          "p95": 0.059104599433581484,
+          "samples": 190
+        },
+        "width": {
+          "max": 0.21218109130859375,
+          "mean": 0.02742566560444079,
+          "p50": 0.0169830322265625,
+          "p95": 0.09586334228515625,
+          "samples": 190
+        }
+      },
+      "examples_are_capped_at": 20,
+      "fn": 2,
+      "fp": 1,
+      "ground_truth": 192,
+      "matched_iou": {
+        "max": 0.9972592057711033,
+        "mean": 0.9936799510084778,
+        "p50": 0.9961634327044837,
+        "p95": 0.9972592057711033,
+        "samples": 190
+      },
+      "missing_examples": [
+        {
+          "image_index": 148,
+          "target_bbox": [
+            99.0,
+            125.99999904,
+            109.0,
+            145.99999967999997
+          ],
+          "target_index": 3
+        },
+        {
+          "image_index": 164,
+          "target_bbox": [
+            99.0,
+            126.0,
+            109.0,
+            168.0
+          ],
+          "target_index": 3
+        }
+      ],
+      "recall": 0.9895833333333334,
+      "tp": 190,
+      "worst_matched_examples": [
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.30217742919921875,
+            "height": 0.2938690185546875,
+            "left": 0.07350540161132812,
+            "right": 0.21247482299804688,
+            "top": 0.00830841064453125,
+            "width": 0.13896942138671875
+          },
+          "confidence": 0.9163705110549927,
+          "image_index": 51,
+          "iou": 0.9649586740640858,
+          "prediction_bbox": [
+            99.07350540161133,
+            125.99169158935547,
+            109.21247482299805,
+            167.69782257080078
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            99.0,
+            126.0,
+            109.0,
+            168.0
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.30217742919921875,
+            "height": 0.2938690185546875,
+            "left": 0.07350540161132812,
+            "right": 0.21247482299804688,
+            "top": 0.00830841064453125,
+            "width": 0.13896942138671875
+          },
+          "confidence": 0.9163705110549927,
+          "image_index": 52,
+          "iou": 0.9649586740640858,
+          "prediction_bbox": [
+            99.07350540161133,
+            125.99169158935547,
+            109.21247482299805,
+            167.69782257080078
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            99.0,
+            126.0,
+            109.0,
+            168.0
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.24419307076172458,
+            "height": 0.1923058785547056,
+            "left": 0.008014678955078125,
+            "right": 0.008625030517578125,
+            "top": 0.051887192207018984,
+            "width": 0.01663970947265625
+          },
+          "confidence": 0.9769572019577026,
+          "image_index": 187,
+          "iou": 0.9924574596019421,
+          "prediction_bbox": [
+            114.99198532104492,
+            118.05188751220703,
+            125.00862503051758,
+            168.24419403076172
+          ],
+          "prediction_index": 3,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.13093662894530667,
+            "height": 0.1339117728124819,
+            "left": 0.2416839599609375,
+            "right": 0.0720367431640625,
+            "top": 0.002975143867175234,
+            "width": 0.169647216796875
+          },
+          "confidence": 0.9664459228515625,
+          "image_index": 136,
+          "iou": 0.9662760021112723,
+          "prediction_bbox": [
+            115.24168395996094,
+            118.00297546386719,
+            125.07203674316406,
+            167.8690643310547
+          ],
+          "prediction_index": 2,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.042633056640625,
+            "height": 0.0499267578125,
+            "left": 0.17510604858398438,
+            "right": 0.037075042724609375,
+            "top": 0.007293701171875,
+            "width": 0.21218109130859375
+          },
+          "confidence": 0.9896562695503235,
+          "image_index": 117,
+          "iou": 0.9780600932820978,
+          "prediction_bbox": [
+            98.82489395141602,
+            125.99270629882812,
+            109.03707504272461,
+            168.04263305664062
+          ],
+          "prediction_index": 2,
+          "target_bbox": [
+            99.0,
+            126.0,
+            109.0,
+            168.0
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.18142796195311917,
+            "height": 0.2103888235937319,
+            "left": 0.107208251953125,
+            "right": 0.04400634765625,
+            "top": 0.028960861640612734,
+            "width": 0.063201904296875
+          },
+          "confidence": 0.9688749313354492,
+          "image_index": 126,
+          "iou": 0.9808184471692726,
+          "prediction_bbox": [
+            115.10720825195312,
+            118.02896118164062,
+            125.04400634765625,
+            167.81857299804688
+          ],
+          "prediction_index": 6,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 121,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 7,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 122,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 7,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 123,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 6,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 124,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 7,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 125,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 7,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 127,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 5,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 128,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 4,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 129,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 4,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 130,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 4,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 131,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 4,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 132,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 4,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 133,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 4,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 134,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 3,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.16392613089843167,
+            "height": 0.1937872610937319,
+            "left": 0.10181808471679688,
+            "right": 0.035846710205078125,
+            "top": 0.029861130195300234,
+            "width": 0.06597137451171875
+          },
+          "confidence": 0.9688330888748169,
+          "image_index": 137,
+          "iou": 0.9824737131769903,
+          "prediction_bbox": [
+            115.1018180847168,
+            118.02986145019531,
+            125.03584671020508,
+            167.83607482910156
+          ],
+          "prediction_index": 2,
+          "target_bbox": [
+            115.0,
+            118.00000032000001,
+            125.0,
+            168.00000096
+          ],
+          "target_index": 3
+        }
+      ]
+    },
+    "limitations": [
+      "Full width is an image-coordinate property, not proof of walkable or hidden geometry.",
+      "Matched-box errors exclude misses; missing targets remain false negatives.",
+      "Correlated frames and repeated maps do not establish real or unseen-map accuracy."
+    ],
+    "matching": "confidence-ranked one-to-one within image and class; all platforms matched before grouping",
+    "platform": {
+      "absolute_error_pixels": {
+        "bottom": {
+          "max": 0.04777494855466102,
+          "mean": 0.00903946889332308,
+          "p50": 0.0004199366992168052,
+          "p95": 0.03743215985837195,
+          "samples": 472
+        },
+        "height": {
+          "max": 0.04782168492184269,
+          "mean": 0.00909006719461062,
+          "p50": 0.0005791939844073113,
+          "p95": 0.037460204208952054,
+          "samples": 472
+        },
+        "left": {
+          "max": 3.7203216552734375,
+          "mean": 0.19423117880094115,
+          "p50": 0.15448760986330967,
+          "p95": 0.412928771972656,
+          "samples": 472
+        },
+        "right": {
+          "max": 5.4010467529296875,
+          "mean": 0.04200836763543598,
+          "p50": 0.00386810302734375,
+          "p95": 0.1175537109375,
+          "samples": 472
+        },
+        "top": {
+          "max": 0.0007696088476620844,
+          "mean": 0.00020890381049662595,
+          "p50": 2.3848183587915628e-05,
+          "p95": 0.0006093915625058344,
+          "samples": 472
+        },
+        "width": {
+          "max": 9.121368408203125,
+          "mean": 0.20888289758714843,
+          "p50": 0.1354370117187358,
+          "p95": 0.4719100952148432,
+          "samples": 472
+        }
+      },
+      "examples_are_capped_at": 20,
+      "fn": 104,
+      "fp": 0,
+      "ground_truth": 576,
+      "matched_iou": {
+        "max": 0.9993605919244303,
+        "mean": 0.9950164620026329,
+        "p50": 0.9964859992221444,
+        "p95": 0.998343799528667,
+        "samples": 472
+      },
+      "missing_examples": [
+        {
+          "image_index": 0,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 1,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 2,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 3,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 4,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 5,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 6,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 7,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 8,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 9,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 10,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 11,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 12,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 13,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 14,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 15,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 16,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 17,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 18,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        },
+        {
+          "image_index": 19,
+          "target_bbox": [
+            180.0,
+            103.99999967999999,
+            237.99999999999997,
+            107.99999904
+          ],
+          "target_index": 2
+        }
+      ],
+      "recall": 0.8194444444444444,
+      "tp": 472,
+      "worst_matched_examples": [
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.002616562324192273,
+            "height": 0.0024267874609051887,
+            "left": 3.7203216552734375,
+            "right": 5.4010467529296875,
+            "top": 0.00018977486328708437,
+            "width": 9.121368408203125
+          },
+          "confidence": 0.9249144792556763,
+          "image_index": 164,
+          "iou": 0.8474668751911375,
+          "prediction_bbox": [
+            79.72032165527344,
+            126.00019073486328,
+            130.5989532470703,
+            130.00261688232422
+          ],
+          "prediction_index": 3,
+          "target_bbox": [
+            76.0,
+            126.00000096,
+            136.0,
+            130.00000032000003
+          ],
+          "target_index": 1
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.0005038600390605552,
+            "height": 0.0005804739843711104,
+            "left": 1.9052886962890483,
+            "right": 0.3668670654296875,
+            "top": 7.661394531055521e-05,
+            "width": 2.272155761718736
+          },
+          "confidence": 0.9782123565673828,
+          "image_index": 187,
+          "iou": 0.9654381178681313,
+          "prediction_bbox": [
+            87.90528869628906,
+            117.99992370605469,
+            151.6331329345703,
+            122.00050354003906
+          ],
+          "prediction_index": 2,
+          "target_bbox": [
+            86.00000000000001,
+            118.00000032,
+            152.0,
+            121.99999968
+          ],
+          "target_index": 1
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.00019804425778602308,
+            "height": 0.0002142630468426887,
+            "left": 1.5386199951171875,
+            "right": 0.0950927734375,
+            "top": 1.6218789056665628e-05,
+            "width": 1.6337127685546875
+          },
+          "confidence": 0.9166370630264282,
+          "image_index": 116,
+          "iou": 0.9734410524842108,
+          "prediction_bbox": [
+            74.46138000488281,
+            125.99998474121094,
+            136.0950927734375,
+            130.0001983642578
+          ],
+          "prediction_index": 5,
+          "target_bbox": [
+            76.0,
+            126.00000096,
+            136.0,
+            130.00000032000003
+          ],
+          "target_index": 1
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.00019804425778602308,
+            "height": 0.0002142630468426887,
+            "left": 1.4512596130371094,
+            "right": 0.11700057983398438,
+            "top": 1.6218789056665628e-05,
+            "width": 1.5682601928710938
+          },
+          "confidence": 0.9237016439437866,
+          "image_index": 20,
+          "iou": 0.9744759075209073,
+          "prediction_bbox": [
+            74.54874038696289,
+            125.99998474121094,
+            136.11700057983398,
+            130.0001983642578
+          ],
+          "prediction_index": 5,
+          "target_bbox": [
+            76.0,
+            126.00000096,
+            136.0,
+            130.00000032000003
+          ],
+          "target_index": 1
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.00019804425778602308,
+            "height": 0.0002142630468426887,
+            "left": 1.4512596130371094,
+            "right": 0.11700057983398438,
+            "top": 1.6218789056665628e-05,
+            "width": 1.5682601928710938
+          },
+          "confidence": 0.9237016439437866,
+          "image_index": 67,
+          "iou": 0.9744759075209073,
+          "prediction_bbox": [
+            74.54874038696289,
+            125.99998474121094,
+            136.11700057983398,
+            130.0001983642578
+          ],
+          "prediction_index": 5,
+          "target_bbox": [
+            76.0,
+            126.00000096,
+            136.0,
+            130.00000032000003
+          ],
+          "target_index": 1
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.00019804425778602308,
+            "height": 0.0002142630468426887,
+            "left": 1.4512596130371094,
+            "right": 0.11700057983398438,
+            "top": 1.6218789056665628e-05,
+            "width": 1.5682601928710938
+          },
+          "confidence": 0.9237016439437866,
+          "image_index": 165,
+          "iou": 0.9744759075209073,
+          "prediction_bbox": [
+            74.54874038696289,
+            125.99998474121094,
+            136.11700057983398,
+            130.0001983642578
+          ],
+          "prediction_index": 5,
+          "target_bbox": [
+            76.0,
+            126.00000096,
+            136.0,
+            130.00000032000003
+          ],
+          "target_index": 1
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.0002597194140605552,
+            "height": 0.0003058157812461104,
+            "left": 1.4598350524902202,
+            "right": 0.08703994750976562,
+            "top": 4.609636718555521e-05,
+            "width": 1.3727951049804545
+          },
+          "confidence": 0.9529633522033691,
+          "image_index": 43,
+          "iou": 0.9765203587000868,
+          "prediction_bbox": [
+            87.45983505249023,
+            117.99995422363281,
+            152.08703994750977,
+            122.00025939941406
+          ],
+          "prediction_index": 3,
+          "target_bbox": [
+            86.00000000000001,
+            118.00000032,
+            152.0,
+            121.99999968
+          ],
+          "target_index": 1
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.0002597194140605552,
+            "height": 0.0003058157812461104,
+            "left": 1.4598350524902202,
+            "right": 0.08703994750976562,
+            "top": 4.609636718555521e-05,
+            "width": 1.3727951049804545
+          },
+          "confidence": 0.9529633522033691,
+          "image_index": 91,
+          "iou": 0.9765203587000868,
+          "prediction_bbox": [
+            87.45983505249023,
+            117.99995422363281,
+            152.08703994750977,
+            122.00025939941406
+          ],
+          "prediction_index": 3,
+          "target_bbox": [
+            86.00000000000001,
+            118.00000032,
+            152.0,
+            121.99999968
+          ],
+          "target_index": 1
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.0002597194140605552,
+            "height": 0.0003058157812461104,
+            "left": 1.4270782470702983,
+            "right": 0.1284027099609375,
+            "top": 4.609636718555521e-05,
+            "width": 1.2986755371093608
+          },
+          "confidence": 0.9534196853637695,
+          "image_index": 136,
+          "iou": 0.9764048298790234,
+          "prediction_bbox": [
+            87.42707824707031,
+            117.99995422363281,
+            152.12840270996094,
+            122.00025939941406
+          ],
+          "prediction_index": 3,
+          "target_bbox": [
+            86.00000000000001,
+            118.00000032,
+            152.0,
+            121.99999968
+          ],
+          "target_index": 1
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.0002597194140605552,
+            "height": 0.0003058157812461104,
+            "left": 1.4060707092285014,
+            "right": 0.006038665771484375,
+            "top": 4.609636718555521e-05,
+            "width": 1.400032043457017
+          },
+          "confidence": 0.9507927298545837,
+          "image_index": 186,
+          "iou": 0.9785331417596813,
+          "prediction_bbox": [
+            87.40607070922852,
+            117.99995422363281,
+            152.00603866577148,
+            122.00025939941406
+          ],
+          "prediction_index": 3,
+          "target_bbox": [
+            86.00000000000001,
+            118.00000032,
+            152.0,
+            121.99999968
+          ],
+          "target_index": 1
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.023749985175754773,
+            "height": 0.02375857457028019,
+            "left": 0.0,
+            "right": 0.8426513671875,
+            "top": 8.589394525415628e-06,
+            "width": 0.8426513671875
+          },
+          "confidence": 0.9542186260223389,
+          "image_index": 173,
+          "iou": 0.9914931055399575,
+          "prediction_bbox": [
+            0.0,
+            167.99999237060547,
+            319.1573486328125,
+            172.02375030517578
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.023864426093723523,
+            "height": 0.02386538609371769,
+            "left": 0.797515869140625,
+            "right": 0.0,
+            "top": 9.599999941656279e-07,
+            "width": 0.797515869140625
+          },
+          "confidence": 0.9646298885345459,
+          "image_index": 28,
+          "iou": 0.9916062402591833,
+          "prediction_bbox": [
+            0.797515869140625,
+            168.0,
+            320,
+            172.02386474609375
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.03947416730466102,
+            "height": 0.03952090367184269,
+            "left": 0.768646240234375,
+            "right": 0.0,
+            "top": 4.673636718166563e-05,
+            "width": 0.768646240234375
+          },
+          "confidence": 0.9442296028137207,
+          "image_index": 100,
+          "iou": 0.9878611321894707,
+          "prediction_bbox": [
+            0.768646240234375,
+            167.9999542236328,
+            320,
+            172.0394744873047
+          ],
+          "prediction_index": 7,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.017730392890598523,
+            "height": 0.01773135289059269,
+            "left": 0.0,
+            "right": 0.723175048828125,
+            "top": 9.599999941656279e-07,
+            "width": 0.723175048828125
+          },
+          "confidence": 0.9442797899246216,
+          "image_index": 89,
+          "iou": 0.9933466833399103,
+          "prediction_bbox": [
+            0.0,
+            168.0,
+            319.2768249511719,
+            172.01773071289062
+          ],
+          "prediction_index": 3,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.022613205390598523,
+            "height": 0.02261416539059269,
+            "left": 0.0,
+            "right": 0.629638671875,
+            "top": 9.599999941656279e-07,
+            "width": 0.629638671875
+          },
+          "confidence": 0.9506869316101074,
+          "image_index": 141,
+          "iou": 0.9924326590283953,
+          "prediction_bbox": [
+            0.0,
+            168.0,
+            319.370361328125,
+            172.02261352539062
+          ],
+          "prediction_index": 3,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.013396896796848523,
+            "height": 0.013428374374967689,
+            "left": 0.0,
+            "right": 0.584716796875,
+            "top": 3.147757811916563e-05,
+            "width": 0.584716796875
+          },
+          "confidence": 0.9455525875091553,
+          "image_index": 70,
+          "iou": 0.9948390940843798,
+          "prediction_bbox": [
+            0.0,
+            167.99996948242188,
+            319.415283203125,
+            172.01339721679688
+          ],
+          "prediction_index": 5,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.026374496894504773,
+            "height": 0.02638308628903019,
+            "left": 0.583587646484375,
+            "right": 0.0,
+            "top": 8.589394525415628e-06,
+            "width": 0.583587646484375
+          },
+          "confidence": 0.9599193930625916,
+          "image_index": 77,
+          "iou": 0.991647535251211,
+          "prediction_bbox": [
+            0.583587646484375,
+            167.99999237060547,
+            320,
+            172.02637481689453
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.010780014472629773,
+            "height": 0.010819121445280189,
+            "left": 0.57366943359375,
+            "right": 0.0,
+            "top": 3.910697265041563e-05,
+            "width": 0.57366943359375
+          },
+          "confidence": 0.9079734086990356,
+          "image_index": 164,
+          "iou": 0.9955194483167551,
+          "prediction_bbox": [
+            0.57366943359375,
+            167.99996185302734,
+            320,
+            172.01078033447266
+          ],
+          "prediction_index": 4,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.017203964667942273,
+            "height": 0.01719729527340519,
+            "left": 0.54986572265625,
+            "right": 0.0,
+            "top": 6.669394537084372e-06,
+            "width": 0.54986572265625
+          },
+          "confidence": 0.9638162851333618,
+          "image_index": 124,
+          "iou": 0.9940121134005615,
+          "prediction_bbox": [
+            0.54986572265625,
+            168.00000762939453,
+            320,
+            172.01720428466797
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        },
+        {
+          "absolute_error_pixels": {
+            "bottom": 0.017203964667942273,
+            "height": 0.01719729527340519,
+            "left": 0.54986572265625,
+            "right": 0.0,
+            "top": 6.669394537084372e-06,
+            "width": 0.54986572265625
+          },
+          "confidence": 0.9638162851333618,
+          "image_index": 125,
+          "iou": 0.9940121134005615,
+          "prediction_bbox": [
+            0.54986572265625,
+            168.00000762939453,
+            320,
+            172.01720428466797
+          ],
+          "prediction_index": 8,
+          "target_bbox": [
+            0.0,
+            168.00000096,
+            320.0,
+            172.00000032000003
+          ],
+          "target_index": 0
+        }
+      ]
+    },
+    "quantile": "linear interpolation at (n-1)*q",
+    "schema_version": 1,
+    "source": "visible_labels_and_model_predictions_only"
+  }
+}

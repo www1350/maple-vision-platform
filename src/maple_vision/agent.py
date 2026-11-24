@@ -3,38 +3,62 @@
 from dataclasses import dataclass, replace
 
 from .contracts import Detection, Status
-from .scene import ImageFrame
+from .scene import PALETTE, ImageFrame
 from .sim_types import CLASS_SPECS, ClassSpec, SimAction
-from .vision import Detector, PixelPerception, VisualObservation
+from .vision import (
+    Detector,
+    PixelPerception,
+    TerrainSource,
+    VisualObservation,
+    validate_terrain_source,
+)
 
 
 class HybridPerception:
-    """YOLO objects plus fixture terrain/HUD pixels; no dynamic-object fallback.
+    """Model objects plus explicit fixture UI; terrain source is selectable.
 
-    Thin static platforms use the scene-specific CV parser. Its scope is explicit:
-    this composition is not a general real-game UI or terrain parser.
+    The default keeps the original fixture terrain parser. In model mode all
+    seven object classes, including platforms and ladders, come only from the
+    detector. Neither mode is a general real-game UI parser.
     """
 
-    def __init__(self, detector: Detector) -> None:
+    def __init__(self, detector: Detector, *, terrain_source: TerrainSource = "fixture") -> None:
+        self.terrain_source = validate_terrain_source(terrain_source, detector)
         self.detector = detector
         self.hud = PixelPerception()
 
     def observe(self, frame: ImageFrame) -> VisualObservation:
-        context = self.hud.observe(frame)
-        objects = tuple(
-            d for d in self.detector.detect(frame) if d.class_id not in {"platform", "ladder"}
-        )
-        terrain = tuple(d for d in context.detections if d.class_id in {"platform", "ladder"})
-        detections = objects + terrain
+        if self.terrain_source == "model":
+            context = self.hud.observe_hud(frame)
+            detections = self.detector.detect(frame)
+            if not isinstance(detections, tuple) or any(
+                not isinstance(d, Detection) for d in detections
+            ):
+                raise ValueError("model detections must be an immutable tuple of Detection values")
+            if any(d.class_id not in PALETTE for d in detections):
+                raise ValueError("model detection class is not a supported fixture object class")
+            if any(d.bbox[2] > frame.width or d.bbox[3] > frame.height for d in detections):
+                raise ValueError("model detection box must be inside the input frame")
+            source_id = "onnx-all-objects+fixture-hud-v1"
+        else:
+            context = self.hud.observe(frame)
+            objects = tuple(
+                d for d in self.detector.detect(frame) if d.class_id not in {"platform", "ladder"}
+            )
+            terrain = tuple(d for d in context.detections if d.class_id in {"platform", "ladder"})
+            detections = objects + terrain
+            source_id = "onnx-objects+fixture-terrain-hud-v1"
         players = [item for item in detections if item.class_id == "player"]
         confidence = players[0].confidence if len(players) == 1 else 0.0
         known = len(players) == 1 and context.map_id is not None and context.hp_ratio is not None
+        if self.terrain_source == "model":
+            known = known and context.mp_ratio is not None
         return replace(
             context,
             detections=detections,
             confidence=confidence,
             status=Status.KNOWN if known else Status.UNKNOWN,
-            source_id="onnx-objects+fixture-terrain-hud-v1",
+            source_id=source_id,
         )
 
 

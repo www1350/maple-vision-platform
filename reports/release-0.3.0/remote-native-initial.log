@@ -1,0 +1,197 @@
+=================================== FAILURES ===================================
+__ test_native_actual_head_dfl_anchor_coverage_and_offline_restoration[False] __
+
+small_dataset = PosixPath('/home/runner/work/maple-vision-platform/maple-vision-platform/artifacts/training-smoke/test_native_actual_head_dfl_an0/dataset')
+tmp_path = PosixPath('/home/runner/work/maple-vision-platform/maple-vision-platform/artifacts/training-smoke/test_native_actual_head_dfl_an0')
+candidate = False
+
+    @pytest.mark.skipif(not NATIVE, reason="opt-in native terrain model architecture audit")
+    @pytest.mark.parametrize("candidate", [False, True])
+    def test_native_actual_head_dfl_anchor_coverage_and_offline_restoration(
+        small_dataset, tmp_path, candidate
+    ):
+        manifest = json.loads((small_dataset / "manifest.json").read_text())
+        records = [row for row in manifest["samples"] if row["split"] == "val"]
+        sessions = {row["id"]: row for row in manifest["sessions"]}
+        assert len(records) == 2
+        assert {sessions[row["session_id"]]["map_id"] for row in records} == {"meadow", "cavern"}
+        for row in records:
+            floors = []
+            for line in (small_dataset / row["label"]).read_text().splitlines():
+                category, cx, _cy, width, height = map(float, line.split())
+                if (
+                    manifest["classes"][int(category)] == "platform"
+                    and abs(cx - width / 2) < 1e-12
+                    and abs(cx + width / 2 - 1) < 1e-12
+                    and 0 < height * row["height"] <= 8.001
+                ):
+                    floors.append(line)
+            assert len(floors) == 1, "each independently inspected val label has exactly one floor"
+        image_loader = Image.open
+        original_offline = os.environ.get("YOLO_OFFLINE")
+        path = tmp_path / "audit.json"
+>       report = audit_terrain_architecture(
+            small_dataset,
+            CANDIDATE if candidate else BASELINE,
+            path,
+            image_size=320,
+            warmup=1,
+            iterations=2 if candidate else 0,
+        )
+
+tests/test_terrain_audit.py:302: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/maple_vision/terrain_audit.py:599: in audit_terrain_architecture
+    with _offline_runtime(staging) as (torch, ultralytics), torch.random.fork_rng(devices=[]):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/maple_vision/training.py:219: in _offline_runtime
+    handler.setStream(sys.stderr)
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/logging/__init__.py:1184: in setStream
+    self.flush()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <StreamHandler (ERROR)>
+
+    def flush(self):
+        """
+        Flushes the stream.
+        """
+        self.acquire()
+        try:
+            if self.stream and hasattr(self.stream, "flush"):
+>               self.stream.flush()
+E               ValueError: I/O operation on closed file.
+
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/logging/__init__.py:1144: ValueError
+__ test_native_actual_head_dfl_anchor_coverage_and_offline_restoration[True] ___
+
+small_dataset = PosixPath('/home/runner/work/maple-vision-platform/maple-vision-platform/artifacts/training-smoke/test_native_actual_head_dfl_an1/dataset')
+tmp_path = PosixPath('/home/runner/work/maple-vision-platform/maple-vision-platform/artifacts/training-smoke/test_native_actual_head_dfl_an1')
+candidate = True
+
+    @pytest.mark.skipif(not NATIVE, reason="opt-in native terrain model architecture audit")
+    @pytest.mark.parametrize("candidate", [False, True])
+    def test_native_actual_head_dfl_anchor_coverage_and_offline_restoration(
+        small_dataset, tmp_path, candidate
+    ):
+        manifest = json.loads((small_dataset / "manifest.json").read_text())
+        records = [row for row in manifest["samples"] if row["split"] == "val"]
+        sessions = {row["id"]: row for row in manifest["sessions"]}
+        assert len(records) == 2
+        assert {sessions[row["session_id"]]["map_id"] for row in records} == {"meadow", "cavern"}
+        for row in records:
+            floors = []
+            for line in (small_dataset / row["label"]).read_text().splitlines():
+                category, cx, _cy, width, height = map(float, line.split())
+                if (
+                    manifest["classes"][int(category)] == "platform"
+                    and abs(cx - width / 2) < 1e-12
+                    and abs(cx + width / 2 - 1) < 1e-12
+                    and 0 < height * row["height"] <= 8.001
+                ):
+                    floors.append(line)
+            assert len(floors) == 1, "each independently inspected val label has exactly one floor"
+        image_loader = Image.open
+        original_offline = os.environ.get("YOLO_OFFLINE")
+        path = tmp_path / "audit.json"
+>       report = audit_terrain_architecture(
+            small_dataset,
+            CANDIDATE if candidate else BASELINE,
+            path,
+            image_size=320,
+            warmup=1,
+            iterations=2 if candidate else 0,
+        )
+
+tests/test_terrain_audit.py:302: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/maple_vision/terrain_audit.py:599: in audit_terrain_architecture
+    with _offline_runtime(staging) as (torch, ultralytics), torch.random.fork_rng(devices=[]):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/maple_vision/training.py:219: in _offline_runtime
+    handler.setStream(sys.stderr)
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/logging/__init__.py:1184: in setStream
+    self.flush()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <StreamHandler (ERROR)>
+
+    def flush(self):
+        """
+        Flushes the stream.
+        """
+        self.acquire()
+        try:
+            if self.stream and hasattr(self.stream, "flush"):
+>               self.stream.flush()
+E               ValueError: I/O operation on closed file.
+
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/logging/__init__.py:1144: ValueError
+___________ test_native_candidate_one_epoch_training_export_and_ort ____________
+
+small_dataset = PosixPath('/home/runner/work/maple-vision-platform/maple-vision-platform/artifacts/training-smoke/test_native_candidate_one_epoc0/dataset')
+tmp_path = PosixPath('/home/runner/work/maple-vision-platform/maple-vision-platform/artifacts/training-smoke/test_native_candidate_one_epoc0')
+
+    @pytest.mark.skipif(not NATIVE, reason="opt-in real candidate CPU training/export smoke")
+    def test_native_candidate_one_epoch_training_export_and_ort(small_dataset, tmp_path):
+        image_loader = Image.open
+>       result = train_yolo(
+            small_dataset,
+            tmp_path / "training",
+            CANDIDATE,
+            epochs=1,
+            image_size=160,
+            batch=2,
+            seed=42,
+        )
+
+tests/test_terrain_audit.py:337: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/maple_vision/training.py:339: in train_yolo
+    with _offline_runtime(staging) as (torch, ultralytics):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/maple_vision/training.py:219: in _offline_runtime
+    handler.setStream(sys.stderr)
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/logging/__init__.py:1184: in setStream
+    self.flush()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <StreamHandler (ERROR)>
+
+    def flush(self):
+        """
+        Flushes the stream.
+        """
+        self.acquire()
+        try:
+            if self.stream and hasattr(self.stream, "flush"):
+>               self.stream.flush()
+E               ValueError: I/O operation on closed file.
+
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/logging/__init__.py:1144: ValueError
+=============================== warnings summary ===============================
+tests/test_training.py::test_real_cpu_training_export_and_adapter_inference
+  /opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/site-packages/ultralytics/utils/export/engine.py:118: DeprecationWarning: You are using the legacy TorchScript-based ONNX export. Starting in PyTorch 2.9, the new torch.export-based ONNX exporter has become the default. Learn more about the new export logic: https://docs.pytorch.org/docs/stable/onnx_export.html. For exporting control flow: https://pytorch.org/tutorials/beginner/onnx/export_control_flow_model_to_onnx_tutorial.html
+    torch.onnx.export(
+
+tests/test_training.py::test_real_cpu_training_export_and_adapter_inference
+  /opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/site-packages/torch/onnx/_internal/torchscript_exporter/utils.py:218: DeprecationWarning: The feature will be removed. Please remove usage of this function
+    setup_onnx_logging(verbose) as log_ctx,
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /home/runner/work/maple-vision-platform/maple-vision-platform/artifacts/pytest-training.xml -
+=========================== short test summary info ============================
+FAILED tests/test_terrain_audit.py::test_native_actual_head_dfl_anchor_coverage_and_offline_restoration[False] - ValueError: I/O operation on closed file.
+FAILED tests/test_terrain_audit.py::test_native_actual_head_dfl_anchor_coverage_and_offline_restoration[True] - ValueError: I/O operation on closed file.
+FAILED tests/test_terrain_audit.py::test_native_candidate_one_epoch_training_export_and_ort - ValueError: I/O operation on closed file.
+3 failed, 152 passed, 2 warnings in 6.25s
+##[error]Process completed with exit code 1.

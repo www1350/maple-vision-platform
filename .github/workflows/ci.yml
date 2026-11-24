@@ -92,7 +92,7 @@ jobs:
         run: python -c "from pathlib import Path; Path('artifacts').mkdir(exist_ok=True)"
       - name: Train, export, infer, decode local video, and run local OCR
         run: >-
-          python -m pytest tests/test_training.py tests/test_recordings.py tests/test_ocr.py -q
+          python -m pytest tests/test_training.py tests/test_terrain_audit.py tests/test_recordings.py tests/test_ocr.py -q
           --basetemp=artifacts/training-smoke
           --junitxml=artifacts/pytest-training.xml
       - name: Training smoke evidence

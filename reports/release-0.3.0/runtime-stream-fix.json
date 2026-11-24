@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "scope": "post_experiment_offline_runtime_logging_lifecycle_repair",
+  "historical_experiment_source_commit": "ff357c8951da8e84265d31c5a8b86a48934a4f01",
+  "historical_training_module_sha256": "f15fd0a5051780225b9952505c98e45cbb61c34ef4ba15efe97957fd9b09e8d6",
+  "current_training_module_sha256": "c1f6be9c6d5b9a028e089fa59a892adaf8c2e60c2e793d52be0823767fb2c739",
+  "changed_code_paths": [
+    "src/maple_vision/training.py",
+    "tests/test_offline_runtime.py"
+  ],
+  "failure": "A global Ultralytics StreamHandler retains a prior caller capture stream. After that stream closes, logging.StreamHandler.setStream attempts to flush it when entering a later offline runtime.",
+  "initial_remote_evidence": "remote-ci.json",
+  "before_fix_exact_ci_order": {
+    "tests": 155,
+    "failures": 3,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 152,
+    "junit_seconds": 10.082,
+    "pytest_seconds": 10.28,
+    "evidence": "local-native-order-before-fix.xml",
+    "log": "local-native-order-before-fix.log"
+  },
+  "after_fix_exact_ci_order": {
+    "tests": 155,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 155,
+    "junit_seconds": 10.681,
+    "pytest_seconds": 10.83,
+    "warnings": 5,
+    "evidence": "ci-native-order-after-fix.xml",
+    "log": "ci-native-order-after-fix.log"
+  },
+  "focused_runtime_regressions": {
+    "tests": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 13,
+    "junit_seconds": 0.305,
+    "new_cases": 11,
+    "pytest_seconds": 0.45,
+    "evidence": "runtime-stream-fix-tests.xml"
+  },
+  "repair": "Lock the same handler while switching. Skip flushing only when the previous stream is explicitly closed; otherwise use the normal setStream behavior. Use the same helper at entry and restoration. Preserve ordinary flush errors, handler identity, level, formatter, logging output, and restoration of other runtime state.",
+  "independent_review": {
+    "status": "passed",
+    "mode": "separate read-only agent",
+    "native_tests_not_duplicated_by_reviewer": true
+  },
+  "rebuilt_wheel": {
+    "passed": true,
+    "evidence": "wheel-smoke.json",
+    "python_source_files_byte_identical_to_current": 30,
+    "yaml_resources_byte_identical_to_current": 2,
+    "wheel_sha256": "f0b7603f2cd2589127d27bd3c05ae310973c6b45e7b4c07a8feb08d3235c719f",
+    "seconds": 20.961
+  },
+  "experimental_artifacts_changed": false,
+  "research_candidate_retrained": false,
+  "test_model_predictions_or_scoring_performed": false,
+  "experiment_relationship": "This code repair occurred after the registered 40-epoch experiment and did not execute in it. The registered sources, inputs, checkpoint, ONNX, validation reports, thresholds and rejection remain historical immutable evidence. Native one-epoch smoke tests validate engineering execution only.",
+  "repair_commit": "3340d8f2453082aff002a62ae56f43123fa83c63",
+  "verified_remote_ci": "https://github.com/www1350/maple-vision-platform/actions/runs/45421893081"
+}

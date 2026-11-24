@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-11-24T13:47:55.505758+00:00",
+  "purpose": "input identity and duplicate isolation only; no test model prediction or scoring",
+  "dataset_manifest_sha256": "f73d7390980fa6aedea3b3a12ada2f0a8f3658519e0ca435ca93414bbd02aac4",
+  "within_dataset_cross_split_rgb_duplicates": 0,
+  "prior_datasets": [
+    {
+      "dataset": "artifacts/yolo-experiment/dataset",
+      "manifest_sha256": "ecc0ff6c4e9bbebc9915f0313bb3b227a99ecc321051ee2ae2e8a0eff096ad67",
+      "images": 288,
+      "same_rgb_hashes": 0,
+      "same_session_seeds": []
+    },
+    {
+      "dataset": "artifacts/v02-experiment/dataset",
+      "manifest_sha256": "670f6dae181f0f4b3107ba6a47cb733f19cfbc216c4e8e8c23f96b756601b3ff",
+      "images": 864,
+      "same_rgb_hashes": 0,
+      "same_session_seeds": []
+    }
+  ],
+  "scope": "new synthetic sessions; same two built-in maps and mechanics"
+}

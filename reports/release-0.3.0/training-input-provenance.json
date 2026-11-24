@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "checked_at_utc": "2026-11-24T14:21:49.289951+00:00",
+  "dataset_manifest_sha256": "f73d7390980fa6aedea3b3a12ada2f0a8f3658519e0ca435ca93414bbd02aac4",
+  "config_sha256": "b4a42896b69b9a55d1fc2324e2c4b55cc12d8fdd4ac69ab26583957b00839111",
+  "source_training_files_unchanged": {
+    "src/maple_vision/training.py": true,
+    "src/maple_vision/dataset.py": true,
+    "src/maple_vision/scene.py": true,
+    "src/maple_vision/simulation.py": true,
+    "src/maple_vision/sim_types.py": true
+  },
+  "source_and_actual_training_copy_files_compared": 1730,
+  "source_and_actual_training_copy_bytes_identical": true,
+  "training_entry_pre_and_post_copy_checks_executed": true,
+  "architecture_audit_preallocation_guard_is_separate_from_training": true,
+  "weights_sha256": "85a4b789dae6b33940f1f5cf22b7c1f6a080f595f23925cb7e589ea784fd4748",
+  "model_sha256": "be5cd99bce0f52b0cdfc7e033251f2c919e14d203c8b72d394a18d7a067751f0",
+  "test_model_scoring_performed": false,
+  "actual_source_manifest_hash_checked": true,
+  "actual_training_copy_manifest_hash_checked": true,
+  "actual_training_copy_model_yaml_hash_checked": true
+}

@@ -1,6 +1,6 @@
 # 从安装到独立验证
 
-本文命令对应 v0.1 的实际 CLI。默认运行对象是内置的独立模拟器；例子中的职业、地图与数值为合成样例。安装依赖需要访问包源，运行无需登录游戏、提供 LLM 密钥或下载远程模型。
+本文命令对应当前 v0.3 CLI，并保留既有流程。默认运行对象是内置的独立模拟器；例子中的职业、地图与数值为合成样例。安装依赖需要访问包源，运行无需登录游戏、提供 LLM 密钥或下载远程模型。
 
 ## 1. 安装
 
@@ -193,24 +193,24 @@ python -m ruff check .
 python -m mypy
 python -m pytest -q
 python -m build --wheel --no-isolation
-python scripts/wheel_smoke.py --wheel dist/maple_vision_platform-0.1.0-py3-none-any.whl
+python scripts/wheel_smoke.py --wheel dist/maple_vision_platform-0.3.0-py3-none-any.whl
 ```
 
-`wheel_smoke.py` 在仓库之外创建全新虚拟环境，只安装固定 NumPy/Pillow 与构建 wheel，然后验证两个 CLI 入口、P0 演示/v1 数据库、v2 知识快照、素材、6 会话 × 2 帧数据集、完整视觉任务与重放。它还检查 tiny 模型配置确实打进 wheel，且不靠源码目录或现有 PyTorch/ONNX 安装掩盖依赖问题。stdout 是一份 JSON，默认报告位于 `artifacts/wheel-smoke.json`；可用 `--output` 改路径。`dist` 只有一个 wheel 时可省略 `--wheel`。
+`wheel_smoke.py` 在仓库之外创建全新虚拟环境，只安装固定 NumPy/Pillow 与构建 wheel，验证 CLI、P0/v1 数据库、知识快照及增量计划、素材、legacy/lifecycle 数据、完整视觉任务和实际重新推理。它还检查两份模型配置均已打包，并用自定义检测器验证模型地形路线不依赖颜色检测或训练包。stdout 是一份 JSON，默认报告位于 `artifacts/wheel-smoke.json`；可用 `--output` 改路径。`dist` 只有一个 wheel 时可省略 `--wheel`。
 
 训练集成测试默认跳过，避免基础开发环境隐式安装和运行大型依赖。安装训练环境后，显式启用真实训练/导出/推理验证：
 
 Linux：
 
 ```bash
-MAPLE_TRAINING_SMOKE=1 python -m pytest tests/test_training.py -q
+MAPLE_TRAINING_SMOKE=1 python -m pytest tests/test_training.py tests/test_terrain_audit.py -q
 ```
 
 Windows PowerShell：
 
 ```powershell
 $env:MAPLE_TRAINING_SMOKE = "1"
-& $maplePython -m pytest tests/test_training.py -q
+& $maplePython -m pytest tests/test_training.py tests/test_terrain_audit.py -q
 Remove-Item Env:MAPLE_TRAINING_SMOKE
 ```
 
@@ -236,3 +236,23 @@ python -m maple_vision vision ocr artifacts/recording-001/frames/000000.png --la
 ```
 
 Tesseract 不在 PATH 时，为 `vision ocr` 指定 `--binary` 的绝对路径；语言数据在自定义目录时增加 `--tessdata-dir`。仅在已安装 `chi_sim` 时使用该语言或 `eng+chi_sim`；程序不会自动下载语言包。OCR 输出是识别文本与分数，真实游戏小字和中文效果须另行验证。
+
+## 12. 地形研究与可重复的质量判断
+
+本轮地形候选在验证集上未达到总平台召回门槛，保存在 [terrain-candidate](../examples/terrain-candidate/README.md)，没有替换已验收的 lifecycle 混合模型。无需训练或调用 LLM，即可用标准库核对保存的结果：
+
+```bash
+python scripts/check_terrain_experiment.py --preregistration reports/release-0.3.0/preregistration.json --candidate reports/release-0.3.0/terrain-model-validation.json --baseline reports/release-0.3.0/lifecycle-baseline-validation.json --output artifacts/rechecked-terrain-gates.json
+```
+
+这条命令预期返回 **1** 并保存13/14通过、平台召回未通过的结果。返回0才表示所给报告的质量数字过线，返回2表示输入缺陷或输出已存在；任何返回码都不会自动推广模型或证明真实域可靠性。脚本检查报告中的数据/模型/阈值/人口/运行配置，实际重新评分使用 `vision benchmark --terrain-metrics --split val`，详见候选目录的复现命令。
+
+训练环境可在训练前做可表示性检查：
+
+```bash
+python -m maple_vision model audit-terrain artifacts/reproduced-terrain-data --config configs/terrain-yolo.yaml --split val --iterations 0 --output artifacts/structure-audit.json
+```
+
+该命令只允许 train/val，构建前检查有界拓扑和分配形状，之后检查实际DFL/stride、分配器候选和每边目标范围。`--iterations 0` 不测随机权重延迟，不能据此宣称部署速度。
+
+给自己已经完成独立验收的本地模型选择模型地形时，`lab run/suite/soak/reinfer` 都必须显式使用相同的 `--terrain-source model` 和模型/manifest。`vision observe` 也支持该开关；`vision benchmark` 本来就直接评价模型，不使用该开关。此模式七类对象全部来自模型，UI仍为合成像素，不会用颜色地形补漏。[模式合同](MODEL_TERRAIN.md) · [地形误差定义](TERRAIN_EVALUATION.md) · [本轮完整计划](V0_3_PLAN.md)

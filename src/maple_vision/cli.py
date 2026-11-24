@@ -101,6 +101,15 @@ def _parser() -> argparse.ArgumentParser:
         if operation == "benchmark":
             subparser.add_argument("--output", type=Path, required=True)
             subparser.add_argument("--split", choices=("train", "val", "test"), default="test")
+            subparser.add_argument(
+                "--terrain-metrics",
+                action="store_true",
+                help="include full-width floor recall and matched terrain edge errors",
+            )
+        else:
+            subparser.add_argument(
+                "--terrain-source", choices=("fixture", "model"), default="fixture"
+            )
     ocr = vision_commands.add_parser("ocr", help="read text locally with installed Tesseract")
     ocr.add_argument("path", type=Path)
     ocr.add_argument("--language", default="eng")
@@ -148,6 +157,19 @@ def _parser() -> argparse.ArgumentParser:
         choices=("synthetic_fixture", "authorized_recordings"),
         default="synthetic_fixture",
     )
+    audit = model_commands.add_parser(
+        "audit-terrain", help="audit a local detection head before training; train/val only"
+    )
+    audit.add_argument("dataset", type=Path)
+    audit.add_argument(
+        "--config", type=Path, default=Path(__file__).parent / "resources" / "terrain-yolo.yaml"
+    )
+    audit.add_argument("--output", type=Path, required=True)
+    audit.add_argument("--split", choices=("train", "val"), default="val")
+    audit.add_argument("--image-size", type=int, default=320)
+    audit.add_argument("--warmup", type=int, default=3)
+    audit.add_argument("--iterations", type=int, default=20)
+    audit.add_argument("--seed", type=int, default=42)
     lab = commands.add_parser("lab", help="simulator-only visual missions, fault tests and replay")
     lab_commands = lab.add_subparsers(dest="operation", required=True)
     run = lab_commands.add_parser("run")
@@ -184,6 +206,10 @@ def _parser() -> argparse.ArgumentParser:
     for model_command in (suite, soak, reinfer):
         model_command.add_argument("--model", type=Path)
         model_command.add_argument("--manifest", type=Path)
+    for model_command in (run, suite, soak, reinfer):
+        model_command.add_argument(
+            "--terrain-source", choices=("fixture", "model"), default="fixture"
+        )
     chat = commands.add_parser(
         "chat-draft", help="prepare a local human-reviewed reply; sends nothing"
     )
@@ -326,6 +352,19 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
             )
         return validate_recording(args.path)
     if args.command == "model":
+        if args.operation == "audit-terrain":
+            from .terrain_audit import audit_terrain_architecture
+
+            return audit_terrain_architecture(
+                args.dataset,
+                args.config,
+                args.output,
+                split=args.split,
+                image_size=args.image_size,
+                warmup=args.warmup,
+                iterations=args.iterations,
+                seed=args.seed,
+            )
         from .training import export_yolo, train_yolo
 
         if args.operation == "train":
@@ -345,12 +384,17 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         return chat_draft(args.incoming, args.reply)
     if args.command in {"vision", "lab", "recording"}:
         from .onnx_detector import OnnxDetector
+        from .vision import validate_terrain_source
 
         detector = None
         if getattr(args, "model", None) or getattr(args, "manifest", None):
             if not args.model or not args.manifest:
                 raise ValueError("--model and --manifest must be supplied together")
             detector = OnnxDetector(args.model, args.manifest)
+        requested_terrain_source = getattr(args, "terrain_source", "fixture")
+        if requested_terrain_source == "model" and detector is None:
+            raise ValueError("--terrain-source model requires --model and --manifest")
+        terrain_source = validate_terrain_source(requested_terrain_source, detector)
         if args.command == "recording":
             from .recordings import observe_recording
 
@@ -376,13 +420,21 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 from .evaluation import benchmark_dataset
 
                 return benchmark_dataset(
-                    args.path, args.output, detector=detector, split=args.split
+                    args.path,
+                    args.output,
+                    detector=detector,
+                    split=args.split,
+                    terrain_metrics=args.terrain_metrics,
                 )
             from .agent import HybridPerception
             from .scene import ImageFrame
             from .vision import PixelPerception
 
-            perception = PixelPerception() if detector is None else HybridPerception(detector)
+            perception = (
+                PixelPerception()
+                if detector is None
+                else HybridPerception(detector, terrain_source=terrain_source)
+            )
             return asdict(perception.observe(ImageFrame.from_file(args.path)))
         from .lab import RunConfig, run_episode, run_soak, run_suite, verify_run
 
@@ -409,9 +461,12 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 detector,
                 class_profile=profile,
                 sprite_pack=sprites,
+                terrain_source=terrain_source,
             )
         if args.operation == "suite":
-            return run_suite(args.output, args.seeds, detector=detector)
+            return run_suite(
+                args.output, args.seeds, detector=detector, terrain_source=terrain_source
+            )
         if args.operation == "soak":
             return run_soak(
                 args.output,
@@ -419,11 +474,12 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 detector=detector,
                 resource_interval_seconds=args.resource_interval,
                 max_resource_samples=args.max_resource_samples,
+                terrain_source=terrain_source,
             )
         if args.operation == "reinfer":
             from .lab import verify_perception
 
-            return verify_perception(args.path, detector=detector)
+            return verify_perception(args.path, detector=detector, terrain_source=terrain_source)
         return verify_run(args.path)
     raise ValueError("unsupported command")
 

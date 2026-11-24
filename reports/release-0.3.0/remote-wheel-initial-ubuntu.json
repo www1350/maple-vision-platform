@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "wheel": "maple_vision_platform-0.3.0-py3-none-any.whl",
+  "wheel_sha256": "abcdee07ddc494b7d364ddb5732a4c62c109a3cfdffe5b64774bd9a3e8f2d8c4",
+  "python": "3.12.16",
+  "platform": "Linux",
+  "wall_seconds": 11.654,
+  "checks": {
+    "installed_package": {
+      "module": "/tmp/maple-wheel-ebf9f4p9/venv/lib/python3.12/site-packages/maple_vision/__init__.py",
+      "version": "0.3.0",
+      "runtime": {
+        "numpy": "2.5.5",
+        "Pillow": "13.0.0"
+      },
+      "model_config_packaged": true,
+      "terrain_config_packaged": true,
+      "training_not_installed": true,
+      "inference_not_installed": true
+    },
+    "model_terrain_without_native_extras": {
+      "pipeline": "onnx-all-objects+fixture-hud-v1",
+      "fixture_object_detection_called": false,
+      "object_count": 2,
+      "native_extras_required": false
+    },
+    "p0_demo": {
+      "schema_version": 1,
+      "frames_processed": 3,
+      "intents_emitted": 3,
+      "executions_skipped": 3,
+      "verifications_not_applicable": 3
+    },
+    "p0_database": {
+      "schema_version": 1,
+      "source_records": 0
+    },
+    "catalog_snapshot": {
+      "schema_version": 2,
+      "records": 1,
+      "entities": 1,
+      "legacy_source_records": 0,
+      "status_counts": {
+        "CONFLICTED": 0,
+        "PROVISIONAL": 0,
+        "UNKNOWN": 0,
+        "VERIFIED": 1
+      },
+      "scopes": [
+        "synthetic_fixture"
+      ],
+      "game_versions": [
+        "wheel-smoke-v1"
+      ]
+    },
+    "catalog_sync": {
+      "plan_id": "1d135ed247f35f3d8a59b99265c93574c40d95139b36deaafab6a12c72b4c80d",
+      "source_sha256": "570883deec4327600edf6bad21ebbaa221206e86d395aeb98a0cc726b9da865a",
+      "delta_counts": {
+        "added": 1,
+        "unchanged": 0,
+        "changed": 0,
+        "missing": 1,
+        "status_changes": 0
+      },
+      "status": "applied",
+      "imported": 1,
+      "records_total": 2,
+      "reapply_status": "already_applied",
+      "source_removed_before_apply": true,
+      "verified_query": true
+    },
+    "dataset": {
+      "schema_version": 1,
+      "origin": "synthetic-fixture-v1",
+      "sessions": 6,
+      "frames": 12,
+      "objects": 120,
+      "split_frames": {
+        "train": 4,
+        "val": 4,
+        "test": 4
+      },
+      "split_sessions": {
+        "train": 2,
+        "val": 2,
+        "test": 2
+      },
+      "class_counts": {
+        "train": {
+          "player": 4,
+          "monster": 8,
+          "loot": 4,
+          "portal": 4,
+          "npc": 4,
+          "platform": 12,
+          "ladder": 4
+        },
+        "val": {
+          "player": 4,
+          "monster": 8,
+          "loot": 4,
+          "portal": 4,
+          "npc": 4,
+          "platform": 12,
+          "ladder": 4
+        },
+        "test": {
+          "player": 4,
+          "monster": 8,
+          "loot": 4,
+          "portal": 4,
+          "npc": 4,
+          "platform": 12,
+          "ladder": 4
+        }
+      },
+      "missing_classes": {
+        "train": [],
+        "val": [],
+        "test": []
+      },
+      "split_maps": {
+        "train": {
+          "meadow": 2,
+          "cavern": 2
+        },
+        "val": {
+          "meadow": 2,
+          "cavern": 2
+        },
+        "test": {
+          "meadow": 2,
+          "cavern": 2
+        }
+      },
+      "missing_maps": {
+        "train": [],
+        "val": [],
+        "test": []
+      },
+      "validated": true
+    },
+    "lifecycle_dataset": {
+      "schema_version": 2,
+      "profile": "lifecycle",
+      "sessions": 3,
+      "frames": 36,
+      "validated": true,
+      "phase_counts_by_split": {
+        "train": {
+          "spawn": 2,
+          "combat": 2,
+          "loot": 2,
+          "cleared": 2,
+          "dialogue": 2,
+          "transition": 2
+        },
+        "val": {
+          "spawn": 2,
+          "combat": 2,
+          "loot": 2,
+          "cleared": 2,
+          "dialogue": 2,
+          "transition": 2
+        },
+        "test": {
+          "spawn": 2,
+          "combat": 2,
+          "loot": 2,
+          "cleared": 2,
+          "dialogue": 2,
+          "transition": 2
+        }
+      },
+      "visual_agent_success_evaluated": false
+    },
+    "asset_registry": {
+      "verified": true,
+      "media_type": "image/png"
+    },
+    "mission": {
+      "status": "completed",
+      "steps": 325,
+      "scope": "synthetic_fixture",
+      "detector": "pixel-fixture",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ]
+    },
+    "replay": {
+      "verified": true,
+      "steps_replayed": 325,
+      "scope": "deterministic_simulator",
+      "files_checked": 88,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true
+    },
+    "reinference": {
+      "schema_version": 1,
+      "verified": true,
+      "scope": "synthetic_fixture_perception_and_policy_reexecution",
+      "action_replay_verified": true,
+      "perception_reproduced": true,
+      "policy_reproduced": true,
+      "trace_steps_compared": 325,
+      "frames_reinferred": 326,
+      "terminal_observation_compared": true,
+      "terminal_guard_compared": true,
+      "terminal_decision_compared": true,
+      "model_hash_verified": false,
+      "perception_settings": {
+        "pipeline": "pixel-fixture",
+        "implementation": "maple_vision.vision.PixelPerception",
+        "model_manifest": null,
+        "loaded_model_sha256": null,
+        "inference_options": null,
+        "verifiable_model_binding": true
+      },
+      "observation_tolerances": {
+        "absolute": 0.000001,
+        "relative": 0.000001
+      },
+      "decision_comparison": "exact; includes guard, action, reason, task and terminal state",
+      "recorded_status": "completed",
+      "independent_goal_check": true,
+      "files_unchanged": true,
+      "runtime_identity_matches": true,
+      "recorded_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.3.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "not_installed"
+        },
+        "python": "3.12.16",
+        "source_sha256": "95214210b4e06501d51d495bcb004075c3f68ee03646a320831aa822fd314619"
+      },
+      "verification_runtime_identity": {
+        "python": "3.12.16",
+        "packages": {
+          "maple-vision-platform": "0.3.0",
+          "Pillow": "13.0.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "not_installed"
+        },
+        "source_sha256": "95214210b4e06501d51d495bcb004075c3f68ee03646a320831aa822fd314619"
+      }
+    },
+    "module_entrypoint": {
+      "passed": true
+    }
+  },
+  "scope": "isolated_installed_runtime; training_and_accuracy_are_separate_gates"
+}

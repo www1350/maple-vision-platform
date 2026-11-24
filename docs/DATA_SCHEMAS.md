@@ -1,7 +1,21 @@
 # 当前数据 Schema
 
-本文描述 v0.1 代码实际保存的数据。`MASTER_SPEC.md` 中更细的技能、掉落、地图连接等表属于长期规划；本版本没有创建几十张专用业务表。
+本文描述实际保存的数据，先列当前增量格式，再保留原有兼容格式。`MASTER_SPEC.md` 中更细的技能、掉落、地图连接等表属于长期规划；本版本没有创建几十张专用业务表。
 Schema 版本、文件哈希和来源断言分别解决兼容性、完整性和可追溯性；哈希本身不能证明内容真实或使用许可有效。
+
+## v0.2/v0.3 格式索引
+
+| 数据 | 格式 | 关键边界 |
+|---|---|---|
+| 本地知识同步计划 | 独立 schema1 JSON | 源原字节、完整基线、增量和预期结果；原子应用，非授权签名 |
+| lifecycle 数据集 | manifest schema2，generator lifecycle-v1 | 会话动作轨迹、阶段/位置/标签覆盖；校验实际画面和可见标注 |
+| lifecycle 评估 | report schema2 | 同批预测上的阶段、地图、位置与重叠标签分组 |
+| 地形几何评估 | report schema3，terrain_geometry schema1 | 保留聚合/分组，追加匹配后边缘误差及全宽真值召回；模型原生身份与运行选项 |
+| 地形结构检查 | 独立 schema1 JSON | 实际检测头、DFL、stride、候选及四边范围、来源哈希；不是训练准确率 |
+| 感知重执行证据 | 运行 summary.perception_evidence schema1 | settings、终止观测/监督/决策；真实 N+1 帧重新执行 |
+| 模型地形模式 | pipeline/source_id `onnx-all-objects+fixture-hud-v1` | settings 额外明确 terrain_source=model；默认 fixture 字段不变 |
+
+具体严格字段分别以 [知识同步](KNOWLEDGE_SYNC.md)、[生命周期](DATASET_LIFECYCLE.md)、[地形评估](TERRAIN_EVALUATION.md)、[模型地形](MODEL_TERRAIN.md) 和 [重新推理](MODEL_VALIDATION.md) 为准。各文档报告版本不能当作模型准确率、规则版本或运行成功标记。下述旧格式继续兼容，不因新增可选字段改写历史记录。
 
 ## SQLite v1 与 v2
 
