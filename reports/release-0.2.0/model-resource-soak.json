@@ -1,0 +1,725 @@
+{
+  "24h_wall_soak": "not_completed",
+  "actual_wall_seconds": 61.510525,
+  "episode_capture": {
+    "bounded_storage": "one_active_episode_plus_retained_failures_and_requested_fault_bundles",
+    "failed_bundles": "retained_original_execution_not_rerun",
+    "full_action_observation_terminal_trace": true,
+    "mode": "single_execution_staging",
+    "record_stride": 16,
+    "successful_normal_bundles": "discarded_after_summary",
+    "wall_and_resources_include_capture_io": true
+  },
+  "episodes": 10,
+  "model_manifest": {
+    "class_names": [
+      "player",
+      "monster",
+      "loot",
+      "portal",
+      "npc",
+      "platform",
+      "ladder"
+    ],
+    "input_height": 320,
+    "input_width": 320,
+    "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+    "output_format": "raw_xywh",
+    "schema_version": 1,
+    "scope": "synthetic_fixture"
+  },
+  "partial_episode_bundle": null,
+  "passed": true,
+  "perception_settings": {
+    "implementation": "maple_vision.onnx_detector.OnnxDetector",
+    "inference_options": {
+      "confidence_threshold": 0.25,
+      "iou_threshold": 0.45
+    },
+    "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+    "model_manifest": {
+      "class_names": [
+        "player",
+        "monster",
+        "loot",
+        "portal",
+        "npc",
+        "platform",
+        "ladder"
+      ],
+      "input_height": 320,
+      "input_width": 320,
+      "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+      "output_format": "raw_xywh",
+      "schema_version": 1,
+      "scope": "synthetic_fixture"
+    },
+    "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+    "verifiable_model_binding": true
+  },
+  "requested_wall_seconds": 60,
+  "resources": {
+    "cpu_source": "time.process_time",
+    "discarded_samples": 0,
+    "limitations": [
+      "Sampling may miss short peaks; cadence depends on OS scheduling.",
+      "Current RSS and process lifetime peak RSS are different counters.",
+      "Unsupported memory counters remain null with their reason.",
+      "CPU and memory include other work in this process, not only inference."
+    ],
+    "max_observed_cpu_percent": 100.4465660796072,
+    "max_observed_current_rss_bytes": 94470144,
+    "max_samples": 128,
+    "measurements": 63,
+    "requested_interval_seconds": 1.0,
+    "retained_samples": 63,
+    "retention": "bounded_decimation_preserves_first_and_latest",
+    "samples": [
+      {
+        "cpu_percent_since_previous": 69.420545,
+        "current_rss_bytes": 86396928,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 1.1511e-05,
+        "lifetime_peak_rss_bytes": 94142464,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 7.991e-06,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.690137,
+        "current_rss_bytes": 87109632,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 1.002919266,
+        "lifetime_peak_rss_bytes": 94142464,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 0.99980811,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.972494,
+        "current_rss_bytes": 91009024,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 2.007957705,
+        "lifetime_peak_rss_bytes": 94142464,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 2.004570107,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.106149,
+        "current_rss_bytes": 91746304,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 3.008444414,
+        "lifetime_peak_rss_bytes": 94142464,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 2.996113951,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.987401,
+        "current_rss_bytes": 92729344,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 4.00909107,
+        "lifetime_peak_rss_bytes": 94142464,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 3.996634535,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.626472,
+        "current_rss_bytes": 93466624,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 5.009496665,
+        "lifetime_peak_rss_bytes": 94142464,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 4.993303337,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.283416,
+        "current_rss_bytes": 91164672,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 6.010388326,
+        "lifetime_peak_rss_bytes": 94142464,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 5.997031687,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.552634,
+        "current_rss_bytes": 90034176,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 7.011080029,
+        "lifetime_peak_rss_bytes": 94441472,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 6.993246636,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.91907,
+        "current_rss_bytes": 87617536,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 8.012591194,
+        "lifetime_peak_rss_bytes": 94441472,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 7.993947276,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 98.697759,
+        "current_rss_bytes": 91508736,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 9.013655867,
+        "lifetime_peak_rss_bytes": 94441472,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 8.981975675,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.815611,
+        "current_rss_bytes": 92491776,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 10.014066902,
+        "lifetime_peak_rss_bytes": 94441472,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 9.980542065,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.280094,
+        "current_rss_bytes": 93229056,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 11.014504451,
+        "lifetime_peak_rss_bytes": 94441472,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 10.973777404,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.384548,
+        "current_rss_bytes": 94212096,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 12.015048014,
+        "lifetime_peak_rss_bytes": 94441472,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 11.978168535,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.330346,
+        "current_rss_bytes": 86462464,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 13.016070555,
+        "lifetime_peak_rss_bytes": 94453760,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 12.972487691,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.831802,
+        "current_rss_bytes": 90537984,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 14.017299905,
+        "lifetime_peak_rss_bytes": 94453760,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 13.972032991,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.8612,
+        "current_rss_bytes": 88367104,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 15.017684147,
+        "lifetime_peak_rss_bytes": 94453760,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 14.971028695,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.63341,
+        "current_rss_bytes": 92258304,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 16.018366275,
+        "lifetime_peak_rss_bytes": 94453760,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 15.968042421,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.363553,
+        "current_rss_bytes": 93241344,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 17.018757211,
+        "lifetime_peak_rss_bytes": 94453760,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 16.962066399,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.236819,
+        "current_rss_bytes": 90857472,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 18.019854037,
+        "lifetime_peak_rss_bytes": 94453760,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 17.965534014,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.361196,
+        "current_rss_bytes": 94470144,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 19.022881521,
+        "lifetime_peak_rss_bytes": 94453760,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 18.962154119,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.382853,
+        "current_rss_bytes": 90292224,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 20.02327806,
+        "lifetime_peak_rss_bytes": 94453760,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 19.966380704,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.606337,
+        "current_rss_bytes": 88154112,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 21.023822674,
+        "lifetime_peak_rss_bytes": 94453760,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 20.962986542,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.866649,
+        "current_rss_bytes": 92012544,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 22.024417503,
+        "lifetime_peak_rss_bytes": 94453760,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 21.962247067,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.827571,
+        "current_rss_bytes": 92749824,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 23.024787933,
+        "lifetime_peak_rss_bytes": 94453760,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 22.96089257,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.938835,
+        "current_rss_bytes": 91688960,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 24.025645012,
+        "lifetime_peak_rss_bytes": 94453760,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 23.96113747,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.611828,
+        "current_rss_bytes": 94470144,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 25.0260115,
+        "lifetime_peak_rss_bytes": 94453760,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 24.957620817,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.948986,
+        "current_rss_bytes": 90292224,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 26.026582469,
+        "lifetime_peak_rss_bytes": 94461952,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 25.957681356,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.300601,
+        "current_rss_bytes": 87990272,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 27.02696324,
+        "lifetime_peak_rss_bytes": 94461952,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 26.961069284,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.970181,
+        "current_rss_bytes": 91766784,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 28.02742515,
+        "lifetime_peak_rss_bytes": 94461952,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 27.961232862,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.778074,
+        "current_rss_bytes": 89595904,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 29.027905206,
+        "lifetime_peak_rss_bytes": 94461952,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 28.959492596,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.004557,
+        "current_rss_bytes": 93487104,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 30.028409706,
+        "lifetime_peak_rss_bytes": 94461952,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 29.960042691,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.56496,
+        "current_rss_bytes": 91336704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 31.030323419,
+        "lifetime_peak_rss_bytes": 94461952,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 30.957597674,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.624965,
+        "current_rss_bytes": 89874432,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 32.030800143,
+        "lifetime_peak_rss_bytes": 94461952,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 31.95432226,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.363276,
+        "current_rss_bytes": 87912448,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 33.031448055,
+        "lifetime_peak_rss_bytes": 94461952,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 32.95860529,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.374121,
+        "current_rss_bytes": 91537408,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 34.031901942,
+        "lifetime_peak_rss_bytes": 94461952,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 33.952797542,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.936436,
+        "current_rss_bytes": 92540928,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 35.032448175,
+        "lifetime_peak_rss_bytes": 94461952,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 34.952707787,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.649634,
+        "current_rss_bytes": 93294592,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 36.032815828,
+        "lifetime_peak_rss_bytes": 94461952,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 35.949570495,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.989094,
+        "current_rss_bytes": 94298112,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 37.033180479,
+        "lifetime_peak_rss_bytes": 94461952,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 36.949826043,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.67707,
+        "current_rss_bytes": 92360704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 38.033546168,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 37.94696125,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.916692,
+        "current_rss_bytes": 90742784,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 39.033886579,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 38.946468297,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.969513,
+        "current_rss_bytes": 88440832,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 40.034501728,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 39.946778385,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.564684,
+        "current_rss_bytes": 92463104,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 41.034865143,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 40.942787054,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.375425,
+        "current_rss_bytes": 93200384,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 42.035285016,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 41.94696275,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.559872,
+        "current_rss_bytes": 93941760,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 43.035675574,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 42.942950314,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.02438,
+        "current_rss_bytes": 89841664,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 44.036013058,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 43.943531676,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.043046,
+        "current_rss_bytes": 90517504,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 45.036446841,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 44.934391767,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.877969,
+        "current_rss_bytes": 91009024,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 46.037254004,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 45.933977639,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.706472,
+        "current_rss_bytes": 91992064,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 47.038406852,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 46.932191824,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.85506,
+        "current_rss_bytes": 92729344,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 48.038756902,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 47.931091971,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.268626,
+        "current_rss_bytes": 93470720,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 49.039117695,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 48.934139997,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.893856,
+        "current_rss_bytes": 94457856,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 50.0395173,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 49.933477733,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.016686,
+        "current_rss_bytes": 87150592,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 51.039971587,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 50.934098953,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.819329,
+        "current_rss_bytes": 91111424,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 52.040586559,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 51.932906106,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.634833,
+        "current_rss_bytes": 92094464,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 53.041107008,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 52.929772986,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.972706,
+        "current_rss_bytes": 92831744,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 54.041506407,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 53.929899331,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.707142,
+        "current_rss_bytes": 93818880,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 55.042638301,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 54.928099335,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.393069,
+        "current_rss_bytes": 86802432,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 56.042992242,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 55.932385357,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.479163,
+        "current_rss_bytes": 90873856,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 57.043813675,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 56.927994145,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.949982,
+        "current_rss_bytes": 91856896,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 58.04440048,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 57.928080475,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.408443,
+        "current_rss_bytes": 92594176,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 59.044824891,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 58.922586801,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.162464,
+        "current_rss_bytes": 90423296,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 60.04776961,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 59.927160945,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.696709,
+        "current_rss_bytes": 94314496,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 61.048921501,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 60.925276437,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.446566,
+        "current_rss_bytes": 86618112,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 61.510375269,
+        "lifetime_peak_rss_bytes": 94875648,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 61.388790901,
+        "unavailable_reason": null
+      }
+    ],
+    "sampling_error": null,
+    "schema_version": 1,
+    "scope": "current_process_all_threads_excluding_children",
+    "units": {
+      "cpu_percent_since_previous": "one_logical_cpu_percent; can_exceed_100",
+      "current_rss_bytes": "bytes",
+      "elapsed_wall_seconds": "seconds",
+      "lifetime_peak_rss_bytes": "bytes; process_lifetime_not_soak_only",
+      "process_cpu_seconds": "seconds_since_monitor_start"
+    },
+    "wall_clock_source": "time.monotonic"
+  },
+  "run_error": null,
+  "schema_version": 1,
+  "scope": "synthetic_fixture",
+  "simulated_seconds": 160.0
+}

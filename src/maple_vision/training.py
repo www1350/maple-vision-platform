@@ -30,6 +30,7 @@ from PIL import Image
 from .catalog import canonical_json, strict_json
 from .dataset import _contained, validate_dataset
 from .onnx_detector import ModelManifest
+from .sprite_pack import verify_dataset_sprite_pack
 
 _RUNTIME_LOCK = Lock()
 _SAFE_MODULES = {"Conv", "C2f", "SPPF", "Concat", "Detect", "nn.Upsample"}
@@ -263,6 +264,11 @@ def _training_yaml(dataset: Path, staging: Path) -> tuple[Path, list[str]]:
             target = snapshot / sample[kind]
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, target)
+    if "sprite_pack" in manifest:
+        # Preserve the independently verified source bytes needed to validate
+        # and reproduce a custom-sprite dataset after the source is unavailable.
+        sprites = verify_dataset_sprite_pack(dataset, manifest["sprite_pack"])
+        sprites.write_sources(snapshot)
     # This checks the actual copied bytes, including concurrent source modifications.
     validate_dataset(snapshot)
     for split in ("train", "val", "test"):
@@ -319,11 +325,17 @@ def train_yolo(
     config = _local_file(model_config, {".yaml", ".yml"}, "model_config")
     _validate_model_config(config)
     dataset = Path(dataset).resolve()
-    dataset_summary = validate_dataset(dataset)
+    validate_dataset(dataset)
     started = time.perf_counter()
     with _new_output(output) as (staging, destination):
         data, names = _training_yaml(dataset, staging)
         shutil.copyfile(config, staging / "model.yaml")
+        # Validate the copied file actually passed to Ultralytics. The source
+        # may have changed while the dataset snapshot was being assembled.
+        _validate_model_config(staging / "model.yaml")
+        model_config_hash = _hash(staging / "model.yaml")
+        snapshot = staging / "input_snapshot"
+        dataset_manifest_hash = _hash(snapshot / "manifest.json")
         with _offline_runtime(staging) as (torch, ultralytics):
             torch.manual_seed(seed)
             model = ultralytics.YOLO(str(staging / "model.yaml"), task="detect", verbose=False)
@@ -367,12 +379,16 @@ def train_yolo(
                 erasing=0,
             )
             metrics = _metrics(getattr(result, "results_dict", {}))
+        if (
+            _hash(staging / "model.yaml") != model_config_hash
+            or _hash(snapshot / "manifest.json") != dataset_manifest_hash
+        ):
+            raise ValueError("copied training inputs changed during training")
         # Ultralytics cache=False controls images, not label caches. Its caches
         # belong only to our disposable training workspace, never the source dataset.
-        snapshot = staging / "input_snapshot"
         for cached in (snapshot / "labels").glob("*.cache"):
             cached.unlink()
-        validate_dataset(snapshot)
+        dataset_summary = validate_dataset(snapshot)
         best = staging / "run" / "weights" / "best.pt"
         if not best.is_file():
             raise ValueError("training finished without a best.pt checkpoint")
@@ -380,8 +396,8 @@ def train_yolo(
             "schema_version": 1,
             "status": "trained",
             "scope": "synthetic_fixture",
-            "dataset_manifest_sha256": _hash(snapshot / "manifest.json"),
-            "model_config_sha256": _hash(config),
+            "dataset_manifest_sha256": dataset_manifest_hash,
+            "model_config_sha256": model_config_hash,
             "weights_sha256": _hash(best),
             "epochs": epochs,
             "image_size": image_size,

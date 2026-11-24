@@ -39,11 +39,24 @@ def _parser() -> argparse.ArgumentParser:
         subparser.add_argument("path", type=Path)
     knowledge = commands.add_parser("knowledge", help="versioned offline catalog and snapshots")
     knowledge_commands = knowledge.add_subparsers(dest="operation", required=True)
-    for operation in ("init", "check", "import", "query", "snapshot", "verify-snapshot"):
+    for operation in (
+        "init",
+        "check",
+        "import",
+        "query",
+        "snapshot",
+        "verify-snapshot",
+        "plan-sync",
+        "apply-sync",
+    ):
         subparser = knowledge_commands.add_parser(operation)
         subparser.add_argument("path", type=Path)
-        if operation == "import":
+        if operation in {"import", "plan-sync"}:
             subparser.add_argument("source", type=Path)
+            if operation == "plan-sync":
+                subparser.add_argument("output", type=Path)
+        elif operation == "apply-sync":
+            subparser.add_argument("plan", type=Path)
         elif operation == "query":
             subparser.add_argument("kind")
             subparser.add_argument("entity_id")
@@ -71,8 +84,11 @@ def _parser() -> argparse.ArgumentParser:
         subparser.add_argument("path", type=Path)
         if operation == "create":
             subparser.add_argument("--sessions", type=int, default=9)
-            subparser.add_argument("--frames", type=int, default=8)
+            subparser.add_argument(
+                "--frames", type=int, help="frames per session; default legacy=8, lifecycle=48"
+            )
             subparser.add_argument("--seed", type=int, default=0)
+            subparser.add_argument("--profile", choices=("legacy", "lifecycle"), default="legacy")
             subparser.add_argument("--asset-registry", type=Path)
             subparser.add_argument("--sprite-map", type=Path)
     vision = commands.add_parser("vision", help="observe local images or benchmark a dataset")
@@ -156,9 +172,18 @@ def _parser() -> argparse.ArgumentParser:
     suite.add_argument("--seeds", type=int, default=3)
     replay = lab_commands.add_parser("replay")
     replay.add_argument("path", type=Path)
+    reinfer = lab_commands.add_parser(
+        "reinfer", help="re-run every recorded perception and policy decision with matching inputs"
+    )
+    reinfer.add_argument("path", type=Path)
     soak = lab_commands.add_parser("soak")
     soak.add_argument("--output", type=Path, required=True)
     soak.add_argument("--seconds", type=int, default=60)
+    soak.add_argument("--resource-interval", type=float, default=1.0)
+    soak.add_argument("--max-resource-samples", type=int, default=1024)
+    for model_command in (suite, soak, reinfer):
+        model_command.add_argument("--model", type=Path)
+        model_command.add_argument("--manifest", type=Path)
     chat = commands.add_parser(
         "chat-draft", help="prepare a local human-reviewed reply; sends nothing"
     )
@@ -207,6 +232,12 @@ def _database(command: str, path: Path) -> dict[str, str | int]:
 
 def _extended(args: argparse.Namespace) -> dict[str, Any]:
     if args.command == "knowledge":
+        if args.operation in {"plan-sync", "apply-sync"}:
+            from .knowledge_sync import apply_sync, plan_sync
+
+            if args.operation == "plan-sync":
+                return plan_sync(args.path, args.source, args.output)
+            return apply_sync(args.path, args.plan)
         from .catalog import (
             catalog_summary,
             create_snapshot,
@@ -270,7 +301,14 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 else None
             )
             return generate_dataset(
-                args.path, args.sessions, args.frames, args.seed, sprite_pack=sprites
+                args.path,
+                args.sessions,
+                args.frames
+                if args.frames is not None
+                else (48 if args.profile == "lifecycle" else 8),
+                args.seed,
+                sprite_pack=sprites,
+                profile=args.profile,
             )
         return validate_dataset(args.path)
     if args.command == "recording" and args.operation != "observe":
@@ -373,9 +411,19 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 sprite_pack=sprites,
             )
         if args.operation == "suite":
-            return run_suite(args.output, args.seeds)
+            return run_suite(args.output, args.seeds, detector=detector)
         if args.operation == "soak":
-            return run_soak(args.output, args.seconds)
+            return run_soak(
+                args.output,
+                args.seconds,
+                detector=detector,
+                resource_interval_seconds=args.resource_interval,
+                max_resource_samples=args.max_resource_samples,
+            )
+        if args.operation == "reinfer":
+            from .lab import verify_perception
+
+            return verify_perception(args.path, detector=detector)
         return verify_run(args.path)
     raise ValueError("unsupported command")
 

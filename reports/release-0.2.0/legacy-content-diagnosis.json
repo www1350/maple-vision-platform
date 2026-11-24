@@ -1,0 +1,117 @@
+{
+  "baseline_commit": "d66cd79897ecba52d58885795f0fec5ff1de9837",
+  "baseline_dataset_source_sha256": "7f40490dde5b7f30ccd3d6c08a25183dedd74e2e38094bd93c5ac62b3145c85a",
+  "comparisons": [
+    {
+      "all_files_byte_identical_baseline_vs_current": true,
+      "default_text_newline": "LF"
+    },
+    {
+      "all_files_byte_identical_baseline_vs_current": true,
+      "default_text_newline": "CRLF"
+    }
+  ],
+  "focused_validation": {
+    "actual_windows_portable_content_gate": "pending CI; no Windows-specific hash whitelist or skip",
+    "git_diff_check": "passed",
+    "legacy_same_environment_session_disjoint_and_byte_reproducible": {
+      "passed": 1,
+      "seconds": 4.5
+    },
+    "portable_golden_encoding_invariance_content_mutation_and_lifecycle_reproducibility": {
+      "passed": 3,
+      "seconds": 11.63
+    },
+    "ruff_test_lifecycle_dataset": "passed"
+  },
+  "historical_linux_manifest_sha256": "ecc0ff6c4e9bbebc9915f0313bb3b227a99ecc321051ee2ae2e8a0eff096ad67",
+  "method": "Execute original committed dataset.py and current legacy generator against the same unchanged default renderer/simulator; force Path.write_text default newline to LF/CRLF separately; compare every output file byte-for-byte within each environment and hash decoded RGB, LF-normalized label/YAML text, and complete manifest semantics across both.",
+  "parameters": {
+    "frames_per_session": 16,
+    "seed": 20261124,
+    "sessions": 18
+  },
+  "portable_content_equal_all_runs": true,
+  "runs": [
+    {
+      "content_fingerprints": {
+        "data_yaml_lf_sha256": "d348ee17aca7dedce5a1c34eab802d85b873e77c33ad4cd5a475ec746389f2eb",
+        "label_lf_index_sha256": "d4d6f0b8fd9b9ffd593daa2b83f4d56dd7fb7d338bb3b3ebdfbde125793014be",
+        "portable_manifest_sha256": "82329e75bd6056ae95643e35fa07260dacbaad0dcd4546afd450f916d53ed2fd",
+        "rgb_index_sha256": "8913573ae212fc71053de5514d33231623c2c18f97870798b9b98506719e647a"
+      },
+      "default_text_newline": "LF",
+      "file_count": 578,
+      "implementation": "baseline_v0_1",
+      "inventory_sha256": "0427c80ac4f997e113e12b5ba80f2700ff5773c77f3c1a8cec7f7077bd95d67f",
+      "manifest_sha256": "ecc0ff6c4e9bbebc9915f0313bb3b227a99ecc321051ee2ae2e8a0eff096ad67"
+    },
+    {
+      "content_fingerprints": {
+        "data_yaml_lf_sha256": "d348ee17aca7dedce5a1c34eab802d85b873e77c33ad4cd5a475ec746389f2eb",
+        "label_lf_index_sha256": "d4d6f0b8fd9b9ffd593daa2b83f4d56dd7fb7d338bb3b3ebdfbde125793014be",
+        "portable_manifest_sha256": "82329e75bd6056ae95643e35fa07260dacbaad0dcd4546afd450f916d53ed2fd",
+        "rgb_index_sha256": "8913573ae212fc71053de5514d33231623c2c18f97870798b9b98506719e647a"
+      },
+      "default_text_newline": "LF",
+      "file_count": 578,
+      "implementation": "current_legacy",
+      "inventory_sha256": "0427c80ac4f997e113e12b5ba80f2700ff5773c77f3c1a8cec7f7077bd95d67f",
+      "manifest_sha256": "ecc0ff6c4e9bbebc9915f0313bb3b227a99ecc321051ee2ae2e8a0eff096ad67"
+    },
+    {
+      "content_fingerprints": {
+        "data_yaml_lf_sha256": "d348ee17aca7dedce5a1c34eab802d85b873e77c33ad4cd5a475ec746389f2eb",
+        "label_lf_index_sha256": "d4d6f0b8fd9b9ffd593daa2b83f4d56dd7fb7d338bb3b3ebdfbde125793014be",
+        "portable_manifest_sha256": "82329e75bd6056ae95643e35fa07260dacbaad0dcd4546afd450f916d53ed2fd",
+        "rgb_index_sha256": "8913573ae212fc71053de5514d33231623c2c18f97870798b9b98506719e647a"
+      },
+      "default_text_newline": "CRLF",
+      "file_count": 578,
+      "implementation": "baseline_v0_1",
+      "inventory_sha256": "0a3bf697c99ac6359acf2dbc4dd43039ef65c30ec3f06024248cd3b556cc8469",
+      "manifest_sha256": "1d13a4fc8bebb94fbbb7a0e366483d2aad6041622426b4d4eb9954d08f456c0e"
+    },
+    {
+      "content_fingerprints": {
+        "data_yaml_lf_sha256": "d348ee17aca7dedce5a1c34eab802d85b873e77c33ad4cd5a475ec746389f2eb",
+        "label_lf_index_sha256": "d4d6f0b8fd9b9ffd593daa2b83f4d56dd7fb7d338bb3b3ebdfbde125793014be",
+        "portable_manifest_sha256": "82329e75bd6056ae95643e35fa07260dacbaad0dcd4546afd450f916d53ed2fd",
+        "rgb_index_sha256": "8913573ae212fc71053de5514d33231623c2c18f97870798b9b98506719e647a"
+      },
+      "default_text_newline": "CRLF",
+      "file_count": 578,
+      "implementation": "current_legacy",
+      "inventory_sha256": "0a3bf697c99ac6359acf2dbc4dd43039ef65c30ec3f06024248cd3b556cc8469",
+      "manifest_sha256": "1d13a4fc8bebb94fbbb7a0e366483d2aad6041622426b4d4eb9954d08f456c0e"
+    }
+  ],
+  "runtime": {
+    "pillow": "13.0.0",
+    "pillow_zlib": "1.3.1",
+    "pillow_zlib_ng": "2.3.3",
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "python": "3.12.14",
+    "python_zlib": "1.3.2"
+  },
+  "schema_version": 1,
+  "scope": "Legacy v1 original/current content compatibility, not a claim of cross-platform PNG-container identity",
+  "source_changes": false,
+  "windows_ci_observation": {
+    "cause_status": "CRLF alone does not reproduce this byte hash. Windows image files were not retained; codec variation is a hypothesis, not a proven cause. The next Windows CI must match strict portable content fingerprints derived from v0.1, without whitelisting this hash.",
+    "job_id": 138433319499,
+    "manifest_sha256": "b04f41f74cf82795744142d87868c48a684a9d4c67c85a9098068878ce549367",
+    "run_id": 45390705416
+  },
+  "planned_next_gate_when_written": "Run the strict portable content regression on actual Windows; retain same-environment repeated-generation byte determinism tests.",
+  "actual_windows_verification": {
+    "passed": true,
+    "commit": "f17e7487f5938acfaf312e05b8eecb242f06a492",
+    "run_id": 45394348732,
+    "job_id": 138446011291,
+    "strict_original_content_fingerprints_matched": true,
+    "raw_manifest_hash_allowlist_added": false,
+    "production_source_changed": false,
+    "exact_container_encoding_cause_identified": false
+  }
+}

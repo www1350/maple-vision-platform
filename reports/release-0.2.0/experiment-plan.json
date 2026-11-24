@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "scope": "synthetic_fixture_lifecycle_v2",
+  "dataset": {
+    "path": "artifacts/v02-experiment/dataset",
+    "seed": 20261125,
+    "sessions": 18,
+    "frames_per_session": 48,
+    "manifest_sha256": "670f6dae181f0f4b3107ba6a47cb733f19cfbc216c4e8e8c23f96b756601b3ff"
+  },
+  "baseline": {
+    "model": "examples/fixture-model/model.onnx",
+    "manifest": "examples/fixture-model/manifest.json",
+    "evaluation_split_before_selection": "val"
+  },
+  "first_candidate": {
+    "config": "configs/tiny-yolo.yaml",
+    "image_size": 320,
+    "epochs": 40,
+    "batch": 8,
+    "seed": 42,
+    "cpu_threads": 2
+  },
+  "bounded_second_candidate": {
+    "status": "not_run",
+    "reason": "First candidate passes engineering selection gates; confirmed bounding-box range limitation requires a separately validated terrain approach, not an unvalidated smaller-stride head.",
+    "additional_training_attempts": 0
+  },
+  "selection": {
+    "use": "validation metrics plus explicitly reported independent closed-loop checks",
+    "holdout": "test evaluated once after candidate choice",
+    "promotion": "requires declared quality and closed-loop gates; otherwise keep prior checkpoint and report experimental failure",
+    "criteria": {
+      "same_validation_dataset": true,
+      "macro_ap50_at_least_prior_model": true,
+      "platform_recall_at_least_prior_model": true,
+      "dynamic_class_recalls_at_least_prior_model": true,
+      "normal_suite_episodes": 9,
+      "fault_scenarios": 4,
+      "all_expected_suite_outcomes_required": true,
+      "three_job_reinference_required": true,
+      "post_selection_holdout_required": true
+    },
+    "criteria_recorded_after_first_candidate_validation": true,
+    "criteria_note": "These engineering promotion criteria are recorded after inspecting candidate 1 validation. They are not represented as a preregistered experiment; no holdout test has been evaluated."
+  },
+  "notes": [
+    "New session seed and complete trajectory distribution; this is not unseen-map or real-game evaluation.",
+    "Training and inference are local; dependencies are already installed."
+  ]
+}

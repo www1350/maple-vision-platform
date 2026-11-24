@@ -87,10 +87,14 @@ def test_real_onnx_runtime_contract_and_checksum(tmp_path: Path):
     data["model_sha256"] = hashlib.sha256(model_path.read_bytes()).hexdigest()
     manifest_path.write_text(json.dumps(data), encoding="utf-8")
     detector = OnnxDetector(model_path, manifest_path)
+    assert detector.loaded_model_sha256 == data["model_sha256"]
     detections = detector.detect(ImageFrame(0, 0, 64, 64, bytes(64 * 64 * 3)))
     assert detections[0].class_id == "monster"
     assert detections[0].bbox == (4, 5, 20, 25)
     model_path.write_bytes(b"corrupt")
+    assert detector.loaded_model_sha256 == data["model_sha256"]
+    with pytest.raises(AttributeError):
+        detector.loaded_model_sha256 = "0" * 64
     with pytest.raises(ValueError, match="checksum"):
         OnnxDetector(model_path, manifest_path)
 

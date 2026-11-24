@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "scope": "offline_synthetic_fixture_platform",
+  "initial_commit": "4e9914411c1b3f49b2f8eb81d7c17948af8ddb82",
+  "initial_tree": "8e7801c1564646c08339f1ca7ea74042a24bb443",
+  "pull_request": "https://github.com/www1350/maple-vision-platform/pull/3",
+  "attempts": [
+    {
+      "run_id": 45390705416,
+      "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45390705416",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "id": 138433319448,
+          "platform": "ubuntu-latest",
+          "conclusion": "success",
+          "passed": 626,
+          "skipped": 3,
+          "failed": 0,
+          "seconds": 46.46,
+          "wheel": "passed"
+        },
+        {
+          "id": 138433319499,
+          "platform": "windows-latest",
+          "conclusion": "failure",
+          "passed": 621,
+          "skipped": 7,
+          "failed": 1,
+          "seconds": 116.78,
+          "wheel": "not_run_due_to_test_failure",
+          "failure": "test_legacy_release_dataset_retains_its_exact_manifest_hash",
+          "expected_manifest_sha256": "ecc0ff6c4e9bbebc9915f0313bb3b227a99ecc321051ee2ae2e8a0eff096ad67",
+          "observed_manifest_sha256": "b04f41f74cf82795744142d87868c48a684a9d4c67c85a9098068878ce549367"
+        },
+        {
+          "id": 138433318698,
+          "platform": "ubuntu-native",
+          "conclusion": "success",
+          "passed": 107,
+          "skipped": 0,
+          "failed": 0,
+          "warnings": 2,
+          "seconds": 6.55
+        }
+      ],
+      "diagnosis": "Original v0.1 and current legacy outputs are byte-identical separately under LF and CRLF. The test incorrectly assumed one Linux PNG/text byte hash was a portable content contract. Replaced with strict original-v0.1 RGB, LF-normalized labels/YAML and complete manifest-semantic fingerprints, retaining raw artifact integrity and same-environment byte reproducibility; actual Windows confirmation pending.",
+      "production_source_changed_for_fix": false,
+      "diagnosis_evidence": "legacy-content-diagnosis.json"
+    },
+    {
+      "commit": "f17e7487f5938acfaf312e05b8eecb242f06a492",
+      "tree": "96de98b2e95ccd8fef04b0052b11f60bee63fe35",
+      "run_id": 45394348732,
+      "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45394348732",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 138446010644,
+          "name": "CPU YOLO training and ONNX export / ubuntu",
+          "conclusion": "success",
+          "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45394348732/job/138446010644",
+          "platform": "ubuntu-native",
+          "python": "3.12.16",
+          "passed": 107,
+          "skipped": 0,
+          "failed": 0,
+          "warnings": 2,
+          "seconds": 7.3,
+          "wheel": "covered_by_base_platform_jobs"
+        },
+        {
+          "id": 138446011291,
+          "name": "Python 3.12 / windows-latest",
+          "conclusion": "success",
+          "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45394348732/job/138446011291",
+          "platform": "windows-latest",
+          "python": "3.12.10",
+          "passed": 627,
+          "skipped": 7,
+          "failed": 0,
+          "seconds": 116.72,
+          "wheel": "passed",
+          "wheel_seconds": 20.453,
+          "wheel_sha256": "d8c721777d1e889db0680d399c2a791082e7436732dc68655aa0a5d94105e23e",
+          "wheel_evidence": "remote-wheel-windows.json"
+        },
+        {
+          "id": 138446011308,
+          "name": "Python 3.12 / ubuntu-latest",
+          "conclusion": "success",
+          "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45394348732/job/138446011308",
+          "platform": "ubuntu-latest",
+          "python": "3.12.16",
+          "passed": 631,
+          "skipped": 3,
+          "failed": 0,
+          "seconds": 66.18,
+          "wheel": "passed",
+          "wheel_seconds": 10.126,
+          "wheel_sha256": "3774149c7b092b1aaec1e019a7ff59f6f6d1c204090486a69555715f1af5249b",
+          "wheel_evidence": "remote-wheel-ubuntu.json"
+        }
+      ],
+      "diagnosis": "Strict original-v0.1 portable content fingerprints pass on actual Windows; all three jobs and both isolated wheels passed. No production generator change or Windows raw-hash allowlist."
+    }
+  ],
+  "final_verified_commit": "f17e7487f5938acfaf312e05b8eecb242f06a492",
+  "final_run": "https://github.com/www1350/maple-vision-platform/actions/runs/45394348732",
+  "final_verified_tree": "96de98b2e95ccd8fef04b0052b11f60bee63fe35",
+  "implementation_ci_status": "passed",
+  "final_archive_head_checks": "https://github.com/www1350/maple-vision-platform/pull/3",
+  "final_archive_policy": "The later documentation/evidence-only archive commit must run its own checks before merging; its exact head and run are recorded in PR #3."
+}
