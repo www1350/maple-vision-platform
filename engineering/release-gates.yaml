@@ -1,0 +1,7 @@
+gates:
+  - independent_tests_pass
+  - provenance_verified
+  - failure_bundles_reproducible
+  - simulator_only_execution
+  - review_approved
+  - no_test_standard_regression
