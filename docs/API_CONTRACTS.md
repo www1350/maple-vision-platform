@@ -1,6 +1,180 @@
-# P0 接口合同
+# API 合同
 
-## 1. 已实现的数据模型
+本页先说明 v0.1 当前接口，后保留 P0 历史兼容接口。数据字段及格式见 [DATA_SCHEMAS.md](DATA_SCHEMAS.md)，实现边界见 [ARCHITECTURE.md](ARCHITECTURE.md)。
+新 RGB 视觉链路与 P0 NoOp 链路分开：`scene.ImageFrame` 不是 `contracts.Frame`，`simulation.Simulator.step(action)` 也不是旧占位协议的 `step() -> Frame`。调用方应显式选择对应 API。
+
+## v0.1 本地数据接口
+
+```python
+# maple_vision.catalog
+migrate_catalog(connection: sqlite3.Connection) -> None
+initialize_catalog(path: str | Path) -> None
+open_catalog_readonly(path: str | Path) -> sqlite3.Connection
+load_import(source: str | Path) -> tuple[CatalogRecord, ...]
+import_catalog(path: str | Path, source: str | Path) -> ImportResult
+query_catalog(path, kind, entity_id, game_version, *, allow_unverified=False)
+catalog_summary(path: str | Path) -> dict[str, object]
+create_snapshot(path, destination_dir) -> dict[str, object]
+verify_snapshot(destination_dir) -> dict[str, object]
+
+# maple_vision.asset_registry
+import_asset(registry_dir, source_path, *, entity_id, game_version,
+             source_uri, license, permission) -> AssetEntry
+verify_asset(registry_dir, asset_id) -> AssetEntry
+list_assets(registry_dir) -> tuple[AssetEntry, ...]
+```
+
+catalog 必须先初始化至 v2，import 不会因路径拼错而创建新库；整批校验后事务导入，相同记录幂等，冲突记录保留。
+默认 query 只返回 VERIFIED，`allow_unverified=True` 仅用于检查。来源和许可是调用方可审阅的断言，系统不会自动把公开网址等同于使用许可。
+`open_catalog_readonly()` 的连接由调用方关闭；快照输出目录必须不存在，父目录必须已存在。
+素材注册保留原始图片 bytes 并核对解码结果；`load_sprite_pack(registry: Path, mapping: Path) -> SpritePack` 可把类别到 asset_id 的映射加载为验证过的静态 RGBA 素材。
+`load_class_profile(database, job, game_version) -> LoadedClassProfile` 只加载指定版本、VERIFIED 且无冲突的完整合成 ClassSpec，保留配置哈希和来源；不会隐式降级到未知或冲突数据。
+
+## v0.1 模拟器、图像与感知
+
+```python
+# maple_vision.simulation / sim_types
+Simulator(seed=0, job="assassin", map_id="meadow", step_ms=50, *, class_spec=None)
+simulator.reset(seed: int | None = None) -> None
+simulator.step(action: SimAction | None = None) -> StepOutcome
+simulator.snapshot() -> SimSnapshot
+simulator.save() -> dict[str, Any]
+Simulator.restore(state: object) -> Simulator
+SimAction(kind="idle", direction=0, skill="basic", target="")
+
+# maple_vision.scene
+ImageFrame(sequence, timestamp_ms, width, height, pixels)
+ImageFrame.from_file(path, sequence=0, timestamp_ms=0) -> ImageFrame
+frame.to_image() -> PIL.Image.Image
+frame.png_bytes() -> bytes
+SceneRenderer(width=320, height=192, style_seed=0, *, sprite_pack=None)
+renderer.render(snapshot: SimSnapshot) -> ImageFrame
+renderer.render_sample(snapshot: SimSnapshot) -> RenderedSample
+renderer.annotations(snapshot: SimSnapshot) -> tuple[Detection, ...]
+
+# maple_vision.vision / onnx_detector / agent
+PixelPerception().detect(frame: ImageFrame) -> tuple[Detection, ...]
+PixelPerception().observe(frame: ImageFrame) -> VisualObservation
+OnnxDetector(model: Path, manifest: Path,
+             *, confidence_threshold=0.25, iou_threshold=0.45)
+detector.detect(frame: ImageFrame) -> tuple[Detection, ...]
+HybridPerception(detector).observe(frame: ImageFrame) -> VisualObservation
+```
+
+内置 job 为 assassin/dragon_knight/cleric；map_id 为 meadow/cavern；step_ms 是 10–100 的整数。
+动作 kind 支持 idle/move/jump/attack/jump_attack/loot/potion_hp/potion_mp/buff/heal/interact/portal/climb；参数组合在 SimAction 构造时校验。
+StepOutcome 返回 snapshot、accepted、reason、events。动作拒绝或角色死亡时 step 仍推进一个固定时步；accepted 不等同任务成功。
+
+snapshot 和渲染标签只允许进入数据制作或独立验证；策略只拿 `VisualObservation`。
+`HybridPerception` 使用 ONNX 对象框与合成场景的可见 HUD、地图及对话标记，不能当成真实游戏 UI/OCR 实现。
+ONNX manifest 校验哈希、类别、输入尺寸和输出格式。输入为 float32 NCHW RGB，letterbox 后解码回原始像素；不存在自动下载模型。
+
+## v0.1 策略、监督和运行包
+
+```python
+Supervisor(max_unknown_steps=12, max_age_ms=250)
+supervisor.inspect(observation, now_ms: int) -> GuardDecision
+VisualAgent(job="assassin", maps=("meadow", "cavern"), *, class_spec=None)
+policy.decide(observation: VisualObservation) -> AgentDecision
+verify_visual_effect(before, after, action: SimAction) -> str
+
+RunConfig(seed=0, job="assassin", max_steps=1000,
+          fault="none", record_stride=4)
+run_episode(output: Path | None = None,
+            config: RunConfig | None = None,
+            detector: Detector | None = None,
+            *, class_profile: LoadedClassProfile | None = None,
+            sprite_pack: SpritePack | None = None) -> dict[str, Any]
+verify_run(output: Path) -> dict[str, Any]
+run_suite(output: Path, seeds=3) -> dict[str, Any]
+run_soak(output: Path, seconds=60) -> dict[str, Any]
+chat_draft(incoming: str, reply: str) -> dict[str, object]
+```
+
+GuardDecision 的 state 为 running/paused/stopped，AgentDecision 包含 action/task/state/reason。
+监督检查帧身份、时间、可信度、玩家唯一性和资源；连续异常计数有上限，时钟倒退和死亡可立即停止。
+可见效果为 observed/pending/unknown/not_applicable，不能据此证明隐藏伤害或掉落归属。
+
+fault 仅支持 none/brief_dropout/persistent_dropout/duplicate_frames/freeze_input。
+运行任务状态为 completed/failed/stopped；completed 还必须满足独立 oracle，策略自称完成但真值不符会降为 failed。
+`output=None` 只返回摘要；指定输出则保存采样图片、完整动作轨迹、状态、摘要和文件 manifest；提供 sprite_pack 时同时保存其原始图片和元数据，回放时独立验证并恢复相同渲染。
+`verify_run()` 做动作/状态/像素回放，返回 `perception_reproduced=False`；不重新执行学习模型。
+suite 与 soak 目前固定用像素基线。带 ONNX 的闭环需调用 run_episode 或 `lab run`。
+
+soak 的 seconds 是墙上时间预算，范围 1–604800；会完成当前 episode 后退出，可能多运行一个 episode 的时长。模拟时长单列，不能替代 24 小时真实进程运行。
+chat_draft 只封装 incoming 和 reply 为待人工确认的本地草稿，返回 `sent=False`；不生成语言模型回复、不发送消息。
+
+## v0.1 数据集与模型工具
+
+```python
+generate_dataset(output, sessions=9, frames_per_session=8, seed=0, *, sprite_pack=None)
+validate_dataset(output) -> dict[str, object]
+train_yolo(dataset: Path, output: Path, model_config: Path,
+           epochs=3, image_size=320, batch=8, seed=0)
+export_yolo(weights: Path, output: Path, image_size=320,
+            scope="synthetic_fixture")
+benchmark_dataset(dataset: Path, output: Path, detector=None, split="test",
+                  confidence_threshold=0.25, iou_threshold=0.5)
+evaluate_predictions(samples: Sequence[EvaluationSample], *,
+                     class_names=CLASS_NAMES,
+                     confidence_threshold=0.25, iou_threshold=0.5)
+```
+
+以上函数返回 JSON 可序列化摘要；EvaluationSample 内含 ground_truth 与 predictions 的 Detection tuple。
+生成数据集会先暂存、验证再发布，已有输出不覆盖；会话数 3–1000、每会话帧数 1–1000、总帧数上限 100000。
+训练和导出是可选重依赖命令；Python API 的 image_size 默认 320，CLI 的明确默认是 160，运行报告记录实际参数。
+AP 定义、统计空值、时延范围和模型域限制见 [EVALUATION.md](EVALUATION.md)。训练完成和导出成功不等同于通过闭环准入。
+
+## 本地录像与 OCR 接口
+
+```python
+TesseractOCR(binary=None, language="eng", *, tessdata_dir=None,
+             timeout_seconds=5, psm=6)
+ocr.recognize(frame: ImageFrame, crop=None) -> OCRResult
+import_recording(source: Path, output: Path, *, source_uri, permission, license,
+                 fps=None, max_frames=300) -> dict[str, object]
+validate_recording(recording: Path) -> dict[str, object]
+iter_recording(recording: Path) -> Iterator[ImageFrame]
+observe_recording(recording: Path, output: Path, detector=None) -> dict[str, object]
+```
+
+OCR 使用已安装的本地 Tesseract 和语言包，不下载；crop 是原图内正面积 xyxy 整数 tuple，结果框映射回原图坐标。
+录像输入为本地 PNG 目录或 MP4；只观察和记录，不接执行器。名义 FPS 时间轴不等同精确媒体 PTS，导入的来源断言也不等同独立真实域标注。
+
+## 当前 CLI 表面
+
+| 命令 | 主要参数 / 作用 |
+|---|---|
+| `demo`、`db init/check` | 原 P0 兼容入口；`db` 使用 v1 |
+| `knowledge init/check DB` | 初始化/显式升级/检查 v2 |
+| `knowledge import DB SOURCE` | 导入本地知识 JSON |
+| `knowledge query DB KIND ID VERSION` | 可选 `--allow-unverified` |
+| `knowledge snapshot DB OUTPUT` / `knowledge verify-snapshot DIR` | 生成和验证独立快照 |
+| `assets import REGISTRY SOURCE` | 必填 `--entity-id --game-version --source-uri --license --permission` |
+| `assets list REGISTRY` / `assets verify REGISTRY ID` | 列表和内容验证 |
+| `dataset create PATH` / `dataset check PATH` | create 可选 `--sessions --frames --seed`，成对的 `--asset-registry --sprite-map` |
+| `vision ocr IMAGE` | `--language --binary --tessdata-dir --timeout --crop x1 y1 x2 y2`；需要本地 Tesseract |
+| `recording import SOURCE OUTPUT` | 必填来源/许可断言，PNG 目录需要 `--fps`，可选 `--max-frames` |
+| `recording check DIR` / `recording observe DIR --output DIR` | 完整性验证或离线逐帧观察；observe 可选模型对 |
+| `vision observe IMAGE` | 可选成对的 `--model --manifest` |
+| `vision benchmark DATASET --output FILE` | 可选模型对及 `--split train|val|test` |
+| `model train DATASET --output DIR` | `--config --epochs --image-size --batch --seed` |
+| `model export WEIGHTS --output DIR` | `--image-size --scope` |
+| `lab run --output DIR` | `--job --seed --max-steps --record-stride --fault`，可选模型对、`--knowledge-db --game-version` 及成对的 `--asset-registry --sprite-map` |
+| `lab suite --output DIR` | `--seeds` |
+| `lab replay DIR` | 校验记录包并回放动作 |
+| `lab soak --output DIR` | `--seconds` 为实际墙上时长 |
+| `chat-draft --incoming TEXT --reply TEXT` | 输出本地草稿 JSON |
+
+`python -m maple_vision` 与安装后的 `maple-vision` 等价。正常 stdout 为一份 JSON 摘要；训练日志写 stderr。
+已处理的参数、配置、文件和数据库错误返回 2；lab 的失败/停止或 suite/soak 未通过返回 1；其余正常返回 0。
+套件中的预期故障停止可以构成测试通过，但不能算作任务成功。
+
+## P0 历史兼容接口
+
+以下保留 P0 接口的历史说明；其中的阶段性“尚未实现”仅描述 P0。v0.1 实际能力和边界以前面的当前接口为准。
+
+### 1. 已实现的数据模型
 
 模型在 `src/maple_vision/contracts.py` 中，使用不可变 dataclass。以下是 P0 的实际接口，不是完整玩法模型。
 
@@ -21,7 +195,7 @@ P0 的 `pixels` 是不解释内容的 opaque bytes；还没有图片解码器，
 
 `confidence` 是观测元数据，不是经过校准的概率。P0 默认观测为 UNKNOWN/0.0。既有 `Status(str, Enum)` 的字符串行为保持兼容。
 
-## 2. 端口与依赖方向
+### 2. 端口与依赖方向
 
 ```python
 FrameSource.read() -> Frame | None
@@ -36,7 +210,7 @@ Verifier.verify(intent: Intent, execution: Execution) -> Verification
 
 `ports.py` 声明 KnowledgeProvider、AssetImporter、ObjectDetector 及记录类型；`contracts.py` 保留 Simulator 协议。它们在 P0 没有网络、素材、推理或游戏物理实现。知识和素材记录是扩展合同；P1/P2 必须在各自边界实现来源、哈希和访问许可验证。
 
-## 3. 管线与时间
+### 3. 管线与时间
 
 - 原 `run_once(source, perception)` 保留原返回语义，只执行观测。
 - 新 `Pipeline.tick(now_ms=None)` 返回 TickResult；source 结束时返回 None，不再调用后续模块。
@@ -47,7 +221,7 @@ Verifier.verify(intent: Intent, execution: Execution) -> Verification
 - NoOp 意图有效区间为 `[created_at_ms, deadline_ms)`；在截止时间执行会被拒绝，验证为 TIMEOUT。
 - NoOp 意图 ID 在一次运行内唯一，跨运行用 JSONL 的 run_id 区分。
 
-## 4. CLI 与配置
+### 4. CLI 与配置
 
 ```text
 maple-vision demo [--config FILE] [--frames N] [--output FILE]
@@ -61,7 +235,7 @@ TOML 根字段只允许 `schema_version` 与 `runtime`，要求 schema_version=1
 
 JSONL 每行含 schema_version、run_id 和 tick，不保存原始帧。现阶段是 trace writer，并非完整 Recorder、Replay 解码器或 Failure Bundle 系统。
 
-## 5. 数据库迁移合同
+### 5. 数据库迁移合同
 
 ```python
 migrate(connection: sqlite3.Connection) -> None
@@ -75,7 +249,7 @@ open_readonly(path: str | Path) -> sqlite3.Connection
 
 open_readonly 不创建数据库，使用 SQLite URI mode=ro 和 query_only；调用方负责 close。P0 保留原 v1 中 `id TEXT PRIMARY KEY` 的行为；P1 建立写入功能前，需要显式迁移补齐 NOT NULL 等数据约束，不能假定当前 Schema 已满足完整知识库需求。
 
-## 6. 兼容性和下一阶段
+### 6. 兼容性和下一阶段
 
 保留 Frame 的前三个构造参数、Observation 的前三个构造参数、run_once、migrate 和 Simulator 原接口。新增字段有默认值。新输入校验明确拒绝原先不应该有效的负时间、无穷值和错误枚举。
 

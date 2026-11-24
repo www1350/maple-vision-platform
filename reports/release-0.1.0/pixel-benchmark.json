@@ -1,0 +1,236 @@
+{
+  "dataset": {
+    "class_counts": {
+      "test": {
+        "ladder": 64,
+        "loot": 58,
+        "monster": 127,
+        "npc": 64,
+        "platform": 192,
+        "player": 64,
+        "portal": 64
+      },
+      "train": {
+        "ladder": 160,
+        "loot": 157,
+        "monster": 316,
+        "npc": 160,
+        "platform": 480,
+        "player": 160,
+        "portal": 160
+      },
+      "val": {
+        "ladder": 64,
+        "loot": 66,
+        "monster": 119,
+        "npc": 64,
+        "platform": 192,
+        "player": 64,
+        "portal": 64
+      }
+    },
+    "frames": 288,
+    "missing_classes": {
+      "test": [],
+      "train": [],
+      "val": []
+    },
+    "missing_maps": {
+      "test": [],
+      "train": [],
+      "val": []
+    },
+    "objects": 2859,
+    "origin": "synthetic-fixture-v1",
+    "schema_version": 1,
+    "sessions": 18,
+    "split_frames": {
+      "test": 64,
+      "train": 160,
+      "val": 64
+    },
+    "split_maps": {
+      "test": {
+        "cavern": 32,
+        "meadow": 32
+      },
+      "train": {
+        "cavern": 64,
+        "meadow": 96
+      },
+      "val": {
+        "cavern": 48,
+        "meadow": 16
+      }
+    },
+    "split_sessions": {
+      "test": 4,
+      "train": 10,
+      "val": 4
+    },
+    "validated": true
+  },
+  "dataset_manifest_sha256": "ecc0ff6c4e9bbebc9915f0313bb3b227a99ecc321051ee2ae2e8a0eff096ad67",
+  "dataset_origin": "synthetic-fixture-v1",
+  "dataset_split_role": "held_out_test",
+  "detector": {
+    "implementation": "maple_vision.vision.PixelPerception",
+    "method": "fixed_palette_connected_components",
+    "model_sha256": null,
+    "scope": "synthetic_fixture",
+    "source_id": "synthetic-palette-v2"
+  },
+  "environment": {
+    "dependencies": {
+      "Pillow": "13.0.0",
+      "maple-vision-platform": "0.1.0",
+      "numpy": "2.5.5",
+      "onnxruntime": "1.32.0"
+    },
+    "logical_cpus": 9,
+    "machine": "x86_64",
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "processor": "unreported",
+    "python": "3.12.14"
+  },
+  "generated_at": "2026-11-24T10:19:40.092495+00:00",
+  "latency_ms": {
+    "clock": "perf_counter_ns",
+    "max": 2.258594,
+    "mean": 1.545876390625,
+    "min": 1.220112,
+    "p50": 1.4887489999999999,
+    "p95": 2.1251579499999997,
+    "samples": 64,
+    "timing_scope": "detect(frame) only; includes detector preprocessing/decoding, excludes PNG I/O",
+    "warmup_calls_excluded": 3
+  },
+  "limitations": [
+    "Synthetic fixture results do not establish accuracy on real recordings.",
+    "A split named test does not prove the model never saw those images elsewhere.",
+    "AP uses a declared confidence cutoff and one IoU; this is not COCO mAP50-95.",
+    "Small image counts yield uncertain accuracy and latency estimates."
+  ],
+  "metrics": {
+    "ap_classes_with_ground_truth": 7,
+    "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+    "class_count": 7,
+    "classes": [
+      "player",
+      "monster",
+      "loot",
+      "portal",
+      "npc",
+      "platform",
+      "ladder"
+    ],
+    "confidence_threshold": 0.25,
+    "images": 64,
+    "iou_threshold": 0.5,
+    "map50": 0.9983615211337984,
+    "map50_95": null,
+    "map_at_iou": 0.9983615211337984,
+    "micro": {
+      "f1": 0.9976359338061466,
+      "fn": 0,
+      "fp": 3,
+      "ground_truth": 633,
+      "precision": 0.9952830188679245,
+      "predictions": 636,
+      "recall": 1.0,
+      "tp": 633
+    },
+    "per_class": {
+      "ladder": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 64,
+        "precision": 1.0,
+        "predictions": 64,
+        "recall": 1.0,
+        "tp": 64
+      },
+      "loot": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 58,
+        "precision": 1.0,
+        "predictions": 58,
+        "recall": 1.0,
+        "tp": 58
+      },
+      "monster": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 127,
+        "precision": 1.0,
+        "predictions": 127,
+        "recall": 1.0,
+        "tp": 127
+      },
+      "npc": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 64,
+        "precision": 1.0,
+        "predictions": 64,
+        "recall": 1.0,
+        "tp": 64
+      },
+      "platform": {
+        "ap50": 0.9885306479365883,
+        "ap_at_iou": 0.9885306479365883,
+        "f1": 0.9922480620155039,
+        "fn": 0,
+        "fp": 3,
+        "ground_truth": 192,
+        "precision": 0.9846153846153847,
+        "predictions": 195,
+        "recall": 1.0,
+        "tp": 192
+      },
+      "player": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 64,
+        "precision": 1.0,
+        "predictions": 64,
+        "recall": 1.0,
+        "tp": 64
+      },
+      "portal": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 64,
+        "precision": 1.0,
+        "predictions": 64,
+        "recall": 1.0,
+        "tp": 64
+      }
+    },
+    "predictions_below_confidence_threshold": 0,
+    "unrecognized_prediction_classes": []
+  },
+  "model_training_overlap_verified": false,
+  "schema_version": 1,
+  "scope": "synthetic_fixture",
+  "split": "test"
+}

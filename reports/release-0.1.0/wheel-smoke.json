@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "wheel": "maple_vision_platform-0.1.0-py3-none-any.whl",
+  "wheel_sha256": "564f5c5bc12dff13e8918cb0b1eebc893532bdba6923edac7c5943b1d363f531",
+  "python": "3.12.14",
+  "platform": "Linux",
+  "wall_seconds": 17.083,
+  "checks": {
+    "installed_package": {
+      "module": "/tmp/maple-wheel-65_xict8/venv/lib/python3.12/site-packages/maple_vision/__init__.py",
+      "version": "0.1.0",
+      "runtime": {
+        "numpy": "2.5.5",
+        "Pillow": "13.0.0"
+      },
+      "model_config_packaged": true,
+      "training_not_installed": true,
+      "inference_not_installed": true
+    },
+    "p0_demo": {
+      "schema_version": 1,
+      "frames_processed": 3,
+      "intents_emitted": 3,
+      "executions_skipped": 3,
+      "verifications_not_applicable": 3
+    },
+    "p0_database": {
+      "schema_version": 1,
+      "source_records": 0
+    },
+    "catalog_snapshot": {
+      "schema_version": 2,
+      "records": 1,
+      "entities": 1,
+      "legacy_source_records": 0,
+      "status_counts": {
+        "CONFLICTED": 0,
+        "PROVISIONAL": 0,
+        "UNKNOWN": 0,
+        "VERIFIED": 1
+      },
+      "scopes": [
+        "synthetic_fixture"
+      ],
+      "game_versions": [
+        "wheel-smoke-v1"
+      ]
+    },
+    "dataset": {
+      "schema_version": 1,
+      "origin": "synthetic-fixture-v1",
+      "sessions": 6,
+      "frames": 12,
+      "objects": 120,
+      "split_frames": {
+        "train": 4,
+        "val": 4,
+        "test": 4
+      },
+      "split_sessions": {
+        "train": 2,
+        "val": 2,
+        "test": 2
+      },
+      "class_counts": {
+        "train": {
+          "player": 4,
+          "monster": 8,
+          "loot": 4,
+          "portal": 4,
+          "npc": 4,
+          "platform": 12,
+          "ladder": 4
+        },
+        "val": {
+          "player": 4,
+          "monster": 8,
+          "loot": 4,
+          "portal": 4,
+          "npc": 4,
+          "platform": 12,
+          "ladder": 4
+        },
+        "test": {
+          "player": 4,
+          "monster": 8,
+          "loot": 4,
+          "portal": 4,
+          "npc": 4,
+          "platform": 12,
+          "ladder": 4
+        }
+      },
+      "missing_classes": {
+        "train": [],
+        "val": [],
+        "test": []
+      },
+      "split_maps": {
+        "train": {
+          "meadow": 2,
+          "cavern": 2
+        },
+        "val": {
+          "meadow": 2,
+          "cavern": 2
+        },
+        "test": {
+          "meadow": 2,
+          "cavern": 2
+        }
+      },
+      "missing_maps": {
+        "train": [],
+        "val": [],
+        "test": []
+      },
+      "validated": true
+    },
+    "asset_registry": {
+      "verified": true,
+      "media_type": "image/png"
+    },
+    "mission": {
+      "status": "completed",
+      "steps": 325,
+      "scope": "synthetic_fixture",
+      "detector": "pixel-fixture",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ]
+    },
+    "replay": {
+      "verified": true,
+      "steps_replayed": 325,
+      "scope": "deterministic_simulator",
+      "files_checked": 88,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true
+    },
+    "module_entrypoint": {
+      "passed": true
+    }
+  },
+  "scope": "isolated_installed_runtime; training_and_accuracy_are_separate_gates"
+}

@@ -1,0 +1,297 @@
+[
+  {
+    "run": {
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "ruleset": "synthetic-fixture-v1",
+      "config": {
+        "seed": 0,
+        "job": "assassin",
+        "max_steps": 1000,
+        "fault": "none",
+        "record_stride": 4
+      },
+      "detector": "onnx",
+      "status": "completed",
+      "reason": "dialogue_observed",
+      "steps": 327,
+      "simulated_seconds": 16.35,
+      "wall_seconds": 6.453452,
+      "paused_steps": 0,
+      "recoveries": 0,
+      "actions": {
+        "attack": 10,
+        "buff": 2,
+        "idle": 53,
+        "interact": 2,
+        "jump_attack": 2,
+        "loot": 6,
+        "move": 251,
+        "portal": 1
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "jump": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6
+      },
+      "visual_effects": {
+        "not_applicable": 53,
+        "observed": 256,
+        "unknown": 18
+      },
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "final_coins": 20,
+      "drops_collected": 6,
+      "alive": true,
+      "final_state_sha256": "a4ba5d4c14922425ac7ba7c7539c08b12277ca1ac8dbc30937e7815020ec8638",
+      "python": "3.12.14",
+      "runtime_identity": {
+        "python": "3.12.14",
+        "packages": {
+          "maple-vision-platform": "0.1.0",
+          "Pillow": "13.0.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "source_sha256": "011d1ce24576960c8a1813439ab13df0b95b9f1fa6a792109168e592bd8c98b8"
+      },
+      "model_manifest": {
+        "model_sha256": "56cafce92c63d284744b9030d661486911e30c46b03000c605b530bc91d9ae04",
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_width": 320,
+        "input_height": 320,
+        "output_format": "raw_xywh",
+        "scope": "synthetic_fixture",
+        "schema_version": 1
+      },
+      "output": "artifacts/yolo-hybrid-final-assassin"
+    },
+    "replay": {
+      "verified": true,
+      "steps_replayed": 327,
+      "scope": "deterministic_simulator",
+      "files_checked": 88,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true
+    }
+  },
+  {
+    "run": {
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "ruleset": "synthetic-fixture-v1",
+      "config": {
+        "seed": 0,
+        "job": "dragon_knight",
+        "max_steps": 1000,
+        "fault": "none",
+        "record_stride": 4
+      },
+      "detector": "onnx",
+      "status": "completed",
+      "reason": "dialogue_observed",
+      "steps": 349,
+      "simulated_seconds": 17.45,
+      "wall_seconds": 6.604061,
+      "paused_steps": 0,
+      "recoveries": 0,
+      "actions": {
+        "attack": 12,
+        "buff": 2,
+        "idle": 47,
+        "interact": 2,
+        "loot": 6,
+        "move": 277,
+        "portal": 1,
+        "potion_mp": 2
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6,
+        "potion_mp": 2
+      },
+      "visual_effects": {
+        "not_applicable": 47,
+        "observed": 282,
+        "unknown": 20
+      },
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "final_coins": 20,
+      "drops_collected": 6,
+      "alive": true,
+      "final_state_sha256": "77aef0f828b373ebd8067efeb1b9397a95b8b93597066475cb1cda9b39ca2a84",
+      "python": "3.12.14",
+      "runtime_identity": {
+        "python": "3.12.14",
+        "packages": {
+          "maple-vision-platform": "0.1.0",
+          "Pillow": "13.0.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "source_sha256": "011d1ce24576960c8a1813439ab13df0b95b9f1fa6a792109168e592bd8c98b8"
+      },
+      "model_manifest": {
+        "model_sha256": "56cafce92c63d284744b9030d661486911e30c46b03000c605b530bc91d9ae04",
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_width": 320,
+        "input_height": 320,
+        "output_format": "raw_xywh",
+        "scope": "synthetic_fixture",
+        "schema_version": 1
+      },
+      "output": "artifacts/yolo-hybrid-final-dragon_knight"
+    },
+    "replay": {
+      "verified": true,
+      "steps_replayed": 349,
+      "scope": "deterministic_simulator",
+      "files_checked": 94,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true
+    }
+  },
+  {
+    "run": {
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "ruleset": "synthetic-fixture-v1",
+      "config": {
+        "seed": 0,
+        "job": "cleric",
+        "max_steps": 1000,
+        "fault": "none",
+        "record_stride": 4
+      },
+      "detector": "onnx",
+      "status": "completed",
+      "reason": "dialogue_observed",
+      "steps": 317,
+      "simulated_seconds": 15.85,
+      "wall_seconds": 5.55413,
+      "paused_steps": 0,
+      "recoveries": 0,
+      "actions": {
+        "attack": 12,
+        "buff": 2,
+        "idle": 41,
+        "interact": 2,
+        "loot": 6,
+        "move": 253,
+        "portal": 1
+      },
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 2,
+        "buff_expired": 2,
+        "dialogue": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6
+      },
+      "visual_effects": {
+        "not_applicable": 41,
+        "observed": 256,
+        "unknown": 20
+      },
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "final_coins": 20,
+      "drops_collected": 6,
+      "alive": true,
+      "final_state_sha256": "c9b0ba3d6ad64f60c7048373dd48ced714a444005ea838a4e595cd33f3507a6e",
+      "python": "3.12.14",
+      "runtime_identity": {
+        "python": "3.12.14",
+        "packages": {
+          "maple-vision-platform": "0.1.0",
+          "Pillow": "13.0.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "source_sha256": "011d1ce24576960c8a1813439ab13df0b95b9f1fa6a792109168e592bd8c98b8"
+      },
+      "model_manifest": {
+        "model_sha256": "56cafce92c63d284744b9030d661486911e30c46b03000c605b530bc91d9ae04",
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_width": 320,
+        "input_height": 320,
+        "output_format": "raw_xywh",
+        "scope": "synthetic_fixture",
+        "schema_version": 1
+      },
+      "output": "artifacts/yolo-hybrid-final-cleric"
+    },
+    "replay": {
+      "verified": true,
+      "steps_replayed": 317,
+      "scope": "deterministic_simulator",
+      "files_checked": 86,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true
+    }
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "24h_wall_soak": "not_completed",
+  "actual_wall_seconds": 60.488174,
+  "episodes": 80,
+  "passed": true,
+  "requested_wall_seconds": 60,
+  "schema_version": 1,
+  "scope": "synthetic_fixture",
+  "simulated_seconds": 1291.7
+}

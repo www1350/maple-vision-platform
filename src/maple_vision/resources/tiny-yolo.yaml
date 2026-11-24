@@ -1,0 +1,17 @@
+# Self-authored small detection topology for pipeline verification, not a
+# claim about optimal architecture or real-game accuracy. Modules are supplied
+# by the optional Ultralytics dependency; its license applies to that dependency.
+nc: 7
+depth_multiple: 1.0
+width_multiple: 1.0
+reg_max: 8
+end2end: false
+backbone:
+  - [-1, 1, Conv, [16, 3, 2]]
+  - [-1, 1, Conv, [32, 3, 2]]
+  - [-1, 1, C2f, [32, true]]
+  - [-1, 1, Conv, [64, 3, 2]]
+  - [-1, 1, C2f, [64, true]]
+  - [-1, 1, SPPF, [64, 5]]
+head:
+  - [[2, 5], 1, Detect, [nc]]

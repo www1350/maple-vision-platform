@@ -1,0 +1,39 @@
+# Optional CPU training environment, captured from the tested Python 3.12 stack.
+# First install these CPU wheels from their official source, without dependencies:
+# python -m pip install --no-deps --index-url https://download.pytorch.org/whl/cpu torch==2.15.0+cpu torchvision==0.29.2+cpu
+# Then install this file; every non-optional dependency is pinned below or in dev/runtime.
+-r requirements-dev.txt
+anyio==4.16.0
+certifi==2026.11.20
+charset-normalizer==3.5.3
+contourpy==1.4.0
+cycler==0.12.1
+filelock==4.2.4
+fonttools==4.68.0
+fsspec==2026.9.0
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.20
+Jinja2==3.1.6
+kiwisolver==1.5.1
+MarkupSafe==3.0.3
+matplotlib==3.11.2
+mpmath==1.3.0
+networkx==3.7
+nvidia-ml-py==13.615.71
+opencv-python==5.1.0.95
+polars==2.1.0
+polars-runtime-32==2.1.0
+psutil==7.2.2
+pyparsing==3.3.3
+python-dateutil==4.0.0
+requests==2.34.2
+sympy==1.14.0
+torch==2.15.0+cpu
+torchvision==0.29.2+cpu
+tzdata==2026.6
+ultralytics==8.4.218
+ultralytics-platform==0.1.121
+ultralytics-thop==2.2.5
+urllib3==2.8.0

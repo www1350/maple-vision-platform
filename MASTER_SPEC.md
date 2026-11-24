@@ -1,5 +1,7 @@
 # Maple Vision Platform v8.0
 
+完整架构、从零执行步骤与 AI 接手指南见 [docs/FINAL_PLAN.md](docs/FINAL_PLAN.md)；当前实现与验收证据见 [docs/RELEASE_ACCEPTANCE.md](docs/RELEASE_ACCEPTANCE.md)。本文件保留总体规格，具体交付范围以版本验收记录为准。
+
 ## 项目范围
 面向冒险岛风格的离线视觉研究和独立模拟器。正式游戏仅限符合规则的只读观察；不提供正式客户端自动控制、反作弊绕过、封包拦截、内存操纵或输入伪装。独立验证不能证明正式账号安全。
 
@@ -25,4 +27,4 @@
 Python 3.12、SQLite、Pydantic、OpenCV、Pillow、Ultralytics YOLO、ONNX Runtime、本地 OCR、Pygame CE、pytest、Hypothesis、Ruff、mypy、JSONL、MP4。单机模块化，不需要 Redis、Kafka 或运行时 LLM。
 
 ## 交付阶段
-P0 工程合同与 CI；P1 知识同步；P2 素材；P3 地图渲染；P4 数据集；P5 模拟器；P6 模型评估；P7 视觉状态；P8 职业能力；P9 模拟器任务与验证；P10 Supervisor；P11 回归；P12 扩展；P13 发布。每阶段独立测试、审查和验收。首先仅执行 P0。
+P0 工程合同与 CI；P1 知识同步；P2 素材；P3 地图渲染；P4 数据集；P5 模拟器；P6 模型评估；P7 视觉状态；P8 职业能力；P9 模拟器任务与验证；P10 Supervisor；P11 回归；P12 扩展；P13 发布。每阶段独立测试、审查和验收。P0 已验收；用户于 2026-11-24 授权连续实施、测试并交付后续离线平台。真实素材、真实录像、已核实规则和长稳验收须分别记录，不能用合成测试冒充。

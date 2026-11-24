@@ -1,0 +1,1 @@
+{"class_names":["player","monster","loot","portal","npc","platform","ladder"],"input_height":320,"input_width":320,"model_sha256":"56cafce92c63d284744b9030d661486911e30c46b03000c605b530bc91d9ae04","output_format":"raw_xywh","schema_version":1,"scope":"synthetic_fixture"}

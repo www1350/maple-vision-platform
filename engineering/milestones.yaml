@@ -1,3 +1,4 @@
+schema_version: 2
 milestones:
   P0: []
   P1: [P0]
@@ -16,8 +17,93 @@ milestones:
 
 contracts:
   P0: engineering/p0-contract.yaml
+  platform_v0_1: engineering/platform-contract.yaml
 
 delivery:
-  active_milestone: P0
-  result_source: docs/P0_ACCEPTANCE.md
-  future_milestones_status: not_started
+  active_milestone: P13
+  scope: offline_synthetic_fixture_platform
+  release_version: "0.1"
+  release_status: accepted_offline_fixture_implementation
+  result_source: docs/RELEASE_ACCEPTANCE.md
+  local_evidence: reports/release-0.1.0/local-verification.json
+  remote_evidence: reports/release-0.1.0/remote-ci.json
+  implementation_commit: 2114372ac4705625b017d0dc907168560e768db2
+  final_head_checks: https://github.com/www1350/maple-vision-platform/pull/2
+  p0_result_source: docs/P0_ACCEPTANCE.md
+  p0_contract_is_historical: true
+  user_authorization_date: "2026-11-24"
+  continue_beyond_p0: true
+  full_v8_spec_acceptance: false
+  phase_status_meaning: implementation_is_separate_from_fixture_and_real_domain_acceptance
+
+phase_status:
+  P0:
+    implementation: accepted_foundation
+    evidence: docs/P0_ACCEPTANCE.md
+    regression: passed_local_and_remote_ubuntu_windows
+  P1:
+    implementation: local_catalog_and_verified_fixture_class_profiles
+    fixture_verification: passed_local_and_remote_ubuntu_windows
+    real_domain_gate: blocked_external_verified_data
+    remaining_engineering: [source_adapters, incremental_sync, remaining_catalog_rule_types]
+  P2:
+    implementation: local_registry_and_optional_static_sprite_packs
+    fixture_verification: passed_local_and_remote_ubuntu_windows
+    real_domain_gate: blocked_authorized_assets
+    remaining_engineering: [animation_pipeline, anchor_metadata_and_editor]
+  P3:
+    implementation: builtin_layered_renderer_with_optional_registered_sprites
+    fixture_verification: passed_local_and_remote_ubuntu_windows
+    real_domain_gate: blocked_verified_map_reference
+    remaining_engineering: [external_map_package_loader, map_editor]
+  P4:
+    implementation: synthetic_session_split_yolo_dataset
+    fixture_verification: integrity_and_declared_coverage_tests_passed_local
+    real_domain_gate: blocked_independent_real_recordings_and_labels
+    remaining_engineering: [full_task_lifecycle_coverage, unseen_map_holdout]
+  P5:
+    implementation: deterministic_two_map_simulator
+    fixture_verification: mechanics_and_restore_tests_passed_local
+    real_domain_gate: unverified_official_mechanics
+    remaining_engineering: [broader_mechanics_and_calibration]
+  P6:
+    implementation: cpu_training_onnx_export_inference_and_ap_benchmark
+    fixture_verification: synthetic_tools_holdout_and_hybrid_missions_passed_local_no_general_model_promotion
+    real_domain_gate: blocked_real_evaluation_corpus
+    remaining_engineering: [model_family_comparison, two_stage_comparison]
+  P7:
+    implementation: pixel_or_onnx_objects_fixture_hud_and_local_tesseract_adapter
+    fixture_verification: fixture_pixels_onnx_and_native_ocr_tests_passed_local
+    real_domain_gate: no_real_hud_or_ocr_acceptance
+    remaining_engineering: [real_game_ui_ocr_calibration, tracking, belief_state_fusion]
+  P8:
+    implementation: three_supported_classes_with_verified_catalog_profile_injection
+    fixture_verification: multiclass_mechanics_and_profile_injection_passed_local
+    real_domain_gate: no_verified_official_skill_data
+    remaining_engineering: [external_class_packages, full_class_catalog]
+  P9:
+    implementation: two_map_mission_oracle_and_embedded_sprite_replay
+    fixture_verification: mission_and_embedded_replay_tests_passed_local
+    real_domain_gate: not_applicable_to_official_client_execution
+    remaining_engineering: [generic_task_dsl, configurable_task_graph]
+  P10:
+    implementation: bounded_supervisor_and_recovery
+    fixture_verification: four_expected_fault_outcomes_passed_local
+    real_domain_gate: no_real_observation_fault_corpus
+    remaining_engineering: [broader_fault_catalog]
+  P11:
+    implementation: tests_action_replay_and_local_png_mp4_recording_observation
+    fixture_verification: passed_local_review_and_remote_native_adapters
+    real_domain_gate: no_real_golden_recordings
+    remaining_engineering: [full_model_reinference_replay, realtime_recording_capture]
+  P12:
+    implementation: builtin_three_class_two_map_matrix
+    fixture_verification: nine_normal_matrix_missions_passed_local
+    real_domain_gate: blocked_additional_verified_content
+    remaining_engineering: [third_party_content_plugins, management_ui]
+  P13:
+    implementation: packaging_cli_ci_and_wall_clock_soak_tool
+    fixture_verification: passed_local_and_remote_installation_plus_local_60_second_smoke
+    real_domain_gate: not_accepted
+    wall_clock_24h_soak: not_completed
+    remaining_engineering: [full_24_hour_wall_clock_endurance]

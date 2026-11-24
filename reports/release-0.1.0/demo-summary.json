@@ -1,0 +1,71 @@
+{
+  "actions": {
+    "attack": 10,
+    "buff": 2,
+    "idle": 53,
+    "interact": 2,
+    "jump_attack": 2,
+    "loot": 6,
+    "move": 249,
+    "portal": 1
+  },
+  "alive": true,
+  "config": {
+    "fault": "none",
+    "job": "assassin",
+    "max_steps": 1000,
+    "record_stride": 4,
+    "seed": 0
+  },
+  "detector": "pixel-fixture",
+  "dialogue_maps": [
+    "cavern",
+    "meadow"
+  ],
+  "drops_collected": 6,
+  "events": {
+    "attack": 12,
+    "attack_hit": 12,
+    "buff": 2,
+    "buff_expired": 2,
+    "dialogue": 2,
+    "jump": 2,
+    "loot": 6,
+    "map_changed": 1,
+    "monster_defeated": 6
+  },
+  "final_coins": 20,
+  "final_state_sha256": "7743034fcf5c6f1764fad149911bea516eb19d6b51bc0f01822e2a936f1d80ec",
+  "independent_goal_check": true,
+  "maps_visited": [
+    "cavern",
+    "meadow"
+  ],
+  "model_manifest": null,
+  "paused_steps": 0,
+  "python": "3.12.14",
+  "reason": "dialogue_observed",
+  "recoveries": 0,
+  "ruleset": "synthetic-fixture-v1",
+  "runtime_identity": {
+    "packages": {
+      "Pillow": "13.0.0",
+      "maple-vision-platform": "0.1.0",
+      "numpy": "2.5.5",
+      "onnxruntime": "1.32.0"
+    },
+    "python": "3.12.14",
+    "source_sha256": "04a87e6a863d7f55f8c4d5e2bc6a05645d0f135b53c7d997397d07ad090f2502"
+  },
+  "schema_version": 1,
+  "scope": "synthetic_fixture",
+  "simulated_seconds": 16.25,
+  "status": "completed",
+  "steps": 325,
+  "visual_effects": {
+    "not_applicable": 53,
+    "observed": 254,
+    "unknown": 18
+  },
+  "wall_seconds": 0.924888
+}
