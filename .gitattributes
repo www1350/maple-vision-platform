@@ -1,0 +1,3 @@
+# Preserve the retrieved plan's UTF-8/LF byte identity on every checkout platform.
+MASTER_SPEC.md text eol=lf
+docs/source-plan/* text eol=lf
