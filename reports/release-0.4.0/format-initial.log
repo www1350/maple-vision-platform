@@ -1,0 +1,14 @@
+unformatted: File would be reformatted
+  --> docs/DATA_SCHEMAS.md:57:3
+   |
+56 | {
+   -   "schema_version": 1,
+   -   "content": pack.to_dict(),
+   -   "content_sha256": pack.content_sha256,
+57 +     "schema_version": 1,
+58 +     "content": pack.to_dict(),
+59 +     "content_sha256": pack.content_sha256,
+60 | }
+   |
+
+1 file would be reformatted, 121 files already formatted

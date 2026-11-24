@@ -1,4 +1,4 @@
-schema_version: 4
+schema_version: 5
 milestones:
   P0: []
   P1: [P0]
@@ -20,28 +20,29 @@ contracts:
   platform_v0_1: engineering/platform-contract.yaml
   platform_v0_2: engineering/v02-contract.yaml
   platform_v0_3: engineering/v03-contract.yaml
+  platform_v0_4: engineering/v04-contract.yaml
 
 delivery:
   active_milestone: P13
-  active_increment_phases: [P6, P7, P11, P13]
-  scope: bounded_offline_synthetic_terrain_research_and_model_object_pipeline
-  release_version: "0.3.0"
-  release_status: accepted_offline_tools_candidate_rejected
-  result_source: docs/RELEASE_0_3_ACCEPTANCE.md
-  execution_plan: docs/V0_3_PLAN.md
-  evidence_archive: reports/release-0.3.0
-  local_evidence: reports/release-0.3.0/local-verification.json
-  preregistration: reports/release-0.3.0/preregistration.json
-  base_commit: d11e285f6ba648c34f3bcabb1c3d193f63350da1
+  active_increment_phases: [P3, P4, P5, P9, P11, P12, P13]
+  scope: bounded_external_synthetic_map_content_and_portable_validation
+  release_version: "0.4.0"
+  release_status: accepted_offline_map_implementation_final_archive_checked_in_pr
+  result_source: docs/RELEASE_0_4_ACCEPTANCE.md
+  execution_plan: docs/V0_4_PLAN.md
+  evidence_archive: reports/release-0.4.0
+  local_evidence: reports/release-0.4.0/local-verification.json
+  criteria_timing: engineering_conditions_after_early_probes_not_model_preregistration
+  base_commit: 493b7d24688c6aad22d7583f11e8098a28965567
   final_implementation_commit_status: passed
-  implementation_commit: 3340d8f2453082aff002a62ae56f43123fa83c63
-  implementation_tree: 88b077072ba4835ebe269bbf935ae67082f8f2a7
-  remote_run_url: https://github.com/www1350/maple-vision-platform/actions/runs/45421893081
-  final_head_checks: https://github.com/www1350/maple-vision-platform/pull/4
+  implementation_commit: 8a649f8aaa88429d7a7da2415f29dc632ccf5d42
+  implementation_tree: 767de0dde9df1a2d55dddb216b9f838b7215c09b
+  remote_run_url: https://github.com/www1350/maple-vision-platform/actions/runs/45455031462
+  final_head_checks: https://github.com/www1350/maple-vision-platform/pull/5
   final_archive_head_must_pass_before_merge: true
-  final_ci_status: implementation_commit_passed_archive_head_checked_separately_in_pr
-  pending_gates: []
-  pending_gates_scope: implementation_commit_final_archive_still_requires_own_ci
+  final_ci_status: implementation_passed_final_archive_checked_separately_in_pr
+  pending_gates: [final_archive_head_ci]
+  pending_gates_scope: v04_only_v03_is_closed
   p0_result_source: docs/P0_ACCEPTANCE.md
   p0_contract_is_historical: true
   user_authorization_date: "2026-11-24"
@@ -50,6 +51,24 @@ delivery:
   phase_status_meaning: implementation_is_separate_from_fixture_and_real_domain_acceptance
 
 historical_releases:
+  v0_3:
+    release_version: "0.3.0"
+    release_status: accepted_offline_tools_candidate_rejected
+    result_source: docs/RELEASE_0_3_ACCEPTANCE.md
+    execution_plan: docs/V0_3_PLAN.md
+    local_evidence: reports/release-0.3.0/local-verification.json
+    remote_evidence: reports/release-0.3.0/remote-ci.json
+    implementation_commit: 3340d8f2453082aff002a62ae56f43123fa83c63
+    final_archive_head: f1c9fc143c35e4ce7849410d6b13df3bcf0a3df6
+    final_head_run: https://github.com/www1350/maple-vision-platform/actions/runs/45423871093
+    final_head_checks: https://github.com/www1350/maple-vision-platform/pull/4
+    final_head_ci: passed
+    merge_commit: 493b7d24688c6aad22d7583f11e8098a28965567
+    candidate_promotion: rejected_platform_recall
+    test_scoring: deliberately_not_executed
+    promotion_suite_reinfer_soak: deliberately_not_executed
+    additional_candidate_budget: 0
+    full_v8_spec_acceptance: false
   v0_1:
     release_version: "0.1"
     release_status: accepted_offline_fixture_implementation
@@ -86,6 +105,25 @@ historical_releases:
     full_v8_spec_acceptance: false
 
 current_verification:
+  local_full_tree: passed_after_windows_id_fix_1011_zero_failures_errors_or_skips_112_65_seconds
+  local_evidence: reports/release-0.4.0/local-verification.json
+  remote_ubuntu_windows_and_native: passed_fixed_exact_commit_initial_windows_failure_retained
+  remote_evidence: reports/release-0.4.0/remote-ci.json
+  initial_remote_failure: reports/release-0.4.0/remote-ci-initial.json
+  windows_fix: six_short_pytest_ids_original_payloads_assertions_and_production_sources_unchanged
+  clean_wheel_installation: passed_26_144_seconds
+  external_map_acceptance: passed_three_jobs_13_scenarios_486_frames_and_short_soak
+  wheel_sha256: c141bd6efe6dff7dbb2642f397d6b3a0d73917cad830e8f5cbf07fb2117d140f
+  actual_short_soak_seconds: 61.050688
+  short_soak_episodes: 53
+  mypy_source_files_passed: 31
+  selected_model_changed: false
+  learned_model_on_external_maps: not_evaluated
+  unseen_map_generalization: not_evaluated
+  real_domain_acceptance: false
+  wall_clock_24h_soak: not_completed
+
+historical_v03_verification:
   local_full_tree: passed_post_runtime_fix_834_zero_failures_errors_or_skips_110_65_seconds
   historical_before_runtime_fix_evidence: reports/release-0.3.0/local-verification-before-runtime-fix.json
   remote_ubuntu_windows_and_native: passed_repaired_exact_commit_all_three_jobs_initial_native_failure_retained
@@ -165,20 +203,22 @@ phase_status:
     real_domain_gate: blocked_authorized_assets
     remaining_engineering: [animation_pipeline, anchor_metadata_and_editor]
   P3:
-    implementation: builtin_layered_renderer_with_optional_registered_sprites
+    implementation: builtin_and_bounded_external_maps_with_optional_registered_sprites
     historical_v0_1_fixture_verification: passed_local_and_remote_ubuntu_windows
     real_domain_gate: blocked_verified_map_reference
-    remaining_engineering: [external_map_package_loader, map_editor]
+    v0_4_implementation: strict_immutable_pack_and_fixed_viewport_geometry
+    remaining_engineering: [larger_worlds_branching_portals_reachability, map_editor, animation]
   P4:
-    implementation: legacy_v1_and_replay_verified_lifecycle_v2_session_split_datasets
+    implementation: legacy_v1_lifecycle_v2_and_embedded_external_map_v3_datasets
     historical_v0_1_fixture_verification: integrity_and_declared_coverage_tests_passed_local
     v0_2_verification: frozen_864_frame_data_and_original_v0_1_content_fingerprints_passed_local_and_remote
     v0_3_input_verification: fresh_seed_18_sessions_864_frames_7091_objects_replayed_and_duplicate_isolation_checked
     v0_3_holdout_limit: four_new_sessions_on_same_maps_not_unseen_map_acceptance
+    v0_4_implementation: route_driven_six_phase_dataset_and_map_groups
     real_domain_gate: blocked_independent_real_recordings_and_labels
     remaining_engineering: [unseen_map_holdout, broader_occlusion_and_real_domain_coverage]
   P5:
-    implementation: deterministic_two_map_simulator
+    implementation: deterministic_builtin_and_external_map_simulator
     historical_v0_1_fixture_verification: mechanics_and_restore_tests_passed_local
     real_domain_gate: unverified_official_mechanics
     remaining_engineering: [broader_mechanics_and_calibration]
@@ -206,7 +246,7 @@ phase_status:
     real_domain_gate: no_verified_official_skill_data
     remaining_engineering: [external_class_packages, full_class_catalog]
   P9:
-    implementation: two_map_mission_oracle_and_embedded_sprite_replay
+    implementation: ordered_map_route_mission_dynamic_oracle_and_embedded_content_replay
     historical_v0_1_fixture_verification: mission_and_embedded_replay_tests_passed_local
     real_domain_gate: not_applicable_to_official_client_execution
     remaining_engineering: [generic_task_dsl, configurable_task_graph]
@@ -224,7 +264,7 @@ phase_status:
     real_domain_gate: no_real_golden_recordings
     remaining_engineering: [realtime_recording_capture, independent_real_golden_corpus]
   P12:
-    implementation: builtin_three_class_two_map_matrix
+    implementation: three_classes_builtin_and_external_map_matrix
     historical_v0_1_fixture_verification: nine_normal_matrix_missions_passed_local
     v0_2_verification: selected_model_13_expected_scenario_outcomes_passed_local
     v0_3_verification: candidate_promotion_scenarios_not_executed_after_val_failure

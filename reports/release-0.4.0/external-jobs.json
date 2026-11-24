@@ -1,0 +1,1357 @@
+[
+  {
+    "action_replay": {
+      "files_checked": 42,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true,
+      "scope": "deterministic_simulator",
+      "steps_replayed": 559,
+      "verified": true
+    },
+    "reinfer": {
+      "action_replay_verified": true,
+      "decision_comparison": "exact; includes guard, action, reason, task and terminal state",
+      "files_unchanged": true,
+      "frames_reinferred": 560,
+      "independent_goal_check": true,
+      "model_hash_verified": false,
+      "observation_tolerances": {
+        "absolute": 1e-06,
+        "relative": 1e-06
+      },
+      "perception_reproduced": true,
+      "perception_settings": {
+        "implementation": "maple_vision.vision.PixelPerception",
+        "inference_options": null,
+        "loaded_model_sha256": null,
+        "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+        "model_manifest": null,
+        "pipeline": "pixel-fixture",
+        "verifiable_model_binding": true
+      },
+      "policy_reproduced": true,
+      "recorded_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.4.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "7737f0d827f93ebe6652bfcace2581b8cabefe998783dfbf40b358f167b468c6"
+      },
+      "recorded_status": "completed",
+      "runtime_identity_matches": true,
+      "schema_version": 1,
+      "scope": "synthetic_fixture_perception_and_policy_reexecution",
+      "terminal_decision_compared": true,
+      "terminal_guard_compared": true,
+      "terminal_observation_compared": true,
+      "trace_steps_compared": 559,
+      "verification_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.4.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "7737f0d827f93ebe6652bfcace2581b8cabefe998783dfbf40b358f167b468c6"
+      },
+      "verified": true
+    },
+    "run": {
+      "actions": {
+        "attack": 15,
+        "buff": 3,
+        "idle": 80,
+        "interact": 3,
+        "jump_attack": 3,
+        "loot": 9,
+        "move": 443,
+        "portal": 2,
+        "potion_mp": 1
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "assassin",
+        "max_steps": 1500,
+        "record_stride": 16,
+        "seed": 0
+      },
+      "detector": "pixel-fixture",
+      "dialogue_maps": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "drops_collected": 9,
+      "events": {
+        "attack": 18,
+        "attack_hit": 18,
+        "buff": 3,
+        "buff_expired": 3,
+        "dialogue": 3,
+        "jump": 3,
+        "loot": 9,
+        "map_changed": 2,
+        "monster_defeated": 9,
+        "potion_mp": 1
+      },
+      "final_coins": 29,
+      "final_state_sha256": "8ed6ce434564439d4359eeaff1602dc534fcf0196bf53b1ffebb7f1db4ce244e",
+      "independent_goal_check": true,
+      "map_pack": {
+        "content": {
+          "ground": 168,
+          "height": 192,
+          "id": "three-map-fixture",
+          "license": "CC0-1.0",
+          "maps": [
+            {
+              "id": "grove",
+              "ladders": [
+                {
+                  "h": 44,
+                  "w": 10,
+                  "x": 94,
+                  "y": 124
+                }
+              ],
+              "marker": [
+                41,
+                157,
+                131
+              ],
+              "monster_x": [
+                130,
+                210,
+                258
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "grove_guide",
+                  "w": 14,
+                  "x": 42,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 68,
+                  "x2": 132,
+                  "y": 124
+                },
+                {
+                  "x1": 184,
+                  "x2": 246,
+                  "y": 100
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "quarry",
+                  "h": 36,
+                  "id": "to_quarry",
+                  "w": 20,
+                  "x": 292,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 24,
+              "theme": "meadow"
+            },
+            {
+              "id": "quarry",
+              "ladders": [
+                {
+                  "h": 50,
+                  "w": 10,
+                  "x": 110,
+                  "y": 118
+                }
+              ],
+              "marker": [
+                151,
+                93,
+                171
+              ],
+              "monster_x": [
+                74,
+                150,
+                224
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "quarry_keeper",
+                  "w": 14,
+                  "x": 278,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 78,
+                  "x2": 148,
+                  "y": 118
+                },
+                {
+                  "x1": 208,
+                  "x2": 276,
+                  "y": 94
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "ruins",
+                  "h": 36,
+                  "id": "to_ruins",
+                  "w": 20,
+                  "x": 8,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 268,
+              "theme": "cavern"
+            },
+            {
+              "id": "ruins",
+              "ladders": [
+                {
+                  "h": 48,
+                  "w": 10,
+                  "x": 114,
+                  "y": 120
+                }
+              ],
+              "marker": [
+                199,
+                143,
+                77
+              ],
+              "monster_x": [
+                120,
+                196,
+                258
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "ruins_keeper",
+                  "w": 14,
+                  "x": 40,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 82,
+                  "x2": 154,
+                  "y": 120
+                },
+                {
+                  "x1": 204,
+                  "x2": 268,
+                  "y": 96
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "grove",
+                  "h": 36,
+                  "id": "to_grove",
+                  "w": 20,
+                  "x": 292,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 24,
+              "theme": "cavern"
+            }
+          ],
+          "permission": "self_authored",
+          "route": [
+            "grove",
+            "quarry",
+            "ruins"
+          ],
+          "schema_version": 1,
+          "scope": "synthetic_fixture",
+          "source_uri": "urn:maple-vision:self-authored:three-map-fixture",
+          "version": "1.0.0",
+          "width": 320
+        },
+        "content_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+        "schema_version": 1
+      },
+      "maps_visited": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "model_manifest": null,
+      "output": "artifacts/v04-acceptance/assassin",
+      "paused_steps": 0,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.vision.PixelPerception",
+          "inference_options": null,
+          "loaded_model_sha256": null,
+          "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+          "model_manifest": null,
+          "pipeline": "pixel-fixture",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 1.0,
+            "detections": [
+              {
+                "bbox": [
+                  64.0,
+                  146.0,
+                  78.0,
+                  168.0
+                ],
+                "class_id": "player",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  292.0,
+                  132.0,
+                  312.0,
+                  168.0
+                ],
+                "class_id": "portal",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  40.0,
+                  144.0,
+                  54.0,
+                  168.0
+                ],
+                "class_id": "npc",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  204.0,
+                  96.0,
+                  268.0,
+                  100.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  82.0,
+                  120.0,
+                  154.0,
+                  124.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  114.0,
+                  120.0,
+                  124.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "ruins",
+            "mp_ratio": 0.67,
+            "sequence": 559,
+            "source_id": "synthetic-palette-v2",
+            "status": "known",
+            "timestamp_ms": 27950
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.4.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "7737f0d827f93ebe6652bfcace2581b8cabefe998783dfbf40b358f167b468c6"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 27.95,
+      "status": "completed",
+      "steps": 559,
+      "visual_effects": {
+        "not_applicable": 80,
+        "observed": 452,
+        "unknown": 27
+      },
+      "wall_seconds": 1.162552
+    }
+  },
+  {
+    "action_replay": {
+      "files_checked": 40,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true,
+      "scope": "deterministic_simulator",
+      "steps_replayed": 519,
+      "verified": true
+    },
+    "reinfer": {
+      "action_replay_verified": true,
+      "decision_comparison": "exact; includes guard, action, reason, task and terminal state",
+      "files_unchanged": true,
+      "frames_reinferred": 520,
+      "independent_goal_check": true,
+      "model_hash_verified": false,
+      "observation_tolerances": {
+        "absolute": 1e-06,
+        "relative": 1e-06
+      },
+      "perception_reproduced": true,
+      "perception_settings": {
+        "implementation": "maple_vision.vision.PixelPerception",
+        "inference_options": null,
+        "loaded_model_sha256": null,
+        "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+        "model_manifest": null,
+        "pipeline": "pixel-fixture",
+        "verifiable_model_binding": true
+      },
+      "policy_reproduced": true,
+      "recorded_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.4.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "7737f0d827f93ebe6652bfcace2581b8cabefe998783dfbf40b358f167b468c6"
+      },
+      "recorded_status": "completed",
+      "runtime_identity_matches": true,
+      "schema_version": 1,
+      "scope": "synthetic_fixture_perception_and_policy_reexecution",
+      "terminal_decision_compared": true,
+      "terminal_guard_compared": true,
+      "terminal_observation_compared": true,
+      "trace_steps_compared": 519,
+      "verification_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.4.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "7737f0d827f93ebe6652bfcace2581b8cabefe998783dfbf40b358f167b468c6"
+      },
+      "verified": true
+    },
+    "run": {
+      "actions": {
+        "attack": 18,
+        "buff": 3,
+        "idle": 70,
+        "interact": 3,
+        "loot": 9,
+        "move": 410,
+        "portal": 2,
+        "potion_mp": 4
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "dragon_knight",
+        "max_steps": 1500,
+        "record_stride": 16,
+        "seed": 0
+      },
+      "detector": "pixel-fixture",
+      "dialogue_maps": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "drops_collected": 9,
+      "events": {
+        "attack": 18,
+        "attack_hit": 18,
+        "buff": 3,
+        "buff_expired": 3,
+        "dialogue": 3,
+        "loot": 9,
+        "map_changed": 2,
+        "monster_defeated": 9,
+        "potion_mp": 4
+      },
+      "final_coins": 29,
+      "final_state_sha256": "daf224eed4ad86e48e4ab2efd0abaf9d092113fa353918ad8816a7651bb6a495",
+      "independent_goal_check": true,
+      "map_pack": {
+        "content": {
+          "ground": 168,
+          "height": 192,
+          "id": "three-map-fixture",
+          "license": "CC0-1.0",
+          "maps": [
+            {
+              "id": "grove",
+              "ladders": [
+                {
+                  "h": 44,
+                  "w": 10,
+                  "x": 94,
+                  "y": 124
+                }
+              ],
+              "marker": [
+                41,
+                157,
+                131
+              ],
+              "monster_x": [
+                130,
+                210,
+                258
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "grove_guide",
+                  "w": 14,
+                  "x": 42,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 68,
+                  "x2": 132,
+                  "y": 124
+                },
+                {
+                  "x1": 184,
+                  "x2": 246,
+                  "y": 100
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "quarry",
+                  "h": 36,
+                  "id": "to_quarry",
+                  "w": 20,
+                  "x": 292,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 24,
+              "theme": "meadow"
+            },
+            {
+              "id": "quarry",
+              "ladders": [
+                {
+                  "h": 50,
+                  "w": 10,
+                  "x": 110,
+                  "y": 118
+                }
+              ],
+              "marker": [
+                151,
+                93,
+                171
+              ],
+              "monster_x": [
+                74,
+                150,
+                224
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "quarry_keeper",
+                  "w": 14,
+                  "x": 278,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 78,
+                  "x2": 148,
+                  "y": 118
+                },
+                {
+                  "x1": 208,
+                  "x2": 276,
+                  "y": 94
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "ruins",
+                  "h": 36,
+                  "id": "to_ruins",
+                  "w": 20,
+                  "x": 8,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 268,
+              "theme": "cavern"
+            },
+            {
+              "id": "ruins",
+              "ladders": [
+                {
+                  "h": 48,
+                  "w": 10,
+                  "x": 114,
+                  "y": 120
+                }
+              ],
+              "marker": [
+                199,
+                143,
+                77
+              ],
+              "monster_x": [
+                120,
+                196,
+                258
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "ruins_keeper",
+                  "w": 14,
+                  "x": 40,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 82,
+                  "x2": 154,
+                  "y": 120
+                },
+                {
+                  "x1": 204,
+                  "x2": 268,
+                  "y": 96
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "grove",
+                  "h": 36,
+                  "id": "to_grove",
+                  "w": 20,
+                  "x": 292,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 24,
+              "theme": "cavern"
+            }
+          ],
+          "permission": "self_authored",
+          "route": [
+            "grove",
+            "quarry",
+            "ruins"
+          ],
+          "schema_version": 1,
+          "scope": "synthetic_fixture",
+          "source_uri": "urn:maple-vision:self-authored:three-map-fixture",
+          "version": "1.0.0",
+          "width": 320
+        },
+        "content_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+        "schema_version": 1
+      },
+      "maps_visited": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "model_manifest": null,
+      "output": "artifacts/v04-acceptance/dragon_knight",
+      "paused_steps": 0,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.vision.PixelPerception",
+          "inference_options": null,
+          "loaded_model_sha256": null,
+          "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+          "model_manifest": null,
+          "pipeline": "pixel-fixture",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 1.0,
+            "detections": [
+              {
+                "bbox": [
+                  64.0,
+                  146.0,
+                  78.0,
+                  168.0
+                ],
+                "class_id": "player",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  292.0,
+                  132.0,
+                  312.0,
+                  168.0
+                ],
+                "class_id": "portal",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  40.0,
+                  144.0,
+                  54.0,
+                  168.0
+                ],
+                "class_id": "npc",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  204.0,
+                  96.0,
+                  268.0,
+                  100.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  82.0,
+                  120.0,
+                  154.0,
+                  124.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  114.0,
+                  120.0,
+                  124.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "ruins",
+            "mp_ratio": 0.84,
+            "sequence": 519,
+            "source_id": "synthetic-palette-v2",
+            "status": "known",
+            "timestamp_ms": 25950
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.4.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "7737f0d827f93ebe6652bfcace2581b8cabefe998783dfbf40b358f167b468c6"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 25.95,
+      "status": "completed",
+      "steps": 519,
+      "visual_effects": {
+        "not_applicable": 70,
+        "observed": 419,
+        "unknown": 30
+      },
+      "wall_seconds": 0.936356
+    }
+  },
+  {
+    "action_replay": {
+      "files_checked": 39,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true,
+      "scope": "deterministic_simulator",
+      "steps_replayed": 507,
+      "verified": true
+    },
+    "reinfer": {
+      "action_replay_verified": true,
+      "decision_comparison": "exact; includes guard, action, reason, task and terminal state",
+      "files_unchanged": true,
+      "frames_reinferred": 508,
+      "independent_goal_check": true,
+      "model_hash_verified": false,
+      "observation_tolerances": {
+        "absolute": 1e-06,
+        "relative": 1e-06
+      },
+      "perception_reproduced": true,
+      "perception_settings": {
+        "implementation": "maple_vision.vision.PixelPerception",
+        "inference_options": null,
+        "loaded_model_sha256": null,
+        "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+        "model_manifest": null,
+        "pipeline": "pixel-fixture",
+        "verifiable_model_binding": true
+      },
+      "policy_reproduced": true,
+      "recorded_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.4.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "7737f0d827f93ebe6652bfcace2581b8cabefe998783dfbf40b358f167b468c6"
+      },
+      "recorded_status": "completed",
+      "runtime_identity_matches": true,
+      "schema_version": 1,
+      "scope": "synthetic_fixture_perception_and_policy_reexecution",
+      "terminal_decision_compared": true,
+      "terminal_guard_compared": true,
+      "terminal_observation_compared": true,
+      "trace_steps_compared": 507,
+      "verification_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.4.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "7737f0d827f93ebe6652bfcace2581b8cabefe998783dfbf40b358f167b468c6"
+      },
+      "verified": true
+    },
+    "run": {
+      "actions": {
+        "attack": 18,
+        "buff": 3,
+        "idle": 61,
+        "interact": 3,
+        "loot": 9,
+        "move": 410,
+        "portal": 2,
+        "potion_mp": 1
+      },
+      "alive": true,
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "cleric",
+        "max_steps": 1500,
+        "record_stride": 16,
+        "seed": 0
+      },
+      "detector": "pixel-fixture",
+      "dialogue_maps": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "drops_collected": 9,
+      "events": {
+        "attack": 18,
+        "attack_hit": 18,
+        "buff": 3,
+        "buff_expired": 3,
+        "dialogue": 3,
+        "loot": 9,
+        "map_changed": 2,
+        "monster_defeated": 9,
+        "potion_mp": 1
+      },
+      "final_coins": 29,
+      "final_state_sha256": "179ad3e571e81d86be633731356563f3cf7d0573c59e22ad45509ac365ea20a1",
+      "independent_goal_check": true,
+      "map_pack": {
+        "content": {
+          "ground": 168,
+          "height": 192,
+          "id": "three-map-fixture",
+          "license": "CC0-1.0",
+          "maps": [
+            {
+              "id": "grove",
+              "ladders": [
+                {
+                  "h": 44,
+                  "w": 10,
+                  "x": 94,
+                  "y": 124
+                }
+              ],
+              "marker": [
+                41,
+                157,
+                131
+              ],
+              "monster_x": [
+                130,
+                210,
+                258
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "grove_guide",
+                  "w": 14,
+                  "x": 42,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 68,
+                  "x2": 132,
+                  "y": 124
+                },
+                {
+                  "x1": 184,
+                  "x2": 246,
+                  "y": 100
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "quarry",
+                  "h": 36,
+                  "id": "to_quarry",
+                  "w": 20,
+                  "x": 292,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 24,
+              "theme": "meadow"
+            },
+            {
+              "id": "quarry",
+              "ladders": [
+                {
+                  "h": 50,
+                  "w": 10,
+                  "x": 110,
+                  "y": 118
+                }
+              ],
+              "marker": [
+                151,
+                93,
+                171
+              ],
+              "monster_x": [
+                74,
+                150,
+                224
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "quarry_keeper",
+                  "w": 14,
+                  "x": 278,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 78,
+                  "x2": 148,
+                  "y": 118
+                },
+                {
+                  "x1": 208,
+                  "x2": 276,
+                  "y": 94
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "ruins",
+                  "h": 36,
+                  "id": "to_ruins",
+                  "w": 20,
+                  "x": 8,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 268,
+              "theme": "cavern"
+            },
+            {
+              "id": "ruins",
+              "ladders": [
+                {
+                  "h": 48,
+                  "w": 10,
+                  "x": 114,
+                  "y": 120
+                }
+              ],
+              "marker": [
+                199,
+                143,
+                77
+              ],
+              "monster_x": [
+                120,
+                196,
+                258
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "ruins_keeper",
+                  "w": 14,
+                  "x": 40,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 82,
+                  "x2": 154,
+                  "y": 120
+                },
+                {
+                  "x1": 204,
+                  "x2": 268,
+                  "y": 96
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "grove",
+                  "h": 36,
+                  "id": "to_grove",
+                  "w": 20,
+                  "x": 292,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 24,
+              "theme": "cavern"
+            }
+          ],
+          "permission": "self_authored",
+          "route": [
+            "grove",
+            "quarry",
+            "ruins"
+          ],
+          "schema_version": 1,
+          "scope": "synthetic_fixture",
+          "source_uri": "urn:maple-vision:self-authored:three-map-fixture",
+          "version": "1.0.0",
+          "width": 320
+        },
+        "content_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+        "schema_version": 1
+      },
+      "maps_visited": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "model_manifest": null,
+      "output": "artifacts/v04-acceptance/cleric",
+      "paused_steps": 0,
+      "perception_evidence": {
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.vision.PixelPerception",
+          "inference_options": null,
+          "loaded_model_sha256": null,
+          "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+          "model_manifest": null,
+          "pipeline": "pixel-fixture",
+          "verifiable_model_binding": true
+        },
+        "terminal": {
+          "cause": "policy",
+          "decision": {
+            "action": {
+              "direction": 0,
+              "kind": "idle",
+              "skill": "basic",
+              "target": ""
+            },
+            "reason": "dialogue_observed",
+            "state": "completed",
+            "task": "done"
+          },
+          "guard": {
+            "reason": "fresh_visual_observation",
+            "state": "running"
+          },
+          "observation": {
+            "confidence": 1.0,
+            "detections": [
+              {
+                "bbox": [
+                  64.0,
+                  146.0,
+                  78.0,
+                  168.0
+                ],
+                "class_id": "player",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  292.0,
+                  132.0,
+                  312.0,
+                  168.0
+                ],
+                "class_id": "portal",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  40.0,
+                  144.0,
+                  54.0,
+                  168.0
+                ],
+                "class_id": "npc",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  204.0,
+                  96.0,
+                  268.0,
+                  100.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  82.0,
+                  120.0,
+                  154.0,
+                  124.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  0.0,
+                  168.0,
+                  320.0,
+                  172.0
+                ],
+                "class_id": "platform",
+                "confidence": 1.0
+              },
+              {
+                "bbox": [
+                  114.0,
+                  120.0,
+                  124.0,
+                  168.0
+                ],
+                "class_id": "ladder",
+                "confidence": 1.0
+              }
+            ],
+            "dialogue_visible": true,
+            "hp_ratio": 1.0,
+            "map_id": "ruins",
+            "mp_ratio": 0.53,
+            "sequence": 507,
+            "source_id": "synthetic-palette-v2",
+            "status": "known",
+            "timestamp_ms": 25350
+          }
+        }
+      },
+      "python": "3.12.14",
+      "reason": "dialogue_observed",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.4.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "7737f0d827f93ebe6652bfcace2581b8cabefe998783dfbf40b358f167b468c6"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 25.35,
+      "status": "completed",
+      "steps": 507,
+      "visual_effects": {
+        "not_applicable": 61,
+        "observed": 416,
+        "unknown": 30
+      },
+      "wall_seconds": 0.932212
+    }
+  }
+]

@@ -1,6 +1,6 @@
 # Maple Vision Platform 最终实施方案
 
-**用途：交给另一名程序员或编程 AI，即可复现当前实现，并继续完成剩余工程。** 本文统筹 [v8 总规格](../MASTER_SPEC.md)、[实际架构](ARCHITECTURE.md)、已验收的 [v0.1](RELEASE_ACCEPTANCE.md) / [v0.2](RELEASE_0_2_ACCEPTANCE.md) 与当前 **v0.3 开发中的地形研究和模型对象管线**。本轮执行顺序和冻结门禁见 [V0_3_PLAN.md](V0_3_PLAN.md)，实际结果及未完成项见 [v0.3 验收记录](RELEASE_0_3_ACCEPTANCE.md)。旧版本验收、新实现可运行、当前版本发布通过、完整 v8 完成是不同状态。
+**用途：交给另一名程序员或编程 AI，即可复现当前实现，并继续完成剩余工程。** 本文统筹 [v8 总规格](../MASTER_SPEC.md)、历史架构与 v0.1/v0.2/v0.3 验收，以及当前 **v0.4 外部地图包与可移植验证**。本轮执行顺序见 [V0_4_PLAN.md](V0_4_PLAN.md)，实际结果及未完成项见 [v0.4 验收记录](RELEASE_0_4_ACCEPTANCE.md)。旧版本验收、新实现可运行、当前版本发布通过、完整 v8 完成是不同状态。
 
 ## 1. 交付目标与当前结论
 
@@ -8,7 +8,11 @@
 
 当前具备 SQLite 知识目录、静态素材登记与渲染、会话级合成数据集、实际 YOLO 训练和 ONNX 推理、三职业两地图任务、故障测试、动作重放、录像观察与本地 OCR。v0.2 的知识增量计划、生命周期数据与分组评估、模型 suite/soak、资源采样和实际感知/策略重新执行已经验收；所选 lifecycle 模型只取得合成混合管线准入。其源代码、模型及测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492` 的[三项远端 CI](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)均已通过，最终归档与合并历史见 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)。
 
-v0.3增加结构审查、schema3几何评分和显式模型对象模式；候选14项阈值通过13项，但平台召回0.819444＜0.98，依协议不推广、不评分test、不执行候选推广任务或再训第二候选。首轮远端原生CI发现日志流生命周期缺陷，独立工程修复后完整本地 **834通过、0失败/跳过**，同序原生155项与重建wheel通过；实现提交 `3340d8f2453082aff002a62ae56f43123fa83c63`已通过[三组远端CI](https://github.com/www1350/maple-vision-platform/actions/runs/45421893081)。最终归档head仍须由[PR #4](https://github.com/www1350/maple-vision-platform/pull/4)的独立CI确认。[本地验证](../reports/release-0.3.0/local-verification.json)不代表真实域准确率，也不改变模型拒绝结论。
+v0.4 在保留两张内置地图的基础上增加显式外部 MapPack，已接入模拟器、渲染、三职业任务、数据生成及自包含重放。示例有 `grove / quarry / ruins` 三张新地图；结构支持固定画布下 2–8 图循环路线。新增地图工程以像素基线独立验收，没有训练新模型，也没有证明原 YOLO 在新地图上的准确率。[地图格式与使用](MAP_PACKS.md)
+
+本轮完整本地1011通过、0跳过，隔离wheel通过；三职业分别559/519/507步完成，实际重新感知560/520/508帧；13场景、486帧数据与61.05秒53轮短时运行通过。首次Windows因超长pytest参数ID产生一个用例的setup/teardown错误，仅修改用例ID后，修复实现`8a649f8aaa88429d7a7da2415f29dc632ccf5d42`已通过[三组远端CI](https://github.com/www1350/maple-vision-platform/actions/runs/45455031462)与两平台隔离安装。生产代码和原始测试输入/断言未变。像素val仍有40FP/12FN，不宣称完美感知；最终归档head的检查和合并由[PR #5](https://github.com/www1350/maple-vision-platform/pull/5)记录。
+
+v0.3增加结构审查、schema3几何评分和显式模型对象模式；候选14项阈值通过13项，但平台召回0.819444＜0.98，依协议不推广、不评分test、不执行候选推广任务或再训第二候选。日志流工程修复后完整本地834通过，准确实现提交的三组 CI 通过；最终归档 head `f1c9fc143c35e4ce7849410d6b13df3bcf0a3df6` 也已通过 [CI 45423871093](https://github.com/www1350/maple-vision-platform/actions/runs/45423871093)，经 [PR #4](https://github.com/www1350/maple-vision-platform/pull/4) 合并为 `493b7d24688c6aad22d7583f11e8098a28965567`。该轮工程已闭合，模型拒绝结论保持不变。
 
 本项目执行对象是独立 Python 模拟器。正式客户端控制、系统按键注入、输入伪装、封包/内存修改和反作弊绕过不在交付范围内；独立验证也不能证明正式账号不会被封。玩家回复只产出待人工确认的本地草稿。依赖安装后，默认运行、训练、推理和 OCR 使用本地计算，不调用 LLM API，不消耗运行时 LLM token；编程 AI 开发本身的计费另算。
 
@@ -59,9 +63,13 @@ flowchart TD
 
 现有 `Asset Registry` 接收本地单帧 PNG/JPEG/WEBP，验证解码后按内容哈希保存原文件，同时记录来源与授权说明。`SpritePack` 将七个检测类别中的一个或多个映射到已登记的 asset ID，可同时用于 `dataset create` 与 `lab run`。RGBA 图按实体框缩放；透明度同时影响真实渲染和可见实例标签。运行包复制素材与 pack 元数据，回放不再依赖原注册表。[素材接入](SPRITE_PACK.md)
 
-地图已经分离背景/视差、装饰、平台/梯子、动态对象和 HUD；默认画布 320×192，支持较窄视口的镜头变换。当前仅有自绘 `meadow`、`cavern`，实体碰撞几何与图片外观分离。更换图片不会自动导入新碰撞结构、动画、技能规则或地图。
+地图已经分离背景/视差、装饰、平台/梯子、动态对象和 HUD；默认画布 320×192。内置 `meadow`、`cavern` 保留较窄视口的镜头变换行为。实体碰撞几何与图片外观分离，更换图片不会自动导入新碰撞结构、动画或技能规则。
 
-**后续提案：** 外部地图包由版本化 manifest、geometry、layers、portals、validation 组成，校验坐标系、平台可达性、门的目的地和素材引用；动画包另外声明状态、帧、时长及锚点。先实现加载器与错误拒绝，再做编辑器。MapleNecrocer 等工具仅为待评估候选，许可、输入兼容性与输出质量均未验收。静态图片接入不等同于该地图/动画管线已经完成。
+**v0.4 当前接口：** `load_map_pack(path) -> MapPack` 严格读取最多128KiB的本地JSON；不可变对象包含来源声明、内容版本、2–8张地图、唯一RGB标记与完整循环路线。每图声明平台、梯子、单门、单NPC、出生位置及地面怪物位置；固定世界/视口320×192、地面y=168。门必须指向路线下一图，末图返回入口；越界、重复身份、非法类型和错误哈希均拒绝。`map_pack=None` 保持旧默认字节；显式注入使用存档schema3，完整内容随存档恢复，不需要原文件。
+
+三图样例为 `examples/maps/three-map-fixture.json`，`grove → quarry → ruins → grove`，共9怪。`maps check`只证明结构和身份；资源、遮挡、策略和步数仍影响任务完成。运行独立oracle由声明路线和怪物总数计算目标，不能写死两图六怪。感知只得到静态标记表，策略只得到路线ID；两者不读取几何或动态真值。[完整地图合同](MAP_PACKS.md)
+
+**剩余工作：** 更广世界坐标和镜头、分支传送、复杂平台怪物、可达性规划、图层编辑和动画状态/时长/锚点。MapleNecrocer等工具仍为待评估候选，许可、输入兼容性与输出质量未验收。当前有界地图包不等于完整地图编辑器或动画管线。
 
 ## 5. 数据集、YOLO 与视觉状态
 
@@ -70,6 +78,8 @@ flowchart TD
 `dataset.py` 从多种子模拟会话生成 RGB 图片与可见框，类别为 player、monster、loot、portal、npc、platform、ladder。框裁剪到画面；被遮挡而不可见的实例不凭真值强行标出。train/val/test 按完整会话分开，manifest 记录种子、会话、类别、图片/标签及 `data.yaml` 哈希。校验拒绝越界标签、跨分区重复图片、遗漏文件、未登记文件和路径逃逸。[视觉实现](VISION_IMPLEMENTATION.md)
 
 v0.1 的 288 帧数据缺少 x<40 的玩家样本，而模拟器起点 x=24。v0.2 的显式 `profile="lifecycle"` 新增 schema v2：用实际模拟动作走完两图战斗、收集、对话和往返，选取出生、战斗、拾取、清场、对话、切图六阶段及边缘、高台、非落地位置。校验器逐会话重放动作，独立核对所选画面、可见标签、阶段和覆盖统计；训练生成可读取真值，运行检测器仍只接收 RGB 帧。默认 legacy 生成器和旧数据字节保持兼容。[生命周期合同](DATASET_LIFECYCLE.md)
+
+v0.4 显式 `map_pack` 仅与 lifecycle 配合，采用 dataset schema3，manifest完整内嵌地图及摘要。每会话最低`6×地图数`帧，每图六阶段均须覆盖；轨迹最多4096步，不能完成时清理临时目录并拒绝发布半成品。验证器用内嵌包重算动作、像素、可见标签与统计；评估按实际地图ID分组。原数据生成和训练私有副本流程保留兼容。本轮18×27=486帧只用于工程和像素基线检查；所有分区都包含同一地图包，不构成学习模型未见地图验收。
 
 v0.2 冻结输入为 18 会话×48 帧，共 864 张图片、7098 个可见标注，train/val/test 为 480/192/192 帧；manifest SHA-256 为 `670f6dae181f0f4b3107ba6a47cb733f19cfbc216c4e8e8c23f96b756601b3ff`。三职业、两地图、六阶段及五种位置分组均有覆盖。分组评估重新计算每组 TP/FP/FN/AP，保留聚合结果；无怪物真值时的误检仍计 FP。v0.3 另建新种子、无完全相同RGB和会话种子交集的数据，身份见5.4节。两版的两张地图仍在各分区出现，会话隔离和生命周期覆盖不等于未见地图或真实域泛化。
 
@@ -122,7 +132,7 @@ v0.1 样例与历史数据仍保留在 `examples/fixture-model/` 和 [YOLO_EXPER
 
 按预注册，候选推广13场景、三职业reinfer、soak及test均不执行，不增加第二候选。新test字节允许用于完整性核对与训练副本复制，但没有产生模型预测或分数。这是已经执行的失败出口，不是接手AI应补做的遗漏步骤。
 
-正式40epoch训练与val评分期间，五项冻结源码保持预注册字节，1730个输入副本文件一致；历史训练实现可从 `ff357c8951da8e84265d31c5a8b86a48934a4f01`读取。实验结束后，CI顺序触发日志handler关闭流问题，`training.py`另作工程修复；该修复不追溯进入实验，原模型和报告不变。后加审查预算同样不能追溯计入早期审查。修复后完整834项、同序155项、日志13项及重建wheel均通过，实现提交3340d8f的三组远端CI也已通过；最终归档提交仍需自身检查。[修复来源与回归](../reports/release-0.3.0/runtime-stream-fix.json)
+正式40epoch训练与val评分期间，五项冻结源码保持预注册字节，1730个输入副本文件一致；历史训练实现可从 `ff357c8951da8e84265d31c5a8b86a48934a4f01`读取。实验结束后，CI顺序触发日志handler关闭流问题，`training.py`另作工程修复；该修复不追溯进入实验，原模型和报告不变。后加审查预算同样不能追溯计入早期审查。修复后完整834项、同序155项、日志13项及重建wheel均通过，实现提交3340d8f的三组远端CI也已通过；最终归档提交也已通过CI并由PR #4合并。[修复来源与回归](../reports/release-0.3.0/runtime-stream-fix.json)
 
 ## 6. 职业能力、任务与有界监督
 
@@ -132,14 +142,14 @@ v0.1 样例与历史数据仍保留在 `examples/fixture-model/` 和 [YOLO_EXPER
 | 龙骑 `dragon_knight` | 近战与范围技能差异 | 攻击区域、命中与多个目标独立测试 |
 | 牧师 `cleric` | MP 差异与自我治疗 | 治疗量、MP 不足和动作拒绝测试 |
 | 通用动作 | 移动、单段跳跃、梯子、拾取、HP/MP 药品、Buff、NPC 对话、传送门 | 新动作须同时有执行合同和验证方法 |
-| 任务 | 两图战斗→收集→NPC 对话→旅行的有限状态机 | 通用任务 DSL、可配置任务图尚未实现 |
+| 任务 | 两张内置图或外部包的有序多图战斗→收集→NPC 对话→旅行状态机 | 当前只支持单出口循环内容；通用任务 DSL、分支任务图尚未实现 |
 | 玩家回话 | `chat-draft` 封装用户提供的回复，`sent=false` | 自动理解、LLM 生成与发送后端均未实现 |
 
 职业不等于一组按键脚本。新增职业要显式描述能力并验证模拟行为；当前三个 job ID 之外没有外部职业插件加载器。后续职业包可以提出数据 Schema，但在加载器、版本迁移与回归完成前不能称为现有 API。[模拟器行为](SIMULATOR_IMPLEMENTATION.md)
 
 模拟器默认固定 50ms 时间步和随机种子，状态保存包含确定性恢复所需信息。策略根据画面血蓝与对象关系处理生存、资源、战斗和任务进度；动态库存并没有通过隐藏真值或完整 OCR 输入策略。执行回执 `accepted` 只表示动作被接受，可见目标消失也不能单独证明击杀或拾取归属。
 
-Supervisor 默认检查 250ms 新鲜度、帧序号/时间与资源可读性，连续未知预算为 12 步；策略有卡住恢复和战斗进度预算，episode 默认最多 1000 步。短暂故障允许恢复，持续未知停止，无法恢复的输入冻结有界失败。独立 oracle 最后核验两图清理、实际掉落收集、NPC 对话和存活；策略自称完成而 oracle 不通过必须记失败。
+Supervisor 默认检查250ms新鲜度、帧序号/时间与资源可读性，连续未知预算为12步；策略有卡住恢复和战斗进度预算，单独run默认最多1000步且可显式配置。外部包suite/soak每轮预算为`max(1000,500×地图数)`。短暂故障允许恢复，持续未知停止，无法恢复的输入冻结有界失败。oracle核验声明路线全部地图清理、真实击杀数与掉落收集、每图NPC对话和存活；策略自称完成而oracle不通过必须记失败。
 
 ## 7. 录像、重放与运行证据
 
@@ -153,6 +163,8 @@ Supervisor 默认检查 250ms 新鲜度、帧序号/时间与资源可读性，�
 | 模拟器交互闭环 | 执行动作后产生新状态，再观察并验证效果 | 自建规则不会自动证明正式规则或账号安全 |
 
 每次输出新目录，保存 summary、完整 trace JSONL、初末状态、采样 PNG、最终画面、预览与文件 manifest。可选职业参数和素材随包保存；记录模型/数据哈希、配置、种子与运行版本。哈希检测内容变化，不是来源真实性的签名。MP4 当前时间戳按名义 FPS 估算，不是精确逐帧 PTS，不能用来推断毫秒级技能时序。[数据格式](DATA_SCHEMAS.md)
+
+外部地图另保存`map-pack.json`，与schema3存档、summary以及perception settings的地图摘要绑定。replay先核验地图副本与声明种子的初始世界，再重放全部动作；reinfer从内嵌地图重建感知/策略并比较N+1帧，包含终止帧。原文件删除不影响这两种验证。地图与职业参数、SpritePack可以共同嵌入；格式合法不代表自定义图片可由像素基线识别。
 
 ## 8. 从零复现：实际可执行命令
 
@@ -234,11 +246,11 @@ python -m maple_vision lab suite --output artifacts/plan-model-suite --seeds 3 -
 python -m maple_vision lab soak --output artifacts/plan-model-soak --seconds 60 --resource-interval 1 --max-resource-samples 1024 --model artifacts/plan-export/model.onnx --manifest artifacts/plan-export/manifest.json
 ```
 
-输出包括实际墙钟、进程 CPU 和支持平台上的 RSS 来源与单位；未知内存保持 `null`。资源样本有界保留，最大采样值不能冒充精确瞬时峰值。预检/文件变化防护和原始失败包保留已有v0.2回归证据；当前v0.3变更另行取得测试与CI。
+输出包括实际墙钟、进程 CPU 和支持平台上的 RSS 来源与单位；未知内存保持 `null`。资源样本有界保留，最大采样值不能冒充精确瞬时峰值。预检/文件变化防护和原始失败包保留已有v0.2回归证据；v0.3最终提交已经取得独立CI并合并；当前外部地图以v0.4验收为准。
 
 ### 8.4 v0.3 结构、几何与模型对象入口
 
-完整复现命令见 [V0_3_PLAN.md](V0_3_PLAN.md)。唯一训练及val已经完成且失败，接手者应归档结果并继续工具工程检查，不得另起候选、评分test或执行该失败候选的推广任务。以下只展示允许在train/val使用的结构和几何入口；输出不得覆盖现有证据。
+完整复现命令见 [V0_3_PLAN.md](V0_3_PLAN.md)。唯一训练及val已经完成且失败，工程及最终归档也已合并。接手者不得再起候选、评分test或执行该失败候选的推广任务；应继续v0.4之后的独立工程增量。以下只展示允许在train/val使用的结构和几何入口；输出不得覆盖现有证据。
 
 ```bash
 python -m maple_vision model audit-terrain artifacts/v03-repeat/dataset --config configs/terrain-yolo.yaml --output artifacts/v03-repeat/structure.json --split train --image-size 320
@@ -261,25 +273,40 @@ python -m maple_vision chat-draft --incoming "现在有空吗？" --reply "稍�
 
 OCR 需要本机 Tesseract 与对应语言包；中文需自行安装并验证 `chi_sim`，程序不自动下载。MP4 还需要可选 OpenCV/FFmpeg。录像感知可成对提供 `--model --manifest`，但这些检测框不会自动补全真实地图与血蓝状态。
 
+### 8.6 外部地图包与独立验收
+
+```bash
+python -m maple_vision maps check examples/maps/three-map-fixture.json
+python -m maple_vision lab run --map-pack examples/maps/three-map-fixture.json --output artifacts/plan-three-maps
+python -m maple_vision lab replay artifacts/plan-three-maps
+python -m maple_vision lab reinfer artifacts/plan-three-maps
+python -m maple_vision dataset create artifacts/plan-map-data --profile lifecycle --map-pack examples/maps/three-map-fixture.json --sessions 18 --frames 27 --seed 20261125
+python -m maple_vision dataset check artifacts/plan-map-data
+python -m maple_vision vision benchmark artifacts/plan-map-data --split val --output artifacts/plan-map-pixel-val.json
+python scripts/verify_external_maps.py --output artifacts/plan-map-acceptance
+```
+
+最后一条是可交给下一名编程AI直接执行的完整本轮验证：三职业、13场景、动作重放、每帧重新感知/策略、486帧数据、实际地图分组和默认60秒墙钟运行。全程使用像素基线，不加载学习模型；加载器的临时输入路径在检查前删除，报告与原始包保留。实际结果见[v0.4验收](RELEASE_0_4_ACCEPTANCE.md)，JSON字段与边界见[地图包说明](MAP_PACKS.md)。
+
 ## 9. P0–P13 工作拆解与依赖
 
-按此表中的已验收v0.2基础继续现有仓库，不重建已经通过的基础设施；v0.3模型失败与工具工程状态见5.4节和独立合同。实际机器可并行处理独立模块；集成前先冻结合同。机器可读依赖见 [milestones.yaml](../engineering/milestones.yaml)。
+按已验收基础与本轮v0.4接口继续现有仓库，不重建已有基础设施；v0.3模型失败分支已关闭。实际机器可并行处理独立模块，集成前先冻结合同。机器可读依赖见 [milestones.yaml](../engineering/milestones.yaml)。
 
 | 阶段 | 前置 | v0.2 已验收离线基础 | 完整目标仍需的工作 |
 |---|---|---|---|
 | P0 工程基础 | 无 | 合同、CLI、v1 SQLite、CI 与兼容回归 | 保留历史验收，不改写旧成绩 |
 | P1 知识 | P0 | v2 导入/冲突/快照、职业配置注入、本地增量计划与原子应用 | 网络来源与持续调度、最新核实数据、其余规则映射 |
 | P2 素材 | P0 | 注册、校验、静态 SpritePack | 授权真实资源、动画与锚点 |
-| P3 地图渲染 | P1/P2 | 两地图、分层/镜头/透明度标签 | 外部地图包、编辑与几何校验 |
-| P4 数据 | P3 | legacy v1、生命周期 v2、动作/像素/标签/覆盖重放检查 | 未见地图、真实标注、更多遮挡与跨域覆盖 |
+| P3 地图渲染 | P1/P2 | 内置两图、分层/透明度、v0.4有界外部地图与几何/循环路线校验 | 更广世界/镜头、分支地图、可达性规划和编辑 |
+| P4 数据 | P3 | legacy v1、生命周期 v2、外部地图 v3、动作/像素/标签/覆盖重放 | 未见地图留出研究、真实标注、更多遮挡与跨域覆盖 |
 | P5 模拟器 | P0/P3 | 固定步长、物理/战斗/资源/保存恢复 | 更多机制、经核实的规则校准 |
 | P6 模型 | P4 | 训练、导出、分组指标、所选 lifecycle 模型混合管线准入 | 本轮地形候选未通过，保留证据；后续视觉研究须另立协议，真实域未准入 |
 | P7 视觉状态 | P5/P6 | 对象、样例 HUD、本地 OCR | 时序追踪、真实 UI、BeliefState |
 | P8 职业 | P1/P5 | 三职业与严格参数注入 | 全职业数据、外部能力包 |
-| P9 任务 | P7/P8 | 两图任务、视觉效果与真值核验 | 通用任务 DSL、配置化任务图 |
+| P9 任务 | P7/P8 | 声明路线多图任务、视觉效果与动态目标 oracle | 通用任务 DSL、分支任务图和导航 |
 | P10 监督 | P9 | 新鲜度、未知/恢复预算、失败停止 | 更丰富故障与恢复证据 |
 | P11 回归 | P10 | 动作重放、故障集、录像观察、实际模型/策略重新执行与边界回归 | 真实 Golden Recording |
-| P12 扩展 | P11 | 三职业两地图组合 | 第三方内容包、管理 UI |
+| P12 扩展 | P11 | 三职业与有界外部地图包、内容和运行身份绑定 | 动画、外部职业、更多内容格式及管理 UI |
 | P13 发布 | P12 | wheel/CI、指定模型的 suite/soak、进程资源测量 | 完整 24 小时墙钟和真实域发布门禁 |
 
 每项交给编程 AI 时，任务单写清：输入版本、允许修改的文件、当前接口、预期行为、独立失败案例、验收命令和证据位置。先补能暴露问题的案例，再实现和审查；修复尝试有预算，失败保留最小复现，不降低断言掩盖问题。新增格式必须有版本和迁移，不能修改旧证据使其“适配”新实现。
@@ -294,13 +321,13 @@ python -m ruff check .
 python -m mypy
 python -m pytest -q
 python -m build --wheel --no-isolation
-python scripts/wheel_smoke.py --wheel dist/maple_vision_platform-0.3.0-py3-none-any.whl
+python scripts/wheel_smoke.py --wheel dist/maple_vision_platform-0.4.0-py3-none-any.whl
 python -m maple_vision lab soak --output artifacts/plan-soak --seconds 60
 ```
 
 训练环境另执行 `MAPLE_TRAINING_SMOKE=1 python -m pytest tests/test_training.py -q`；Windows 环境变量写法见快速开始。完整长稳请求使用 `lab soak --output artifacts/plan-soak-24h --seconds 86400`，需持续运行并核对实际墙钟结果；该长时任务不是上面命令的隐含步骤。
 
-下面保留 v0.1 的历史结果；这些数字不代表当前 v0.3 工作树已通过。v0.2 的历史测试、模型门禁、安装与远端CI见 [RELEASE_0_2_ACCEPTANCE.md](RELEASE_0_2_ACCEPTANCE.md)；本轮结果只记入 [RELEASE_0_3_ACCEPTANCE.md](RELEASE_0_3_ACCEPTANCE.md)。
+下面保留v0.1历史结果；旧数字不代表当前v0.4工作树通过。v0.2/v0.3结果保留在各自历史验收；本轮只记入[RELEASE_0_4_ACCEPTANCE.md](RELEASE_0_4_ACCEPTANCE.md)，包含外部地图独立任务、整树回归、干净安装和准确提交CI。
 
 | 验收层 | v0.1 历史结论 | 当前版本仍需的独立证据 |
 |---|---|---|
@@ -312,15 +339,15 @@ python -m maple_vision lab soak --output artifacts/plan-soak --seconds 60
 
 实现提交 [`2114372ac4705625b017d0dc907168560e768db2`](https://github.com/www1350/maple-vision-platform/commit/2114372ac4705625b017d0dc907168560e768db2) 的 [GitHub Actions 45380643809](https://github.com/www1350/maple-vision-platform/actions/runs/45380643809) 三个作业已通过：Ubuntu 498 passed/3 skipped，Windows 495 passed/6 skipped，原生训练/录像/OCR 107 passed/0 skipped。不同环境跳过项不能计作通过；此成绩只覆盖该实现提交，后续最终 PR 提交仍需自己的检查。
 
-v8 中地图识别 99%、平台定位 98%、核心任务 98%、拾取 95%、生存 99%、恢复 95% 是**建议目标**，不是当前实测成绩。实施前须定义分母、任务分布、样本量和不确定性；检测 AP 不能替代任务成功率。当前固定门禁见 [v03-contract.yaml](../engineering/v03-contract.yaml)；[v02-contract.yaml](../engineering/v02-contract.yaml)、[platform-contract.yaml](../engineering/platform-contract.yaml)及对应验收保留历史状态。
+v8中地图识别99%、平台定位98%、核心任务98%、拾取95%、生存99%、恢复95%是建议目标，非当前实测成绩。实施前须定义分母、任务分布、样本量和不确定性。当前外部地图工程合同为[v04-contract.yaml](../engineering/v04-contract.yaml)，没有新增模型质量门禁；v03/v02/platform旧合同与对应验收保持历史状态。
 
-v0.2 的源代码、模型与测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492`（tree `96de98b2e95ccd8fef04b0052b11f60bee63fe35`）已通过 [CI 45394348732](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)：Ubuntu 631 passed/3 skipped，Windows 627 passed/7 skipped，原生训练 107 passed/0 skipped；本地为 634 passed/0 skipped。Windows 已通过源自 v0.1 的严格 RGB/文本/manifest 语义指纹检查，生产源码未因该修正而改变。[远端证据](../reports/release-0.2.0/remote-ci.json)保留首轮失败和第二轮成功，最终归档与合并历史由 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)保存。v0.3日志修复后已另行取得834项本地回归、同序原生155项和重建隔离安装证据；实现提交3340d8f的远端Ubuntu827通过/7跳过、Windows823通过/11跳过、native155通过/0跳过及两基础wheel均通过，详见[v0.3远端证据](../reports/release-0.3.0/remote-ci.json)。最终归档head检查仍由PR #4单独记录。
+v0.2 的源代码、模型与测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a492`（tree `96de98b2e95ccd8fef04b0052b11f60bee63fe35`）已通过 [CI 45394348732](https://github.com/www1350/maple-vision-platform/actions/runs/45394348732)：Ubuntu 631 passed/3 skipped，Windows 627 passed/7 skipped，原生训练 107 passed/0 skipped；本地为 634 passed/0 skipped。Windows 已通过源自 v0.1 的严格 RGB/文本/manifest 语义指纹检查，生产源码未因该修正而改变。[远端证据](../reports/release-0.2.0/remote-ci.json)保留首轮失败和第二轮成功，最终归档与合并历史由 [PR #3](https://github.com/www1350/maple-vision-platform/pull/3)保存。v0.3日志修复后已另行取得834项本地回归、同序原生155项和重建隔离安装证据；实现提交3340d8f的远端Ubuntu827通过/7跳过、Windows823通过/11跳过、native155通过/0跳过及两基础wheel均通过，详见[v0.3远端证据](../reports/release-0.3.0/remote-ci.json)。最终归档head已通过并合并，准确回执由PR #4保存。
 
 ## 11. 接手后的执行优先级
 
-1. **核对最终证据归档head的CI与合并状态。** 日志修复后的实现提交3340d8f已通过本地、重建wheel和三组远端CI；最终文档归档提交仍须自己的检查通过，准确head由PR #4记录。若该head检查通过且PR已合并，本轮即已闭合，直接从下一项扩展继续；不为记录自身SHA再新增归档提交。研究候选失败与关闭分支保持不变；保留失败候选，不追加40epoch训练、不降低阈值。后续研究须另立协议。
+1. **以v0.4验收与最终PR为当前交付依据。** v0.3最终归档已通过并合并，不能再次当成未完成任务。v0.4的准确head、测试和合并状态见本轮验收及PR；一旦准确head通过且合并就继续下一增量，不为记录自身SHA重复归档。v0.3失败候选与关闭分支保持不变，后续视觉研究另立协议。
 2. **扩展经授权的知识闭环。** 本地静态导出的计划/应用已实现；后续为获准来源增加网络适配和持续调度，完成真实资料映射审查，再把地图/怪物/技能规则逐项接入。不把目录条目存在当作玩法已经生效。
-3. **扩展外部内容。** 在现有静态 SpritePack 上添加动画/锚点和地图包验证；用全新内容包测试加载、碰撞、可见标签及旧版本重放，之后再扩展职业。
+3. **扩展已有外部内容合同。** v0.4固定画布地图包与验证已接入；下一步选择动画/锚点、分支门或可达性规划中的独立增量，再扩展职业。先明确schema迁移和失败边界，不能直接把现有2–8图单出口合同当作任意地图能力。
 4. **建设真实录像评估集。** 按独立录制会话和地图留出，人工标注对象、HUD 和文字；记录画面尺度、遮挡与版本，真实域误差单独报告。需要精确时序时先补逐帧 PTS 合同。
 5. **补状态与任务通用性。** 设计有期限的跟踪/BeliefState 和可配置任务图；利用已有实际模型/策略重新执行合同做回归，保留预检与文件变化反例。新提案先过Schema与独立测试，再接现有VisualAgent，最后考虑管理UI；梯子驱动导航也需独立任务设计，不能由检测分数代替。
 6. **执行 24 小时发布长稳。** v0.2模型已通过61.510525秒、10轮短时运行，有界资源采样与原始失败保留已有历史验证。后续固定验收后的提交、依赖、数据/模型和机器，真正连续运行24小时，保留失败和资源趋势；当前不得标记24小时通过。

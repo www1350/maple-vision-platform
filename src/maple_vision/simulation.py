@@ -8,6 +8,7 @@ from dataclasses import asdict, dataclass
 from math import isfinite
 from typing import Any
 
+from .map_pack import MapPack
 from .profiles import class_spec_sha256, parse_class_spec
 from .sim_types import (
     CLASS_SPECS,
@@ -156,12 +157,31 @@ class Simulator:
         step_ms: int = 50,
         *,
         class_spec: ClassSpec | None = None,
+        map_pack: MapPack | None = None,
     ) -> None:
         _integer(seed, "seed", high=(1 << 63) - 1)
         _integer(step_ms, "step_ms", 10, 100)
         if not isinstance(job, str) or job not in CLASS_SPECS:
             raise ValueError("unknown fixture class")
-        if not isinstance(map_id, str) or map_id not in MAP_SPECS:
+        if map_pack is not None and not isinstance(map_pack, MapPack):
+            raise ValueError("map_pack must be a verified MapPack")
+        self._map_pack = map_pack
+        self._map_ids = MAP_IDS if map_pack is None else map_pack.map_ids
+        self._map_specs = (
+            MAP_SPECS.copy()
+            if map_pack is None
+            else {
+                definition.id: MapSpec(
+                    definition.id,
+                    definition.platforms,
+                    definition.portals,
+                    definition.npcs,
+                    definition.ladders,
+                )
+                for definition in map_pack.maps
+            }
+        )
+        if not isinstance(map_id, str) or map_id not in self._map_specs:
             raise ValueError("unknown fixture map")
         if class_spec is not None and (
             not isinstance(class_spec, ClassSpec) or class_spec.id != job
@@ -178,15 +198,18 @@ class Simulator:
         self._class_spec = CLASS_SPECS[job] if class_spec is None else class_spec
         spec = self.class_spec
         self._player = _Player(hp=spec.max_hp, mp=spec.max_mp, ammo=200 if spec.ammo_cost else 0)
+        if map_pack is not None:
+            self._player.x = float(map_pack.get(map_id).spawn_x)
         self._maps: dict[str, _MapState] = {}
         self._next_drop_id = 0
         self._events: tuple[str, ...] = ()
         self._dialogue: str | None = None
-        for key in MAP_IDS:
+        for key in self._map_ids:
+            monster_x = (126, 210, 258) if map_pack is None else map_pack.get(key).monster_x
             self._maps[key] = _MapState(
                 [
                     _Monster(f"{key}-monster-{i}", float(x + self._roll(7) - 3))
-                    for i, x in enumerate((126, 210, 258))
+                    for i, x in enumerate(monster_x)
                 ],
                 [],
             )
@@ -200,6 +223,16 @@ class Simulator:
         """Immutable static rules; contains no dynamic environment state."""
         return self._class_spec
 
+    @property
+    def map_pack(self) -> MapPack | None:
+        """Immutable authored map data, used by renderers and replay validators."""
+        return self._map_pack
+
+    @property
+    def map_ids(self) -> tuple[str, ...]:
+        """The static mission route; contains no dynamic environment state."""
+        return self._map_ids
+
     def reset(self, seed: int | None = None) -> None:
         Simulator.__init__(
             self,
@@ -208,6 +241,7 @@ class Simulator:
             self._initial_map_id,
             self.step_ms,
             class_spec=self.class_spec if self._profile_injected else None,
+            map_pack=self._map_pack,
         )
 
     def _roll(self, bound: int) -> int:
@@ -222,7 +256,7 @@ class Simulator:
     def snapshot(self) -> SimSnapshot:
         p = self._player
         cls = self.class_spec
-        terrain = MAP_SPECS[self._map_id]
+        terrain = self._map_specs[self._map_id]
         world = self._maps[self._map_id]
         player = PlayerState(
             p.x,
@@ -369,10 +403,13 @@ class Simulator:
             events.append(kind)
             return True, kind
         if kind == "interact":
-            for npc in MAP_SPECS[self._map_id].npcs:
+            for npc in self._map_specs[self._map_id].npcs:
                 if action.target and action.target != npc.id:
                     continue
-                if abs(npc.x - p.x) <= 32 and abs(npc.y - p.y) <= 28:
+                vertical_overlap = self._map_pack is None or (
+                    p.y < npc.y + npc.h and p.y + PLAYER_H > npc.y
+                )
+                if abs(npc.x - p.x) <= 32 and abs(npc.y - p.y) <= 28 and vertical_overlap:
                     self._dialogue = (
                         f"{npc.id}: Independent fixture. Explore, practice, and return."
                     )
@@ -380,12 +417,23 @@ class Simulator:
                     return True, "dialogue"
             return False, "no_npc_in_range"
         if kind == "portal":
-            for portal in MAP_SPECS[self._map_id].portals:
+            for portal in self._map_specs[self._map_id].portals:
                 if action.target and action.target != portal.id:
                     continue
-                if abs(portal.x + portal.w / 2 - (p.x + PLAYER_W / 2)) <= 27 and p.grounded:
+                vertical_overlap = self._map_pack is None or (
+                    p.y < portal.y + portal.h and p.y + PLAYER_H > portal.y
+                )
+                if (
+                    abs(portal.x + portal.w / 2 - (p.x + PLAYER_W / 2)) <= 27
+                    and p.grounded
+                    and vertical_overlap
+                ):
                     self._map_id = portal.destination
-                    p.x = 35.0 if portal.destination == "cavern" else 270.0
+                    p.x = (
+                        (35.0 if portal.destination == "cavern" else 270.0)
+                        if self._map_pack is None
+                        else float(self._map_pack.get(portal.destination).spawn_x)
+                    )
                     p.y = float(GROUND - PLAYER_H)
                     p.vx = p.vy = 0.0
                     p.grounded = True
@@ -393,7 +441,7 @@ class Simulator:
                     return True, "map_changed"
             return False, "no_portal_in_range"
         if kind == "climb":
-            for ladder in MAP_SPECS[self._map_id].ladders:
+            for ladder in self._map_specs[self._map_id].ladders:
                 if abs(ladder.x + ladder.w / 2 - (p.x + PLAYER_W / 2)) <= 12 and (
                     p.y + PLAYER_H >= ladder.y and p.y <= ladder.y + ladder.h
                 ):
@@ -495,7 +543,7 @@ class Simulator:
         new_y = p.y + p.vy * dt
         landing = []
         if p.vy >= 0:
-            for platform in MAP_SPECS[self._map_id].platforms:
+            for platform in self._map_specs[self._map_id].platforms:
                 if (
                     p.x + PLAYER_W > platform.x1
                     and p.x < platform.x2
@@ -529,9 +577,11 @@ class Simulator:
                 break
 
     def save(self) -> dict[str, Any]:
-        """Independent JSON-serializable state copy including RNG and both maps."""
+        """Independent JSON state copy, including RNG and embedded external maps."""
         result: dict[str, Any] = {
-            "schema_version": 2 if self._profile_injected else SIM_VERSION,
+            "schema_version": (
+                3 if self._map_pack is not None else (2 if self._profile_injected else SIM_VERSION)
+            ),
             "ruleset": RULESET,
             "seed": self.seed,
             "job": self.job,
@@ -551,6 +601,8 @@ class Simulator:
                 "spec": asdict(self.class_spec),
                 "sha256": class_spec_sha256(self.class_spec),
             }
+        if self._map_pack is not None:
+            result["map_pack"] = self._map_pack.manifest()
         return result
 
     @classmethod
@@ -559,7 +611,7 @@ class Simulator:
         if (
             not isinstance(state, dict)
             or type(state.get("schema_version")) is not int
-            or state["schema_version"] not in (SIM_VERSION, 2)
+            or state["schema_version"] not in (SIM_VERSION, 2, 3)
         ):
             raise ValueError("unsupported simulator schema")
         expected_fields = {
@@ -578,22 +630,32 @@ class Simulator:
             "events",
             "dialogue",
         }
-        if state["schema_version"] == 2:
+        if state["schema_version"] == 2 or (
+            state["schema_version"] == 3 and "class_profile" in state
+        ):
             expected_fields.add("class_profile")
+        if state["schema_version"] == 3:
+            expected_fields.add("map_pack")
         root = _mapping(state, expected_fields, "save")
         if root["ruleset"] != RULESET:
             raise ValueError("unsupported fixture ruleset")
         injected_spec = None
-        if root["schema_version"] == 2:
+        if "class_profile" in root:
             profile = _mapping(root["class_profile"], {"spec", "sha256"}, "class profile")
             injected_spec = parse_class_spec(profile["spec"])
             if class_spec_sha256(injected_spec) != profile["sha256"]:
                 raise ValueError("embedded class profile SHA256 mismatch")
+        map_pack = MapPack.from_manifest(root["map_pack"]) if root["schema_version"] == 3 else None
         sim = cls(
-            root["seed"], root["job"], root["map_id"], root["step_ms"], class_spec=injected_spec
+            root["seed"],
+            root["job"],
+            root["map_id"],
+            root["step_ms"],
+            class_spec=injected_spec,
+            map_pack=map_pack,
         )
         initial_map = root["initial_map_id"]
-        if not isinstance(initial_map, str) or initial_map not in MAP_SPECS:
+        if not isinstance(initial_map, str) or initial_map not in sim._map_specs:
             raise ValueError("unknown initial map")
         sim._initial_map_id = initial_map
         sim._sequence = _integer(root["sequence"], "sequence")
@@ -638,7 +700,7 @@ class Simulator:
         if values["grounded"] and values["climbing"]:
             raise ValueError("player cannot be grounded and climbing")
         sim._player = _Player(**values)
-        maps = _mapping(root["maps"], set(MAP_IDS), "maps")
+        maps = _mapping(root["maps"], set(sim._map_ids), "maps")
         all_ids: set[str] = set()
         for map_id, payload in maps.items():
             world = _mapping(payload, {"monsters", "drops"}, "map state")
@@ -699,7 +761,7 @@ class Simulator:
 
     def _validate_spatial_state(self) -> None:
         p = self._player
-        terrain = MAP_SPECS[self._map_id]
+        terrain = self._map_specs[self._map_id]
         if p.grounded:
             if p.vy != 0 or not any(
                 abs(p.y + PLAYER_H - platform.y) <= 1e-6

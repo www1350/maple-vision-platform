@@ -1,0 +1,363 @@
+{
+  "all_three_jobs_passed": true,
+  "conclusion": "success",
+  "counts_overlap": true,
+  "final_archive_requires_own_ci": true,
+  "final_head_checks": "https://github.com/www1350/maple-vision-platform/pull/5",
+  "implementation_commit": "8a649f8aaa88429d7a7da2415f29dc632ccf5d42",
+  "implementation_commit_role": "same_production_sources_as_initial_commit_plus_bounded_pytest_ids",
+  "implementation_tree": "767de0dde9df1a2d55dddb216b9f838b7215c09b",
+  "initial_run": "remote-ci-initial.json",
+  "jobs": [
+    {
+      "conclusion": "success",
+      "gzip_sha256": "7ffd0875ef85e0551ab9f514d92cb57322cb424f3861d13c5b02815414355955",
+      "id": 138662037363,
+      "log_normalization": "CRLF normalized to LF, final newline normalized for archival",
+      "logs_url": null,
+      "name": "CPU YOLO training and ONNX export / ubuntu",
+      "normalized_log_gzip": "remote-fixed-native.log.gz",
+      "normalized_log_sha256": "83525bb2891181ea706c1a7567d50ac74551f9e18e3e789c9cebcc3b0d705271",
+      "pytest_summary": [
+        "155 passed, 5 warnings in 9.11s"
+      ],
+      "python": "3.12.16",
+      "run_id": 45455031462,
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install pinned CPU wheels from the official PyTorch index",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install pinned training dependencies",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install local OCR engine for native adapter checks",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install package without changing dependency versions",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Check dependency consistency",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Prepare native test artifacts",
+          "number": 9,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Train, export, infer, decode local video, and run local OCR",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Training smoke evidence",
+          "number": 11,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 21,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 22,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 23,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45455031462/job/138662037363",
+      "wheel_passed": null,
+      "wheel_report": null,
+      "wheel_wall_seconds": null
+    },
+    {
+      "conclusion": "success",
+      "gzip_sha256": "d721ec186977a63852f11796f380b7be8c92732341215fc19071ea3099167c4c",
+      "id": 138662037958,
+      "log_normalization": "CRLF normalized to LF, final newline normalized for archival",
+      "logs_url": null,
+      "name": "Python 3.12 / ubuntu-latest",
+      "normalized_log_gzip": "remote-fixed-ubuntu.log.gz",
+      "normalized_log_sha256": "720966c1f2c5874c65b7475abcbcbdbaca010c50ef7501fbb9f6bea4e7f5a28e",
+      "pytest_summary": [
+        "1004 passed, 7 skipped in 137.56s (0:02:17)"
+      ],
+      "python": "3.12.16",
+      "run_id": 45455031462,
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install pinned runtime and development tools",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install package without resolving a second dependency set",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Check dependency consistency",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Format",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Lint",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Types",
+          "number": 9,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Tests including native ONNX adapter",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build wheel",
+          "number": 11,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Isolated installed-package smoke",
+          "number": 12,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Test evidence",
+          "number": 13,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 25,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 26,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 27,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45455031462/job/138662037958",
+      "wheel_passed": true,
+      "wheel_report": "remote-wheel-ubuntu.json",
+      "wheel_wall_seconds": 19.615
+    },
+    {
+      "conclusion": "success",
+      "gzip_sha256": "5cafdf457ff749a5ffd9d38cd6415ff623dc8c3676ddd867580f96694a145dc2",
+      "id": 138662038158,
+      "log_normalization": "CRLF normalized to LF, final newline normalized for archival",
+      "logs_url": null,
+      "name": "Python 3.12 / windows-latest",
+      "normalized_log_gzip": "remote-fixed-windows.log.gz",
+      "normalized_log_sha256": "a3562e7cb5c2ecdb25fdd91c70ef9390ddecacee7f1506d7289553cfa076b2ea",
+      "pytest_summary": [
+        "1000 passed, 11 skipped in 138.69s (0:02:18)"
+      ],
+      "python": "3.12.10",
+      "run_id": 45455031462,
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install pinned runtime and development tools",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install package without resolving a second dependency set",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Check dependency consistency",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Format",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Lint",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Types",
+          "number": 9,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Tests including native ONNX adapter",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build wheel",
+          "number": 11,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Isolated installed-package smoke",
+          "number": 12,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Test evidence",
+          "number": 13,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 25,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 26,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 27,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45455031462/job/138662038158",
+      "wheel_passed": true,
+      "wheel_report": "remote-wheel-windows.json",
+      "wheel_wall_seconds": 24.879
+    }
+  ],
+  "model_research_changed": false,
+  "production_modules_sha256": "7737f0d827f93ebe6652bfcace2581b8cabefe998783dfbf40b358f167b468c6",
+  "release_version": "0.4.0",
+  "run_id": 45455031462,
+  "run_number": 21,
+  "schema_version": 1,
+  "skip_interpretation": "Base jobs omit optional native dependencies/features; the native job exercises training, export, video and OCR separately. Skips are not passes.",
+  "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45455031462"
+}

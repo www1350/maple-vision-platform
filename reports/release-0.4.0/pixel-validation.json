@@ -1,0 +1,6120 @@
+{
+  "dataset": {
+    "class_counts": {
+      "test": {
+        "ladder": 108,
+        "loot": 36,
+        "monster": 96,
+        "npc": 92,
+        "platform": 324,
+        "player": 108,
+        "portal": 108
+      },
+      "train": {
+        "ladder": 270,
+        "loot": 84,
+        "monster": 240,
+        "npc": 230,
+        "platform": 810,
+        "player": 270,
+        "portal": 270
+      },
+      "val": {
+        "ladder": 108,
+        "loot": 34,
+        "monster": 96,
+        "npc": 92,
+        "platform": 324,
+        "player": 108,
+        "portal": 108
+      }
+    },
+    "coverage": {
+      "basis": "replayed_training_scenario_truth_and_visible_rendered_labels",
+      "by_split": {
+        "test": {
+          "class_counts": {
+            "ladder": 108,
+            "loot": 36,
+            "monster": 96,
+            "npc": 92,
+            "platform": 324,
+            "player": 108,
+            "portal": 108
+          },
+          "frames": 108,
+          "maps": {
+            "grove": {
+              "class_counts": {
+                "ladder": 36,
+                "loot": 12,
+                "monster": 24,
+                "npc": 32,
+                "platform": 108,
+                "player": 36,
+                "portal": 36
+              },
+              "frames": 36,
+              "phase_counts": {
+                "cleared": 16,
+                "combat": 4,
+                "dialogue": 4,
+                "loot": 4,
+                "spawn": 4,
+                "transition": 4
+              },
+              "player_position_bins": {
+                "left": 16,
+                "left_edge": 8,
+                "middle": 3,
+                "right": 5,
+                "right_edge": 4
+              },
+              "tag_counts": {
+                "attack_hit": 8,
+                "cleared": 24,
+                "dialogue_visible": 4,
+                "high_platform": 4,
+                "left_edge": 8,
+                "loot_collected": 4,
+                "loot_present": 4,
+                "map_transition": 4,
+                "monsters_present": 8,
+                "not_grounded": 4,
+                "right_edge": 4
+              }
+            },
+            "quarry": {
+              "class_counts": {
+                "ladder": 36,
+                "loot": 12,
+                "monster": 36,
+                "npc": 28,
+                "platform": 108,
+                "player": 36,
+                "portal": 36
+              },
+              "frames": 36,
+              "phase_counts": {
+                "cleared": 16,
+                "combat": 4,
+                "dialogue": 4,
+                "loot": 4,
+                "spawn": 4,
+                "transition": 4
+              },
+              "player_position_bins": {
+                "left": 11,
+                "left_edge": 3,
+                "middle": 4,
+                "right": 14,
+                "right_edge": 4
+              },
+              "tag_counts": {
+                "attack_hit": 8,
+                "cleared": 20,
+                "dialogue_visible": 4,
+                "high_platform": 4,
+                "left_edge": 3,
+                "loot_collected": 4,
+                "loot_present": 4,
+                "map_transition": 4,
+                "monsters_present": 12,
+                "not_grounded": 4,
+                "right_edge": 4
+              }
+            },
+            "ruins": {
+              "class_counts": {
+                "ladder": 36,
+                "loot": 12,
+                "monster": 36,
+                "npc": 32,
+                "platform": 108,
+                "player": 36,
+                "portal": 36
+              },
+              "frames": 36,
+              "phase_counts": {
+                "cleared": 16,
+                "combat": 4,
+                "dialogue": 4,
+                "loot": 4,
+                "spawn": 4,
+                "transition": 4
+              },
+              "player_position_bins": {
+                "left": 16,
+                "left_edge": 8,
+                "middle": 5,
+                "right": 3,
+                "right_edge": 4
+              },
+              "tag_counts": {
+                "attack_hit": 8,
+                "cleared": 20,
+                "dialogue_visible": 4,
+                "high_platform": 4,
+                "left_edge": 8,
+                "loot_collected": 4,
+                "loot_present": 4,
+                "map_transition": 4,
+                "monsters_present": 12,
+                "not_grounded": 4,
+                "right_edge": 4
+              }
+            }
+          },
+          "phase_counts": {
+            "cleared": 48,
+            "combat": 12,
+            "dialogue": 12,
+            "loot": 12,
+            "spawn": 12,
+            "transition": 12
+          },
+          "player_position_bins": {
+            "left": 43,
+            "left_edge": 19,
+            "middle": 12,
+            "right": 22,
+            "right_edge": 12
+          },
+          "tag_counts": {
+            "attack_hit": 24,
+            "cleared": 64,
+            "dialogue_visible": 12,
+            "high_platform": 12,
+            "left_edge": 19,
+            "loot_collected": 12,
+            "loot_present": 12,
+            "map_transition": 12,
+            "monsters_present": 32,
+            "not_grounded": 12,
+            "right_edge": 12
+          }
+        },
+        "train": {
+          "class_counts": {
+            "ladder": 270,
+            "loot": 84,
+            "monster": 240,
+            "npc": 230,
+            "platform": 810,
+            "player": 270,
+            "portal": 270
+          },
+          "frames": 270,
+          "maps": {
+            "grove": {
+              "class_counts": {
+                "ladder": 90,
+                "loot": 30,
+                "monster": 60,
+                "npc": 80,
+                "platform": 270,
+                "player": 90,
+                "portal": 90
+              },
+              "frames": 90,
+              "phase_counts": {
+                "cleared": 40,
+                "combat": 10,
+                "dialogue": 10,
+                "loot": 10,
+                "spawn": 10,
+                "transition": 10
+              },
+              "player_position_bins": {
+                "left": 40,
+                "left_edge": 20,
+                "middle": 10,
+                "right": 10,
+                "right_edge": 10
+              },
+              "tag_counts": {
+                "attack_hit": 20,
+                "cleared": 60,
+                "dialogue_visible": 10,
+                "high_platform": 10,
+                "left_edge": 20,
+                "loot_collected": 10,
+                "loot_present": 10,
+                "map_transition": 10,
+                "monsters_present": 20,
+                "not_grounded": 10,
+                "right_edge": 10
+              }
+            },
+            "quarry": {
+              "class_counts": {
+                "ladder": 90,
+                "loot": 27,
+                "monster": 90,
+                "npc": 70,
+                "platform": 270,
+                "player": 90,
+                "portal": 90
+              },
+              "frames": 90,
+              "phase_counts": {
+                "cleared": 40,
+                "combat": 10,
+                "dialogue": 10,
+                "loot": 10,
+                "spawn": 10,
+                "transition": 10
+              },
+              "player_position_bins": {
+                "left": 31,
+                "left_edge": 6,
+                "middle": 10,
+                "right": 33,
+                "right_edge": 10
+              },
+              "tag_counts": {
+                "attack_hit": 20,
+                "cleared": 50,
+                "dialogue_visible": 10,
+                "high_platform": 10,
+                "left_edge": 6,
+                "loot_collected": 10,
+                "loot_present": 10,
+                "map_transition": 10,
+                "monsters_present": 30,
+                "not_grounded": 10,
+                "right_edge": 10
+              }
+            },
+            "ruins": {
+              "class_counts": {
+                "ladder": 90,
+                "loot": 27,
+                "monster": 90,
+                "npc": 80,
+                "platform": 270,
+                "player": 90,
+                "portal": 90
+              },
+              "frames": 90,
+              "phase_counts": {
+                "cleared": 40,
+                "combat": 10,
+                "dialogue": 10,
+                "loot": 10,
+                "spawn": 10,
+                "transition": 10
+              },
+              "player_position_bins": {
+                "left": 40,
+                "left_edge": 20,
+                "middle": 13,
+                "right": 7,
+                "right_edge": 10
+              },
+              "tag_counts": {
+                "attack_hit": 20,
+                "cleared": 50,
+                "dialogue_visible": 10,
+                "high_platform": 10,
+                "left_edge": 20,
+                "loot_collected": 10,
+                "loot_present": 10,
+                "map_transition": 10,
+                "monsters_present": 30,
+                "not_grounded": 10,
+                "right_edge": 10
+              }
+            }
+          },
+          "phase_counts": {
+            "cleared": 120,
+            "combat": 30,
+            "dialogue": 30,
+            "loot": 30,
+            "spawn": 30,
+            "transition": 30
+          },
+          "player_position_bins": {
+            "left": 111,
+            "left_edge": 46,
+            "middle": 33,
+            "right": 50,
+            "right_edge": 30
+          },
+          "tag_counts": {
+            "attack_hit": 60,
+            "cleared": 160,
+            "dialogue_visible": 30,
+            "high_platform": 30,
+            "left_edge": 46,
+            "loot_collected": 30,
+            "loot_present": 30,
+            "map_transition": 30,
+            "monsters_present": 80,
+            "not_grounded": 30,
+            "right_edge": 30
+          }
+        },
+        "val": {
+          "class_counts": {
+            "ladder": 108,
+            "loot": 34,
+            "monster": 96,
+            "npc": 92,
+            "platform": 324,
+            "player": 108,
+            "portal": 108
+          },
+          "frames": 108,
+          "maps": {
+            "grove": {
+              "class_counts": {
+                "ladder": 36,
+                "loot": 12,
+                "monster": 24,
+                "npc": 32,
+                "platform": 108,
+                "player": 36,
+                "portal": 36
+              },
+              "frames": 36,
+              "phase_counts": {
+                "cleared": 16,
+                "combat": 4,
+                "dialogue": 4,
+                "loot": 4,
+                "spawn": 4,
+                "transition": 4
+              },
+              "player_position_bins": {
+                "left": 16,
+                "left_edge": 8,
+                "middle": 4,
+                "right": 4,
+                "right_edge": 4
+              },
+              "tag_counts": {
+                "attack_hit": 8,
+                "cleared": 24,
+                "dialogue_visible": 4,
+                "high_platform": 4,
+                "left_edge": 8,
+                "loot_collected": 4,
+                "loot_present": 4,
+                "map_transition": 4,
+                "monsters_present": 8,
+                "not_grounded": 4,
+                "right_edge": 4
+              }
+            },
+            "quarry": {
+              "class_counts": {
+                "ladder": 36,
+                "loot": 11,
+                "monster": 36,
+                "npc": 28,
+                "platform": 108,
+                "player": 36,
+                "portal": 36
+              },
+              "frames": 36,
+              "phase_counts": {
+                "cleared": 16,
+                "combat": 4,
+                "dialogue": 4,
+                "loot": 4,
+                "spawn": 4,
+                "transition": 4
+              },
+              "player_position_bins": {
+                "left": 12,
+                "left_edge": 3,
+                "middle": 4,
+                "right": 13,
+                "right_edge": 4
+              },
+              "tag_counts": {
+                "attack_hit": 8,
+                "cleared": 20,
+                "dialogue_visible": 4,
+                "high_platform": 4,
+                "left_edge": 3,
+                "loot_collected": 4,
+                "loot_present": 4,
+                "map_transition": 4,
+                "monsters_present": 12,
+                "not_grounded": 4,
+                "right_edge": 4
+              }
+            },
+            "ruins": {
+              "class_counts": {
+                "ladder": 36,
+                "loot": 11,
+                "monster": 36,
+                "npc": 32,
+                "platform": 108,
+                "player": 36,
+                "portal": 36
+              },
+              "frames": 36,
+              "phase_counts": {
+                "cleared": 16,
+                "combat": 4,
+                "dialogue": 4,
+                "loot": 4,
+                "spawn": 4,
+                "transition": 4
+              },
+              "player_position_bins": {
+                "left": 16,
+                "left_edge": 8,
+                "middle": 5,
+                "right": 3,
+                "right_edge": 4
+              },
+              "tag_counts": {
+                "attack_hit": 8,
+                "cleared": 20,
+                "dialogue_visible": 4,
+                "high_platform": 4,
+                "left_edge": 8,
+                "loot_collected": 4,
+                "loot_present": 4,
+                "map_transition": 4,
+                "monsters_present": 12,
+                "not_grounded": 4,
+                "right_edge": 4
+              }
+            }
+          },
+          "phase_counts": {
+            "cleared": 48,
+            "combat": 12,
+            "dialogue": 12,
+            "loot": 12,
+            "spawn": 12,
+            "transition": 12
+          },
+          "player_position_bins": {
+            "left": 44,
+            "left_edge": 19,
+            "middle": 13,
+            "right": 20,
+            "right_edge": 12
+          },
+          "tag_counts": {
+            "attack_hit": 24,
+            "cleared": 64,
+            "dialogue_visible": 12,
+            "high_platform": 12,
+            "left_edge": 19,
+            "loot_collected": 12,
+            "loot_present": 12,
+            "map_transition": 12,
+            "monsters_present": 32,
+            "not_grounded": 12,
+            "right_edge": 12
+          }
+        }
+      },
+      "position_axis": "player sprite upper-left x in the 320-pixel fixture world",
+      "position_bins": [
+        {
+          "maximum_exclusive": 40,
+          "minimum_inclusive": 0,
+          "name": "left_edge"
+        },
+        {
+          "maximum_exclusive": 120,
+          "minimum_inclusive": 40,
+          "name": "left"
+        },
+        {
+          "maximum_exclusive": 200,
+          "minimum_inclusive": 120,
+          "name": "middle"
+        },
+        {
+          "maximum_exclusive": 280,
+          "minimum_inclusive": 200,
+          "name": "right"
+        },
+        {
+          "maximum_exclusive": 307,
+          "minimum_inclusive": 280,
+          "name": "right_edge"
+        }
+      ],
+      "required_phases_per_map_per_session": [
+        "spawn",
+        "combat",
+        "loot",
+        "cleared",
+        "dialogue",
+        "transition"
+      ],
+      "schema_version": 1,
+      "tags_overlap": true
+    },
+    "frames": 486,
+    "generator_version": "lifecycle-map-pack-v1",
+    "map_pack": {
+      "content": {
+        "ground": 168,
+        "height": 192,
+        "id": "three-map-fixture",
+        "license": "CC0-1.0",
+        "maps": [
+          {
+            "id": "grove",
+            "ladders": [
+              {
+                "h": 44,
+                "w": 10,
+                "x": 94,
+                "y": 124
+              }
+            ],
+            "marker": [
+              41,
+              157,
+              131
+            ],
+            "monster_x": [
+              130,
+              210,
+              258
+            ],
+            "npcs": [
+              {
+                "h": 24,
+                "id": "grove_guide",
+                "w": 14,
+                "x": 42,
+                "y": 144
+              }
+            ],
+            "platforms": [
+              {
+                "x1": 0,
+                "x2": 320,
+                "y": 168
+              },
+              {
+                "x1": 68,
+                "x2": 132,
+                "y": 124
+              },
+              {
+                "x1": 184,
+                "x2": 246,
+                "y": 100
+              }
+            ],
+            "portals": [
+              {
+                "destination": "quarry",
+                "h": 36,
+                "id": "to_quarry",
+                "w": 20,
+                "x": 292,
+                "y": 132
+              }
+            ],
+            "spawn_x": 24,
+            "theme": "meadow"
+          },
+          {
+            "id": "quarry",
+            "ladders": [
+              {
+                "h": 50,
+                "w": 10,
+                "x": 110,
+                "y": 118
+              }
+            ],
+            "marker": [
+              151,
+              93,
+              171
+            ],
+            "monster_x": [
+              74,
+              150,
+              224
+            ],
+            "npcs": [
+              {
+                "h": 24,
+                "id": "quarry_keeper",
+                "w": 14,
+                "x": 278,
+                "y": 144
+              }
+            ],
+            "platforms": [
+              {
+                "x1": 0,
+                "x2": 320,
+                "y": 168
+              },
+              {
+                "x1": 78,
+                "x2": 148,
+                "y": 118
+              },
+              {
+                "x1": 208,
+                "x2": 276,
+                "y": 94
+              }
+            ],
+            "portals": [
+              {
+                "destination": "ruins",
+                "h": 36,
+                "id": "to_ruins",
+                "w": 20,
+                "x": 8,
+                "y": 132
+              }
+            ],
+            "spawn_x": 268,
+            "theme": "cavern"
+          },
+          {
+            "id": "ruins",
+            "ladders": [
+              {
+                "h": 48,
+                "w": 10,
+                "x": 114,
+                "y": 120
+              }
+            ],
+            "marker": [
+              199,
+              143,
+              77
+            ],
+            "monster_x": [
+              120,
+              196,
+              258
+            ],
+            "npcs": [
+              {
+                "h": 24,
+                "id": "ruins_keeper",
+                "w": 14,
+                "x": 40,
+                "y": 144
+              }
+            ],
+            "platforms": [
+              {
+                "x1": 0,
+                "x2": 320,
+                "y": 168
+              },
+              {
+                "x1": 82,
+                "x2": 154,
+                "y": 120
+              },
+              {
+                "x1": 204,
+                "x2": 268,
+                "y": 96
+              }
+            ],
+            "portals": [
+              {
+                "destination": "grove",
+                "h": 36,
+                "id": "to_grove",
+                "w": 20,
+                "x": 292,
+                "y": 132
+              }
+            ],
+            "spawn_x": 24,
+            "theme": "cavern"
+          }
+        ],
+        "permission": "self_authored",
+        "route": [
+          "grove",
+          "quarry",
+          "ruins"
+        ],
+        "schema_version": 1,
+        "scope": "synthetic_fixture",
+        "source_uri": "urn:maple-vision:self-authored:three-map-fixture",
+        "version": "1.0.0",
+        "width": 320
+      },
+      "content_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+      "schema_version": 1
+    },
+    "missing_classes": {
+      "test": [],
+      "train": [],
+      "val": []
+    },
+    "missing_maps": {
+      "test": [],
+      "train": [],
+      "val": []
+    },
+    "objects": 3916,
+    "origin": "synthetic-fixture-v1",
+    "profile": "lifecycle",
+    "schema_version": 3,
+    "sessions": 18,
+    "split_frames": {
+      "test": 108,
+      "train": 270,
+      "val": 108
+    },
+    "split_maps": {
+      "test": {
+        "grove": 36,
+        "quarry": 36,
+        "ruins": 36
+      },
+      "train": {
+        "grove": 90,
+        "quarry": 90,
+        "ruins": 90
+      },
+      "val": {
+        "grove": 36,
+        "quarry": 36,
+        "ruins": 36
+      }
+    },
+    "split_sessions": {
+      "test": 4,
+      "train": 10,
+      "val": 4
+    },
+    "trajectory_steps_verified": 17842,
+    "trajectory_verification": "actions_pixels_labels_and_phase_facts",
+    "validated": true,
+    "visual_agent_success_evaluated": false
+  },
+  "dataset_manifest_sha256": "4588290aec2d333ce6684ba207f753f53ab7660d33a8c6362870fe93c93a0f39",
+  "dataset_origin": "synthetic-fixture-v1",
+  "dataset_split_role": "val",
+  "detector": {
+    "implementation": "maple_vision.vision.PixelPerception",
+    "method": "fixed_palette_connected_components",
+    "model_sha256": null,
+    "scope": "synthetic_fixture",
+    "source_id": "synthetic-palette-v2"
+  },
+  "environment": {
+    "dependencies": {
+      "Pillow": "13.0.0",
+      "maple-vision-platform": "0.4.0",
+      "numpy": "2.5.5",
+      "onnxruntime": "1.32.0"
+    },
+    "logical_cpus": 9,
+    "machine": "x86_64",
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "processor": "unreported",
+    "python": "3.12.14"
+  },
+  "generated_at": "2026-11-24T17:45:38.211981+00:00",
+  "grouped_metrics": {
+    "basis": "replay-validated lifecycle metadata; not inferred by the detector",
+    "by_coverage_tag": {
+      "attack_hit": {
+        "ap_classes_with_ground_truth": 7,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 24,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "ground_truth": 238,
+          "precision": 1.0,
+          "predictions": 238,
+          "recall": 1.0,
+          "tp": 238
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 24,
+            "precision": 1.0,
+            "predictions": 24,
+            "recall": 1.0,
+            "tp": 24
+          },
+          "loot": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 34,
+            "precision": 1.0,
+            "predictions": 34,
+            "recall": 1.0,
+            "tp": 34
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 24,
+            "precision": 1.0,
+            "predictions": 24,
+            "recall": 1.0,
+            "tp": 24
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 72,
+            "precision": 1.0,
+            "predictions": 72,
+            "recall": 1.0,
+            "tp": 72
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 24,
+            "precision": 1.0,
+            "predictions": 24,
+            "recall": 1.0,
+            "tp": 24
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 24,
+            "precision": 1.0,
+            "predictions": 24,
+            "recall": 1.0,
+            "tp": 24
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "cleared": {
+        "ap_classes_with_ground_truth": 5,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 64,
+        "iou_threshold": 0.5,
+        "map50": 0.8761257780370901,
+        "map50_95": null,
+        "map_at_iou": 0.8761257780370901,
+        "micro": {
+          "f1": 0.9417040358744395,
+          "fn": 12,
+          "fp": 40,
+          "ground_truth": 432,
+          "precision": 0.9130434782608695,
+          "predictions": 460,
+          "recall": 0.9722222222222222,
+          "tp": 420
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.5825380678691405,
+            "ap_at_iou": 0.5825380678691405,
+            "f1": 0.7428571428571429,
+            "fn": 12,
+            "fp": 24,
+            "ground_truth": 64,
+            "precision": 0.6842105263157895,
+            "predictions": 76,
+            "recall": 0.8125,
+            "tp": 52
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 0.7980908223163101,
+            "ap_at_iou": 0.7980908223163101,
+            "f1": 0.8571428571428571,
+            "fn": 0,
+            "fp": 16,
+            "ground_truth": 48,
+            "precision": 0.75,
+            "predictions": 64,
+            "recall": 1.0,
+            "tp": 48
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 192,
+            "precision": 1.0,
+            "predictions": 192,
+            "recall": 1.0,
+            "tp": 192
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 64,
+            "precision": 1.0,
+            "predictions": 64,
+            "recall": 1.0,
+            "tp": 64
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 64,
+            "precision": 1.0,
+            "predictions": 64,
+            "recall": 1.0,
+            "tp": 64
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "dialogue_visible": {
+        "ap_classes_with_ground_truth": 4,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 0.9230769230769231,
+          "fn": 0,
+          "fp": 12,
+          "ground_truth": 72,
+          "precision": 0.8571428571428571,
+          "predictions": 84,
+          "recall": 1.0,
+          "tp": 72
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": 0.0,
+            "fn": 0,
+            "fp": 12,
+            "ground_truth": 0,
+            "precision": 0.0,
+            "predictions": 12,
+            "recall": null,
+            "tp": 0
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "high_platform": {
+        "ap_classes_with_ground_truth": 5,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "ground_truth": 84,
+          "precision": 1.0,
+          "predictions": 84,
+          "recall": 1.0,
+          "tp": 84
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "left_edge": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 19,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "ground_truth": 178,
+          "precision": 1.0,
+          "predictions": 178,
+          "recall": 1.0,
+          "tp": 178
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 19,
+            "precision": 1.0,
+            "predictions": 19,
+            "recall": 1.0,
+            "tp": 19
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 45,
+            "precision": 1.0,
+            "predictions": 45,
+            "recall": 1.0,
+            "tp": 45
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 19,
+            "precision": 1.0,
+            "predictions": 19,
+            "recall": 1.0,
+            "tp": 19
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 57,
+            "precision": 1.0,
+            "predictions": 57,
+            "recall": 1.0,
+            "tp": 57
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 19,
+            "precision": 1.0,
+            "predictions": 19,
+            "recall": 1.0,
+            "tp": 19
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 19,
+            "precision": 1.0,
+            "predictions": 19,
+            "recall": 1.0,
+            "tp": 19
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "loot_collected": {
+        "ap_classes_with_ground_truth": 5,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "ground_truth": 84,
+          "precision": 1.0,
+          "predictions": 84,
+          "recall": 1.0,
+          "tp": 84
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "loot_present": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "ground_truth": 118,
+          "precision": 1.0,
+          "predictions": 118,
+          "recall": 1.0,
+          "tp": 118
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 34,
+            "precision": 1.0,
+            "predictions": 34,
+            "recall": 1.0,
+            "tp": 34
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "map_transition": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "ground_truth": 108,
+          "precision": 1.0,
+          "predictions": 108,
+          "recall": 1.0,
+          "tp": 108
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 24,
+            "precision": 1.0,
+            "predictions": 24,
+            "recall": 1.0,
+            "tp": 24
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "monsters_present": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 32,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "ground_truth": 320,
+          "precision": 1.0,
+          "predictions": 320,
+          "recall": 1.0,
+          "tp": 320
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 32,
+            "precision": 1.0,
+            "predictions": 32,
+            "recall": 1.0,
+            "tp": 32
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 96,
+            "precision": 1.0,
+            "predictions": 96,
+            "recall": 1.0,
+            "tp": 96
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 32,
+            "precision": 1.0,
+            "predictions": 32,
+            "recall": 1.0,
+            "tp": 32
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 96,
+            "precision": 1.0,
+            "predictions": 96,
+            "recall": 1.0,
+            "tp": 96
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 32,
+            "precision": 1.0,
+            "predictions": 32,
+            "recall": 1.0,
+            "tp": 32
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 32,
+            "precision": 1.0,
+            "predictions": 32,
+            "recall": 1.0,
+            "tp": 32
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "not_grounded": {
+        "ap_classes_with_ground_truth": 5,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 0.8,
+        "map50_95": null,
+        "map_at_iou": 0.8,
+        "micro": {
+          "f1": 0.8,
+          "fn": 12,
+          "fp": 24,
+          "ground_truth": 84,
+          "precision": 0.75,
+          "predictions": 96,
+          "recall": 0.8571428571428571,
+          "tp": 72
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.0,
+            "ap_at_iou": 0.0,
+            "f1": 0.0,
+            "fn": 12,
+            "fp": 24,
+            "ground_truth": 12,
+            "precision": 0.0,
+            "predictions": 24,
+            "recall": 0.0,
+            "tp": 0
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "right_edge": {
+        "ap_classes_with_ground_truth": 5,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 0.9500471475719003,
+        "map50_95": null,
+        "map_at_iou": 0.9500471475719003,
+        "micro": {
+          "f1": 0.975609756097561,
+          "fn": 0,
+          "fp": 4,
+          "ground_truth": 80,
+          "precision": 0.9523809523809523,
+          "predictions": 84,
+          "recall": 1.0,
+          "tp": 80
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 0.7502357378595017,
+            "ap_at_iou": 0.7502357378595017,
+            "f1": 0.8,
+            "fn": 0,
+            "fp": 4,
+            "ground_truth": 8,
+            "precision": 0.6666666666666666,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 8
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      }
+    },
+    "by_map": {
+      "grove": {
+        "ap_classes_with_ground_truth": 7,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 36,
+        "iou_threshold": 0.5,
+        "map50": 0.9573254285212434,
+        "map50_95": null,
+        "map_at_iou": 0.9573254285212434,
+        "micro": {
+          "f1": 0.9722222222222222,
+          "fn": 4,
+          "fp": 12,
+          "ground_truth": 284,
+          "precision": 0.958904109589041,
+          "predictions": 292,
+          "recall": 0.9859154929577465,
+          "tp": 280
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.7627911362564829,
+            "ap_at_iou": 0.7627911362564829,
+            "f1": 0.8421052631578947,
+            "fn": 4,
+            "fp": 8,
+            "ground_truth": 36,
+            "precision": 0.8,
+            "predictions": 40,
+            "recall": 0.8888888888888888,
+            "tp": 32
+          },
+          "loot": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 24,
+            "precision": 1.0,
+            "predictions": 24,
+            "recall": 1.0,
+            "tp": 24
+          },
+          "npc": {
+            "ap50": 0.9384868633922206,
+            "ap_at_iou": 0.9384868633922206,
+            "f1": 0.9411764705882353,
+            "fn": 0,
+            "fp": 4,
+            "ground_truth": 32,
+            "precision": 0.8888888888888888,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 32
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 108,
+            "precision": 1.0,
+            "predictions": 108,
+            "recall": 1.0,
+            "tp": 108
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "quarry": {
+        "ap_classes_with_ground_truth": 7,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 36,
+        "iou_threshold": 0.5,
+        "map50": 0.94763928469497,
+        "map50_95": null,
+        "map_at_iou": 0.94763928469497,
+        "micro": {
+          "f1": 0.9663299663299664,
+          "fn": 4,
+          "fp": 16,
+          "ground_truth": 291,
+          "precision": 0.9471947194719472,
+          "predictions": 303,
+          "recall": 0.9862542955326461,
+          "tp": 287
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.7727215029195224,
+            "ap_at_iou": 0.7727215029195224,
+            "f1": 0.8421052631578947,
+            "fn": 4,
+            "fp": 8,
+            "ground_truth": 36,
+            "precision": 0.8,
+            "predictions": 40,
+            "recall": 0.8888888888888888,
+            "tp": 32
+          },
+          "loot": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 11,
+            "precision": 1.0,
+            "predictions": 11,
+            "recall": 1.0,
+            "tp": 11
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "npc": {
+            "ap50": 0.860753489945268,
+            "ap_at_iou": 0.860753489945268,
+            "f1": 0.875,
+            "fn": 0,
+            "fp": 8,
+            "ground_truth": 28,
+            "precision": 0.7777777777777778,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 28
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 108,
+            "precision": 1.0,
+            "predictions": 108,
+            "recall": 1.0,
+            "tp": 108
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "ruins": {
+        "ap_classes_with_ground_truth": 7,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 36,
+        "iou_threshold": 0.5,
+        "map50": 0.9597006357760162,
+        "map50_95": null,
+        "map_at_iou": 0.9597006357760162,
+        "micro": {
+          "f1": 0.9732441471571907,
+          "fn": 4,
+          "fp": 12,
+          "ground_truth": 295,
+          "precision": 0.9603960396039604,
+          "predictions": 303,
+          "recall": 0.9864406779661017,
+          "tp": 291
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.7727215029195224,
+            "ap_at_iou": 0.7727215029195224,
+            "f1": 0.8421052631578947,
+            "fn": 4,
+            "fp": 8,
+            "ground_truth": 36,
+            "precision": 0.8,
+            "predictions": 40,
+            "recall": 0.8888888888888888,
+            "tp": 32
+          },
+          "loot": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 11,
+            "precision": 1.0,
+            "predictions": 11,
+            "recall": 1.0,
+            "tp": 11
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "npc": {
+            "ap50": 0.9451829475125901,
+            "ap_at_iou": 0.9451829475125901,
+            "f1": 0.9411764705882353,
+            "fn": 0,
+            "fp": 4,
+            "ground_truth": 32,
+            "precision": 0.8888888888888888,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 32
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 108,
+            "precision": 1.0,
+            "predictions": 108,
+            "recall": 1.0,
+            "tp": 108
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      }
+    },
+    "by_map_phase": {
+      "grove": {
+        "cleared": {
+          "ap_classes_with_ground_truth": 5,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 16,
+          "iou_threshold": 0.5,
+          "map50": 0.9090795129933162,
+          "map50_95": null,
+          "map_at_iou": 0.9090795129933162,
+          "micro": {
+            "f1": 0.9473684210526315,
+            "fn": 4,
+            "fp": 8,
+            "ground_truth": 112,
+            "precision": 0.9310344827586207,
+            "predictions": 116,
+            "recall": 0.9642857142857143,
+            "tp": 108
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 0.545397564966581,
+              "ap_at_iou": 0.545397564966581,
+              "f1": 0.6666666666666666,
+              "fn": 4,
+              "fp": 8,
+              "ground_truth": 16,
+              "precision": 0.6,
+              "predictions": 20,
+              "recall": 0.75,
+              "tp": 12
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 16,
+              "precision": 1.0,
+              "predictions": 16,
+              "recall": 1.0,
+              "tp": 16
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 48,
+              "precision": 1.0,
+              "predictions": 48,
+              "recall": 1.0,
+              "tp": 48
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 16,
+              "precision": 1.0,
+              "predictions": 16,
+              "recall": 1.0,
+              "tp": 16
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 16,
+              "precision": 1.0,
+              "predictions": 16,
+              "recall": 1.0,
+              "tp": 16
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "combat": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 40,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 1.0,
+            "tp": 40
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "dialogue": {
+          "ap_classes_with_ground_truth": 4,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 0.9230769230769231,
+            "fn": 0,
+            "fp": 4,
+            "ground_truth": 24,
+            "precision": 0.8571428571428571,
+            "predictions": 28,
+            "recall": 1.0,
+            "tp": 24
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": 0.0,
+              "fn": 0,
+              "fp": 4,
+              "ground_truth": 0,
+              "precision": 0.0,
+              "predictions": 4,
+              "recall": null,
+              "tp": 0
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "loot": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 40,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 1.0,
+            "tp": 40
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "spawn": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 40,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 1.0,
+            "tp": 40
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "transition": {
+          "ap_classes_with_ground_truth": 5,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 28,
+            "precision": 1.0,
+            "predictions": 28,
+            "recall": 1.0,
+            "tp": 28
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        }
+      },
+      "quarry": {
+        "cleared": {
+          "ap_classes_with_ground_truth": 5,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 16,
+          "iou_threshold": 0.5,
+          "map50": 0.8683373618551254,
+          "map50_95": null,
+          "map_at_iou": 0.8683373618551254,
+          "micro": {
+            "f1": 0.9285714285714286,
+            "fn": 4,
+            "fp": 12,
+            "ground_truth": 108,
+            "precision": 0.896551724137931,
+            "predictions": 116,
+            "recall": 0.9629629629629629,
+            "tp": 104
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 0.545397564966581,
+              "ap_at_iou": 0.545397564966581,
+              "f1": 0.6666666666666666,
+              "fn": 4,
+              "fp": 8,
+              "ground_truth": 16,
+              "precision": 0.6,
+              "predictions": 20,
+              "recall": 0.75,
+              "tp": 12
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": 0.7962892443090462,
+              "ap_at_iou": 0.7962892443090462,
+              "f1": 0.8571428571428571,
+              "fn": 0,
+              "fp": 4,
+              "ground_truth": 12,
+              "precision": 0.75,
+              "predictions": 16,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 48,
+              "precision": 1.0,
+              "predictions": 48,
+              "recall": 1.0,
+              "tp": 48
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 16,
+              "precision": 1.0,
+              "predictions": 16,
+              "recall": 1.0,
+              "tp": 16
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 16,
+              "precision": 1.0,
+              "predictions": 16,
+              "recall": 1.0,
+              "tp": 16
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "combat": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 40,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 1.0,
+            "tp": 40
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "dialogue": {
+          "ap_classes_with_ground_truth": 4,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 0.9230769230769231,
+            "fn": 0,
+            "fp": 4,
+            "ground_truth": 24,
+            "precision": 0.8571428571428571,
+            "predictions": 28,
+            "recall": 1.0,
+            "tp": 24
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": 0.0,
+              "fn": 0,
+              "fp": 4,
+              "ground_truth": 0,
+              "precision": 0.0,
+              "predictions": 4,
+              "recall": null,
+              "tp": 0
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "loot": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 39,
+            "precision": 1.0,
+            "predictions": 39,
+            "recall": 1.0,
+            "tp": 39
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 11,
+              "precision": 1.0,
+              "predictions": 11,
+              "recall": 1.0,
+              "tp": 11
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "spawn": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 40,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 1.0,
+            "tp": 40
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "transition": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 40,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 1.0,
+            "tp": 40
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        }
+      },
+      "ruins": {
+        "cleared": {
+          "ap_classes_with_ground_truth": 5,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 16,
+          "iou_threshold": 0.5,
+          "map50": 0.9090795129933162,
+          "map50_95": null,
+          "map_at_iou": 0.9090795129933162,
+          "micro": {
+            "f1": 0.9473684210526315,
+            "fn": 4,
+            "fp": 8,
+            "ground_truth": 112,
+            "precision": 0.9310344827586207,
+            "predictions": 116,
+            "recall": 0.9642857142857143,
+            "tp": 108
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 0.545397564966581,
+              "ap_at_iou": 0.545397564966581,
+              "f1": 0.6666666666666666,
+              "fn": 4,
+              "fp": 8,
+              "ground_truth": 16,
+              "precision": 0.6,
+              "predictions": 20,
+              "recall": 0.75,
+              "tp": 12
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 16,
+              "precision": 1.0,
+              "predictions": 16,
+              "recall": 1.0,
+              "tp": 16
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 48,
+              "precision": 1.0,
+              "predictions": 48,
+              "recall": 1.0,
+              "tp": 48
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 16,
+              "precision": 1.0,
+              "predictions": 16,
+              "recall": 1.0,
+              "tp": 16
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 16,
+              "precision": 1.0,
+              "predictions": 16,
+              "recall": 1.0,
+              "tp": 16
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "combat": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 40,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 1.0,
+            "tp": 40
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "dialogue": {
+          "ap_classes_with_ground_truth": 4,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 0.9230769230769231,
+            "fn": 0,
+            "fp": 4,
+            "ground_truth": 24,
+            "precision": 0.8571428571428571,
+            "predictions": 28,
+            "recall": 1.0,
+            "tp": 24
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": 0.0,
+              "fn": 0,
+              "fp": 4,
+              "ground_truth": 0,
+              "precision": 0.0,
+              "predictions": 4,
+              "recall": null,
+              "tp": 0
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "loot": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 39,
+            "precision": 1.0,
+            "predictions": 39,
+            "recall": 1.0,
+            "tp": 39
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 11,
+              "precision": 1.0,
+              "predictions": 11,
+              "recall": 1.0,
+              "tp": 11
+            },
+            "monster": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "spawn": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 40,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 1.0,
+            "tp": 40
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        },
+        "transition": {
+          "ap_classes_with_ground_truth": 6,
+          "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+          "class_count": 7,
+          "classes": [
+            "player",
+            "monster",
+            "loot",
+            "portal",
+            "npc",
+            "platform",
+            "ladder"
+          ],
+          "confidence_threshold": 0.25,
+          "images": 4,
+          "iou_threshold": 0.5,
+          "map50": 1.0,
+          "map50_95": null,
+          "map_at_iou": 1.0,
+          "micro": {
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 40,
+            "precision": 1.0,
+            "predictions": 40,
+            "recall": 1.0,
+            "tp": 40
+          },
+          "per_class": {
+            "ladder": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "loot": {
+              "ap50": null,
+              "ap_at_iou": null,
+              "f1": null,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 0,
+              "precision": null,
+              "predictions": 0,
+              "recall": null,
+              "tp": 0
+            },
+            "monster": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "npc": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "platform": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 12,
+              "precision": 1.0,
+              "predictions": 12,
+              "recall": 1.0,
+              "tp": 12
+            },
+            "player": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            },
+            "portal": {
+              "ap50": 1.0,
+              "ap_at_iou": 1.0,
+              "f1": 1.0,
+              "fn": 0,
+              "fp": 0,
+              "ground_truth": 4,
+              "precision": 1.0,
+              "predictions": 4,
+              "recall": 1.0,
+              "tp": 4
+            }
+          },
+          "predictions_below_confidence_threshold": 0,
+          "sessions": 4,
+          "unrecognized_prediction_classes": []
+        }
+      }
+    },
+    "by_phase": {
+      "cleared": {
+        "ap_classes_with_ground_truth": 5,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 48,
+        "iou_threshold": 0.5,
+        "map50": 0.8869335411382113,
+        "map50_95": null,
+        "map_at_iou": 0.8869335411382113,
+        "micro": {
+          "f1": 0.9411764705882353,
+          "fn": 12,
+          "fp": 28,
+          "ground_truth": 332,
+          "precision": 0.9195402298850575,
+          "predictions": 348,
+          "recall": 0.963855421686747,
+          "tp": 320
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.49596138020272285,
+            "ap_at_iou": 0.49596138020272285,
+            "f1": 0.6666666666666666,
+            "fn": 12,
+            "fp": 24,
+            "ground_truth": 48,
+            "precision": 0.6,
+            "predictions": 60,
+            "recall": 0.75,
+            "tp": 36
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 0.9387063254883342,
+            "ap_at_iou": 0.9387063254883342,
+            "f1": 0.9565217391304348,
+            "fn": 0,
+            "fp": 4,
+            "ground_truth": 44,
+            "precision": 0.9166666666666666,
+            "predictions": 48,
+            "recall": 1.0,
+            "tp": 44
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 144,
+            "precision": 1.0,
+            "predictions": 144,
+            "recall": 1.0,
+            "tp": 144
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 48,
+            "precision": 1.0,
+            "predictions": 48,
+            "recall": 1.0,
+            "tp": 48
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 48,
+            "precision": 1.0,
+            "predictions": 48,
+            "recall": 1.0,
+            "tp": 48
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "combat": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "ground_truth": 120,
+          "precision": 1.0,
+          "predictions": 120,
+          "recall": 1.0,
+          "tp": 120
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "dialogue": {
+        "ap_classes_with_ground_truth": 4,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 0.9230769230769231,
+          "fn": 0,
+          "fp": 12,
+          "ground_truth": 72,
+          "precision": 0.8571428571428571,
+          "predictions": 84,
+          "recall": 1.0,
+          "tp": 72
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": 0.0,
+            "fn": 0,
+            "fp": 12,
+            "ground_truth": 0,
+            "precision": 0.0,
+            "predictions": 12,
+            "recall": null,
+            "tp": 0
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "loot": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "ground_truth": 118,
+          "precision": 1.0,
+          "predictions": 118,
+          "recall": 1.0,
+          "tp": 118
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 34,
+            "precision": 1.0,
+            "predictions": 34,
+            "recall": 1.0,
+            "tp": 34
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "spawn": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "ground_truth": 120,
+          "precision": 1.0,
+          "predictions": 120,
+          "recall": 1.0,
+          "tp": 120
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "transition": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "ground_truth": 108,
+          "precision": 1.0,
+          "predictions": 108,
+          "recall": 1.0,
+          "tp": 108
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 24,
+            "precision": 1.0,
+            "predictions": 24,
+            "recall": 1.0,
+            "tp": 24
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      }
+    },
+    "by_player_position": {
+      "left": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 44,
+        "iou_threshold": 0.5,
+        "map50": 0.8832692791146894,
+        "map50_95": null,
+        "map_at_iou": 0.8832692791146894,
+        "micro": {
+          "f1": 0.9347181008902077,
+          "fn": 12,
+          "fp": 32,
+          "ground_truth": 327,
+          "precision": 0.9077809798270894,
+          "predictions": 347,
+          "recall": 0.963302752293578,
+          "tp": 315
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 0.4357574865437422,
+            "ap_at_iou": 0.4357574865437422,
+            "f1": 0.64,
+            "fn": 12,
+            "fp": 24,
+            "ground_truth": 44,
+            "precision": 0.5714285714285714,
+            "predictions": 56,
+            "recall": 0.7272727272727273,
+            "tp": 32
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 27,
+            "precision": 1.0,
+            "predictions": 27,
+            "recall": 1.0,
+            "tp": 27
+          },
+          "npc": {
+            "ap50": 0.8638581881443949,
+            "ap_at_iou": 0.8638581881443949,
+            "f1": 0.9,
+            "fn": 0,
+            "fp": 8,
+            "ground_truth": 36,
+            "precision": 0.8181818181818182,
+            "predictions": 44,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 132,
+            "precision": 1.0,
+            "predictions": 132,
+            "recall": 1.0,
+            "tp": 132
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 44,
+            "precision": 1.0,
+            "predictions": 44,
+            "recall": 1.0,
+            "tp": 44
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 44,
+            "precision": 1.0,
+            "predictions": 44,
+            "recall": 1.0,
+            "tp": 44
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "left_edge": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 19,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "ground_truth": 178,
+          "precision": 1.0,
+          "predictions": 178,
+          "recall": 1.0,
+          "tp": 178
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 19,
+            "precision": 1.0,
+            "predictions": 19,
+            "recall": 1.0,
+            "tp": 19
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 45,
+            "precision": 1.0,
+            "predictions": 45,
+            "recall": 1.0,
+            "tp": 45
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 19,
+            "precision": 1.0,
+            "predictions": 19,
+            "recall": 1.0,
+            "tp": 19
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 57,
+            "precision": 1.0,
+            "predictions": 57,
+            "recall": 1.0,
+            "tp": 57
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 19,
+            "precision": 1.0,
+            "predictions": 19,
+            "recall": 1.0,
+            "tp": 19
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 19,
+            "precision": 1.0,
+            "predictions": 19,
+            "recall": 1.0,
+            "tp": 19
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "middle": {
+        "ap_classes_with_ground_truth": 6,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 13,
+        "iou_threshold": 0.5,
+        "map50": 1.0,
+        "map50_95": null,
+        "map_at_iou": 1.0,
+        "micro": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "ground_truth": 117,
+          "precision": 1.0,
+          "predictions": 117,
+          "recall": 1.0,
+          "tp": 117
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 13,
+            "precision": 1.0,
+            "predictions": 13,
+            "recall": 1.0,
+            "tp": 13
+          },
+          "loot": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 26,
+            "precision": 1.0,
+            "predictions": 26,
+            "recall": 1.0,
+            "tp": 26
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 13,
+            "precision": 1.0,
+            "predictions": 13,
+            "recall": 1.0,
+            "tp": 13
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 39,
+            "precision": 1.0,
+            "predictions": 39,
+            "recall": 1.0,
+            "tp": 39
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 13,
+            "precision": 1.0,
+            "predictions": 13,
+            "recall": 1.0,
+            "tp": 13
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 13,
+            "precision": 1.0,
+            "predictions": 13,
+            "recall": 1.0,
+            "tp": 13
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "right": {
+        "ap_classes_with_ground_truth": 7,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 20,
+        "iou_threshold": 0.5,
+        "map50": 0.9854362450208498,
+        "map50_95": null,
+        "map_at_iou": 0.9854362450208498,
+        "micro": {
+          "f1": 0.9882352941176471,
+          "fn": 0,
+          "fp": 4,
+          "ground_truth": 168,
+          "precision": 0.9767441860465116,
+          "predictions": 172,
+          "recall": 1.0,
+          "tp": 168
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 20,
+            "precision": 1.0,
+            "predictions": 20,
+            "recall": 1.0,
+            "tp": 20
+          },
+          "loot": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 8,
+            "precision": 1.0,
+            "predictions": 8,
+            "recall": 1.0,
+            "tp": 8
+          },
+          "monster": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 24,
+            "precision": 1.0,
+            "predictions": 24,
+            "recall": 1.0,
+            "tp": 24
+          },
+          "npc": {
+            "ap50": 0.8980537151459487,
+            "ap_at_iou": 0.8980537151459487,
+            "f1": 0.8888888888888888,
+            "fn": 0,
+            "fp": 4,
+            "ground_truth": 16,
+            "precision": 0.8,
+            "predictions": 20,
+            "recall": 1.0,
+            "tp": 16
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 60,
+            "precision": 1.0,
+            "predictions": 60,
+            "recall": 1.0,
+            "tp": 60
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 20,
+            "precision": 1.0,
+            "predictions": 20,
+            "recall": 1.0,
+            "tp": 20
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 20,
+            "precision": 1.0,
+            "predictions": 20,
+            "recall": 1.0,
+            "tp": 20
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      },
+      "right_edge": {
+        "ap_classes_with_ground_truth": 5,
+        "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+        "class_count": 7,
+        "classes": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "confidence_threshold": 0.25,
+        "images": 12,
+        "iou_threshold": 0.5,
+        "map50": 0.9500471475719003,
+        "map50_95": null,
+        "map_at_iou": 0.9500471475719003,
+        "micro": {
+          "f1": 0.975609756097561,
+          "fn": 0,
+          "fp": 4,
+          "ground_truth": 80,
+          "precision": 0.9523809523809523,
+          "predictions": 84,
+          "recall": 1.0,
+          "tp": 80
+        },
+        "per_class": {
+          "ladder": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "loot": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "monster": {
+            "ap50": null,
+            "ap_at_iou": null,
+            "f1": null,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 0,
+            "precision": null,
+            "predictions": 0,
+            "recall": null,
+            "tp": 0
+          },
+          "npc": {
+            "ap50": 0.7502357378595017,
+            "ap_at_iou": 0.7502357378595017,
+            "f1": 0.8,
+            "fn": 0,
+            "fp": 4,
+            "ground_truth": 8,
+            "precision": 0.6666666666666666,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 8
+          },
+          "platform": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 36,
+            "precision": 1.0,
+            "predictions": 36,
+            "recall": 1.0,
+            "tp": 36
+          },
+          "player": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          },
+          "portal": {
+            "ap50": 1.0,
+            "ap_at_iou": 1.0,
+            "f1": 1.0,
+            "fn": 0,
+            "fp": 0,
+            "ground_truth": 12,
+            "precision": 1.0,
+            "predictions": 12,
+            "recall": 1.0,
+            "tp": 12
+          }
+        },
+        "predictions_below_confidence_threshold": 0,
+        "sessions": 4,
+        "unrecognized_prediction_classes": []
+      }
+    },
+    "interpretation": "Each partition assigns each image once. Coverage tags overlap; do not sum them. Each group independently reranks its predictions for AP; group AP is not additive. Frames from one session are correlated, and these are descriptive subgroup results.",
+    "overlapping_groups": [
+      "by_coverage_tag"
+    ],
+    "partitions": [
+      "by_phase",
+      "by_map",
+      "by_player_position"
+    ],
+    "schema_version": 1
+  },
+  "latency_ms": {
+    "clock": "perf_counter_ns",
+    "max": 3.83618,
+    "mean": 1.2505925277777779,
+    "min": 0.862959,
+    "p50": 1.0998700000000001,
+    "p95": 1.9013139999999995,
+    "samples": 108,
+    "timing_scope": "detect(frame) only; includes detector preprocessing/decoding, excludes PNG I/O",
+    "warmup_calls_excluded": 3
+  },
+  "limitations": [
+    "Synthetic fixture results do not establish accuracy on real recordings.",
+    "A split named test does not prove the model never saw those images elsewhere.",
+    "AP uses a declared confidence cutoff and one IoU; this is not COCO mAP50-95.",
+    "Small image counts yield uncertain accuracy and latency estimates."
+  ],
+  "metrics": {
+    "ap_classes_with_ground_truth": 7,
+    "ap_definition": "101-point interpolated precision envelope after confidence filtering",
+    "class_count": 7,
+    "classes": [
+      "player",
+      "monster",
+      "loot",
+      "portal",
+      "npc",
+      "platform",
+      "ladder"
+    ],
+    "confidence_threshold": 0.25,
+    "images": 108,
+    "iou_threshold": 0.5,
+    "map50": 0.9450649172253831,
+    "map50_95": null,
+    "map_at_iou": 0.9450649172253831,
+    "micro": {
+      "f1": 0.9705882352941176,
+      "fn": 12,
+      "fp": 40,
+      "ground_truth": 870,
+      "precision": 0.955456570155902,
+      "predictions": 898,
+      "recall": 0.9862068965517241,
+      "tp": 858
+    },
+    "per_class": {
+      "ladder": {
+        "ap50": 0.733045440062815,
+        "ap_at_iou": 0.733045440062815,
+        "f1": 0.8421052631578947,
+        "fn": 12,
+        "fp": 24,
+        "ground_truth": 108,
+        "precision": 0.8,
+        "predictions": 120,
+        "recall": 0.8888888888888888,
+        "tp": 96
+      },
+      "loot": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 34,
+        "precision": 1.0,
+        "predictions": 34,
+        "recall": 1.0,
+        "tp": 34
+      },
+      "monster": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 96,
+        "precision": 1.0,
+        "predictions": 96,
+        "recall": 1.0,
+        "tp": 96
+      },
+      "npc": {
+        "ap50": 0.882408980514867,
+        "ap_at_iou": 0.882408980514867,
+        "f1": 0.92,
+        "fn": 0,
+        "fp": 16,
+        "ground_truth": 92,
+        "precision": 0.8518518518518519,
+        "predictions": 108,
+        "recall": 1.0,
+        "tp": 92
+      },
+      "platform": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 324,
+        "precision": 1.0,
+        "predictions": 324,
+        "recall": 1.0,
+        "tp": 324
+      },
+      "player": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 108,
+        "precision": 1.0,
+        "predictions": 108,
+        "recall": 1.0,
+        "tp": 108
+      },
+      "portal": {
+        "ap50": 1.0,
+        "ap_at_iou": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "ground_truth": 108,
+        "precision": 1.0,
+        "predictions": 108,
+        "recall": 1.0,
+        "tp": 108
+      }
+    },
+    "predictions_below_confidence_threshold": 0,
+    "unrecognized_prediction_classes": []
+  },
+  "model_training_overlap_verified": false,
+  "output": "/workspace/scratch/3968a72df173/maple-vision-platform/artifacts/v04-acceptance/pixel-validation.json",
+  "schema_version": 2,
+  "scope": "synthetic_fixture",
+  "split": "val"
+}

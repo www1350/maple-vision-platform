@@ -1,8 +1,12 @@
-# Maple Vision Platform v0.3.0
+# Maple Vision Platform v0.4.0
 
 一个可在本机运行、训练和验证的**离线视觉研究平台与独立模拟器**。它包含本地知识目录、素材登记、合成数据集、YOLO 训练与 ONNX 推理、多职业/多地图任务，以及可重放的验证证据。
 
 **完整方案入口：[完整方案与 AI 落地指南](docs/FINAL_PLAN.md)**。其中集中说明架构、数据流、从零实施顺序、各阶段完成标准，以及下一位编程 AI 接手时应遵守的接口与验证要求。
+
+**v0.4 新增外部地图包。** 同一份严格校验的 JSON 可用于模拟、渲染、三职业任务、生命周期数据和独立重放；示例已扩展为 `grove → quarry → ruins` 三图。地图内容、来源与摘要随数据和运行保存，删除原文件后可以复验。固定画布下支持 2–8 图单出口循环路线，地图格式有效不等于任意布局都能完成。[地图包使用](docs/MAP_PACKS.md) · [本轮执行方案](docs/V0_4_PLAN.md) · [本轮实际验收](docs/RELEASE_0_4_ACCEPTANCE.md)
+
+本地完整**1011项通过、0跳过**，三职业与13场景通过，486帧数据复核通过；60秒请求实际61.05秒、53轮。修复实现`8a649f8`的[Ubuntu、Windows和原生CI](https://github.com/www1350/maple-vision-platform/actions/runs/45455031462)全部成功，两平台隔离安装也通过。首次Windows的测试名称超限失败与修复保留；最终归档检查与合并见[PR #5](https://github.com/www1350/maple-vision-platform/pull/5)。像素val仍有40个误检与12个漏检，新地图学习模型准确率未验收。
 
 **v0.3 工具工程验收已通过，地形实验已完成并保留失败候选。** 新增训练前的检测头/锚点检查、全宽地板召回与边缘误差、显式模型地形模式，以及训练前冻结的单候选实验。候选虽检出192/192条整幅地板，但总平台召回只有81.94%，未达到98%门槛，已明确拒绝推广；test保持未评分。本地完整回归 **834 项通过、0 跳过**，隔离安装包验证也已通过；日志流生命周期问题已修复；实现提交 `3340d8f` 的[Ubuntu、Windows及原生CI](https://github.com/www1350/maple-vision-platform/actions/runs/45421893081)全部通过，最终归档检查与合并记录见 [PR #4](https://github.com/www1350/maple-vision-platform/pull/4)。完整状态见 [v0.3 发布验收](docs/RELEASE_0_3_ACCEPTANCE.md) 和 [执行方案](docs/V0_3_PLAN.md)。
 
@@ -39,13 +43,25 @@ $maplePython = ".\.venv\Scripts\python.exe"
 
 更多命令见 [快速开始](docs/QUICKSTART.md)。安装包源需要网络；上述模拟器、知识查询、素材处理与验证流程在依赖安装后本地运行，**不消耗 LLM token**。
 
+## 加载三张外部地图
+
+```bash
+python -m maple_vision maps check examples/maps/three-map-fixture.json
+python -m maple_vision lab run --map-pack examples/maps/three-map-fixture.json --output artifacts/three-map-run
+python -m maple_vision lab replay artifacts/three-map-run
+python -m maple_vision lab reinfer artifacts/three-map-run
+python scripts/verify_external_maps.py --output artifacts/three-map-acceptance
+```
+
+最后一条独立验收包含三职业、13 个正常/故障场景、486 帧数据与像素 val 分组、实际 60 秒短时运行，保留完整报告和原始证据。它不训练或推广学习模型；新地图上的 YOLO 准确率需要另外取得证据。省略 `--map-pack` 时继续使用原有两张地图。
+
 ## 已实现的能力
 
 | 模块 | 当前实现 |
 |---|---|
 | 知识目录 | SQLite v2，版本与来源追溯、冲突保留、快照验证；本地导出可生成自包含差异计划，在同一写事务中核对基线、导入和结果；已核实的合成职业参数可注入运行 |
 | 素材登记与渲染 | 本地授权 PNG/JPEG/WEBP 解码、内容寻址、哈希与来源记录；显式 SpritePack 接入渲染、数据集和可重放任务 |
-| 地图与数据集 | 两张自绘地图、可见区域 YOLO 标签与会话隔离；显式 lifecycle v2 覆盖出生、战斗、拾取、清场、对话、切图，并通过动作重放核对像素/标签/覆盖统计；legacy v1 保留 |
+| 地图与数据集 | 两张内置地图继续兼容，外部 MapPack 支持 2–8 图循环；lifecycle schema3 完整嵌入地图并复核每图六阶段、动作、像素、标签和覆盖；旧数据 v1/v2 保留 |
 | 模拟器 | 固定步长、确定性种子、保存恢复、平台与梯子、单段跳跃、战斗/冷却/Buff/资源/拾取/药品/NPC/切图 |
 | 职业样例 | 标飞的弹药与跳标、龙骑的近身/范围技能、牧师的治疗与 MP 差异 |
 | 视觉 | 像素基线、哈希绑定的 ONNX；分组指标及全宽地板召回/边缘误差；显式选择模型地形时七类对象全部来自检测器，HUD仍是合成像素，策略只接收观测 |
@@ -55,9 +71,9 @@ $maplePython = ".\.venv\Scripts\python.exe"
 | 本地录像与 OCR | PNG 帧目录/MP4 导入、完整性检查与感知回放；通过已安装的 Tesseract 识别文本 |
 | 回话 | 模拟器 NPC 对话；人工确认的本地玩家回复草稿，不含发送后端 |
 
-知识目录中的三个现有职业可通过 `--knowledge-db` 与 `--game-version` 显式加载完整 `ClassSpec`。加载器要求所有候选均为 VERIFIED、无冲突、`synthetic_fixture`；职业参数、哈希与来源进入运行证据，重放无需原数据库。地图、通用药品/Buff 等规则仍为样例常量。注册素材可通过成对的 `--asset-registry` 与 `--sprite-map` 参数接入渲染、数据集和任务，运行包内嵌素材后可独立重放。
+知识目录中的三个现有职业可通过 `--knowledge-db` 与 `--game-version` 显式加载完整 `ClassSpec`。加载器要求所有候选均为 VERIFIED、无冲突、`synthetic_fixture`；职业参数、哈希与来源进入运行证据，重放无需原数据库。地图布局可以通过 `--map-pack` 注入，通用药品/Buff 等规则仍为样例常量。注册素材可通过成对的 `--asset-registry` 与 `--sprite-map` 参数接入渲染、数据集和任务，运行包内嵌素材后可独立重放。
 
-本地录像已有导入、完整性验证和感知回放合同；固定录像不提供反事实动作验证。真实素材的识别效果、真实规则和新职业/地图包仍需各自的适配与验收。
+本地录像已有导入、完整性验证和感知回放合同；固定录像不提供反事实动作验证。真实素材的识别效果、真实规则、新职业，以及超出当前地图 schema 的内容仍需各自的适配与验收。
 
 ## 地形研究与模型对象模式
 
@@ -109,7 +125,8 @@ python -m maple_vision lab soak --output artifacts/v02-model-soak --seconds 60 -
 
 ## 模型与发布证据
 
-- [v0.3 发布验收记录](docs/RELEASE_0_3_ACCEPTANCE.md) · [v0.3 有界实验计划](docs/V0_3_PLAN.md)：当前版本的预注册、实际测试和独立门禁状态。
+- [v0.4 发布验收记录](docs/RELEASE_0_4_ACCEPTANCE.md) · [v0.4 执行计划](docs/V0_4_PLAN.md)：外部地图、兼容、独立重放、安装与准确提交 CI。
+- [v0.3 发布验收记录](docs/RELEASE_0_3_ACCEPTANCE.md) · [v0.3 有界实验计划](docs/V0_3_PLAN.md)：已完成的历史研究与拒绝候选，推广分支保持关闭。
 - [v0.3 地形实验与漏检诊断](docs/YOLO_TERRAIN_EXPERIMENT.md)：同集比较、全部104个遗漏的逐真值账本、原始检测框检查与实际对照图。
 - [v0.2 发布验收记录](docs/RELEASE_0_2_ACCEPTANCE.md)：上一版本准确提交、测试、操作系统和实测结果。
 - [v0.2 lifecycle 模型实验](docs/YOLO_LIFECYCLE_EXPERIMENT.md)：选模时序、检测指标、三职业实际重新推理、短时长稳与架构限制。
@@ -133,7 +150,7 @@ python -m ruff check .
 python -m mypy
 python -m pytest -q
 python -m build --wheel --no-isolation
-python scripts/wheel_smoke.py --wheel dist/maple_vision_platform-0.3.0-py3-none-any.whl
+python scripts/wheel_smoke.py --wheel dist/maple_vision_platform-0.4.0-py3-none-any.whl
 ```
 
 这里的 `python` 应为上面虚拟环境的解释器。CI 配置同时检查 Ubuntu、Windows 的 Python 3.12，并在仓库之外新建仅含基础运行依赖的环境验证 wheel；另设 Ubuntu CPU 训练、ONNX 导出与推理检查。CI 成绩及版本见验收记录，不能从工作流文件存在推断已经通过。

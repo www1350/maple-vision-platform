@@ -1,0 +1,65 @@
+{
+  "conclusion": "failure",
+  "failure": {
+    "assertions_reached_for_affected_case": false,
+    "cause": "Automatic parametrized node ID contained 131073-byte oversize payload; PYTEST_CURRENT_TEST exceeded the Windows 32767-character environment-variable limit",
+    "distinct_affected_cases": 1,
+    "fix": "Explicit six short IDs; all original payloads and assertions unchanged",
+    "focused_after_fix": "93 passed in 0.40s; 93 collected node IDs; maximum 130 characters",
+    "platform": "Windows",
+    "production_source_changed": false,
+    "pytest": "999 passed, 11 skipped, 2 errors",
+    "repair_development_error": "Initial manual IDs list had 5 entries for 6 cases; collection rejected it; corrected to 6, initial log retained",
+    "stages": [
+      "setup",
+      "teardown"
+    ]
+  },
+  "head_sha": "33554d453e4296bcb97942b0306f04d4cb952924",
+  "jobs": [
+    {
+      "conclusion": "failure",
+      "gzip_sha256": "750be55976285cbdfda8432c0df3adba7de100bb58891cfe9dc837b55a00eeac",
+      "job_id": 138657275085,
+      "log_file": "remote-initial-windows.log.gz",
+      "log_normalization": "CRLF changed to LF; preserved in gzip with deterministic mtime",
+      "log_sha256": "429959a2db945d0142da1a05253bb21f255022f7bdbea6f97fef9fecbba799e4",
+      "name": "windows",
+      "pytest_summary": [
+        "999 passed, 11 skipped, 2 errors in 167.83s (0:02:47)"
+      ],
+      "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45453684481/job/138657275085"
+    },
+    {
+      "conclusion": "success",
+      "gzip_sha256": "598656c47d5d2cdfa457b554925fb651fba3461eebbe080dc1ce54b483bb79ff",
+      "job_id": 138657275137,
+      "log_file": "remote-initial-ubuntu.log.gz",
+      "log_normalization": "CRLF changed to LF; preserved in gzip with deterministic mtime",
+      "log_sha256": "63bb0994a05cee42ea287c098ff632b8cc88a865056ae349ee6709b93a55ccd9",
+      "name": "ubuntu",
+      "pytest_summary": [
+        "1004 passed, 7 skipped in 142.29s (0:02:22)"
+      ],
+      "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45453684481/job/138657275137"
+    },
+    {
+      "conclusion": "success",
+      "gzip_sha256": "96b83c554b5b27702d9abbb9991fd919c7d1380ccd98dfbec0fc3c185d304a53",
+      "job_id": 138657274685,
+      "log_file": "remote-initial-native.log.gz",
+      "log_normalization": "CRLF changed to LF; preserved in gzip with deterministic mtime",
+      "log_sha256": "270b4872dd3589ef182d38dd2c5119aa8145727e9058ffc42babf8fc4228e897",
+      "name": "native",
+      "pytest_summary": [
+        "155 passed, 5 warnings in 6.67s"
+      ],
+      "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45453684481/job/138657274685"
+    }
+  ],
+  "run_id": 45453684481,
+  "run_number": 20,
+  "schema_version": 1,
+  "tree_sha": "903245b77ef335b9cb8d37ce39feacc2512b009b",
+  "url": "https://github.com/www1350/maple-vision-platform/actions/runs/45453684481"
+}
