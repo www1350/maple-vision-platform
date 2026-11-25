@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "scope": "synthetic_fixture_with_separate_user_recording_reference",
+  "created_at": "2026-11-25T15:40:40Z",
+  "source_state": "working_tree_before_commit",
+  "runtime_source_sha256": "82031020cd3d56d33fb909a0c0f3ecd88d65b45f62b73a37596c154f64228069",
+  "real_reference": {
+    "kind": "user_supplied_read_only_recording",
+    "file_in_repository": false,
+    "sha256": "274efc91aa9bb0d63d0c3546bc2ef1810189ccabe9bb217a7f22ef6e9c901d8f",
+    "width": 910,
+    "height": 512,
+    "fps": "30/1",
+    "duration_seconds": 73.233333,
+    "reviewed_observation": "Throwing-star combat is visible; an approximately 48-56 second segment shows rope acquisition and a move to an upper platform.",
+    "calibration_status": "reference_only_not_frame_annotated",
+    "not_claimed": [
+      "attack input identity",
+      "Lucky Seven range or timing",
+      "damage segment identity",
+      "official map coordinates"
+    ]
+  },
+  "synthetic_inputs": {
+    "class_package": "examples/classes/throwing_star.json",
+    "class_package_sha256": "7874319aaf9ecbe9853162557f201caf7ab95fb419cc4d66e8798150c79f4456",
+    "map_pack": "examples/maps/dead-forest-drill.json",
+    "map_pack_sha256": "36179d6266f05fd6458bdcaa4c342db5ce0c5290a916abdea72f1cd7d38e1805",
+    "mission_program": "examples/missions/dead-forest-layered-hunt.json",
+    "mission_program_sha256": "b0ebce51757bb09a7036187b4e8da50091b6090f8165a9937af1498762a9b556",
+    "input_bindings": "examples/input-bindings/throwing-star.json",
+    "input_bindings_sha256": "c729700df2933a37888862f59fb6282d3a31462236ab140e71a751cd81d7c7fa",
+    "binding": {
+      "profile_id": "synthetic-star-throw-demo",
+      "key": "S",
+      "skill": "lucky_seven"
+    },
+    "ammo_rule": {
+      "initial": 200,
+      "per_cast": 2,
+      "successful_casts": 4,
+      "final": 192
+    }
+  },
+  "command": "PYTHONPATH=src python -m maple_vision lab run --seed 17 --record-stride 1 --class-pack examples/classes/throwing_star.json --map-pack examples/maps/dead-forest-drill.json --mission-program examples/missions/dead-forest-layered-hunt.json --input-bindings examples/input-bindings/throwing-star.json --output RUN",
+  "positive_result": {
+    "status": "completed",
+    "reason": "visual_mission_conditions_met",
+    "steps": 266,
+    "simulated_seconds": 13.3,
+    "actions": {
+      "cast": 4,
+      "climb": 32,
+      "idle": 66,
+      "jump": 2,
+      "move": 161,
+      "portal": 1
+    },
+    "events": {
+      "attack": 4,
+      "attack_hit": 8,
+      "cast": 4,
+      "climb": 32,
+      "damage": 1,
+      "jump": 2,
+      "map_changed": 1,
+      "monster_defeated": 2,
+      "skill:lucky_seven": 4
+    },
+    "navigation": [
+      {
+        "map_id": "drill_forest_1",
+        "target_platform": "platform_1",
+        "accepted_steps": 41,
+        "ladder_edges": 1,
+        "completed_sequence": 41,
+        "path_sha256": "d31540b7619e93c13dc55f1cf06517978c67baf85642da52165be73d53652b46",
+        "trajectory_sha256": "69e7242e5852b18f9e1fc5116106cef3a58dc7f40f6cc32fea337bb6d41a7dab"
+      },
+      {
+        "map_id": "drill_forest_2",
+        "target_platform": "platform_1",
+        "accepted_steps": 83,
+        "ladder_edges": 1,
+        "completed_sequence": 233,
+        "path_sha256": "576d5b7f35c941b552eaf10184ff11f573721a93c7dfe50895c852d313d61eaf",
+        "trajectory_sha256": "45fda820c34df48b0d6f1b466f7d9d6db80aaec201d7d369634f1ca6e2bdf5e3"
+      }
+    ],
+    "input_dispatch": {
+      "attempts": 4,
+      "accepted": 4,
+      "denied": 0,
+      "reasons": {
+        "bound_skill": 4
+      }
+    },
+    "independent_goal_check": true,
+    "final_state_sha256": "b73f884821ea0ad628df4f6c19957f8795b78d9d51eb4105fc8fb30d15442b1b"
+  },
+  "positive_archive": {
+    "file": "throwing-star-layered-two-map-acceptance.tar.gz",
+    "sha256": "b7f7d1644fe4584992509965d6dac1ca00ea6fee766cb94eb779f111782c97cc",
+    "directory": "run",
+    "extracted_replay_verified": true,
+    "extracted_reinference_verified": true,
+    "runtime_identity_matches": true,
+    "bundle_hashes": {
+      "summary.json": "6c5663fb961d401d274f7dca9e210c971fb47356a055f8dd308b5a07543dd8b7",
+      "trace.jsonl": "30ceee32395a4ad9ae750d170b9976678d25496e87d87b6d953c55150266fea0",
+      "input-bindings.json": "327251fdf2117ba55799638c9fa2d07e93fe77bcaab9ec1a190e76d6c5eb8368",
+      "class-package.json": "73ad7738c422a3ad0044ef25622901b02ffd8041afdd07b8916a7da690c9f8aa",
+      "map-pack.json": "c8f31e264b1d4681b42459d8d0b2251dd8e2355560d8a93f31501bd91203fbbd",
+      "runtime-config.json": "824f5ff455cfcedfc1457b5d9b357e855929d86cbd6ce9b4ffbf7f6a685aabd2",
+      "manifest.json": "b94c116c8044558afce2e2a178744b74f505e3088595237797692c9bd21d333c"
+    },
+    "action_replay": {
+      "verified": true,
+      "steps_replayed": 266,
+      "files_checked": 276,
+      "independent_goal_check": true
+    },
+    "reinference": {
+      "verified": true,
+      "trace_steps_compared": 266,
+      "frames_reinferred": 267,
+      "perception_reproduced": true,
+      "policy_reproduced": true,
+      "structured_runtime_reproduced": true,
+      "files_unchanged": true
+    }
+  },
+  "wrong_binding_result": {
+    "profile": "examples/input-bindings/spear-fighter.json",
+    "status": "failed",
+    "reason": "combat_progress_timeout",
+    "steps": 144,
+    "navigation_completed": [
+      "drill_forest_1:platform_1"
+    ],
+    "cast_requests": 12,
+    "accepted_casts": 0,
+    "denied_casts": 12,
+    "denial_reason": "unbound_skill",
+    "attack_hits": 0,
+    "frames_reinferred": 145,
+    "archive": {
+      "file": "throwing-star-layered-wrong-binding.tar.gz",
+      "sha256": "222fed7861edffb75759a2a8814addde91f8bc7ad1832c7aa3828015d3c9c1ae",
+      "extracted_replay_verified": true,
+      "extracted_reinference_verified": true
+    }
+  },
+  "limits": [
+    "The user recording is read-only reference evidence and is not copied into the repository.",
+    "The two drill maps, platform coordinates, movement law, S key and Lucky Seven parameters are self-authored synthetic fixtures.",
+    "Monsters remain ground spawns. After upper-platform confirmation the visual task reacquires the ground target and leaves the platform before a ground or airborne cast.",
+    "This does not calibrate official CMS rope tolerances, upper-platform spawns, Lucky Seven range, timing, damage or ammo rules.",
+    "No official client received input."
+  ]
+}

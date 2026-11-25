@@ -24,13 +24,24 @@ from .class_package import (
 )
 from .contracts import Detection, Status, confidence_value
 from .mission_program import MissionProgram
+from .navigation_graph import MotionState, NavigationPath, PlatformGraph, simulate_actions
 from .sim_types import CLASS_SPECS, ClassSpec, SimAction
 from .state_estimation import BeliefState
 from .vision import VisualObservation
 
 _MAX_INTEGER = 2**53 - 1
 _TASK_KINDS = frozenset(
-    {"survival", "recovery", "buff", "combat", "loot", "interaction", "transition", "idle"}
+    {
+        "survival",
+        "recovery",
+        "buff",
+        "navigation",
+        "combat",
+        "loot",
+        "interaction",
+        "transition",
+        "idle",
+    }
 )
 _LOCKS = {
     "idle": ("clock",),
@@ -908,6 +919,7 @@ class ActionPlanner:
         now_ms: int,
         capabilities: CompiledCapabilities | None = None,
         capability_state: _CapabilityAttempts | None = None,
+        navigation_action: SimAction | None = None,
     ) -> ActionPlan:
         if not isinstance(candidate, TaskCandidate) or not isinstance(
             spec, (ClassSpec, CapabilityClassSpec)
@@ -915,6 +927,11 @@ class ActionPlanner:
             raise ValueError("invalid planner inputs")
         if capabilities is not None and capability_state is None:
             raise ValueError("capability planner requires attempt state")
+        if navigation_action is not None and (
+            candidate.kind != "navigation"
+            or navigation_action.kind not in {"idle", "move", "jump", "climb"}
+        ):
+            raise ValueError("invalid navigation plan step")
         if not isinstance(observation, VisualObservation) or observation.map_id is None:
             raise ValueError("planner requires a current map observation")
         players = [item for item in observation.detections if item.class_id == "player"]
@@ -972,7 +989,11 @@ class ActionPlanner:
                     if nearby >= 2:
                         program = area
 
-        if candidate.kind == "survival":
+        if candidate.kind == "navigation":
+            if navigation_action is None:
+                raise ValueError("navigation task requires a verified path step")
+            steps = single(navigation_action, "follow_verified_platform_path")
+        elif candidate.kind == "survival":
             if program is not None:
                 steps = compiled(program, context.facing)
             else:
@@ -1109,6 +1130,7 @@ class TaskRuntime:
         capabilities: CompiledCapabilities | None = None,
         mission: MissionProgram | None = None,
         portal_centers: dict[tuple[str, str], float] | None = None,
+        platform_graphs: dict[str, PlatformGraph] | None = None,
     ) -> None:
         if capabilities is not None and (
             type(capabilities) is not CompiledCapabilities
@@ -1152,11 +1174,27 @@ class TaskRuntime:
             raise ValueError("capability program exceeds configured plan time budget")
         self._capability_state = None if capabilities is None else _CapabilityAttempts(capabilities)
         self.portal_centers = dict(portal_centers or {})
+        self.platform_graphs = dict(platform_graphs or {})
+        if any(type(graph) is not PlatformGraph for graph in self.platform_graphs.values()):
+            raise ValueError("invalid platform navigation graphs")
         self.mission = mission
         if mission is not None:
             if type(mission) is not MissionProgram:
                 raise ValueError("invalid mission program")
             mission.bind_route(maps)
+            required = {stage.map_id for stage in mission.stages if stage.navigation is not None}
+            if required != set(self.platform_graphs):
+                raise ValueError("mission navigation graphs do not match its platform stages")
+            for map_id, graph in self.platform_graphs.items():
+                stage = next(stage for stage in mission.stages if stage.map_id == map_id)
+                assert stage.navigation is not None
+                if (
+                    graph.geometry.map_id != map_id
+                    or stage.navigation.target_platform not in graph.geometry.platform_ids
+                ):
+                    raise ValueError("mission navigation target is not in its platform graph")
+        elif self.platform_graphs:
+            raise ValueError("platform navigation graphs require a mission")
         self.maps = maps if mission is None else mission.maps
         first_phase = "fight" if mission is None else mission.stages[0].phases[0]
         self.phase, self.state, self.reason = first_phase, "running", "created"
@@ -1196,6 +1234,10 @@ class TaskRuntime:
         self._attack_attempts = 0
         self._denied_actions = 0
         self._last_decision: RuntimeDecision | None = None
+        self._navigation_path: NavigationPath | None = None
+        self._navigation_states: tuple[MotionState, ...] = ()
+        self._navigation_index = 0
+        self._navigation_records: list[dict[str, Any]] = []
 
     def _event(self, kind: str, now_ms: int, **details: object) -> None:
         event = {"event": kind, "timestamp_ms": now_ms, **details}
@@ -1229,6 +1271,8 @@ class TaskRuntime:
         }
         if self._capability_state is not None:
             evidence["capabilities"] = self._capability_state.to_dict()
+        if self._navigation_records:
+            evidence["navigation"] = _document(self._navigation_records)
         result = RuntimeDecision(
             SimAction() if intent is None else intent.action,
             intent,
@@ -1239,6 +1283,99 @@ class TaskRuntime:
         )
         self._last_decision = result
         return result
+
+    @staticmethod
+    def _observed_motion(observation: VisualObservation) -> MotionState:
+        players = [item for item in observation.detections if item.class_id == "player"]
+        if len(players) != 1:
+            raise ValueError("navigation requires one visible player")
+        player = players[0]
+        grounded = _grounded(observation, player)
+        return MotionState(player.bbox[0], player.bbox[1], grounded=grounded)
+
+    @staticmethod
+    def _motion_matches(observed: MotionState, expected: MotionState) -> bool:
+        return abs(observed.x - expected.x) <= 1.0 and abs(observed.y - expected.y) <= 1.0
+
+    def _prepare_navigation(self, observation: VisualObservation, now_ms: int) -> str | None:
+        if self.mission is None:
+            return "navigation_mission_missing"
+        stage = self.mission.stages[self.map_index]
+        objective = stage.navigation
+        graph = self.platform_graphs.get(stage.map_id)
+        if objective is None or graph is None:
+            return "navigation_static_context_missing"
+        try:
+            start = self._observed_motion(observation)
+            result = graph.find_path(start, objective.target_platform)
+        except ValueError:
+            return "navigation_visual_precondition_invalid"
+        if result.status != "found" or result.path is None:
+            return f"navigation_path_{result.status}"
+        path = result.path
+        if not any(edge.kind == objective.required_edge_kind for edge in path.edges):
+            return "navigation_required_ladder_absent"
+        try:
+            verification = graph.verify_path(path, initial_state=start)
+            trace = simulate_actions(graph.geometry, graph.capabilities, start, path.actions)
+        except ValueError:
+            return "navigation_path_verification_failed"
+        self._navigation_path = path
+        self._navigation_states = trace.states
+        self._navigation_index = 0
+        self._navigation_records.append(
+            {
+                "map_id": stage.map_id,
+                "target_platform": objective.target_platform,
+                "required_edge_kind": objective.required_edge_kind,
+                "status": "running",
+                "prepared_sequence": observation.sequence,
+                "completed_sequence": None,
+                "graph_sha256": graph.content_sha256,
+                "path_sha256": path.content_sha256,
+                "trajectory_sha256": trace.trajectory_sha256,
+                "steps": path.steps,
+                "ladder_edges": sum(edge.kind == "ladder" for edge in path.edges),
+                "accepted_steps": 0,
+                "verification": verification,
+            }
+        )
+        self._event(
+            "navigation_path_prepared",
+            now_ms,
+            map_id=stage.map_id,
+            target_platform=objective.target_platform,
+            path_sha256=path.content_sha256,
+            steps=path.steps,
+        )
+        return None
+
+    def _navigation_progress(self, observation: VisualObservation, now_ms: int) -> str | None:
+        if self._navigation_path is None:
+            problem = self._prepare_navigation(observation, now_ms)
+            if problem is not None:
+                return problem
+        assert self._navigation_path is not None and self._navigation_states
+        try:
+            observed = self._observed_motion(observation)
+        except ValueError:
+            return "navigation_player_unobservable"
+        expected = self._navigation_states[self._navigation_index]
+        if not self._motion_matches(observed, expected):
+            return "navigation_visual_state_mismatch"
+        if self._navigation_index == len(self._navigation_path.actions):
+            record = self._navigation_records[-1]
+            record["status"] = "completed"
+            record["completed_sequence"] = observation.sequence
+            self._event(
+                "navigation_target_confirmed",
+                now_ms,
+                map_id=record["map_id"],
+                target_platform=record["target_platform"],
+                path_sha256=record["path_sha256"],
+            )
+            self._next_objective("fight", now_ms)
+        return None
 
     def _finish(self, state: str, reason: str, now_ms: int) -> RuntimeDecision:
         self.state = state
@@ -1286,7 +1423,13 @@ class TaskRuntime:
 
     def _advance(self, phase: str, now_ms: int) -> None:
         previous = self.phase
-        role = {"fight": "combat", "collect": "loot", "talk": "interaction", "travel": "transition"}
+        role = {
+            "navigate": "navigation",
+            "fight": "combat",
+            "collect": "loot",
+            "talk": "interaction",
+            "travel": "transition",
+        }
         task_id = f"task-{self.map_index}-{role.get(previous, 'idle')}"
         instance = self._tasks.get(task_id)
         if instance is not None and instance.status in {
@@ -1306,6 +1449,10 @@ class TaskRuntime:
         self.scheduler.cancel("mission_phase_changed", now_ms)
         self._active_task_id = None
         self.phase, self._phase_steps, self._empty_frames = phase, 0, 0
+        if previous == "navigate":
+            self._navigation_path = None
+            self._navigation_states = ()
+            self._navigation_index = 0
         self._event("mission_phase_changed", now_ms, previous=previous, following=phase)
 
     def _next_objective(self, fallback: str, now_ms: int) -> None:
@@ -1411,7 +1558,12 @@ class TaskRuntime:
             for d in observation.detections
             if d.class_id == "monster" and d.confidence >= self.config.minimum_detection_confidence
         )
-        if self.phase == "fight" and monsters:
+        if self.phase == "navigate":
+            if self._navigation_path is not None and self._navigation_index < len(
+                self._navigation_path.actions
+            ):
+                add("navigation", 600, "verified_platform_path_step")
+        elif self.phase == "fight" and monsters:
             if self.capabilities is not None and self._capability_state is not None:
                 buff = self.capabilities.program_for("buff")
                 if (
@@ -1595,6 +1747,10 @@ class TaskRuntime:
                 self._descent_direction = 0
             else:
                 return self._finish("failed", "unexpected_map", now_ms)
+        if self.phase == "navigate":
+            navigation_problem = self._navigation_progress(observation, now_ms)
+            if navigation_problem is not None:
+                return self._finish("failed", navigation_problem, now_ms)
         self._phase_steps += 1
         if self._phase_steps > self.config.max_task_steps:
             return self._finish("failed", "task_timeout", now_ms)
@@ -1685,6 +1841,11 @@ class TaskRuntime:
                 now_ms=now_ms,
                 capabilities=self.capabilities,
                 capability_state=self._capability_state,
+                navigation_action=(
+                    self._navigation_path.actions[self._navigation_index]
+                    if selected.kind == "navigation" and self._navigation_path is not None
+                    else None
+                ),
             )
             self._descent_direction = self.planner.descent_direction
             self.scheduler.start(plan, now_ms)
@@ -1740,6 +1901,13 @@ class TaskRuntime:
         self._issued_before = None
         self._last_receipt = receipt
         if accepted:
+            if (
+                self.phase == "navigate"
+                and intent.task_id == f"task-{self.map_index}-navigation"
+                and self._navigation_path is not None
+            ):
+                self._navigation_index += 1
+                self._navigation_records[-1]["accepted_steps"] = self._navigation_index
             if intent.action.kind != "idle":
                 self._denied_actions = 0
             if intent.action.direction:
@@ -1791,4 +1959,12 @@ class TaskRuntime:
             result["mission_sha256"] = self.mission.content_sha256
         if self._capability_state is not None:
             result["capabilities"] = self._capability_state.to_dict()
+        if self.platform_graphs:
+            result["navigation"] = {
+                "active_path": None
+                if self._navigation_path is None
+                else self._navigation_path.to_dict(),
+                "step_index": self._navigation_index,
+                "records": _document(self._navigation_records),
+            }
         return result

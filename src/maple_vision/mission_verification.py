@@ -2,13 +2,28 @@
 
 from typing import Any
 
+from .map_pack import MapPack
 from .mission_program import MissionProgram
 from .sim_types import SimSnapshot
 
 
 class MissionOracle:
-    def __init__(self, program: MissionProgram) -> None:
+    def __init__(self, program: MissionProgram, map_pack: MapPack | None = None) -> None:
         self.program = program
+        self.map_pack = map_pack
+        if any(stage.navigation is not None for stage in program.stages):
+            if type(map_pack) is not MapPack:
+                raise ValueError("navigation mission oracle requires its map pack")
+            for stage in program.stages:
+                if stage.navigation is None:
+                    continue
+                platforms = map_pack.get(stage.map_id).platforms
+                try:
+                    index = int(stage.navigation.target_platform.removeprefix("platform_"))
+                except ValueError as exc:
+                    raise ValueError("navigation target must name a map-pack platform") from exc
+                if not 0 <= index < len(platforms):
+                    raise ValueError("navigation target platform is outside the map pack")
         self.map_index = 0
         self.phase_index = 0
         self.witnesses: list[dict[str, Any]] = []
@@ -35,15 +50,29 @@ class MissionOracle:
             self.invalid_transition = True
             return
         phase = stage.phases[self.phase_index]
-        satisfied = {
-            "fight": not after.monsters,
-            "collect": not after.monsters and not after.drops,
-            "talk": "dialogue" in events and after.dialogue is not None,
-        }[phase]
-        if satisfied:
-            self.witnesses.append(
-                {"map_id": stage.map_id, "phase": phase, "sequence": after.sequence}
+        if phase == "navigate":
+            assert self.map_pack is not None and stage.navigation is not None
+            index = int(stage.navigation.target_platform.removeprefix("platform_"))
+            platform = self.map_pack.get(stage.map_id).platforms[index]
+            player = after.player
+            satisfied = (
+                player.grounded
+                and abs(player.y + player.h - platform.y) <= 1e-6
+                and player.x + player.w > platform.x1
+                and player.x < platform.x2
             )
+        else:
+            satisfied = {
+                "fight": not after.monsters,
+                "collect": not after.monsters and not after.drops,
+                "talk": "dialogue" in events and after.dialogue is not None,
+            }[phase]
+        if satisfied:
+            witness = {"map_id": stage.map_id, "phase": phase, "sequence": after.sequence}
+            if phase == "navigate":
+                assert stage.navigation is not None
+                witness["target_platform"] = stage.navigation.target_platform
+            self.witnesses.append(witness)
             self.phase_index += 1
             if self.phase_index == len(stage.phases) and self.map_index + 1 == len(
                 self.program.stages

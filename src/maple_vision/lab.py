@@ -23,6 +23,12 @@ from .class_package import MAX_CLASS_PACKAGE_BYTES, ClassPackage
 from .input_bindings import MAX_INPUT_BINDINGS_BYTES, InputBindingProfile
 from .map_pack import MapPack
 from .mission_verification import MissionOracle
+from .navigation_graph import (
+    MovementCapabilities,
+    PlatformGeometry,
+    PlatformGraph,
+    build_platform_graph,
+)
 from .onnx_detector import OnnxDetector
 from .profiles import LoadedClassProfile, parse_loaded_class_profile
 from .runtime_evidence import (
@@ -253,6 +259,38 @@ def _mission_requirements(map_pack: MapPack | None) -> tuple[tuple[str, ...], in
     return map_pack.map_ids, sum(len(item.monster_x) for item in map_pack.maps)
 
 
+def _mission_platform_graphs(
+    runtime: RuntimeConfig | None,
+    map_pack: MapPack | None,
+    class_spec: object,
+    step_ms: int,
+) -> dict[str, PlatformGraph]:
+    if runtime is None or runtime.mission is None:
+        return {}
+    stages = tuple(stage for stage in runtime.mission.stages if stage.navigation is not None)
+    if not stages:
+        return {}
+    if map_pack is None:
+        raise ValueError("navigation missions require an external map pack")
+    walk_speed = getattr(class_spec, "walk_speed", None)
+    jump_speed = getattr(class_spec, "jump_speed", None)
+    if type(walk_speed) is not int or type(jump_speed) is not int:
+        raise ValueError("navigation mission class lacks bounded movement capabilities")
+    graphs = {}
+    for stage in stages:
+        assert stage.navigation is not None
+        capabilities = MovementCapabilities(
+            walk_speed=walk_speed,
+            jump_speed=jump_speed,
+            step_ms=step_ms,
+            can_jump=stage.navigation.required_edge_kind != "ladder",
+        )
+        graphs[stage.map_id] = build_platform_graph(
+            PlatformGeometry.from_map_pack(map_pack, stage.map_id), capabilities
+        )
+    return graphs
+
+
 def _episode_budget(map_pack: MapPack | None, *, fault: bool = False) -> int:
     if map_pack is None:
         return 500 if fault else 1000
@@ -312,7 +350,7 @@ def _execute_episode(
     mission_oracle = None
     if runtime is not None and runtime.mission is not None:
         runtime.mission.bind_map_pack(map_pack)
-        mission_oracle = MissionOracle(runtime.mission)
+        mission_oracle = MissionOracle(runtime.mission, map_pack)
     markers = None if map_pack is None else map_pack.markers
     renderer = SceneRenderer(sprite_pack=sprite_pack, map_pack=map_pack, animation=animation)
     fault_frames = _Frames(config.fault)
@@ -325,6 +363,9 @@ def _execute_episode(
         PixelPerception(map_markers=markers)
         if detector is None
         else HybridPerception(detector, terrain_source=terrain_source, map_markers=markers)
+    )
+    platform_graphs = _mission_platform_graphs(
+        runtime, map_pack, simulator.class_spec, simulator.step_ms
     )
     policy: VisualAgent | TaskRuntime
     policy = (
@@ -344,6 +385,7 @@ def _execute_episode(
             }
             if map_pack is not None
             else None,
+            platform_graphs=platform_graphs,
             **({"capabilities": simulator.capabilities} if class_package is not None else {}),
         )
     )
@@ -833,7 +875,7 @@ def verify_run(output: Path) -> dict[str, Any]:
     mission_oracle = None
     if runtime is not None and runtime.mission is not None:
         runtime.mission.bind_map_pack(map_pack)
-        mission_oracle = MissionOracle(runtime.mission)
+        mission_oracle = MissionOracle(runtime.mission, map_pack)
     map_manifest_path = output / "map-pack.json"
     if map_pack is not None:
         if "map-pack.json" not in files:

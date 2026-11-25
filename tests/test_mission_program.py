@@ -5,9 +5,22 @@ from pathlib import Path
 
 import pytest
 
+from maple_vision.class_package import load_class_package
 from maple_vision.cli import main
-from maple_vision.lab import RunConfig, run_episode, verify_perception, verify_run
-from maple_vision.mission_program import MissionProgram, MissionStage, load_mission_program
+from maple_vision.input_bindings import load_input_profile
+from maple_vision.lab import (
+    CapabilityRunConfig,
+    RunConfig,
+    run_episode,
+    verify_perception,
+    verify_run,
+)
+from maple_vision.mission_program import (
+    MissionProgram,
+    MissionStage,
+    NavigationObjective,
+    load_mission_program,
+)
 from maple_vision.mission_verification import MissionOracle
 from maple_vision.runtime_pipeline import RuntimeConfig
 from maple_vision.sim_types import SimAction
@@ -42,6 +55,23 @@ def test_schema_route_and_configuration_boundaries():
         RuntimeConfig.from_dict(raw)
     with pytest.raises(ValueError):
         MissionProgram((program.stages[0], program.stages[0]))
+
+
+def test_navigation_mission_schema_is_explicit_and_backward_compatible():
+    legacy = MissionProgram((MissionStage("meadow", ("fight",)),))
+    assert legacy.to_dict() == {
+        "schema_version": 1,
+        "stages": [{"map_id": "meadow", "phases": ["fight"]}],
+    }
+    layered = MissionProgram(
+        (MissionStage("forest", ("navigate", "fight"), NavigationObjective("platform_1")),)
+    )
+    assert layered.to_dict()["schema_version"] == 2
+    assert MissionProgram.from_dict(layered.to_dict()) == layered
+    with pytest.raises(ValueError, match="requires"):
+        MissionStage("forest", ("navigate",))
+    with pytest.raises(ValueError, match="first"):
+        MissionStage("forest", ("fight", "navigate"), NavigationObjective("platform_1"))
 
 
 @pytest.mark.parametrize("job", ["assassin", "dragon_knight", "cleric"])
@@ -188,3 +218,77 @@ def test_two_forest_combat_drill(tmp_path, fault):
 
         assert abs(player_x(local[first_hit]) - player_x(local[0])) > 20
     assert verify_run(root)["verified"]
+
+
+def test_throwing_star_climbs_both_forest_maps_then_reacquires_and_attacks(tmp_path):
+    from maple_vision.map_pack import load_map_pack
+
+    program = load_mission_program(EXAMPLES / "missions/dead-forest-layered-hunt.json")
+    pack = load_map_pack(EXAMPLES / "maps/dead-forest-drill.json")
+    package = load_class_package(EXAMPLES / "classes/throwing_star.json")
+    profile = load_input_profile(EXAMPLES / "input-bindings/throwing-star.json")
+    root = tmp_path / "layered-star"
+    result = run_episode(
+        root,
+        CapabilityRunConfig(seed=17, job="throwing_star"),
+        map_pack=pack,
+        runtime=RuntimeConfig(mission=program),
+        class_package=package,
+        input_profile=profile,
+    )
+    assert result["status"] == "completed" and result["independent_goal_check"]
+    assert result["actions"]["climb"] == 32
+    assert result["actions"]["cast"] == 4
+    assert result["events"]["attack_hit"] == 8
+    assert result["events"]["monster_defeated"] == 2
+    assert result["input_dispatch_summary"] == {
+        "scope": "offline_simulated_skill_dispatch",
+        "attempts": 4,
+        "accepted": 4,
+        "denied": 0,
+        "reasons": {"bound_skill": 4},
+    }
+    assert json.loads((root / "final-state.json").read_text())["player"]["ammo"] == 192
+    witnesses = result["mission_evidence"]["witnesses"]
+    assert [(row["map_id"], row["phase"]) for row in witnesses] == [
+        ("drill_forest_1", "navigate"),
+        ("drill_forest_1", "fight"),
+        ("drill_forest_2", "navigate"),
+        ("drill_forest_2", "fight"),
+    ]
+    navigation = result["runtime_evidence"]["terminal"]["state"]["navigation"]["records"]
+    assert [row["status"] for row in navigation] == ["completed", "completed"]
+    assert [row["accepted_steps"] for row in navigation] == [41, 83]
+    assert all(row["ladder_edges"] == 1 and row["verification"]["verified"] for row in navigation)
+    assert verify_run(root)["verified"]
+    reinfer = verify_perception(root)
+    assert reinfer["verified"] and reinfer["frames_reinferred"] == 267
+
+
+def test_layered_throwing_star_rejects_wrong_skill_binding_after_climb(tmp_path):
+    from maple_vision.map_pack import load_map_pack
+
+    root = tmp_path / "wrong-binding"
+    result = run_episode(
+        root,
+        CapabilityRunConfig(seed=17, job="throwing_star"),
+        map_pack=load_map_pack(EXAMPLES / "maps/dead-forest-drill.json"),
+        runtime=RuntimeConfig(
+            mission=load_mission_program(EXAMPLES / "missions/dead-forest-layered-hunt.json")
+        ),
+        class_package=load_class_package(EXAMPLES / "classes/throwing_star.json"),
+        input_profile=load_input_profile(EXAMPLES / "input-bindings/spear-fighter.json"),
+    )
+    assert result["status"] == "failed" and result["reason"] == "combat_progress_timeout"
+    assert result["input_dispatch_summary"]["accepted"] == 0
+    assert result["input_dispatch_summary"]["denied"] == 12
+    assert result["events"].get("attack_hit", 0) == 0
+    assert result["mission_evidence"]["witnesses"] == [
+        {
+            "map_id": "drill_forest_1",
+            "phase": "navigate",
+            "sequence": 41,
+            "target_platform": "platform_1",
+        }
+    ]
+    assert verify_perception(root)["verified"]
