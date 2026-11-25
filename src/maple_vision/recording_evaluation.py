@@ -427,7 +427,42 @@ def measure_strike(
     """Measure a reviewer-selected cast window in the recording's native pixel space."""
     if output is not None and output.resolve().is_relative_to(recording.resolve()):
         raise ValueError("write evidence outside the recording")
-    case = _case(recording, labels, MAX_FRAMES)
+    report = _measure_strike_window(
+        _case(recording, labels, MAX_FRAMES),
+        start=start,
+        end=end,
+        player_index=player_index,
+        monster_index=monster_index,
+        level=level,
+        skill_id=skill_id,
+        weapon=weapon,
+        reviewer=reviewer,
+        facing=facing,
+        feedback=feedback,
+        feedback_frames=feedback_frames,
+        movement_frame=movement_frame,
+    )
+    if output is not None:
+        _write(output, report)
+    return report
+
+
+def _measure_strike_window(
+    case: Case,
+    *,
+    start: int,
+    end: int,
+    player_index: int,
+    monster_index: int,
+    level: int,
+    skill_id: str,
+    weapon: str,
+    reviewer: str,
+    facing: str,
+    feedback: str,
+    feedback_frames: Sequence[int] = (),
+    movement_frame: int | None = None,
+) -> dict[str, Any]:
     if (
         type(start) is not int
         or type(end) is not int
@@ -518,15 +553,13 @@ def measure_strike(
             "after_last_feedback_ms": movement["timestamp_ms"]
             - case.manifest["frames"][feedback_frames[-1]]["timestamp_ms"],
         }
-    if output is not None:
-        _write(output, report)
     return report
 
 
 def verify_strike(recording: Path, labels: Path, report_path: Path) -> dict[str, Any]:
     """Recompute source-derived fields while retaining the reviewer's selections."""
     raw, _ = _strike_report(report_path)
-    _verify_strike_source(recording, labels, raw)
+    _verify_strike_source(_case(recording, labels, MAX_FRAMES), raw)
     return {
         "source_fields_verified": True,
         "session_id": raw["session_id"],
@@ -535,12 +568,10 @@ def verify_strike(recording: Path, labels: Path, report_path: Path) -> dict[str,
     }
 
 
-def _verify_strike_source(recording: Path, labels: Path, raw: dict[str, Any]) -> None:
+def _verify_strike_source(case: Case, raw: dict[str, Any]) -> None:
     geometry = raw["start_geometry"]
-    measured = measure_strike(
-        recording,
-        labels,
-        None,
+    measured = _measure_strike_window(
+        case,
         start=raw["start"]["sequence"],
         end=raw["end"]["sequence"],
         player_index=geometry["player_index"],
@@ -708,8 +739,13 @@ def summarize_strikes(
     snapshots = [_strike_report(Path(path)) for path in reports]
     documents = [document for document, _ in snapshots]
     if sources is not None:
-        for document, (recording, labels) in zip(documents, sources, strict=True):
-            _verify_strike_source(recording, labels, document)
+        by_source: dict[tuple[Path, Path], list[dict[str, Any]]] = {}
+        for source, document in zip(sources, documents, strict=True):
+            by_source.setdefault(source, []).append(document)
+        for (recording, labels), windows in by_source.items():
+            case = _case(recording, labels, MAX_FRAMES)
+            for window in windows:
+                _verify_strike_source(case, window)
     identity = tuple(documents[0][key] for key in ("domain", "skill_id", "level", "weapon"))
     frame_size = documents[0]["source_frame_size"]
     if any(

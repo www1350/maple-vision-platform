@@ -1,9 +1,11 @@
 import hashlib
 import json
+from unittest.mock import patch
 
 import pytest
 from PIL import Image, ImageDraw
 
+from maple_vision import recording_evaluation
 from maple_vision.cli import main
 from maple_vision.contracts import Detection
 from maple_vision.recording_evaluation import (
@@ -603,7 +605,9 @@ def test_source_verified_intervals_pair_only_ordered_onsets_in_one_session(tmp_p
     args = ["recording", "summarize-strikes", "--output", str(output)]
     for recording, labels, report in reversed(cases):
         args.extend(["--verified-case", str(recording), str(labels), str(report)])
-    assert main(args) == 0
+    with patch.object(recording_evaluation, "_case", wraps=recording_evaluation._case) as verify:
+        assert main(args) == 0
+        assert verify.call_count == 2
     summary = json.loads(output.read_bytes())
     intervals = summary["reviewed_onset_intervals"]
     assert summary["source_fields_verified"] == 3 and intervals["count"] == 1
