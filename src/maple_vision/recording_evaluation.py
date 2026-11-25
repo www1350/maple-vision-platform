@@ -421,6 +421,7 @@ def measure_strike(
     reviewer: str,
     facing: str,
     feedback: str,
+    feedback_frames: Sequence[int] = (),
 ) -> dict[str, Any]:
     """Measure a reviewer-selected cast window in the recording's native pixel space."""
     if output.resolve().is_relative_to(recording.resolve()):
@@ -436,6 +437,14 @@ def measure_strike(
         raise ValueError("invalid skill level or facing")
     if feedback not in ("damage_visible", "miss_text_visible", "no_feedback"):
         raise ValueError("invalid feedback category")
+    if (
+        not isinstance(feedback_frames, (list, tuple))
+        or len(feedback_frames) > 16
+        or any(type(index) is not int or not start <= index <= end for index in feedback_frames)
+        or list(feedback_frames) != sorted(set(feedback_frames))
+        or (feedback == "no_feedback" and feedback_frames)
+    ):
+        raise ValueError("invalid reviewed feedback frame sequence")
     map_id, objects, occluded = case.annotations[start]
     if any(entry[0] != map_id for entry in case.annotations[start : end + 1]):
         raise ValueError("strike interval crosses a reviewed map change")
@@ -450,7 +459,7 @@ def measure_strike(
     first, last = (case.manifest["frames"][i] for i in (start, end))
     sign = 1 if facing == "right" else -1
     report = {
-        "schema_version": 1,
+        "schema_version": 2 if feedback_frames else 1,
         "kind": "reviewed_strike_window",
         "session_id": case.manifest["session_id"],
         "domain": case.domain,
@@ -480,6 +489,20 @@ def measure_strike(
             "horizontal_edge_gap_px": max(0, p[0] - m[2], m[0] - p[2]),
         },
     }
+    if feedback_frames:
+        previous_ms: int | None = None
+        report["feedback_frames"] = []
+        for index in feedback_frames:
+            frame = case.manifest["frames"][index]
+            timestamp_ms = frame["timestamp_ms"]
+            report["feedback_frames"].append(
+                {
+                    **{key: frame[key] for key in ("sequence", "timestamp_ms", "rgb_sha256")},
+                    "offset_ms": timestamp_ms - first["timestamp_ms"],
+                    "gap_ms": None if previous_ms is None else timestamp_ms - previous_ms,
+                }
+            )
+            previous_ms = timestamp_ms
     _write(output, report)
     return report
 
@@ -507,9 +530,11 @@ def _strike_report(path: Path) -> dict[str, Any]:
         "source_frame_size",
         "start_geometry",
     }
+    if isinstance(raw, dict) and raw.get("schema_version") == 2:
+        required.add("feedback_frames")
     if not isinstance(raw, dict) or set(raw) != required:
         raise ValueError("invalid strike report schema")
-    if raw["schema_version"] != 1 or raw["kind"] != "reviewed_strike_window":
+    if raw["schema_version"] not in (1, 2) or raw["kind"] != "reviewed_strike_window":
         raise ValueError("unsupported strike report")
     if raw["domain"] not in ("authored_fixture", "game_recording"):
         raise ValueError("invalid strike report domain")
@@ -553,6 +578,46 @@ def _strike_report(path: Path) -> dict[str, Any]:
             raise ValueError("invalid strike frame timing")
         if not isinstance(frame["rgb_sha256"], str) or len(frame["rgb_sha256"]) != 64:
             raise ValueError("invalid strike frame hash")
+    if raw["schema_version"] == 2:
+        frames = raw["feedback_frames"]
+        if (
+            not isinstance(frames, list)
+            or not 1 <= len(frames) <= 16
+            or raw["reviewed_feedback"] == "no_feedback"
+        ):
+            raise ValueError("invalid strike feedback frames")
+        previous_ms: int | None = None
+        previous_sequence: int | None = None
+        for frame in frames:
+            if not isinstance(frame, dict) or set(frame) != {
+                "sequence",
+                "timestamp_ms",
+                "rgb_sha256",
+                "offset_ms",
+                "gap_ms",
+            }:
+                raise ValueError("invalid strike feedback frame")
+            sequence, timestamp = frame["sequence"], frame["timestamp_ms"]
+            if (
+                type(sequence) is not int
+                or type(timestamp) is not int
+                or type(frame["offset_ms"]) is not int
+                or not isinstance(frame["rgb_sha256"], str)
+                or len(frame["rgb_sha256"]) != 64
+                or not raw["start"]["sequence"] <= sequence <= raw["end"]["sequence"]
+                or not raw["start"]["timestamp_ms"] <= timestamp <= raw["end"]["timestamp_ms"]
+                or frame["offset_ms"] != timestamp - raw["start"]["timestamp_ms"]
+                or (previous_sequence is not None and sequence <= previous_sequence)
+                or (previous_ms is not None and timestamp < previous_ms)
+            ):
+                raise ValueError("invalid strike feedback frame identity or timing")
+            expected_gap = None if previous_ms is None else timestamp - previous_ms
+            if (expected_gap is None and frame["gap_ms"] is not None) or (
+                expected_gap is not None
+                and (type(frame["gap_ms"]) is not int or frame["gap_ms"] != expected_gap)
+            ):
+                raise ValueError("invalid strike feedback gap")
+            previous_sequence, previous_ms = sequence, timestamp
     return raw
 
 
@@ -602,8 +667,9 @@ def summarize_strikes(reports: Sequence[Path], output: Path) -> dict[str, Any]:
         feedback: metrics([item for item in documents if item["reviewed_feedback"] == feedback])
         for feedback in ("damage_visible", "miss_text_visible", "no_feedback")
     }
+    sequenced = [item for item in documents if item["schema_version"] == 2]
     report = {
-        "schema_version": 1,
+        "schema_version": 2 if sequenced else 1,
         "kind": "reviewed_strike_summary",
         "domain": identity[0],
         "skill_id": identity[1],
@@ -642,5 +708,31 @@ def summarize_strikes(reports: Sequence[Path], output: Path) -> dict[str, Any]:
             for path in reports
         ],
     }
+    if sequenced:
+        counts = [len(item["feedback_frames"]) for item in sequenced]
+        first_offsets = [item["feedback_frames"][0]["offset_ms"] for item in sequenced]
+        gaps = [frame["gap_ms"] for item in sequenced for frame in item["feedback_frames"][1:]]
+        report["feedback_sequences"] = {
+            "observations": len(sequenced),
+            "event_count_distribution": {
+                str(count): counts.count(count) for count in sorted(set(counts))
+            },
+            "first_feedback_offset_ms": {
+                "min": min(first_offsets),
+                "median": statistics.median(first_offsets),
+                "max": max(first_offsets),
+            },
+            "inter_feedback_gap_ms": {
+                "observations": len(gaps),
+                "min": min(gaps) if gaps else None,
+                "median": statistics.median(gaps) if gaps else None,
+                "max": max(gaps) if gaps else None,
+            },
+            "calibrated_timing": False,
+        }
+        report["limitations"].append(
+            "reviewed feedback frames are visible event evidence, not guaranteed "
+            "one-to-one hit packets"
+        )
     _write(output, report)
     return report

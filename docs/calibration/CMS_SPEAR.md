@@ -20,10 +20,10 @@
 先导入原录像并逐帧填写地图和对象标注。在施放动作首次可见的帧中选定角色和目标，索引为该帧 objects 数组的零基下标。再指定第一条可归因的反馈所在帧；如观察期内无反馈，填写观察截止帧和 no_feedback。以下序号仅演示参数格式。
 
 ```bash
-python -m maple_vision recording measure-strike SESSION LABELS REPORT --start 15 --end 22 --player-index 0 --monster-index 1 --skill-id 1311001 --level 30 --weapon spear --facing right --feedback damage_visible --reviewer reviewer-id
+python -m maple_vision recording measure-strike SESSION LABELS REPORT --start 15 --end 22 --player-index 0 --monster-index 1 --skill-id 1311001 --level 30 --weapon spear --facing right --feedback damage_visible --feedback-frame 18 --feedback-frame 20 --feedback-frame 22 --reviewer reviewer-id
 ```
 
-报告将录像会话、标注摘要、首尾帧哈希、时间基准和观察者绑定在一起。距离按起始帧原图像素计算，前向中心差为负表示目标在身后；纵向中心差向下为正。观察区间从可见动作起算，不含物理按键至画面响应的延迟。伤害数字的归属需要人工核对。出现 MISS 可能是命中率判定，无反馈也可能源于遮挡，单次样本无法给出射程边界。
+报告将录像会话、标注摘要、首尾帧哈希、时间基准和观察者绑定在一起。距离按起始帧原图像素计算，前向中心差为负表示目标在身后；纵向中心差向下为正。`--feedback-frame` 可重复 1–16 次，必须按时间严格递增且落在观察窗口内；报告保留每次可见反馈的原帧哈希、距动作起始的毫秒数和相邻反馈间隔。`no_feedback` 禁止同时填写反馈帧。观察区间从可见动作起算，不含物理按键至画面响应的延迟。伤害数字的归属需要人工核对；同一伤害数字持续多帧不能重复标成多段。出现 MISS 可能是命中率判定，无反馈也可能源于遮挡，单次样本无法给出射程边界。
 
 多条报告可在同一领域、技能等级、武器和原图尺寸下汇总：
 
@@ -31,4 +31,4 @@ python -m maple_vision recording measure-strike SESSION LABELS REPORT --start 15
 python -m maple_vision recording summarize-strikes --report HIT-1.json --report HIT-2.json --report MISS.json --output SUMMARY.json
 ```
 
-汇总分别报告可见伤害、MISS 和无反馈样本的原图距离与观察时间分布，并按左右朝向拆分。最远可见伤害只记为“已观察到的命中距离下界”。MISS 可能来自命中率，无反馈可能来自遮挡或归因错误，因此报告不会生成射程上界，也不会宣布已完成射程校准。重复录像区间、不同技能等级、武器或画面尺寸会被拒绝。
+汇总分别报告可见伤害、MISS 和无反馈样本的原图距离与观察时间分布，并按左右朝向拆分。含反馈序列时另列可见事件数分布、首次反馈偏移和相邻反馈间隔，但固定保持 `calibrated_timing=false`：可见反馈不保证与真实伤害段一一对应。最远可见伤害只记为“已观察到的命中距离下界”。MISS 可能来自命中率，无反馈可能来自遮挡或归因错误，因此报告不会生成射程上界，也不会宣布已完成射程校准。重复录像区间、不同技能等级、武器或画面尺寸会被拒绝。
