@@ -155,6 +155,9 @@ def _reviewed_event_document(
         "timebase": manifest["timebase"],
         "video_clock": manifest.get("video_clock"),
     }
+    if "source_start_frame" in manifest:
+        source["source_start_frame"] = manifest["source_start_frame"]
+        source["source_end_frame"] = manifest["source_start_frame"] + manifest["frame_count"] - 1
     return {
         "schema_version": 1,
         "kind": "reviewed_recording_events",
@@ -167,7 +170,12 @@ def _reviewed_event_document(
             "temporal overlap does not establish that one visible event caused another",
             "attack and projectile observations do not identify a skill without separate evidence",
             "a truncated imported session does not describe unimported source frames",
-        ],
+        ]
+        + (
+            ["sequence and timestamp intervals are local to this imported source-frame window"]
+            if "source_start_frame" in manifest
+            else []
+        ),
     }
 
 

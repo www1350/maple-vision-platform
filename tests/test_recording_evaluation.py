@@ -327,6 +327,47 @@ def test_sparse_visible_event_review_is_source_bound_and_noncausal(tmp_path):
     assert main(invalid) == 2 and not output.exists()
 
 
+def test_windowed_visible_event_report_names_its_source_frame_range(tmp_path):
+    source = tmp_path / "window-source"
+    source.mkdir()
+    for index in range(3):
+        Image.new("RGB", (32, 24), (index, index, index)).save(source / f"{index}.png")
+    recording = tmp_path / "window-recording"
+    import_recording(
+        source,
+        recording,
+        source_uri="urn:self:window",
+        permission="self_authored",
+        license="CC0",
+        fps=12,
+        start_frame=1,
+        max_frames=2,
+    )
+    output = tmp_path / "window-events.json"
+    assert (
+        main(
+            [
+                "recording",
+                "review-events",
+                str(recording),
+                str(output),
+                "--reviewer",
+                "tester",
+                "--event",
+                "damage_feedback_visible",
+                "0",
+                "1",
+            ]
+        )
+        == 0
+    )
+    report = json.loads(output.read_bytes())
+    assert report["source"]["source_start_frame"] == 1
+    assert report["source"]["source_end_frame"] == 2
+    assert any("local to this imported" in item for item in report["limitations"])
+    assert main(["recording", "verify-events", str(recording), str(output)]) == 0
+
+
 def test_measure_reviewed_strike_preserves_distinct_feedback_frame_timing(tmp_path):
     session, labels = case(tmp_path, "forest")
     data = json.loads(labels.read_text())
