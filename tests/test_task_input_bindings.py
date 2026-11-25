@@ -10,7 +10,7 @@ import pytest
 from maple_vision.class_package import load_class_package
 from maple_vision.cli import main
 from maple_vision.failure_bundle import export_failure_bundle, verify_failure_bundle
-from maple_vision.input_bindings import InputBindingProfile, KeyBinding
+from maple_vision.input_bindings import InputBindingProfile, KeyBinding, load_input_profile
 from maple_vision.lab import (
     CapabilityRunConfig,
     RunConfig,
@@ -22,6 +22,7 @@ from maple_vision.map_pack import load_map_pack
 from maple_vision.mission_program import load_mission_program
 from maple_vision.runtime_pipeline import RuntimeConfig
 from maple_vision.sim_types import SimAction
+from maple_vision.simulation import Simulator
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
 
@@ -228,3 +229,41 @@ def test_cli_loads_the_same_bounded_profile_and_rejects_invalid_files(tmp_path, 
     invalid_args[invalid_args.index(str(invalid))] = str(oversized)
     assert main(invalid_args) == 2 and not invalid_output.exists()
     assert "exceeds byte budget" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("map_id", ["drill_forest_1", "drill_forest_2"])
+@pytest.mark.parametrize("facing", [-1, 1], ids=["left", "right"])
+@pytest.mark.parametrize(
+    ("forward_px", "on_platform", "hit_count"),
+    [(57, False, 3), (58, False, 3), (59, False, 0), (-1, False, 0), (30, True, 0)],
+    ids=["inside", "limit", "outside", "behind", "upper-platform"],
+)
+def test_synthetic_keyed_spear_range_on_each_map(
+    map_id, facing, forward_px, on_platform, hit_count
+):
+    pack = load_map_pack(EXAMPLES / "maps/dead-forest-drill.json")
+    package = load_class_package(EXAMPLES / "classes/spear_fighter.json")
+    bindings = load_input_profile(EXAMPLES / "input-bindings/spear-fighter.json")
+    sim = Simulator(
+        seed=17, job=package.class_id, class_package=package, map_pack=pack, map_id=map_id
+    )
+    before = sim.snapshot()
+    state = sim.save()
+    player_x = 100
+    platform = before.platforms[1] if on_platform else before.platforms[0]
+    state["player"].update(x=player_x, y=platform.y - before.player.h, facing=facing)
+    target = state["maps"][map_id]["monsters"][0]
+    target["x"] = player_x + (before.player.w - before.monsters[0].w) / 2 + facing * forward_px
+    target["hp"] = target["max_hp"] = 100
+    sim = Simulator.restore(state)
+    before = sim.snapshot()
+    skill, action = bindings.action_for_key("S", package.class_id, package)
+    assert skill == "triple_thrust" and action is not None
+    cast = sim.step(action)
+    assert cast.accepted and cast.events.count("cast") == 1
+    assert cast.events.count("attack_hit") == hit_count
+    assert before.monsters[0].hp - cast.snapshot.monsters[0].hp == 12 * hit_count
+    assert before.player.mp - cast.snapshot.player.mp == 7
+    retry = sim.step(action)
+    assert not retry.accepted and retry.reason == "capability_cooldown"
+    assert retry.snapshot.player.mp == cast.snapshot.player.mp
