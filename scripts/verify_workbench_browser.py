@@ -109,7 +109,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
             profile = load_input_profile(exported)
             assert profile.profile_id == "示例区 / 一号"
             assert [(item.skill, item.key) for item in profile.bindings] == [("示例技能", "Ctrl")]
-        page.fill("#keys-list", "示例技能 = Ctrl\n跳跃 = CTRL")
+        page.fill("#keys-list", "示例技能 = Ctrl\n跳跃 = Control")
         page.locator("#keys-form button[type=submit]").click()
         expect(page.locator("#keys-status")).to_contain_text("出现了两次")
         page.fill("#keys-character", "示例区 / 二号")
@@ -120,6 +120,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
         expect(page.locator("#keys-list")).to_have_value("示例技能 = Ctrl")
         page.fill("#keys-list", "模拟范围攻击 = A")
         page.locator("#keys-form button[type=submit]").click()
+        expect(page.locator("#keys-status")).to_contain_text("保存 1 项")
         page.click('[data-view="runs"]')
         page.select_option("#run-kind", "run")
         page.select_option("#class-select", "dragon_knight")
@@ -141,6 +142,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
         page.click('[data-view="keys"]')
         page.fill("#keys-list", "模拟范围攻击 = S")
         page.locator("#keys-form button[type=submit]").click()
+        expect(page.locator("#keys-status")).to_contain_text("保存 1 项")
         page.click('[data-view="simulator"]')
         page.click("#sim-key")
         page.locator("#sim-key").press("a")

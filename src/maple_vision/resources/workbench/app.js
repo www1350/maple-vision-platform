@@ -336,12 +336,18 @@ bind("keys-image-file", "change", () => {
   el("keys-image").src = URL.createObjectURL(file);
   show("keys-image", true);
 });
-bind("keys-form", "submit", () => {
+let keyEditRevision = 0;
+for (const id of ["keys-list", "keys-character"]) {
+  el(id).addEventListener("input", () => { keyEditRevision++; });
+}
+bind("keys-form", "submit", async () => {
+  const revision = ++keyEditRevision;
+  const profile = el("keys-character").value.trim();
   const lines = el("keys-list").value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
   if (!el("keys-character").value.trim()) {
     text("keys-status", "请填写区服和角色。"); return;
   }
-  const keys = new Set(), skills = new Set();
+  const bindings = [];
   const result = [];
   for (const line of lines) {
     const split = line.indexOf("=");
@@ -349,14 +355,23 @@ bind("keys-form", "submit", () => {
     if (split < 1 || !skill || !key) {
       text("keys-status", "请按「技能名 = 键位」逐行填写。"); return;
     }
-    const normalized = key.normalize("NFKC").toLowerCase().replace(/\s+/g, "");
-    const normalizedSkill = skill.normalize("NFKC").toLowerCase().trim();
-    if (keys.has(normalized)) { text("keys-status", "同一个键位出现了两次，请核对。"); return; }
-    if (skills.has(normalizedSkill)) { text("keys-status", "同一个技能出现了两次，请核对。"); return; }
-    keys.add(normalized);
-    skills.add(normalizedSkill);
+    bindings.push({key, skill});
     result.push(skill + " = " + key);
   }
+  if (bindings.length) {
+    try {
+      await api("input-profile", {schema_version:1, profile_id:profile, bindings});
+    } catch (error) {
+      if (revision !== keyEditRevision) return;
+      const messages = {
+        "input profile contains duplicate normalized keys":"同一个键位出现了两次，请核对。",
+        "input profile contains duplicate normalized skills":"同一个技能出现了两次，请核对。"
+      };
+      text("keys-status", messages[error.message] || "键位未保存：" + error.message);
+      return;
+    }
+  }
+  if (revision !== keyEditRevision) return;
   localStorage.setItem(keyProfileId(), result.join("\n"));
   text("keys-status", "已确认并保存 " + result.length + " 项绑定。");
 });
