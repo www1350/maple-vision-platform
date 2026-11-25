@@ -102,6 +102,11 @@ def verify(url: str, executable: str) -> dict[str, object]:
         expect(page.locator("#recording-event-status")).to_contain_text("攻击动作可见")
         page.click("#recording-event-prev")
         expect(page.locator("#recording-frame-caption")).to_contain_text("源帧 1")
+        page.click('[data-view="trial"]')
+        expect(page.locator("#trial-status")).to_have_text("四栏已复验")
+        expect(page.locator("#trial-lanes .content-group")).to_have_count(4)
+        expect(page.locator("#trial-json")).to_contain_text('"raw_pixels_reverified": false')
+        expect(page.locator("#trial-json")).to_contain_text('"wrong_profile_denials": 12')
         page.click('[data-view="runs"]')
         page.select_option("#class-select", "archer")
         page.select_option("#map-select", "three-map-fixture")
@@ -269,6 +274,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
             "confirmed_profile_export_loaded": True,
             "local_key_image_preview_and_clear": True,
             "read_only_recording_replay": True,
+            "separated_trial_evidence_lanes": 4,
             "mobile_width": 390,
             "horizontal_overflow": overflow,
             "page_errors": errors,
@@ -312,6 +318,7 @@ def main() -> None:
             probe.bind(("127.0.0.1", 0))
             port = probe.getsockname()[1]
         url = f"http://127.0.0.1:{port}"
+        repository = Path(__file__).resolve().parents[1]
         with subprocess.Popen(
             [
                 sys.executable,
@@ -328,6 +335,10 @@ def main() -> None:
                 str(event_reports),
                 "--recording-coverage",
                 str(coverage),
+                "--trial-evidence-root",
+                str(repository),
+                "--trial-evidence-ledger",
+                str(repository / "reports/release-0.10.0/throwing-star-trial-evidence-ledger.json"),
                 "--port",
                 str(port),
             ]

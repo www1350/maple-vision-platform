@@ -23,6 +23,7 @@ from .recording_evaluation import (
 )
 from .recordings import _load_frame, _validated_manifest
 from .sim_types import SimAction
+from .trial_evidence import verify_trial_evidence
 from .workbench import Conflict, Workbench
 
 Identifier = Annotated[str, Field(pattern=r"^[0-9a-f]{32}$")]
@@ -322,7 +323,12 @@ def create_app(
     recordings: Path | None = None,
     recording_events: Path | None = None,
     recording_coverages: Sequence[Path] | None = None,
+    trial_evidence_root: Path | None = None,
+    trial_evidence_ledger: Path | None = None,
 ) -> FastAPI:
+    if (trial_evidence_root is None) != (trial_evidence_ledger is None):
+        raise ValueError("trial evidence root and ledger must be supplied together")
+
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         manager = Workbench(root, examples)
@@ -330,6 +336,11 @@ def create_app(
         app.state.recordings = _recording_catalog(recordings, recording_events)
         app.state.recording_coverages = _recording_coverages(
             app.state.recordings, recording_coverages
+        )
+        app.state.trial_evidence = (
+            None
+            if trial_evidence_root is None or trial_evidence_ledger is None
+            else verify_trial_evidence(trial_evidence_ledger, trial_evidence_root)
         )
         try:
             yield
@@ -454,6 +465,11 @@ def create_app(
             "faults": list(FAULTS),
             "scope": "synthetic_fixture",
         }
+
+    @api.get("/api/trial-evidence")
+    def trial_evidence() -> dict[str, Any]:
+        result: dict[str, Any] | None = api.state.trial_evidence
+        return {"configured": False} if result is None else {"configured": True, **result}
 
     @api.get("/api/recordings")
     def recording_sessions() -> list[dict[str, Any]]:
