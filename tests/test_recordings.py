@@ -267,3 +267,90 @@ def test_real_local_mp4_decode(tmp_path, monkeypatch):
     assert frames[0].pixels[0] > 200 and frames[0].pixels[1] < 20
     assert os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] == "protocol_whitelist;file"
     path.unlink()  # capture released; Windows must not retain a decoder file handle.
+
+
+@pytest.fixture
+def variable_rate_mp4(tmp_path):
+    from fractions import Fraction
+
+    av = pytest.importorskip("av")
+    path = tmp_path / "variable.mp4"
+    clock = Fraction(1, 1000)
+    with av.open(str(path), "w", format="mp4") as writer:
+        stream = writer.add_stream("mpeg4", rate=25)
+        stream.width, stream.height = 64, 48
+        stream.pix_fmt = "yuv420p"
+        stream.codec_context.time_base = clock
+        for pts, shade in [(140, 20), (180, 75), (300, 130), (520, 200)]:
+            frame = av.VideoFrame.from_image(Image.new("RGB", (64, 48), (shade,) * 3))
+            frame.pts, frame.time_base = pts, clock
+            for packet in stream.encode(frame):
+                writer.mux(packet)
+        for packet in stream.encode():
+            writer.mux(packet)
+    return path
+
+
+@pytest.mark.parametrize("maximum,expected", [(3, [0, 40, 160]), (4, [0, 40, 160, 380])])
+def test_exact_pts_come_from_the_same_decoded_frame(variable_rate_mp4, tmp_path, maximum, expected):
+    from fractions import Fraction
+
+    from maple_vision.cli import main
+
+    output = tmp_path / "exact"
+    assert (
+        main(
+            [
+                "recording",
+                "import",
+                str(variable_rate_mp4),
+                str(output),
+                "--source-uri",
+                "urn:self:vfr",
+                "--permission",
+                "self_authored",
+                "--license",
+                "CC0",
+                "--presentation-time",
+                "--max-frames",
+                str(maximum),
+            ]
+        )
+        == 0
+    )
+    result = validate_recording(output)
+    assert result["timing_accuracy"] == "source_pts" and result["fps"] is None
+    assert result["truncated"] == (maximum < 4)
+    manifest = json.loads((output / "manifest.json").read_bytes())
+    info = manifest["video_clock"]
+    unit = Fraction(info["numerator"], info["denominator"])
+    origin = manifest["frames"][0]["pts"]
+    assert origin * unit == Fraction(14, 100)
+    assert [(f["pts"] - origin) * unit * 1000 for f in manifest["frames"]] == expected
+    frames = list(iter_recording(output))
+    assert [f.timestamp_ms for f in frames] == expected
+    for frame, shade in zip(frames, [20, 75, 130, 200][:maximum], strict=True):
+        assert abs(frame.pixels[0] - shade) <= 4
+
+
+@pytest.mark.parametrize(
+    "edit",
+    [
+        lambda d: d["frames"][1].update(pts=d["frames"][0]["pts"]),
+        lambda d: d["frames"][2].update(timestamp_ms=80),
+        lambda d: d["video_clock"].update(denominator=0),
+        lambda d: d.update(timebase="nominal_fps_user"),
+    ],
+)
+def test_inconsistent_exact_timeline_fails_after_rehash(variable_rate_mp4, tmp_path, edit):
+    output = tmp_path / "exact"
+    ingest(variable_rate_mp4, output, fps=None, presentation_time=True)
+    modify_manifest(output, edit)
+    with pytest.raises(ValueError):
+        validate_recording(output)
+
+
+def test_pts_rejects_a_directory_or_fps_override(source, tmp_path):
+    with pytest.raises(ValueError, match="without an fps override"):
+        ingest(source, tmp_path / "out", presentation_time=True)
+    assert not (tmp_path / "out").exists()

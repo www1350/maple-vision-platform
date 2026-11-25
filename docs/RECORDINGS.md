@@ -54,7 +54,16 @@ MP4 解码依赖可选的 OpenCV/FFmpeg 后端。入口检查普通本地文件�
 
 `fps=None` 时读取视频元数据 FPS；明确传入 fps 时采用调用方声明的时间基准。fps 不是抽帧频率：本入口保留连续的前 `max_frames` 个可解码帧。输出每帧仍记录其来源帧序号，避免将遗漏帧虚构为完整录像。
 
-**当前时间戳是恒定帧率估算，不是原始逐帧 PTS。** 对可变帧率视频不能据此测量精确技能时序；报告明确标记 `timing_accuracy=nominal_fps_only`。视频解码器返回停止时，记录 `decoder_stopped`；这一信号本身不区分文件结束和解码中断，元数据中的帧数只作为提示，不冒充实际完整性证明。`truncated=true` 特指已确认还有后续帧、但达到本次帧数上限的情况。
+默认导入按恒定帧率估算毫秒时间，报告标记 `timing_accuracy=nominal_fps_only`。对可变帧率 MP4，安装精确时序扩展并显式选用原视频时钟。
+
+```bash
+python -m pip install -e ".[video-pts]"
+python -m maple_vision recording import sample.mp4 artifacts/pts-session --source-uri urn:local:sample --permission explicit_permission --license "owner-approved local analysis" --presentation-time
+```
+
+该模式读取第一路视频流。每一帧的 RGB 和显示时间戳取自同一解码帧。schema2 的 `video_clock` 保存流编号及有理数时基，每帧保存原始整数 `pts`。时间间隔等于两帧 PTS 差乘以时基，单位为秒。界面与旧接口使用从第一帧开始、舍入至毫秒的时间。缺失或倒序的时间戳会中止导入，完整校验后才发布目录。变帧率回归的四帧相对时间为 0、40、160、380 毫秒，测试也核对了对应画面和原始起点。报告标记 `timing_accuracy=source_pts`。旧 schema1 录像仍按其保存的恒定帧率读取。
+
+视频解码器返回停止时，记录 `decoder_stopped`；这一信号本身不区分文件结束和解码中断，元数据中的帧数只作为提示，不冒充实际完整性证明。`truncated=true` 特指已确认还有后续帧、但达到本次帧数上限的情况。
 
 ### 大小限制
 
@@ -139,3 +148,25 @@ python -m pytest -q tests/test_recordings.py tests/test_ocr.py
 ```
 
 未安装可选 MP4 解码器或 Tesseract 的环境会明确跳过相应真实引擎 smoke；纯接口和边界测试继续运行。跳过不是引擎准确率通过。
+
+## 逐帧标注与评测
+
+先用上面的导入命令建立录像会话，再生成与原始画面绑定的空白标注表。保留输入录像，只在单独的 JSON 文件中编辑标注。
+
+```bash
+python -m maple_vision recording label-template artifacts/recording-session artifacts/session-labels.json
+```
+
+填写顶层的 `reviewer` 和 `domain`。自写样例填 `authored_fixture`，有使用许可的游戏实录填 `game_recording`。每帧保留 `sequence` 和 `rgb_sha256`，填写 `map_id` 与 `objects`。类别清单为 player、monster、loot、portal、npc、platform、ladder。以下是一个物体的标注，下标为原始画面的像素坐标，右、下边界不含在框内。确认没有目标的帧填空数组，尚未审过的帧保留 null 会阻止出分。
+
+```json
+{"class_id":"monster","bbox":[60,50,70,60],"occluded":true}
+```
+
+```bash
+python -m maple_vision recording benchmark --case artifacts/recording-session artifacts/session-labels.json --output artifacts/recording-score.json --model examples/lifecycle-model/model.onnx --manifest examples/lifecycle-model/manifest.json
+```
+
+可以重复传入 `--case` 汇总同一来源类型的不同会话。可重复指定 `--development-dataset DATASET`，逐张检查该数据集 train/val 与录像的解码 RGB 是否完全相同，重编码为 PNG 仍能查出。近似画面、其它训练集以及同地图的泄漏需要另外核对。报告记录指定数据集的摘要和实际检查帧数。输出文件采用独占创建，一个路径只能承载一次结果。
+
+每个会话和地图分别报告 IoU 0.50 下的 TP、FP、FN 及逐类指标。汇总 AP 使用固定分数阈值后的 101 点精度包络，按有真值的类别求均值，IoU 从 0.50 至 0.95，间隔 0.05。默认分数阈值是 0.25。遮挡对象由标注人逐个声明，小目标为原画面积小于 32×32 像素的目标。分母为零时召回值为 null。耗时覆盖本次检测器逐帧调用，包括首次调用。报告仅评估固定画面上的目标检测。真实国服识别率仍需要独立标注的实录。

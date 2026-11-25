@@ -7,10 +7,7 @@ captured in JSON. It contains no executable SQL or filesystem destinations.
 from __future__ import annotations
 
 import hashlib
-import os
 import sqlite3
-import stat
-import tempfile
 import time
 from collections.abc import Iterator
 from contextlib import closing, contextmanager
@@ -38,6 +35,7 @@ from .catalog import (
     validate_provenance,
 )
 from .knowledge import _normalized_sql
+from .local_files import publish_new, read_regular
 
 PLAN_SCHEMA_VERSION = 1
 ADAPTER_ID = "local_catalog_json_v1"
@@ -99,21 +97,6 @@ def _source_name(value: object) -> str:
     ):
         raise ValueError("source name must be a plain file name, never a path")
     return value
-
-
-def _read_regular(path: Path, limit: int, label: str) -> bytes:
-    if path.is_symlink() or not path.is_file():
-        raise ValueError(f"{label} must be an existing regular file, not a symlink")
-    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
-    descriptor = os.open(path, flags)
-    with os.fdopen(descriptor, "rb") as stream:
-        metadata = os.fstat(stream.fileno())
-        if not stat.S_ISREG(metadata.st_mode) or metadata.st_size > limit:
-            raise ValueError(f"{label} exceeds its size limit or is not a regular file")
-        data = stream.read(limit + 1)
-    if len(data) > limit:
-        raise ValueError(f"{label} exceeds its size limit")
-    return data
 
 
 def _parse_export(data: bytes) -> tuple[CatalogRecord, ...]:
@@ -180,7 +163,7 @@ class LocalExportSource:
     def read(self) -> SourceSnapshot:
         path = Path(self.path)
         name = _source_name(path.name)
-        content = _read_regular(path, MAX_IMPORT_BYTES, "knowledge export")
+        content = read_regular(path, MAX_IMPORT_BYTES, "knowledge export")
         return SourceSnapshot(name, content, _parse_export(content))
 
 
@@ -512,24 +495,6 @@ def _plan_document(
     return document, expected
 
 
-def _publish_plan(path: Path, data: bytes) -> None:
-    if len(data) > MAX_PLAN_BYTES:
-        raise ValueError("sync plan exceeds 256 MiB")
-    if path.exists() or path.is_symlink():
-        raise FileExistsError(f"plan already exists: {path}")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, temporary = tempfile.mkstemp(prefix=".knowledge-plan-", dir=path.parent)
-    stage = Path(temporary)
-    try:
-        with os.fdopen(descriptor, "wb") as stream:
-            stream.write(data)
-            stream.flush()
-            os.fsync(stream.fileno())
-        os.link(stage, path)
-    finally:
-        stage.unlink(missing_ok=True)
-
-
 def _plan_summary(document: dict[str, Any]) -> dict[str, object]:
     return {
         "schema_version": document["schema_version"],
@@ -561,14 +526,16 @@ def plan_from_source(
     with _catalog_transaction(database, write=False) as connection:
         baseline = _catalog_state(connection)
         document, _ = _plan_document(source, baseline)
-    _publish_plan(path, (canonical_json(document) + "\n").encode("utf-8"))
+    publish_new(
+        path, (canonical_json(document) + "\n").encode("utf-8"), MAX_PLAN_BYTES, "sync plan"
+    )
     return {**_plan_summary(document), "status": "planned", "plan": str(path)}
 
 
 def _read_plan(
     plan_path: Path,
 ) -> tuple[dict[str, Any], SourceSnapshot, _CatalogState, _CatalogState]:
-    content = _read_regular(plan_path, MAX_PLAN_BYTES, "sync plan")
+    content = read_regular(plan_path, MAX_PLAN_BYTES, "sync plan")
     document = strict_json(content.decode("utf-8"))
     if not isinstance(document, dict) or set(document) != (
         _PLAN_KEYS | {"retrieval"} if document.get("schema_version") == 2 else _PLAN_KEYS
