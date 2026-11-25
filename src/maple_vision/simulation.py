@@ -952,9 +952,14 @@ class Simulator:
         if sim._effect_rules:
             sim._restore_effects(root["target_effects"])
         raw_events = root["events"]
-        if not isinstance(raw_events, list) or len(raw_events) > (
-            512 if sim._effect_rules else 100
-        ):
+        event_limit = 512 if sim._effect_rules else 100
+        if sim.capabilities is not None:
+            # A single cast can add this many packets beyond the original one per target.
+            event_limit += max(
+                (skill.hit_count - 1) * skill.max_targets
+                for skill in sim.capabilities.skill_entries
+            )
+        if not isinstance(raw_events, list) or len(raw_events) > event_limit:
             raise ValueError("events must be a bounded list")
         sim._events = tuple(_text(event, "event") for event in raw_events)
         dialogue = root["dialogue"]
