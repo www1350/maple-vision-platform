@@ -190,6 +190,9 @@ def _parser() -> argparse.ArgumentParser:
     label_command = recording_commands.add_parser("label-template")
     label_command.add_argument("path", type=Path)
     label_command.add_argument("output", type=Path)
+    audit = recording_commands.add_parser("audit-route")
+    for name in ("path", "labels", "graph", "output"):
+        audit.add_argument(name, type=Path)
     score = recording_commands.add_parser("benchmark")
     score.add_argument(
         "--case",
@@ -614,6 +617,10 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 else None,
             )
         return validate_dataset(args.path)
+    if args.command == "recording" and args.operation == "audit-route":
+        from .recording_evaluation import audit_route
+
+        return audit_route(args.path, args.labels, args.graph, args.output)
     if args.command == "recording" and args.operation == "label-template":
         from .recording_evaluation import create_label_template
 

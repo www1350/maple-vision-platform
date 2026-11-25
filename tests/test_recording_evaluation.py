@@ -198,3 +198,25 @@ def test_input_bundles_are_immutable(tmp_path):
         create_label_template(recording, recording / "labels.json")
     with pytest.raises(ValueError, match="outside"):
         benchmark_recordings([(recording, labels)], recording / "score.json")
+
+
+@pytest.mark.parametrize(
+    "target,listed", [("east_hill", 1), ("east_forest", 0), ("unlisted", 0), ("henesys", 0)]
+)
+def test_reviewed_map_changes(tmp_path, target, listed):
+    from pathlib import Path
+
+    recording, labels = case(tmp_path, "henesys")
+    data = json.loads(labels.read_text())
+    data["frames"][1]["map_id"] = target
+    labels.write_text(json.dumps(data))
+    graph = Path(__file__).resolve().parents[1] / "examples/navigation/cms-east-hill.json"
+    output = tmp_path / "route.json"
+    assert main(["recording", "audit-route", *map(str, [recording, labels, graph, output])]) == 0
+    report = json.loads(output.read_text())
+    assert report["frames"] == 2 and report["observed_changes"] == int(target != "henesys")
+    assert report["listed_direct_changes"] == listed
+    assert report["map_ids_outside_graph"] == (["unlisted"] if target == "unlisted" else [])
+    if report["changes"]:
+        change = report["changes"][0]
+        assert (change["before_ms"], change["after_ms"]) == (0, 83)
