@@ -1,5 +1,6 @@
 """Optional FastAPI interface for the local offline lab."""
 
+import json
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from importlib.resources import files
@@ -47,6 +48,12 @@ class ActionInput(StrictModel):
     direction: int = 0
     skill: Name = "basic"
     target: Annotated[str, Field(max_length=80)] = ""
+
+
+class KeyStepInput(StrictModel):
+    revision: Annotated[int, Field(ge=0)]
+    key: Name
+    bindings: Annotated[dict[Name, Name], Field(max_length=128)]
 
 
 class ChangeInput(StrictModel):
@@ -197,6 +204,30 @@ def create_app(root: Path, examples: Path | None = None) -> FastAPI:
     @api.post("/api/sessions", status_code=201)
     def new_session(config: SceneInput) -> dict[str, Any]:
         return manager().create_sim(config.job, config.map_id, config.seed)
+
+    @api.post("/api/sessions/{identity}/key-step")
+    def key_step(identity: Identifier, config: KeyStepInput) -> dict[str, Any]:
+        return manager().session(
+            identity, "key-step", config.revision, key=config.key, bindings=config.bindings
+        )
+
+    @api.get("/api/sessions/{identity}/key-log")
+    def key_log(identity: Identifier) -> list[dict[str, Any]]:
+        with manager().db() as db:
+            if db.execute("SELECT 1 FROM sims WHERE id=?", (identity,)).fetchone() is None:
+                raise HTTPException(404, "找不到指定的模拟会话")
+            return [
+                {
+                    **dict(row),
+                    "accepted": bool(row["accepted"]),
+                    "events": json.loads(row["events"]),
+                }
+                for row in db.execute(
+                    "SELECT revision, sequence, key_name, skill, accepted, reason, events "
+                    "FROM key_steps WHERE sim_id=? ORDER BY revision DESC LIMIT 50",
+                    (identity,),
+                )
+            ]
 
     @api.get("/api/sessions/{identity}")
     def read_session(identity: Identifier) -> dict[str, Any]:

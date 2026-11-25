@@ -215,6 +215,7 @@ async function drawEvidence() {
   }
 }
 function drawSim(data) {
+  show("sim-key-log", false);
   sim=data; sessionStorage.setItem("maple-session",data.id);
   show("sim-controls",true); show("sim-frame",true); show("sim-empty",false);
   el("sim-frame").src="data:image/png;base64,"+data.image;
@@ -311,8 +312,8 @@ bind("keys-image-file", "change", () => {
 });
 bind("keys-form", "submit", () => {
   const lines = el("keys-list").value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-  if (!el("keys-character").value.trim() || !lines.length) {
-    text("keys-status", "请填写区服、角色和至少一项技能键位。"); return;
+  if (!el("keys-character").value.trim()) {
+    text("keys-status", "请填写区服和角色。"); return;
   }
   const keys = new Set();
   const result = [];
@@ -329,4 +330,37 @@ bind("keys-form", "submit", () => {
   }
   localStorage.setItem(keyProfileId(), result.join("\n"));
   text("keys-status", "已确认并保存 " + result.length + " 项绑定。");
+});
+
+el("sim-key").addEventListener("keydown", async event => {
+  if (event.key === "Tab" || event.isComposing) return;
+  event.preventDefault();
+  if (event.repeat || simBusy || !sim) return;
+  if ((event.ctrlKey && event.key !== "Control") || (event.altKey && event.key !== "Alt") ||
+      (event.metaKey && event.key !== "Meta") || (event.shiftKey && event.key !== "Shift")) {
+    text("sim-key-status", "当前试放支持单键。"); return;
+  }
+  const profile = el("sim-profile").value.trim();
+  const saved = localStorage.getItem("maple.keybindings.v1." + profile);
+  if (!profile || saved === null) { text("sim-key-status","请先在角色键位页确认该角色。"); return; }
+  const bindings = Object.create(null);
+  for (const line of saved.split("\n").filter(Boolean)) {
+    const split = line.indexOf("=");
+    bindings[line.slice(split + 1).trim()] = line.slice(0, split).trim();
+  }
+  const key = event.key === " " ? "Space" : event.key;
+  simBusy = true;
+  try {
+    const data = await api("sessions/" + sim.id + "/key-step", {revision:sim.revision, key, bindings});
+    drawSim(data);
+    text("sim-key-status", key + " · " + (data.receipt.accepted ? "已执行" : "未执行") + " · " + data.receipt.reason);
+  } catch(error) { fail(error); }
+  finally { simBusy = false; }
+});
+bind("sim-key-history", "click", async () => {
+  const id = sim.id;
+  const rows = await api("sessions/" + id + "/key-log");
+  if (sim.id !== id) return;
+  text("sim-key-log", rows.map(r => "第 " + r.sequence + " 帧 · " + r.key_name + " → " + (r.skill || "未绑定") + " · " + r.reason + " " + r.events.join("、")).join("\n") || "暂无按键记录");
+  show("sim-key-log", true);
 });

@@ -229,3 +229,27 @@ def test_workbench_world_routes(tmp_path):
         assert lookup("missing", "camp", "island").status_code == 404
     with client(tmp_path, examples=None) as http:
         assert http.get("/api/content").json()["world_graphs"] == {}
+
+
+def test_key_steps_rebind_unbind_rejection_and_audit(tmp_path):
+    with client(tmp_path) as http:
+        session = http.post("/api/sessions", json={"job": "dragon_knight"}).json()
+        base = "/api/sessions/" + session["id"]
+
+        def press(version, key, bindings):
+            return http.post(
+                base + "/key-step", json={"revision": version, "key": key, "bindings": bindings}
+            )
+
+        used = press(0, "a", {"A": "模拟范围攻击"}).json()
+        assert used["receipt"]["accepted"] and "attack" in used["receipt"]["events"]
+        old = press(1, "a", {"S": "模拟范围攻击"}).json()
+        assert old["receipt"]["reason"] == "unbound_key" and old["sequence"] == 1
+        assert http.post(base, json={"revision": 2, "operation": "reset"}).status_code == 200
+        assert press(3, "s", {"S": "模拟范围攻击"}).json()["receipt"]["accepted"]
+        assert press(4, "s", {}).json()["receipt"]["reason"] == "unbound_key"
+        assert press(5, "s", {"S": "未实现技能"}).json()["receipt"]["reason"] == "unsupported_skill"
+        assert press(5, "s", {}).status_code == 409
+    with client(tmp_path) as http:
+        logs = http.get(base + "/key-log").json()
+        assert [r["revision"] for r in logs] == [6, 5, 4, 2, 1]

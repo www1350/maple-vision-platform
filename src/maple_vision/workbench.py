@@ -5,6 +5,7 @@ import json
 import re
 import sqlite3
 import threading
+import unicodedata
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing, contextmanager
@@ -80,6 +81,11 @@ class Workbench:
                     CREATE TABLE IF NOT EXISTS jobs (
                         id TEXT PRIMARY KEY, kind TEXT NOT NULL, state TEXT NOT NULL,
                         created TEXT NOT NULL, config TEXT NOT NULL, outcome TEXT, error TEXT);
+                    CREATE TABLE IF NOT EXISTS key_steps (
+                        sim_id TEXT NOT NULL, revision INTEGER NOT NULL, sequence INTEGER NOT NULL,
+                        key_name TEXT NOT NULL, skill TEXT, accepted INTEGER NOT NULL,
+                        reason TEXT NOT NULL,
+                        events TEXT NOT NULL, PRIMARY KEY(sim_id, revision));
                     CREATE TABLE IF NOT EXISTS sims (
                         id TEXT PRIMARY KEY, version INTEGER NOT NULL, initial TEXT NOT NULL,
                         current TEXT NOT NULL, saved TEXT);
@@ -308,7 +314,14 @@ class Workbench:
         return self.sim_view(sim, identity, 0)
 
     def session(
-        self, identity: str, mode: str, version: int | None = None, action: SimAction | None = None
+        self,
+        identity: str,
+        mode: str,
+        version: int | None = None,
+        action: SimAction | None = None,
+        *,
+        key: str | None = None,
+        bindings: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         with self.db() as db:
             db.execute("BEGIN IMMEDIATE")
@@ -324,10 +337,64 @@ class Workbench:
                 if row["saved"] is None:
                     raise Conflict("no saved state")
                 current = row["saved"]
-            elif mode not in {"read", "step", "save"}:
+            elif mode not in {"read", "step", "save", "key-step"}:
                 raise ValueError("unknown session operation")
             sim = Simulator.restore(json.loads(current))
-            receipt = None
+            receipt: dict[str, Any] | None = None
+            if mode == "key-step":
+
+                def canonical(value: str) -> str:
+                    name = "".join(unicodedata.normalize("NFKC", value).casefold().split())
+                    return {"control": "ctrl", "esc": "escape"}.get(name, name)
+
+                mapping = {canonical(k): v.strip() for k, v in (bindings or {}).items()}
+                if (
+                    not key
+                    or not canonical(key)
+                    or "" in mapping
+                    or len(mapping) != len(bindings or {})
+                ):
+                    raise ValueError("invalid or duplicate key")
+                skill = mapping.get(canonical(key))
+                skills = sim.class_package
+                action = None
+                if skills is not None and skill in {item.id for item in skills.skills}:
+                    action = SimAction("cast", skill=str(skill))
+                elif skills is None and skill in {"basic", "普通攻击"}:
+                    action = SimAction("attack")
+                elif (
+                    skills is None
+                    and sim.job == "dragon_knight"
+                    and skill in {"area", "模拟范围攻击"}
+                ):
+                    action = SimAction("attack", skill="area")
+                if action is None:
+                    receipt = {
+                        "accepted": False,
+                        "reason": "unbound_key" if skill is None else "unsupported_skill",
+                        "events": (),
+                    }
+                else:
+                    result = sim.step(action)
+                    receipt = {
+                        "accepted": result.accepted,
+                        "reason": result.reason,
+                        "events": result.events,
+                    }
+                    current = json.dumps(sim.save())
+                db.execute(
+                    "INSERT INTO key_steps VALUES (?,?,?,?,?,?,?,?)",
+                    (
+                        identity,
+                        row["version"] + 1,
+                        sim.snapshot().sequence,
+                        key,
+                        skill,
+                        receipt["accepted"],
+                        receipt["reason"],
+                        json.dumps(receipt["events"]),
+                    ),
+                )
             if mode == "step":
                 if action is None:
                     raise ValueError("an action is required")
