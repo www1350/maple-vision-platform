@@ -249,6 +249,21 @@ def _parser() -> argparse.ArgumentParser:
         metavar=("RECORDING", "LABELS", "REPORT"),
     )
     strike_summary.add_argument("--output", type=Path, required=True)
+    event_review = recording_commands.add_parser("review-events")
+    event_review.add_argument("path", type=Path)
+    event_review.add_argument("output", type=Path)
+    event_review.add_argument("--reviewer", required=True)
+    event_review.add_argument(
+        "--event",
+        action="append",
+        nargs=3,
+        required=True,
+        metavar=("KIND", "START", "END"),
+        help="reviewed visible event kind and inclusive frame interval; repeat as needed",
+    )
+    verify_events_command = recording_commands.add_parser("verify-events")
+    for name in ("path", "report"):
+        verify_events_command.add_argument(name, type=Path)
     score = recording_commands.add_parser("benchmark")
     score.add_argument(
         "--case",
@@ -717,6 +732,19 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 sources=[(recording, labels) for recording, labels, _ in args.verified_case],
             )
         return summarize_strikes(args.report, args.output)
+    if args.command == "recording" and args.operation == "review-events":
+        from .recording_evaluation import review_events
+
+        return review_events(
+            args.path,
+            args.output,
+            reviewer=args.reviewer,
+            events=[(kind, int(start), int(end)) for kind, start, end in args.event],
+        )
+    if args.command == "recording" and args.operation == "verify-events":
+        from .recording_evaluation import verify_events
+
+        return verify_events(args.path, args.report)
     if args.command == "recording" and args.operation == "audit-route":
         from .recording_evaluation import audit_route
 

@@ -278,6 +278,55 @@ def test_measure_reviewed_strike(tmp_path):
     assert main(args) == 2 and not output.exists()
 
 
+def test_sparse_visible_event_review_is_source_bound_and_noncausal(tmp_path):
+    recording, _ = case(tmp_path, "visible-events")
+    output = tmp_path / "events.json"
+    args = [
+        "recording",
+        "review-events",
+        str(recording),
+        str(output),
+        "--reviewer",
+        "tester",
+        "--event",
+        "damage_feedback_visible",
+        "1",
+        "1",
+        "--event",
+        "rope_contact_visible",
+        "0",
+        "1",
+    ]
+    assert main(args) == 0
+    report = json.loads(output.read_bytes())
+    assert report["review_scope"] == "visible_pixels_only"
+    assert [event["kind"] for event in report["events"]] == [
+        "rope_contact_visible",
+        "damage_feedback_visible",
+    ]
+    assert report["events"][0]["duration_ms"] == 83
+    assert (
+        report["source"]["session_id"]
+        == json.loads((recording / "manifest.json").read_bytes())["session_id"]
+    )
+    assert any("not keyboard input" in item for item in report["limitations"])
+    verify = ["recording", "verify-events", str(recording), str(output)]
+    assert main(verify) == 0
+
+    forged = json.loads(json.dumps(report))
+    forged["events"][0]["start"]["rgb_sha256"] = "0" * 64
+    forged_path = tmp_path / "forged-events.json"
+    forged_path.write_text(json.dumps(forged))
+    assert main(["recording", "verify-events", str(recording), str(forged_path)]) == 2
+
+    duplicate = args + ["--event", "rope_contact_visible", "0", "1"]
+    output.unlink()
+    assert main(duplicate) == 2 and not output.exists()
+    invalid = args.copy()
+    invalid[invalid.index("damage_feedback_visible")] = "lucky_seven"
+    assert main(invalid) == 2 and not output.exists()
+
+
 def test_measure_reviewed_strike_preserves_distinct_feedback_frame_timing(tmp_path):
     session, labels = case(tmp_path, "forest")
     data = json.loads(labels.read_text())

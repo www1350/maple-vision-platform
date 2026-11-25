@@ -34,6 +34,19 @@ MAX_OBJECTS = 50_000
 MAX_OBJECTS_PER_FRAME = 128
 MAX_LABEL_BYTES = 16 * 1024 * 1024
 MAX_STRIKE_REPORT_BYTES = 1024 * 1024
+MAX_EVENT_REPORT_BYTES = 4 * 1024 * 1024
+MAX_REVIEWED_EVENTS = 256
+REVIEWED_EVENT_KINDS = frozenset(
+    {
+        "attack_motion_visible",
+        "projectile_visible",
+        "damage_feedback_visible",
+        "airborne_visible",
+        "rope_contact_visible",
+        "layer_change_visible",
+        "camera_motion_visible",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -92,6 +105,140 @@ def _text(value: object, field: str) -> str:
     ):
         raise ValueError(f"invalid annotation {field}")
     return value
+
+
+def _frame_identity(frame: dict[str, Any]) -> dict[str, Any]:
+    return {key: frame[key] for key in ("sequence", "timestamp_ms", "rgb_sha256")}
+
+
+def _reviewed_event_document(
+    manifest: dict[str, Any], reviewer: str, events: Sequence[tuple[str, int, int]]
+) -> dict[str, Any]:
+    if not isinstance(events, (list, tuple)) or not 1 <= len(events) <= MAX_REVIEWED_EVENTS:
+        raise ValueError("supply 1..256 reviewed visible events")
+    normalized = []
+    for kind, start, end in events:
+        if (
+            kind not in REVIEWED_EVENT_KINDS
+            or type(start) is not int
+            or type(end) is not int
+            or not 0 <= start <= end < manifest["frame_count"]
+        ):
+            raise ValueError("invalid reviewed visible event")
+        normalized.append((kind, start, end))
+    if len(set(normalized)) != len(normalized):
+        raise ValueError("duplicate reviewed visible event")
+    normalized.sort(key=lambda item: (item[1], item[2], item[0]))
+    frames = manifest["frames"]
+    reviewed = []
+    for kind, start, end in normalized:
+        first, last = frames[start], frames[end]
+        reviewed.append(
+            {
+                "kind": kind,
+                "start": _frame_identity(first),
+                "end": _frame_identity(last),
+                "duration_ms": last["timestamp_ms"] - first["timestamp_ms"],
+            }
+        )
+    source = {
+        "session_id": manifest["session_id"],
+        "source_sha256": manifest["source_sha256"],
+        "source_hash_basis": manifest["source_hash_basis"],
+        "source_name": manifest["source_name"],
+        "source_uri": manifest["source_uri"],
+        "permission": manifest["permission"],
+        "license": manifest["license"],
+        "frame_count": manifest["frame_count"],
+        "source_frame_size": [manifest["width"], manifest["height"]],
+        "truncated": manifest["truncated"],
+        "timebase": manifest["timebase"],
+        "video_clock": manifest.get("video_clock"),
+    }
+    return {
+        "schema_version": 1,
+        "kind": "reviewed_recording_events",
+        "reviewer": _text(reviewer, "event reviewer"),
+        "review_scope": "visible_pixels_only",
+        "source": source,
+        "events": reviewed,
+        "limitations": [
+            "event names record reviewer-selected visible intervals, not keyboard input",
+            "temporal overlap does not establish that one visible event caused another",
+            "attack and projectile observations do not identify a skill without separate evidence",
+            "a truncated imported session does not describe unimported source frames",
+        ],
+    }
+
+
+def review_events(
+    recording: Path,
+    output: Path | None,
+    *,
+    reviewer: str,
+    events: Sequence[tuple[str, int, int]],
+) -> dict[str, Any]:
+    """Bind sparse, reviewer-selected visible intervals to immutable source frames."""
+    if output is not None and output.resolve().is_relative_to(recording.resolve()):
+        raise ValueError("write evidence outside the recording")
+    report = _reviewed_event_document(_validated_manifest(recording), reviewer, events)
+    if output is not None:
+        _write(output, report)
+    return report
+
+
+def _event_report(path: Path) -> dict[str, Any]:
+    raw = strict_json(read_regular(path, MAX_EVENT_REPORT_BYTES, "reviewed event report").decode())
+    if (
+        not isinstance(raw, dict)
+        or set(raw)
+        != {
+            "schema_version",
+            "kind",
+            "reviewer",
+            "review_scope",
+            "source",
+            "events",
+            "limitations",
+        }
+        or raw["schema_version"] != 1
+        or raw["kind"] != "reviewed_recording_events"
+        or raw["review_scope"] != "visible_pixels_only"
+        or not isinstance(raw["source"], dict)
+        or not isinstance(raw["events"], list)
+        or not isinstance(raw["limitations"], list)
+    ):
+        raise ValueError("invalid reviewed event report")
+    return raw
+
+
+def verify_events(recording: Path, report: Path) -> dict[str, Any]:
+    """Rebuild every source-derived event identity from the imported recording."""
+    raw = _event_report(report)
+    selected = []
+    for event in raw["events"]:
+        if (
+            not isinstance(event, dict)
+            or set(event) != {"kind", "start", "end", "duration_ms"}
+            or not isinstance(event["start"], dict)
+            or not isinstance(event["end"], dict)
+        ):
+            raise ValueError("invalid reviewed visible event")
+        kind = event["kind"]
+        start = event["start"].get("sequence")
+        end = event["end"].get("sequence")
+        if not isinstance(kind, str) or type(start) is not int or type(end) is not int:
+            raise ValueError("invalid reviewed visible event")
+        selected.append((kind, start, end))
+    measured = _reviewed_event_document(_validated_manifest(recording), raw["reviewer"], selected)
+    if canonical_json(raw) != canonical_json(measured):
+        raise ValueError("reviewed event report differs from the recording")
+    return {
+        "verified": True,
+        "scope": "source_frame_identity_and_reviewed_visible_intervals",
+        "session_id": measured["source"]["session_id"],
+        "events": len(measured["events"]),
+    }
 
 
 def _case(recording: Path, labels: Path, available_frames: int) -> Case:
