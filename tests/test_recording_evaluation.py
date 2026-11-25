@@ -390,6 +390,7 @@ def test_summarize_reviewed_strikes_without_inventing_range(tmp_path):
             ("no_feedback", 90, 150, "right"),
         ]
     ):
+        monster_bbox = [30, 10, 40, 30] if facing == "right" else [-10, 10, 0, 30]
         path = tmp_path / f"strike-{index}.json"
         document = {
             "schema_version": 1,
@@ -418,7 +419,7 @@ def test_summarize_reviewed_strikes_without_inventing_range(tmp_path):
                 "player_index": 0,
                 "monster_index": 1,
                 "player_bbox": [10, 10, 20, 30],
-                "monster_bbox": [30, 10, 40, 30],
+                "monster_bbox": monster_bbox,
                 "player_occluded": False,
                 "monster_occluded": False,
                 "forward_center_delta_px": forward,
@@ -438,7 +439,20 @@ def test_summarize_reviewed_strikes_without_inventing_range(tmp_path):
     assert summary["schema_version"] == 1 and "feedback_sequences" not in summary
     assert summary["observations"] == 4 and summary["sessions"] == 4
     assert summary["observed_damage_distance_lower_bound_px"] == 62
+    assert summary["observed_damage_forward_edge_gap_lower_bound_px"] == 10
     assert summary["range_upper_bound_px"] is None and not summary["calibrated_range"]
+    assert summary["by_feedback"]["damage_visible"]["forward_edge_gap_px"] == {
+        "min": 10,
+        "max": 10,
+    }
+    assert summary["by_feedback"]["damage_visible"]["vertical_edge_gap_px"] == {
+        "min": 0,
+        "max": 0,
+    }
+    assert summary["by_feedback"]["damage_visible"]["vertical_overlap_px"] == {
+        "min": 20,
+        "max": 20,
+    }
     assert summary["by_feedback"]["damage_visible"]["window_ms"] == {
         "min": 100,
         "median": 110.0,
