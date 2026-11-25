@@ -719,10 +719,12 @@ def summarize_strikes(
         raise ValueError("strike reports must describe the same domain, skill, level and weapon")
     if any(document["source_frame_size"] != frame_size for document in documents):
         raise ValueError("strike reports need the same source frame size")
-    sample_ids = [
-        (document["session_id"], document["start"]["rgb_sha256"], document["end"]["rgb_sha256"])
-        for document in documents
-    ]
+    timebase = documents[0]["timebase"]
+    if any(document["timebase"] != timebase for document in documents):
+        raise ValueError("strike reports need the same recording timebase")
+    # One cast onset is one sample even when reviewers choose different end frames.
+    # Distinct source frames can have identical pixels.
+    sample_ids = [(document["session_id"], document["start"]["sequence"]) for document in documents]
     if len(set(sample_ids)) != len(sample_ids):
         raise ValueError("duplicate strike observation")
 
@@ -761,6 +763,7 @@ def summarize_strikes(
         "weapon": identity[3],
         "source_frame_size": frame_size,
         "observations": len(documents),
+        "timebase": timebase,
         "sessions": len({item["session_id"] for item in documents}),
         "maps": sorted({item["map_id"] for item in documents}),
         "by_feedback": by_feedback,
