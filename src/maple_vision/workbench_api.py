@@ -144,11 +144,27 @@ def create_app(root: Path, examples: Path | None = None) -> FastAPI:
                 name: ["meadow", "cavern"] if pack is None else list(pack.map_ids)
                 for name, pack in m.maps.items()
             },
+            "world_graphs": {
+                key: {"nodes": graph.nodes, "scope": graph.provenance.scope}
+                for key, graph in m.world_graphs.items()
+            },
             "mission_options": {name: m.compatible_missions(pack) for name, pack in m.maps.items()},
             "models": list(m.models),
             "missions": {k: None if v is None else v.to_dict() for k, v in m.missions.items()},
             "faults": list(FAULTS),
             "scope": "synthetic_fixture",
+        }
+
+    @api.get("/api/world-graphs/{graph_id}/route")
+    def route(graph_id: Name, source: Name, target: Name) -> dict[str, Any]:
+        graph = manager().world_graphs.get(graph_id)
+        if graph is None:
+            raise HTTPException(404, "找不到指定的世界图")
+        path = graph.shortest_path(source, target)
+        return {
+            "graph_sha256": graph.content_sha256,
+            "scope": graph.provenance.scope,
+            "route": path.to_dict() if path is not None else None,
         }
 
     @api.get("/api/jobs")
