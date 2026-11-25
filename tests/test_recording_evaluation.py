@@ -220,3 +220,51 @@ def test_reviewed_map_changes(tmp_path, target, listed):
     if report["changes"]:
         change = report["changes"][0]
         assert (change["before_ms"], change["after_ms"]) == (0, 83)
+
+
+def test_measure_reviewed_strike(tmp_path):
+    session, labels = case(tmp_path, "forest")
+    data = json.loads(labels.read_text())
+    data["frames"][0]["objects"].append(
+        {"class_id": "player", "bbox": [90, 45, 100, 60], "occluded": False}
+    )
+    labels.write_text(json.dumps(data))
+    output = tmp_path / "one.json"
+    args = [
+        "recording",
+        "measure-strike",
+        str(session),
+        str(labels),
+        str(output),
+        "--start",
+        "0",
+        "--end",
+        "1",
+        "--skill-id",
+        "example",
+        "--level",
+        "1",
+        "--weapon",
+        "fixture",
+        "--reviewer",
+        "tester",
+        "--facing",
+        "left",
+        "--feedback",
+        "no_feedback",
+        "--player-index",
+        "1",
+        "--monster-index",
+        "0",
+    ]
+    assert main(args) == 0
+    report = json.loads(output.read_text())
+    assert report["window_ms"] == 83
+    geometry = report["start_geometry"]
+    assert geometry["forward_center_delta_px"] == 30 and geometry["horizontal_edge_gap_px"] == 20
+    assert geometry["monster_occluded"] and report["reviewed_feedback"] == "no_feedback"
+    assert main(args) == 2
+    output.unlink()
+    data["frames"][1]["map_id"] = "changed"
+    labels.write_text(json.dumps(data))
+    assert main(args) == 2 and not output.exists()

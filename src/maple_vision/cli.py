@@ -193,6 +193,17 @@ def _parser() -> argparse.ArgumentParser:
     audit = recording_commands.add_parser("audit-route")
     for name in ("path", "labels", "graph", "output"):
         audit.add_argument(name, type=Path)
+    strike = recording_commands.add_parser("measure-strike")
+    for name in ("path", "labels", "output"):
+        strike.add_argument(name, type=Path)
+    for name in ("start", "end", "player-index", "monster-index", "level"):
+        strike.add_argument("--" + name, type=int, required=True)
+    for name in ("skill-id", "weapon", "reviewer"):
+        strike.add_argument("--" + name, required=True)
+    strike.add_argument("--facing", choices=("left", "right"), required=True)
+    strike.add_argument(
+        "--feedback", choices=("damage_visible", "miss_text_visible", "no_feedback"), required=True
+    )
     score = recording_commands.add_parser("benchmark")
     score.add_argument(
         "--case",
@@ -617,6 +628,24 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 else None,
             )
         return validate_dataset(args.path)
+    if args.command == "recording" and args.operation == "measure-strike":
+        from .recording_evaluation import measure_strike
+
+        return measure_strike(
+            args.path,
+            args.labels,
+            args.output,
+            start=args.start,
+            end=args.end,
+            player_index=args.player_index,
+            monster_index=args.monster_index,
+            level=args.level,
+            skill_id=args.skill_id,
+            weapon=args.weapon,
+            reviewer=args.reviewer,
+            facing=args.facing,
+            feedback=args.feedback,
+        )
     if args.command == "recording" and args.operation == "audit-route":
         from .recording_evaluation import audit_route
 

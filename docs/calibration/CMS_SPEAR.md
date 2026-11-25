@@ -12,3 +12,13 @@
 本轮没有取得同技能、同等级与武器、可核对命中和落空两侧边界的国服连续实录。工作台现有“模拟范围攻击”继续使用合成技能标识，两个真实技能名保持未支持状态。后续采样需保留原始帧和时间戳、施放方向、人物与目标位置以及可见伤害反馈。
 
 来源：[枪连击技能表](https://mxdc.dvg.cn/skill_info.php?id=1311001) · [龙咆哮技能表](https://mxdc.dvg.cn/skill_info.php?id=1311006)
+
+## 测量一段有标注的录像
+
+先导入原录像并逐帧填写地图和对象标注。在施放动作首次可见的帧中选定角色和目标，索引为该帧 objects 数组的零基下标。再指定第一条可归因的反馈所在帧；如观察期内无反馈，填写观察截止帧和 no_feedback。以下序号仅演示参数格式。
+
+```bash
+python -m maple_vision recording measure-strike SESSION LABELS REPORT --start 15 --end 22 --player-index 0 --monster-index 1 --skill-id 1311001 --level 30 --weapon spear --facing right --feedback damage_visible --reviewer reviewer-id
+```
+
+报告将录像会话、标注摘要、首尾帧哈希、时间基准和观察者绑定在一起。距离按起始帧原图像素计算，前向中心差为负表示目标在身后；纵向中心差向下为正。观察区间从可见动作起算，不含物理按键至画面响应的延迟。伤害数字的归属需要人工核对。出现 MISS 可能是命中率判定，无反馈也可能源于遮挡，单次样本无法给出射程边界。
