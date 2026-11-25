@@ -222,8 +222,7 @@ def _event_report(path: Path) -> dict[str, Any]:
     return raw
 
 
-def verify_events(recording: Path, report: Path) -> dict[str, Any]:
-    """Rebuild every source-derived event identity from the imported recording."""
+def _verify_event_report(manifest: dict[str, Any], report: Path) -> dict[str, Any]:
     raw = _event_report(report)
     selected = []
     for event in raw["events"]:
@@ -240,7 +239,7 @@ def verify_events(recording: Path, report: Path) -> dict[str, Any]:
         if not isinstance(kind, str) or type(start) is not int or type(end) is not int:
             raise ValueError("invalid reviewed visible event")
         selected.append((kind, start, end))
-    measured = _reviewed_event_document(_validated_manifest(recording), raw["reviewer"], selected)
+    measured = _reviewed_event_document(manifest, raw["reviewer"], selected)
     if canonical_json(raw) != canonical_json(measured):
         raise ValueError("reviewed event report differs from the recording")
     return {
@@ -249,6 +248,11 @@ def verify_events(recording: Path, report: Path) -> dict[str, Any]:
         "session_id": measured["source"]["session_id"],
         "events": len(measured["events"]),
     }
+
+
+def verify_events(recording: Path, report: Path) -> dict[str, Any]:
+    """Rebuild every source-derived event identity from the imported recording."""
+    return _verify_event_report(_validated_manifest(recording), report)
 
 
 def _recording_window_document(recordings: Sequence[Path]) -> dict[str, Any]:

@@ -15,6 +15,7 @@
       
       <nav>
         <button class="nav-item active" data-view="runs" type="button"><span aria-hidden="true">▤</span> 任务与回放</button>
+        <button class="nav-item" data-view="recordings" type="button"><span aria-hidden="true">▶</span> 真实录像复核</button>
         <button class="nav-item" data-view="simulator" type="button"><span aria-hidden="true">◇</span> 单步模拟器</button>
         <button class="nav-item" data-view="routes" type="button"><span aria-hidden="true">↱</span> 地图路线</button>
         <button class="nav-item" data-view="keys" type="button"><span aria-hidden="true">⌨</span> 角色键位</button>
@@ -62,6 +63,24 @@
               <div class="result-area"><dl id="result-metrics" class="result-metrics"></dl><div class="evidence-tabs" role="tablist" aria-label="证据类型"><button class="tab active" data-evidence="summary" role="tab" aria-selected="true" type="button">结果摘要</button><button class="tab" data-evidence="trace" role="tab" aria-selected="false" type="button">动作与观测</button><button class="tab" data-evidence="config" role="tab" aria-selected="false" type="button">运行配置</button></div><pre id="evidence-json" class="json-view" tabindex="0"></pre><div class="trace-controls hidden" id="trace-controls"><button id="trace-prev" class="button subtle" type="button">上一页</button><span id="trace-page"></span><button id="trace-next" class="button subtle" type="button">下一页</button></div></div>
             </div>
           </section>
+        </section>
+        <section id="view-recordings" class="view hidden">
+          <div class="page-title"><div><h1>真实录像复核</h1><p class="subtitle">逐帧查看启动时登记并完整校验的本地录像会话与人工可见事件。</p></div><span class="scope-pill">只读真实像素</span></div>
+          <div id="recordings-empty" class="notice hidden">本次工作台未登记录像。使用 --recordings 指定只读会话目录；可用 --recording-events 附加已复验的可见事件报告。</div>
+          <div id="recordings-workspace" class="workspace-grid hidden">
+            <section class="panel setup-panel" aria-labelledby="recordings-heading">
+              <div class="panel-heading"><h2 id="recordings-heading">已校验会话</h2><span id="recording-count" class="count">0</span></div>
+              <form><label for="recording-select">录像窗口</label><select id="recording-select"></select><p id="recording-source" class="field-help"></p></form>
+              <p class="field-help">目录在服务启动时固定，浏览器不能提交任意文件路径。原视频和导入像素不会进入 Git 仓库。</p>
+            </section>
+            <section class="panel recording-panel" aria-labelledby="recording-detail-heading">
+              <div class="panel-heading"><h2 id="recording-detail-heading">逐帧证据</h2><span id="recording-verified" class="badge success">已校验</span></div>
+              <div class="detail-grid">
+                <div class="replay-area"><div class="frame-stage"><img id="recording-frame" alt="已校验录像的原始导入帧" class="hidden"><div id="recording-frame-empty" class="frame-placeholder">选择录像窗口以查看画面</div><span id="recording-frame-caption" class="frame-caption"></span></div><div class="timeline-controls"><button id="recording-prev" class="icon-button" type="button" aria-label="上一录像帧">‹</button><button id="recording-play" class="icon-button" type="button" aria-label="播放录像帧">▷</button><input id="recording-range" type="range" min="0" max="0" value="0" aria-label="录像帧时间轴"><button id="recording-next" class="icon-button" type="button" aria-label="下一录像帧">›</button></div><p class="field-help">画面来自固定录像，只能证明已保存像素中可见的现象。</p></div>
+                <div class="result-area"><dl id="recording-metrics" class="result-metrics"></dl><div class="evidence-tabs"><span class="tab active">会话、事件与限制</span></div><pre id="recording-evidence" class="json-view" tabindex="0"></pre></div>
+              </div>
+            </section>
+          </div>
         </section>
         <section id="view-simulator" class="view hidden">
           <div class="page-title"><div><h1>单步模拟器</h1><p class="subtitle">手动驱动独立模拟器，分别查看可见观测与验证真值。</p></div></div>

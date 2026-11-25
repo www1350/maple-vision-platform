@@ -409,6 +409,16 @@ def _parser() -> argparse.ArgumentParser:
     bench = commands.add_parser("workbench", help="start the local simulator workbench")
     bench.add_argument("--workspace", type=Path, required=True)
     bench.add_argument("--examples", type=Path)
+    bench.add_argument(
+        "--recordings",
+        type=Path,
+        help="read-only directory whose direct children are validated recording sessions",
+    )
+    bench.add_argument(
+        "--recording-events",
+        type=Path,
+        help="read-only directory of reviewed visible-event JSON reports",
+    )
     bench.add_argument("--port", type=int, default=8765)
     world = map_commands.add_parser("route", help="plan a weighted route between maps")
     world.add_argument("path", type=Path)
@@ -1040,7 +1050,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             except ModuleNotFoundError as exc:
                 raise ValueError("install the workbench extra: pip install '.[workbench]'") from exc
             uvicorn.run(
-                create_app(args.workspace, args.examples),
+                create_app(
+                    args.workspace,
+                    args.examples,
+                    recordings=args.recordings,
+                    recording_events=args.recording_events,
+                ),
                 host="127.0.0.1",
                 port=args.port,
                 proxy_headers=False,

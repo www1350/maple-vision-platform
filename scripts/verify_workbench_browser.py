@@ -16,6 +16,8 @@ from PIL import Image
 from playwright.sync_api import expect, sync_playwright
 
 from maple_vision.input_bindings import load_input_profile
+from maple_vision.recording_evaluation import review_events
+from maple_vision.recordings import import_recording
 
 
 def verify(url: str, executable: str) -> dict[str, object]:
@@ -30,6 +32,13 @@ def verify(url: str, executable: str) -> dict[str, object]:
         page.on("pageerror", lambda error: errors.append(str(error)))
         page.goto(url)
         expect(page.locator("#connection-label")).to_have_text("本机已连接")
+        page.click('[data-view="recordings"]')
+        expect(page.locator("#recording-frame")).to_be_visible()
+        expect(page.locator("#recording-evidence")).to_contain_text("attack_motion_visible")
+        expect(page.locator("#recording-frame-caption")).to_contain_text("源帧 0")
+        page.click("#recording-next")
+        expect(page.locator("#recording-frame-caption")).to_contain_text("50 ms")
+        page.click('[data-view="runs"]')
         page.select_option("#class-select", "archer")
         page.select_option("#map-select", "three-map-fixture")
         page.select_option("#fault-select", "persistent_dropout")
@@ -195,6 +204,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
             "keyed_two_map_task": "completed_and_evidenced",
             "confirmed_profile_export_loaded": True,
             "local_key_image_preview_and_clear": True,
+            "read_only_recording_replay": True,
             "mobile_width": 390,
             "horizontal_overflow": overflow,
             "page_errors": errors,
@@ -213,6 +223,30 @@ def main() -> None:
     if not args.browser:
         parser.error("a local Chromium or Chrome executable is required")
     with tempfile.TemporaryDirectory(prefix="maple-browser-") as folder:
+        root = Path(folder)
+        source = root / "recording-source"
+        source.mkdir()
+        Image.new("RGB", (64, 36), "#244f3e").save(source / "0000.png")
+        Image.new("RGB", (64, 36), "#c67242").save(source / "0001.png")
+        recordings = root / "recordings"
+        recordings.mkdir()
+        session = recordings / "window-zero"
+        import_recording(
+            source,
+            session,
+            source_uri="urn:self:browser-workbench",
+            permission="self_authored",
+            license="CC0-1.0",
+            fps=20,
+        )
+        event_reports = root / "recording-events"
+        event_reports.mkdir()
+        review_events(
+            session,
+            event_reports / "visible.json",
+            reviewer="browser-fixture",
+            events=[("attack_motion_visible", 0, 1)],
+        )
         with socket.socket() as probe:
             probe.bind(("127.0.0.1", 0))
             port = probe.getsockname()[1]
@@ -227,6 +261,10 @@ def main() -> None:
                 folder,
                 "--examples",
                 str(Path(__file__).resolve().parents[1] / "examples"),
+                "--recordings",
+                str(recordings),
+                "--recording-events",
+                str(event_reports),
                 "--port",
                 str(port),
             ]

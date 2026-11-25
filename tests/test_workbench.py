@@ -7,7 +7,10 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from PIL import Image
 
+from maple_vision.recording_evaluation import review_events
+from maple_vision.recordings import import_recording
 from maple_vision.workbench import Workbench
 from maple_vision.workbench_api import create_app
 
@@ -123,6 +126,81 @@ def test_local_validation_and_no_arbitrary_paths(tmp_path):
         assert http.get("/api/jobs/" + 32 * "a").status_code == 404
         assert http.get("/static/owner.sqlite").status_code == 404
         assert http.get("/api/jobs").json() == []
+
+
+def test_read_only_recording_replay_and_reviewed_events(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    Image.new("RGB", (12, 8), "#244f3e").save(source / "0000.png")
+    Image.new("RGB", (12, 8), "#c67242").save(source / "0001.png")
+    recordings = tmp_path / "recordings"
+    recordings.mkdir()
+    session = recordings / "window-zero"
+    imported = import_recording(
+        source,
+        session,
+        source_uri="urn:self:workbench-recording",
+        permission="self_authored",
+        license="CC0-1.0",
+        fps=20,
+    )
+    reports = tmp_path / "reports"
+    reports.mkdir()
+    review_events(
+        session,
+        reports / "visible.json",
+        reviewer="fixture-reviewer",
+        events=[("attack_motion_visible", 0, 1)],
+    )
+    app = create_app(
+        tmp_path / "workspace",
+        recordings=recordings,
+        recording_events=reports,
+    )
+    with TestClient(app, base_url=ORIGIN) as http:
+        page = http.get("/").text
+        assert "真实录像复核" in page and "recording-range" in page
+        listed = http.get("/api/recordings").json()
+        assert len(listed) == 1
+        assert listed[0]["session_id"] == imported["session_id"]
+        assert listed[0]["validated"] is True and listed[0]["event_reports"] == 1
+        assert "root" not in listed[0] and "frames" not in listed[0]
+        identity = listed[0]["session_id"]
+        detail = http.get(f"/api/recordings/{identity}").json()
+        assert [frame["timestamp_ms"] for frame in detail["frames"]] == [0, 50]
+        assert detail["reviewed_event_reports"][0]["verification"] == {
+            "verified": True,
+            "scope": "source_frame_identity_and_reviewed_visible_intervals",
+            "session_id": identity,
+            "events": 1,
+        }
+        assert http.get(f"/api/recordings/{identity}/frames/1").content[:8] == b"\x89PNG\r\n\x1a\n"
+        assert http.get(f"/api/recordings/{identity}/frames/2").status_code == 404
+        assert http.get("/api/recordings/../manifest.json").status_code in {404, 422}
+        (session / "frames/000001.png").write_bytes(b"changed")
+        assert http.get(f"/api/recordings/{identity}/frames/1").status_code == 422
+
+
+def test_recording_replay_rejects_unfixed_or_symlink_roots(tmp_path):
+    reports = tmp_path / "reports"
+    reports.mkdir()
+    with pytest.raises(ValueError, match="require a recordings directory"):
+        with TestClient(
+            create_app(tmp_path / "workspace", recording_events=reports),
+            base_url=ORIGIN,
+        ):
+            pass
+    recordings = tmp_path / "recordings"
+    recordings.mkdir()
+    target = tmp_path / "target"
+    target.mkdir()
+    (recordings / "linked").symlink_to(target, target_is_directory=True)
+    with pytest.raises(ValueError, match="only real session directories"):
+        with TestClient(
+            create_app(tmp_path / "workspace-two", recordings=recordings),
+            base_url=ORIGIN,
+        ):
+            pass
 
 
 def test_queue_cancel_interruption_and_owner_exclusion(tmp_path, monkeypatch):
