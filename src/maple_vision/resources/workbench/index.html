@@ -17,6 +17,7 @@
         <button class="nav-item active" data-view="runs" type="button"><span aria-hidden="true">▤</span> 任务与回放</button>
         <button class="nav-item" data-view="simulator" type="button"><span aria-hidden="true">◇</span> 单步模拟器</button>
         <button class="nav-item" data-view="routes" type="button"><span aria-hidden="true">↱</span> 地图路线</button>
+        <button class="nav-item" data-view="keys" type="button"><span aria-hidden="true">⌨</span> 角色键位</button>
         <button class="nav-item" data-view="content" type="button"><span aria-hidden="true">▧</span> 内容与模型</button>
       </nav>
       <div class="sidebar-note"><span class="status-dot"></span> 本机离线运行<p>独立模拟环境<br>运行时 LLM 调用 0</p></div>
@@ -81,6 +82,24 @@
             <section class="panel"><h2>传送路线</h2>
               <p id="route-scope" class="field-help"></p>
               <p id="route-status" role="status"></p><ol id="route-steps"></ol>
+            </section>
+          </div>
+        </section>
+        <section id="view-keys" class="view hidden">
+          <div class="page-title"><div><h1>角色键位</h1><p class="subtitle">先打开游戏里的键位设置，对照当前角色的技能图标和键帽填写。</p></div></div>
+          <div class="workspace-grid">
+            <form id="keys-form" class="panel setup-panel">
+              <label for="keys-character">区服与角色名</label><input id="keys-character" required maxlength="100" placeholder="例如：小白兔 / 大美人乖乖">
+              <label for="keys-list">每行一项：技能名 = 键位</label>
+              <textarea id="keys-list" rows="7" maxlength="3000" required aria-describedby="keys-help"></textarea>
+              <p id="keys-help" class="field-help">照抄键帽名称，例如 Ctrl 或 Space。只填写看清的绑定。</p>
+              <button class="button primary full-width" type="submit">确认并保存此角色键位</button>
+              <p id="keys-status" role="status"></p>
+            </form>
+            <section class="panel"><h2>对照截图</h2>
+              <p class="field-help">可直接对照游戏窗口，也可选择一张键位截图。图片仅在本页预览，键位表保存在当前浏览器。</p>
+              <input id="keys-image-file" type="file" accept="image/png,image/jpeg,image/webp" aria-label="选择键位截图">
+              <img id="keys-image" class="hidden" style="max-width:100%;height:auto" alt="当前角色的键位设置截图">
             </section>
           </div>
         </section>

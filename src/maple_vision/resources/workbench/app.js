@@ -125,11 +125,11 @@ bind("route-source", "change", clearRoute);
 bind("route-target", "change", clearRoute);
 bind("route-form", "submit", queryRoute);
 function chooseView(view) {
-  if (!["runs","simulator","routes","content"].includes(view)) view = "runs";
+  if (!["runs","simulator","routes","keys","content"].includes(view)) view = "runs";
   activeView = view; stopPlay();
   document.querySelectorAll(".view").forEach(e=>e.classList.toggle("hidden", e.id !== "view-"+view));
   document.querySelectorAll("[data-view]").forEach(e=>e.classList.toggle("active", e.dataset.view===view));
-  text("view-label", {runs:"任务与回放", simulator:"单步模拟器", routes:"地图路线", content:"内容与模型"}[view]);
+  text("view-label", {runs:"任务与回放", simulator:"单步模拟器", routes:"地图路线", keys:"角色键位", content:"内容与模型"}[view]);
 }
 function setupForm() {
   const kind = el("run-kind").value, run = kind === "run";
@@ -281,3 +281,52 @@ chooseView(location.hash.slice(1)); refresh().catch(fail);
 const saved=sessionStorage.getItem("maple-session");
 if(saved) api("sessions/"+saved).then(drawSim).catch(()=>sessionStorage.removeItem("maple-session"));
 setInterval(()=>{ if (activeView==="runs" && !document.hidden) refresh().catch(fail); },2000);
+
+function keyProfileId() {
+  return "maple.keybindings.v1." + el("keys-character").value.trim();
+}
+function clearKeyImage() {
+  const image = el("keys-image");
+  if (image.hasAttribute("src")) URL.revokeObjectURL(image.src);
+  image.removeAttribute("src");
+  el("keys-image-file").value = "";
+  show("keys-image", false);
+}
+bind("keys-character", "input", () => {
+  clearKeyImage();
+  const saved = localStorage.getItem(keyProfileId());
+  el("keys-list").value = saved || "";
+  text("keys-status", saved ? "已载入此角色上次确认的键位，请与游戏设置核对。" : "");
+});
+bind("keys-list", "input", () => text("keys-status", "修改尚未保存。"));
+bind("keys-image-file", "change", () => {
+  const file = el("keys-image-file").files[0];
+  clearKeyImage();
+  if (!file) return;
+  if (!["image/png","image/jpeg","image/webp"].includes(file.type)) {
+    text("keys-status", "请选择 PNG、JPEG 或 WebP 图片。"); return;
+  }
+  el("keys-image").src = URL.createObjectURL(file);
+  show("keys-image", true);
+});
+bind("keys-form", "submit", () => {
+  const lines = el("keys-list").value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  if (!el("keys-character").value.trim() || !lines.length) {
+    text("keys-status", "请填写区服、角色和至少一项技能键位。"); return;
+  }
+  const keys = new Set();
+  const result = [];
+  for (const line of lines) {
+    const split = line.indexOf("=");
+    const skill = line.slice(0, split).trim(), key = line.slice(split + 1).trim();
+    if (split < 1 || !skill || !key) {
+      text("keys-status", "请按「技能名 = 键位」逐行填写。"); return;
+    }
+    const normalized = key.normalize("NFKC").toLowerCase().replace(/\s+/g, "");
+    if (keys.has(normalized)) { text("keys-status", "同一个键位出现了两次，请核对。"); return; }
+    keys.add(normalized);
+    result.push(skill + " = " + key);
+  }
+  localStorage.setItem(keyProfileId(), result.join("\n"));
+  text("keys-status", "已确认并保存 " + result.length + " 项绑定。");
+});
