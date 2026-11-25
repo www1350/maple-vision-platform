@@ -2,8 +2,9 @@
 
 import json
 import re
-from collections.abc import AsyncIterator, Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable, Sequence
 from contextlib import asynccontextmanager
+from fractions import Fraction
 from importlib.resources import files
 from pathlib import Path
 from typing import Annotated, Any, Literal, Self
@@ -14,7 +15,12 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .input_bindings import MAX_INPUT_BINDINGS_BYTES, InputBindingProfile
 from .lab import FAULTS
-from .recording_evaluation import _event_report, _verify_event_report
+from .recording_evaluation import (
+    _event_report,
+    _recording_window_report,
+    _verify_event_report,
+    _verify_recording_window_report,
+)
 from .recordings import _load_frame, _validated_manifest
 from .sim_types import SimAction
 from .workbench import Conflict, Workbench
@@ -25,6 +31,7 @@ Name = Annotated[str, Field(min_length=1, max_length=80)]
 Seed = Annotated[int, Field(ge=0, le=2**32 - 1)]
 MAX_WORKBENCH_RECORDINGS = 128
 MAX_WORKBENCH_EVENT_REPORTS = 256
+MAX_WORKBENCH_COVERAGE_REPORTS = 64
 
 
 class StrictModel(BaseModel):
@@ -189,17 +196,141 @@ def _recording_summary(entry: dict[str, Any], *, frames: bool = False) -> dict[s
     return summary
 
 
+def _recording_coverages(
+    recordings: dict[str, dict[str, Any]], reports: Sequence[Path] | None
+) -> dict[str, dict[str, Any]]:
+    if reports is None:
+        return {}
+    if not recordings:
+        raise ValueError("recording coverage reports require registered recording sessions")
+    if (
+        not isinstance(reports, (list, tuple))
+        or not 1 <= len(reports) <= MAX_WORKBENCH_COVERAGE_REPORTS
+    ):
+        raise ValueError("supply 1..64 recording coverage reports")
+    catalog: dict[str, dict[str, Any]] = {}
+    for report_path in map(Path, reports):
+        if report_path.is_symlink() or not report_path.is_file() or report_path.suffix != ".json":
+            raise ValueError("recording coverage reports must be regular local JSON files")
+        report = _recording_window_report(report_path)
+        sessions = []
+        for row in report["windows"]:
+            if not isinstance(row, dict) or not isinstance(row.get("session_id"), str):
+                raise ValueError("invalid recording coverage window")
+            session = recordings.get(row["session_id"])
+            if session is None:
+                raise ValueError("recording coverage report references an unregistered session")
+            sessions.append(session)
+        verification = _verify_recording_window_report(
+            [session["manifest"] for session in sessions], report_path
+        )
+        identity = verification["coverage_sha256"]
+        if not isinstance(identity, str) or identity in catalog:
+            raise ValueError("duplicate recording coverage report")
+        catalog[identity] = {
+            "report": report,
+            "verification": verification,
+            "sessions": sessions,
+        }
+    return catalog
+
+
+def _coverage_summary(entry: dict[str, Any], *, frames: bool = False) -> dict[str, Any]:
+    report = entry["report"]
+    sessions = entry["sessions"]
+    reviewed_events = sum(
+        len(item["report"]["events"]) for session in sessions for item in session["events"]
+    )
+    summary = {
+        "coverage_sha256": report["coverage_sha256"],
+        "source_name": report["source"]["source_name"],
+        "source_sha256": report["source"]["source_sha256"],
+        "permission": report["source"]["permission"],
+        "license": report["source"]["license"],
+        "window_count": report["window_count"],
+        "decoded_frame_count": report["decoded_frame_count"],
+        "decoded_source_range": report["decoded_source_range"],
+        "contiguous": report["contiguous"],
+        "decoder_stop_reached": report["decoder_stop_reached"],
+        "timing_accuracy": "source_pts",
+        "event_reports": sum(len(session["events"]) for session in sessions),
+        "reviewed_events": reviewed_events,
+        "verified": True,
+    }
+    if not frames:
+        return summary
+    clock = report["source"]["video_clock"]
+    timebase = Fraction(clock["numerator"], clock["denominator"])
+    first_pts = report["windows"][0]["first"]["pts"]
+    frame_rows = []
+    frame_by_source: dict[int, dict[str, Any]] = {}
+    for window, session in zip(report["windows"], sessions, strict=True):
+        manifest = session["manifest"]
+        for item in manifest["frames"]:
+            source_sequence = window["source_start_frame"] + item["sequence"]
+            row = {
+                "source_sequence": source_sequence,
+                "sequence": item["sequence"],
+                "session_id": manifest["session_id"],
+                "source_name": item["source_name"],
+                "pts": item["pts"],
+                "timestamp_ms": round((item["pts"] - first_pts) * timebase * 1000),
+            }
+            frame_rows.append(row)
+            frame_by_source[source_sequence] = row
+    event_rows = []
+    for window, session in zip(report["windows"], sessions, strict=True):
+        offset = window["source_start_frame"]
+        for event_report in session["events"]:
+            for event in event_report["report"]["events"]:
+                start = offset + event["start"]["sequence"]
+                end = offset + event["end"]["sequence"]
+                event_rows.append(
+                    {
+                        "kind": event["kind"],
+                        "reviewer": event_report["report"]["reviewer"],
+                        "verified": event_report["verification"]["verified"],
+                        "start_source_sequence": start,
+                        "end_source_sequence": end,
+                        "start_timestamp_ms": frame_by_source[start]["timestamp_ms"],
+                        "end_timestamp_ms": frame_by_source[end]["timestamp_ms"],
+                    }
+                )
+    return {
+        **summary,
+        "windows": report["windows"],
+        "frames": frame_rows,
+        "reviewed_visible_events": sorted(
+            event_rows,
+            key=lambda event: (
+                event["start_source_sequence"],
+                event["end_source_sequence"],
+                event["kind"],
+            ),
+        ),
+        "limitations": report["limitations"]
+        + [
+            "fixed recording frames cannot validate counterfactual actions or action success",
+            "synthetic mechanics, key bindings, and ammunition rules remain separate evidence",
+        ],
+    }
+
+
 def create_app(
     root: Path,
     examples: Path | None = None,
     recordings: Path | None = None,
     recording_events: Path | None = None,
+    recording_coverages: Sequence[Path] | None = None,
 ) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         manager = Workbench(root, examples)
         app.state.manager = manager
         app.state.recordings = _recording_catalog(recordings, recording_events)
+        app.state.recording_coverages = _recording_coverages(
+            app.state.recordings, recording_coverages
+        )
         try:
             yield
         finally:
@@ -221,6 +352,12 @@ def create_app(
         entry: dict[str, Any] | None = api.state.recordings.get(identity)
         if entry is None:
             raise HTTPException(404, "找不到指定的录像会话")
+        return entry
+
+    def recording_coverage(identity: str) -> dict[str, Any]:
+        entry: dict[str, Any] | None = api.state.recording_coverages.get(identity)
+        if entry is None:
+            raise HTTPException(404, "找不到指定的录像覆盖报告")
         return entry
 
     @api.middleware("http")
@@ -322,8 +459,42 @@ def create_app(
     def recording_sessions() -> list[dict[str, Any]]:
         return [
             _recording_summary(entry)
-            for _, entry in sorted(api.state.recordings.items(), key=lambda item: item[0])
+            for _, entry in sorted(
+                api.state.recordings.items(),
+                key=lambda item: (
+                    item[1]["manifest"].get("source_start_frame", 0),
+                    item[1]["manifest"]["source_name"],
+                    item[0],
+                ),
+            )
         ]
+
+    @api.get("/api/recording-coverages")
+    def recording_coverage_reports() -> list[dict[str, Any]]:
+        return [
+            _coverage_summary(entry)
+            for _, entry in sorted(api.state.recording_coverages.items(), key=lambda item: item[0])
+        ]
+
+    @api.get("/api/recording-coverages/{identity}")
+    def recording_coverage_detail(identity: RecordingIdentifier) -> dict[str, Any]:
+        return _coverage_summary(recording_coverage(identity), frames=True)
+
+    @api.get("/api/recording-coverages/{identity}/frames/{source_sequence}")
+    def recording_coverage_frame(
+        identity: RecordingIdentifier,
+        source_sequence: Annotated[int, Field(ge=0, le=2**53)],
+    ) -> Response:
+        entry = recording_coverage(identity)
+        for window, session in zip(entry["report"]["windows"], entry["sessions"], strict=True):
+            if window["source_start_frame"] <= source_sequence <= window["source_end_frame"]:
+                root_path: Path = session["root"]
+                if root_path.is_symlink():
+                    raise HTTPException(404, "找不到指定的录像帧")
+                sequence = source_sequence - window["source_start_frame"]
+                frame_value = _load_frame(root_path, session["manifest"]["frames"][sequence])
+                return Response(frame_value.png_bytes(), media_type="image/png")
+        raise HTTPException(404, "找不到指定的录像帧")
 
     @api.get("/api/recordings/{identity}")
     def recording_detail(identity: RecordingIdentifier) -> dict[str, Any]:

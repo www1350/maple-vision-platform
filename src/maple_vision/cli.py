@@ -419,6 +419,12 @@ def _parser() -> argparse.ArgumentParser:
         type=Path,
         help="read-only directory of reviewed visible-event JSON reports",
     )
+    bench.add_argument(
+        "--recording-coverage",
+        type=Path,
+        action="append",
+        help="read-only verified recording-window coverage JSON (repeatable)",
+    )
     bench.add_argument("--port", type=int, default=8765)
     world = map_commands.add_parser("route", help="plan a weighted route between maps")
     world.add_argument("path", type=Path)
@@ -1055,6 +1061,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     args.examples,
                     recordings=args.recordings,
                     recording_events=args.recording_events,
+                    recording_coverages=args.recording_coverage,
                 ),
                 host="127.0.0.1",
                 port=args.port,

@@ -21,7 +21,7 @@ const label = (key) => names[key] || key;
 let catalog = null, jobs = [], selected = "", detail = null, evidence = "summary";
 let traceOffset = 0, activeView = "runs", sim = null, simEvidence = "observation";
 let playTimer = null, selectionRevision = 0, refreshing = false, simBusy = false;
-let recordingSessions = [], selectedRecording = "", recordingDetail = null;
+let recordingSessions = [], recordingCoverages = [], selectedRecording = "", recordingDetail = null;
 let recordingPlayTimer = null, recordingRevision = 0, recordingsLoaded = false;
 
 async function api(path, body) {
@@ -223,20 +223,27 @@ function stopRecordingPlay() {
 }
 function recordingLabel(session) {
   const start=session.source_start_frame || 0;
-  return session.source_name + " · 源帧 " + start + "–" + session.source_end_frame;
+  return "单窗口 · " + session.source_name + " · 源帧 " + start + "–" + session.source_end_frame;
+}
+function coverageLabel(coverage) {
+  return "连续覆盖 · " + coverage.source_name + " · 源帧 " + coverage.decoded_source_range.join("–");
 }
 async function loadRecordings() {
   const version=++recordingRevision;
-  recordingSessions=await api("recordings");
+  [recordingSessions,recordingCoverages]=await Promise.all([api("recordings"),api("recording-coverages")]);
   if (version!==recordingRevision) return;
   recordingsLoaded=true;
-  text("recording-count",recordingSessions.length);
-  show("recordings-empty",!recordingSessions.length);
-  show("recordings-workspace",!!recordingSessions.length);
-  if (!recordingSessions.length) { selectedRecording=""; recordingDetail=null; return; }
-  options("recording-select",recordingSessions.map(session=>[session.session_id,recordingLabel(session)]));
-  if (!recordingSessions.some(session=>session.session_id===selectedRecording)) {
-    selectedRecording=recordingSessions[0].session_id;
+  const choices=[
+    ...recordingCoverages.map(coverage=>["coverage:"+coverage.coverage_sha256,coverageLabel(coverage)]),
+    ...recordingSessions.map(session=>["session:"+session.session_id,recordingLabel(session)])
+  ];
+  text("recording-count",choices.length);
+  show("recordings-empty",!choices.length);
+  show("recordings-workspace",!!choices.length);
+  if (!choices.length) { selectedRecording=""; recordingDetail=null; return; }
+  options("recording-select",choices);
+  if (!choices.some(([identity])=>identity===selectedRecording)) {
+    selectedRecording=choices[0][0];
     el("recording-select").value=selectedRecording;
   }
   await loadRecording();
@@ -244,14 +251,16 @@ async function loadRecordings() {
 async function loadRecording() {
   const identity=selectedRecording, version=++recordingRevision;
   stopRecordingPlay(); recordingDetail=null;
-  const data=await api("recordings/"+identity);
+  const coverage=identity.startsWith("coverage:"), key=identity.slice(identity.indexOf(":")+1);
+  const data=await api((coverage?"recording-coverages/":"recordings/")+key);
   if (identity!==selectedRecording || version!==recordingRevision) return;
-  recordingDetail=data;
-  const start=data.source_start_frame || 0;
+  recordingDetail={...data,viewer_kind:coverage?"coverage":"session",viewer_key:key};
+  const start=coverage?data.decoded_source_range[0]:(data.source_start_frame || 0);
+  const end=coverage?data.decoded_source_range[1]:data.source_end_frame;
   text("recording-source",data.source_name+" · SHA-256 "+data.source_sha256.slice(0,16)+"… · "+data.permission+" / "+data.license);
-  const events=data.reviewed_event_reports.reduce((total,item)=>total+item.report.events.length,0);
+  const events=coverage?data.reviewed_events:data.reviewed_event_reports.reduce((total,item)=>total+item.report.events.length,0);
   const metrics=el("recording-metrics"); metrics.replaceChildren();
-  for (const [name,value] of [["帧数",data.frame_count],["可见事件",events],["源帧范围",start+"–"+data.source_end_frame]]) {
+  for (const [name,value] of [["帧数",coverage?data.decoded_frame_count:data.frame_count],["可见事件",events],["源帧范围",start+"–"+end]]) {
     const item=document.createElement("div"); item.className="metric";
     const dt=document.createElement("dt"), dd=document.createElement("dd"); dt.textContent=name; dd.textContent=value;
     item.append(dt,dd); metrics.append(item);
@@ -264,26 +273,41 @@ function drawRecordingFrame() {
   show("recording-frame",!!frame); show("recording-frame-empty",!frame);
   for (const id of ["recording-prev","recording-play","recording-range","recording-next"]) el(id).disabled=!frame;
   if (!frame) { text("recording-frame-caption",""); text("recording-evidence",""); return; }
-  const source=(recordingDetail.source_start_frame || 0)+frame.sequence;
-  text("recording-frame-caption","源帧 "+source+" · 会话帧 "+frame.sequence+" · "+frame.timestamp_ms+" ms");
-  el("recording-frame").src="/api/recordings/"+selectedRecording+"/frames/"+frame.sequence;
-  const reports=recordingDetail.reviewed_event_reports.map(item=>({
-    verified:item.verification.verified,
-    scope:item.verification.scope,
-    reviewer:item.report.reviewer,
-    visible_events:item.report.events,
-    limitations:item.report.limitations
-  }));
-  const visibleNow=[];
-  for (const report of reports) for (const event of report.visible_events) {
-    if (event.start.sequence<=frame.sequence && frame.sequence<=event.end.sequence) visibleNow.push(event.kind);
+  const coverage=recordingDetail.viewer_kind==="coverage";
+  const source=coverage?frame.source_sequence:(recordingDetail.source_start_frame || 0)+frame.sequence;
+  text("recording-frame-caption","源帧 "+source+" · 窗口帧 "+frame.sequence+" · "+frame.timestamp_ms+" ms");
+  el("recording-frame").src=coverage
+    ? "/api/recording-coverages/"+recordingDetail.viewer_key+"/frames/"+source
+    : "/api/recordings/"+recordingDetail.viewer_key+"/frames/"+frame.sequence;
+  if (coverage) {
+    const visibleNow=recordingDetail.reviewed_visible_events
+      .filter(event=>event.start_source_sequence<=source && source<=event.end_source_sequence)
+      .map(event=>event.kind);
+    text("recording-evidence",pretty({
+      coverage:{coverage_sha256:recordingDetail.coverage_sha256,verified:recordingDetail.verified,contiguous:recordingDetail.contiguous,decoder_stop_reached:recordingDetail.decoder_stop_reached,windows:recordingDetail.windows},
+      current_frame:{...frame,visible_events:visibleNow},
+      reviewed_visible_events:recordingDetail.reviewed_visible_events,
+      limitations:recordingDetail.limitations
+    }));
+  } else {
+    const reports=recordingDetail.reviewed_event_reports.map(item=>({
+      verified:item.verification.verified,
+      scope:item.verification.scope,
+      reviewer:item.report.reviewer,
+      visible_events:item.report.events,
+      limitations:item.report.limitations
+    }));
+    const visibleNow=[];
+    for (const report of reports) for (const event of report.visible_events) {
+      if (event.start.sequence<=frame.sequence && frame.sequence<=event.end.sequence) visibleNow.push(event.kind);
+    }
+    text("recording-evidence",pretty({
+      session:{session_id:recordingDetail.session_id,validated:recordingDetail.validated,timing_accuracy:recordingDetail.timing_accuracy,timebase:recordingDetail.timebase,truncated:recordingDetail.truncated,completion_reason:recordingDetail.completion_reason},
+      current_frame:{...frame,source_sequence:source,visible_events:visibleNow},
+      reviewed_event_reports:reports,
+      limitations:recordingDetail.limitations
+    }));
   }
-  text("recording-evidence",pretty({
-    session:{session_id:recordingDetail.session_id,validated:recordingDetail.validated,timing_accuracy:recordingDetail.timing_accuracy,timebase:recordingDetail.timebase,truncated:recordingDetail.truncated,completion_reason:recordingDetail.completion_reason},
-    current_frame:{...frame,source_sequence:source,visible_events:visibleNow},
-    reviewed_event_reports:reports,
-    limitations:recordingDetail.limitations
-  }));
 }
 function moveRecordingFrame(step) {
   const range=el("recording-range"); range.value=Math.max(0,Math.min(+range.max,+range.value+step)); drawRecordingFrame();

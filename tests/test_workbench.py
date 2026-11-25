@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import sqlite3
 import threading
 import time
@@ -9,8 +10,10 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from maple_vision.recording_evaluation import review_events
+from maple_vision.catalog import canonical_json
+from maple_vision.recording_evaluation import review_events, summarize_recording_windows
 from maple_vision.recordings import import_recording
+from maple_vision.scene import ImageFrame
 from maple_vision.workbench import Workbench
 from maple_vision.workbench_api import create_app
 
@@ -26,6 +29,62 @@ def submit(http, body):
     reply = http.post("/api/jobs", json=body)
     assert reply.status_code == 202, reply.text
     return reply.json()["id"]
+
+
+def exact_recording_window(root, name, start, pts, *, truncated):
+    session = root / name
+    frames = session / "frames"
+    frames.mkdir(parents=True)
+    rows = []
+    first_pts = pts[0]
+    for sequence, timestamp in enumerate(pts):
+        pixels = bytes([40 + (start + sequence) * 20, 80, 120]) * (12 * 8)
+        frame = ImageFrame(sequence, timestamp - first_pts, 12, 8, pixels)
+        data = frame.png_bytes()
+        file = f"frames/{sequence:06d}.png"
+        (session / file).write_bytes(data)
+        rows.append(
+            {
+                "sequence": sequence,
+                "timestamp_ms": timestamp - first_pts,
+                "file": file,
+                "sha256": hashlib.sha256(data).hexdigest(),
+                "rgb_sha256": hashlib.sha256(pixels).hexdigest(),
+                "source_name": f"video-frame-{start + sequence:06d}",
+                "source_sha256": None,
+                "width": 12,
+                "height": 8,
+                "pts": timestamp,
+            }
+        )
+    manifest = {
+        "schema_version": 2 if start == 0 else 3,
+        "kind": "offline_recording",
+        "scope": "user_supplied_recording",
+        "source_kind": "mp4",
+        "source_uri": "urn:self:workbench-window-source",
+        "permission": "self_authored",
+        "license": "CC0-1.0",
+        "source_name": "fixture.mp4",
+        "source_sha256": "a" * 64,
+        "source_hash_basis": "mp4_file",
+        "fps": None,
+        "timebase": "video_presentation_ticks",
+        "frame_count": len(rows),
+        "width": 12,
+        "height": 8,
+        "max_frames": len(rows),
+        "total_source_frames": None,
+        "truncated": truncated,
+        "completion_reason": "frame_limit" if truncated else "decoder_stopped",
+        "frames": rows,
+        "video_clock": {"stream_index": 0, "numerator": 1, "denominator": 1000},
+    }
+    if start:
+        manifest["source_start_frame"] = start
+    manifest["session_id"] = hashlib.sha256(canonical_json(manifest).encode()).hexdigest()
+    (session / "manifest.json").write_text(canonical_json(manifest) + "\n", encoding="utf-8")
+    return session
 
 
 def wait(http, identity):
@@ -198,6 +257,81 @@ def test_recording_replay_rejects_unfixed_or_symlink_roots(tmp_path):
     with pytest.raises(ValueError, match="only real session directories"):
         with TestClient(
             create_app(tmp_path / "workspace-two", recordings=recordings),
+            base_url=ORIGIN,
+        ):
+            pass
+
+
+def test_contiguous_recording_coverage_replay_crosses_window_boundary(tmp_path):
+    recordings = tmp_path / "recordings"
+    recordings.mkdir()
+    first = exact_recording_window(recordings, "first", 0, [100, 140], truncated=True)
+    final = exact_recording_window(recordings, "final", 2, [220, 360], truncated=False)
+    reports = tmp_path / "events"
+    reports.mkdir()
+    review_events(
+        first,
+        reports / "first.json",
+        reviewer="fixture-reviewer",
+        events=[("rope_contact_visible", 1, 1)],
+    )
+    review_events(
+        final,
+        reports / "final.json",
+        reviewer="fixture-reviewer",
+        events=[("attack_motion_visible", 0, 1)],
+    )
+    coverage = tmp_path / "coverage.json"
+    report = summarize_recording_windows([final, first], coverage)
+    with TestClient(
+        create_app(
+            tmp_path / "workspace",
+            recordings=recordings,
+            recording_events=reports,
+            recording_coverages=[coverage],
+        ),
+        base_url=ORIGIN,
+    ) as http:
+        listed = http.get("/api/recording-coverages").json()
+        assert listed == [
+            {
+                "coverage_sha256": report["coverage_sha256"],
+                "source_name": "fixture.mp4",
+                "source_sha256": "a" * 64,
+                "permission": "self_authored",
+                "license": "CC0-1.0",
+                "window_count": 2,
+                "decoded_frame_count": 4,
+                "decoded_source_range": [0, 3],
+                "contiguous": True,
+                "decoder_stop_reached": True,
+                "timing_accuracy": "source_pts",
+                "event_reports": 2,
+                "reviewed_events": 2,
+                "verified": True,
+            }
+        ]
+        identity = report["coverage_sha256"]
+        detail = http.get(f"/api/recording-coverages/{identity}").json()
+        assert [frame["source_sequence"] for frame in detail["frames"]] == [0, 1, 2, 3]
+        assert [frame["timestamp_ms"] for frame in detail["frames"]] == [0, 40, 120, 260]
+        assert [event["start_source_sequence"] for event in detail["reviewed_visible_events"]] == [
+            1,
+            2,
+        ]
+        assert http.get(f"/api/recording-coverages/{identity}/frames/1").status_code == 200
+        boundary = http.get(f"/api/recording-coverages/{identity}/frames/2")
+        assert boundary.status_code == 200 and boundary.content.startswith(b"\x89PNG")
+        assert http.get(f"/api/recording-coverages/{identity}/frames/4").status_code == 404
+
+    final.rename(tmp_path / "unregistered-final")
+    with pytest.raises(ValueError, match="unregistered session"):
+        with TestClient(
+            create_app(
+                tmp_path / "workspace-missing",
+                recordings=recordings,
+                recording_coverages=[coverage],
+            ),
             base_url=ORIGIN,
         ):
             pass
