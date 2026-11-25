@@ -154,3 +154,42 @@ def test_queue_cancel_interruption_and_owner_exclusion(tmp_path, monkeypatch):
     with client(tmp_path, None) as http:
         assert http.get("/api/jobs/" + ids[1]).json()["state"] == "interrupted"
         assert http.get("/api/jobs/" + ids[0]).json()["state"] == "cancelled"
+
+
+def test_workbench_mission_selection_and_bound_evidence(tmp_path):
+    with client(tmp_path) as http:
+        content = http.get("/api/content").json()
+        assert "talk-then-clear" in content["missions"]
+        invalid = http.post(
+            "/api/jobs",
+            json={
+                "kind": "run",
+                "job": "assassin",
+                "map_id": "three-map-fixture",
+                "mission": "talk-then-clear",
+            },
+        )
+        assert invalid.status_code == 422 and "prefix" in invalid.json()["detail"]
+        assert not http.get("/api/jobs").json()
+        rid = submit(
+            http,
+            {
+                "kind": "run",
+                "job": "archer",
+                "map_id": "three-map-fixture",
+                "mission": "three-map-visits",
+            },
+        )
+        result = wait(http, rid)["result"]
+        assert result["status"] == "completed"
+        assert [(r["map_id"], r["phase"]) for r in result["mission_evidence"]["witnesses"]] == [
+            ("grove", "talk"),
+            ("quarry", "fight"),
+            ("quarry", "talk"),
+            ("ruins", "talk"),
+        ]
+        reinfer = wait(http, submit(http, {"kind": "reinfer", "source": rid}))
+        assert reinfer["outcome"] == "verified"
+    with client(tmp_path) as http:
+        restored = http.get(f"/api/jobs/{rid}").json()
+        assert restored["config"]["mission_program"] == content["missions"]["three-map-visits"]

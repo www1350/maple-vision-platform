@@ -303,6 +303,7 @@ def _parser() -> argparse.ArgumentParser:
         )
     for map_command in (run, suite, soak):
         map_command.add_argument("--map-pack", type=Path)
+        map_command.add_argument("--mission-program", type=Path)
         map_command.add_argument("--animation-scene", type=Path)
         map_command.add_argument(
             "--runtime",
@@ -766,12 +767,22 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 for path in ([package_paths] if isinstance(package_paths, Path) else package_paths)
             )
         )
+        from .mission_program import load_mission_program
+
+        mission_path = getattr(args, "mission_program", None)
+        mission = None if mission_path is None else load_mission_program(mission_path)
         selected_runtime = getattr(args, "runtime", None)
         if selected_runtime is None:
-            selected_runtime = "structured" if class_packages is not None else "legacy"
+            selected_runtime = (
+                "structured" if class_packages is not None or mission is not None else "legacy"
+            )
         if class_packages is not None and selected_runtime != "structured":
             raise ValueError("--class-pack requires --runtime structured")
-        runtime = StructuredRuntimeConfig() if selected_runtime == "structured" else None
+        if mission is not None and selected_runtime != "structured":
+            raise ValueError("--mission-program requires --runtime structured")
+        runtime = (
+            StructuredRuntimeConfig(mission=mission) if selected_runtime == "structured" else None
+        )
         from .scene_animation import load_scene_animation
 
         animation = (

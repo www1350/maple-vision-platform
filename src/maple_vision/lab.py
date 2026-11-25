@@ -21,6 +21,7 @@ from .animation_pack import MAX_SOURCE_BYTES
 from .catalog import strict_json
 from .class_package import MAX_CLASS_PACKAGE_BYTES, ClassPackage
 from .map_pack import MapPack
+from .mission_verification import MissionOracle
 from .onnx_detector import OnnxDetector
 from .profiles import LoadedClassProfile, parse_loaded_class_profile
 from .runtime_evidence import (
@@ -300,6 +301,10 @@ def _execute_episode(
     map_pack = simulator.map_pack
     settings = _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
     mission_maps, expected_drops = _mission_requirements(map_pack)
+    mission_oracle = None
+    if runtime is not None and runtime.mission is not None:
+        runtime.mission.bind_route(mission_maps)
+        mission_oracle = MissionOracle(runtime.mission)
     markers = None if map_pack is None else map_pack.markers
     renderer = SceneRenderer(sprite_pack=sprite_pack, map_pack=map_pack, animation=animation)
     fault_frames = _Frames(config.fault)
@@ -322,6 +327,7 @@ def _execute_episode(
             mission_maps,
             class_spec=spec,
             config=runtime.tasks,
+            mission=runtime.mission,
             **({"capabilities": simulator.capabilities} if class_package is not None else {}),
         )
     )
@@ -451,6 +457,8 @@ def _execute_episode(
                 "applied_action": asdict(applied),
             }
         events.update(outcome.events)
+        if mission_oracle is not None:
+            mission_oracle.observe(before, outcome.snapshot, outcome.events)
         if "loot" in outcome.events and before.map_id == outcome.snapshot.map_id:
             remaining = {drop.id for drop in outcome.snapshot.drops}
             collected_drops.update(
@@ -511,6 +519,9 @@ def _execute_episode(
         and events["monster_defeated"] == expected_drops
         and len(collected_drops) == expected_drops
     )
+    mission_result = None if mission_oracle is None else mission_oracle.result(final)
+    if mission_result is not None:
+        oracle_pass = mission_result["completed"]
     if status == "completed" and not oracle_pass:
         status, reason = "failed", "independent_goal_check_failed"
     elapsed = time.perf_counter() - wall_start
@@ -551,6 +562,9 @@ def _execute_episode(
             "terminal": {**terminal, "observation": asdict(observation)},
         },
     }
+    if mission_result is not None:
+        summary["mission_evidence"] = mission_result
+
     if runtime is not None:
         assert isinstance(policy, TaskRuntime) and belief is not None
         summary["runtime_evidence"] = {
@@ -751,6 +765,10 @@ def verify_run(output: Path) -> dict[str, Any]:
         raise ValueError("run omits provenance for its injected class profile")
     map_pack = simulator.map_pack
     mission_maps, expected_drops = _mission_requirements(map_pack)
+    mission_oracle = None
+    if runtime is not None and runtime.mission is not None:
+        runtime.mission.bind_route(mission_maps)
+        mission_oracle = MissionOracle(runtime.mission)
     map_manifest_path = output / "map-pack.json"
     if map_pack is not None:
         if "map-pack.json" not in files:
@@ -872,6 +890,8 @@ def verify_run(output: Path) -> dict[str, Any]:
             actions[requested.kind] += 1
             outcome = simulator.step(applied)
             events.update(outcome.events)
+            if mission_oracle is not None:
+                mission_oracle.observe(snapshot, outcome.snapshot, outcome.events)
             if "loot" in outcome.events and snapshot.map_id == outcome.snapshot.map_id:
                 remaining = {drop.id for drop in outcome.snapshot.drops}
                 collected_drops.update(
@@ -909,6 +929,14 @@ def verify_run(output: Path) -> dict[str, Any]:
         and events["monster_defeated"] == expected_drops
         and len(collected_drops) == expected_drops
     )
+    if mission_oracle is not None:
+        mission_result = mission_oracle.result(snapshot)
+        if canonical(summary.get("mission_evidence")) != canonical(mission_result):
+            raise ValueError("mission objective witnesses disagree with action replay")
+        oracle_pass = mission_result["completed"]
+    elif "mission_evidence" in summary:
+        raise ValueError("mission evidence requires an embedded mission program")
+
     if summary.get("status") not in {"completed", "failed", "stopped"}:
         raise ValueError("invalid run status")
     if summary["status"] == "completed" and not oracle_pass:
@@ -1108,6 +1136,7 @@ def verify_perception(
         "runtime_evidence",
         "animation",
         "class_package",
+        "mission_evidence",
     ):
         if canonical(reproduced.get(key)) != canonical(summary.get(key)):
             raise ValueError(f"perception replay summary mismatch: {key}")

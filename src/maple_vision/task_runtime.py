@@ -23,6 +23,7 @@ from .class_package import (
     compile_class_package,
 )
 from .contracts import Detection, Status, confidence_value
+from .mission_program import MissionProgram
 from .sim_types import CLASS_SPECS, ClassSpec, SimAction
 from .state_estimation import BeliefState
 from .vision import VisualObservation
@@ -1094,8 +1095,8 @@ class TaskRuntime:
     """Bounded task arbitration for the declared three-job visual mission.
 
     Task candidates, planning, scheduling, receipts and verification are separate
-    executable stages. The current mission grammar remains fight/collect/talk/
-    travel; this is not a generic task DSL or arbitrary platform navigation.
+    executable stages. Optional programs order fight/collect/talk objectives
+    per map. Transitions follow the bound route.
     """
 
     def __init__(
@@ -1106,6 +1107,7 @@ class TaskRuntime:
         class_spec: ClassSpec | None = None,
         config: TaskRuntimeConfig | None = None,
         capabilities: CompiledCapabilities | None = None,
+        mission: MissionProgram | None = None,
     ) -> None:
         if capabilities is not None and (
             type(capabilities) is not CompiledCapabilities
@@ -1148,8 +1150,14 @@ class TaskRuntime:
         ):
             raise ValueError("capability program exceeds configured plan time budget")
         self._capability_state = None if capabilities is None else _CapabilityAttempts(capabilities)
-        self.maps = maps
-        self.phase, self.state, self.reason = "fight", "running", "created"
+        self.mission = mission
+        if mission is not None:
+            if type(mission) is not MissionProgram:
+                raise ValueError("invalid mission program")
+            mission.bind_route(maps)
+        self.maps = maps if mission is None else mission.maps
+        first_phase = "fight" if mission is None else mission.stages[0].phases[0]
+        self.phase, self.state, self.reason = first_phase, "running", "created"
         self.map_index = 0
         self.recoveries = 0
         self.scheduler = ActionScheduler(self.config)
@@ -1297,6 +1305,17 @@ class TaskRuntime:
         self._active_task_id = None
         self.phase, self._phase_steps, self._empty_frames = phase, 0, 0
         self._event("mission_phase_changed", now_ms, previous=previous, following=phase)
+
+    def _next_objective(self, fallback: str, now_ms: int) -> None:
+        phase = fallback
+        if self.mission is not None:
+            phases = self.mission.stages[self.map_index].phases
+            index = phases.index(self.phase) + 1
+            if index < len(phases):
+                phase = phases[index]
+            else:
+                phase = "done" if self.map_index + 1 == len(self.maps) else "travel"
+        self._advance(phase, now_ms)
 
     def _evaluate_effects(self, observation: VisualObservation, now_ms: int) -> None:
         retained: deque[_PendingEffect] = deque()
@@ -1555,7 +1574,12 @@ class TaskRuntime:
                 and self.map_index + 1 < len(self.maps)
                 and observation.map_id == self.maps[self.map_index + 1]
             ):
-                self._advance("fight", now_ms)
+                phase = (
+                    "fight"
+                    if self.mission is None
+                    else self.mission.stages[self.map_index + 1].phases[0]
+                )
+                self._advance(phase, now_ms)
                 self.map_index += 1
                 self._last_position, self._last_action = None, SimAction()
                 self._stuck_steps = self._attack_attempts = self._denied_actions = 0
@@ -1589,17 +1613,18 @@ class TaskRuntime:
                 return self._finish("failed", "combat_progress_timeout", now_ms)
             self._empty_frames = self._empty_frames + 1 if not monsters else 0
             if self._empty_frames >= self.config.clear_confirmations:
-                self._advance("collect", now_ms)
+                self._next_objective("collect", now_ms)
         elif self.phase == "collect":
             drops = [item for item in observation.detections if item.class_id == "loot"]
             self._empty_frames = self._empty_frames + 1 if not drops else 0
             if self._empty_frames >= self.config.clear_confirmations:
-                self._advance("talk", now_ms)
+                self._next_objective("talk", now_ms)
         elif self.phase == "talk" and observation.dialogue_visible:
-            if self.map_index + 1 == len(self.maps):
-                self._advance("done", now_ms)
-                return self._finish("completed", "visual_mission_conditions_met", now_ms)
-            self._advance("travel", now_ms)
+            self._next_objective(
+                "done" if self.map_index + 1 == len(self.maps) else "travel", now_ms
+            )
+        if self.phase == "done":
+            return self._finish("completed", "visual_mission_conditions_met", now_ms)
         candidates = self._candidates(observation, now_ms)
         selected = self.arbiter.select(candidates, self._active_task_id)
         if selected is None:
@@ -1754,6 +1779,8 @@ class TaskRuntime:
                 "plans_created": self._plan_counter,
             },
         }
+        if self.mission is not None:
+            result["mission_sha256"] = self.mission.content_sha256
         if self._capability_state is not None:
             result["capabilities"] = self._capability_state.to_dict()
         return result
