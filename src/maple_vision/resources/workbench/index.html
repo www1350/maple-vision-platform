@@ -16,6 +16,7 @@
       <nav>
         <button class="nav-item active" data-view="runs" type="button"><span aria-hidden="true">▤</span> 任务与回放</button>
         <button class="nav-item" data-view="recordings" type="button"><span aria-hidden="true">▶</span> 真实录像复核</button>
+        <button class="nav-item" data-view="trial" type="button"><span aria-hidden="true">✓</span> 试用验收账本</button>
         <button class="nav-item" data-view="simulator" type="button"><span aria-hidden="true">◇</span> 单步模拟器</button>
         <button class="nav-item" data-view="routes" type="button"><span aria-hidden="true">↱</span> 地图路线</button>
         <button class="nav-item" data-view="keys" type="button"><span aria-hidden="true">⌨</span> 角色键位</button>
@@ -80,6 +81,14 @@
                 <div class="result-area"><dl id="recording-metrics" class="result-metrics"></dl><div class="evidence-tabs"><span class="tab active">会话、事件与限制</span></div><pre id="recording-evidence" class="json-view" tabindex="0"></pre></div>
               </div>
             </section>
+          </div>
+        </section>
+        <section id="view-trial" class="view hidden">
+          <div class="page-title"><div><h1>试用验收账本</h1><p class="subtitle">分别查看真实录像、合成机制、角色键位和耗镖证据，不混用结论。</p></div><span class="scope-pill">只读机器复验</span></div>
+          <div id="trial-empty" class="notice hidden">本次工作台未登记试用账本。启动时同时指定 --trial-evidence-root 与 --trial-evidence-ledger。</div>
+          <div id="trial-workspace" class="hidden">
+            <div id="trial-lanes" class="content-grid"></div>
+            <section class="panel"><div class="panel-heading"><h2>完整复验结果与限制</h2><span id="trial-status" class="badge success"></span></div><pre id="trial-json" class="json-view" tabindex="0"></pre></section>
           </div>
         </section>
         <section id="view-simulator" class="view hidden">

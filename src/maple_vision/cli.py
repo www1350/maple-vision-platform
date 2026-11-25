@@ -431,6 +431,16 @@ def _parser() -> argparse.ArgumentParser:
         action="append",
         help="read-only verified recording-window coverage JSON (repeatable)",
     )
+    bench.add_argument(
+        "--trial-evidence-root",
+        type=Path,
+        help="read-only root containing a separated trial evidence ledger and its inputs",
+    )
+    bench.add_argument(
+        "--trial-evidence-ledger",
+        type=Path,
+        help="read-only four-lane trial evidence ledger inside --trial-evidence-root",
+    )
     bench.add_argument("--port", type=int, default=8765)
     world = map_commands.add_parser("route", help="plan a weighted route between maps")
     world.add_argument("path", type=Path)
@@ -1072,6 +1082,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     recordings=args.recordings,
                     recording_events=args.recording_events,
                     recording_coverages=args.recording_coverage,
+                    trial_evidence_root=args.trial_evidence_root,
+                    trial_evidence_ledger=args.trial_evidence_ledger,
                 ),
                 host="127.0.0.1",
                 port=args.port,

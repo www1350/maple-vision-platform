@@ -23,6 +23,7 @@ let traceOffset = 0, activeView = "runs", sim = null, simEvidence = "observation
 let playTimer = null, selectionRevision = 0, refreshing = false, simBusy = false;
 let recordingSessions = [], recordingCoverages = [], selectedRecording = "", recordingDetail = null;
 let recordingPlayTimer = null, recordingRevision = 0, recordingsLoaded = false;
+let trialEvidenceLoaded = false;
 
 async function api(path, body) {
   const options = body === undefined ? {} : {
@@ -127,12 +128,36 @@ bind("route-source", "change", clearRoute);
 bind("route-target", "change", clearRoute);
 bind("route-form", "submit", queryRoute);
 function chooseView(view) {
-  if (!["runs","recordings","simulator","routes","keys","content"].includes(view)) view = "runs";
+  if (!["runs","recordings","trial","simulator","routes","keys","content"].includes(view)) view = "runs";
   activeView = view; stopPlay(); stopRecordingPlay();
   document.querySelectorAll(".view").forEach(e=>e.classList.toggle("hidden", e.id !== "view-"+view));
   document.querySelectorAll("[data-view]").forEach(e=>e.classList.toggle("active", e.dataset.view===view));
-  text("view-label", {runs:"任务与回放", recordings:"真实录像复核", simulator:"单步模拟器", routes:"地图路线", keys:"角色键位", content:"内容与模型"}[view]);
+  text("view-label", {runs:"任务与回放", recordings:"真实录像复核", trial:"试用验收账本", simulator:"单步模拟器", routes:"地图路线", keys:"角色键位", content:"内容与模型"}[view]);
   if (view === "recordings" && !recordingsLoaded) loadRecordings().catch(fail);
+  if (view === "trial" && !trialEvidenceLoaded) loadTrialEvidence().catch(fail);
+}
+
+async function loadTrialEvidence() {
+  const data = await api("trial-evidence");
+  trialEvidenceLoaded = true;
+  show("trial-empty", !data.configured);
+  show("trial-workspace", data.configured);
+  if (!data.configured) return;
+  const laneNames = {real_recording:"真实录像", synthetic_mechanics:"合成机制", role_binding:"角色键位", ammunition:"耗镖"};
+  const cards = el("trial-lanes"); cards.replaceChildren();
+  for (const [lane, facts] of Object.entries(data.evidence_lanes)) {
+    const card = document.createElement("section"); card.className = "panel content-group";
+    const heading = document.createElement("h2"); heading.textContent = laneNames[lane] || lane; card.append(heading);
+    for (const [key, value] of Object.entries(facts)) {
+      const item = document.createElement("div"); item.className = "content-item";
+      const strong = document.createElement("strong"); strong.textContent = key;
+      const small = document.createElement("small"); small.textContent = typeof value === "object" ? pretty(value) : String(value);
+      item.append(strong, small); card.append(item);
+    }
+    cards.append(card);
+  }
+  text("trial-status", data.verified ? "四栏已复验" : "未通过");
+  text("trial-json", pretty(data));
 }
 function setupForm() {
   const kind = el("run-kind").value, run = kind === "run";

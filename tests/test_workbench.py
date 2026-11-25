@@ -18,6 +18,8 @@ from maple_vision.workbench import Workbench
 from maple_vision.workbench_api import create_app
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
+REPOSITORY = EXAMPLES.parent
+TRIAL_LEDGER = REPOSITORY / "reports/release-0.10.0/throwing-star-trial-evidence-ledger.json"
 ORIGIN = "http://127.0.0.1"
 
 
@@ -161,6 +163,35 @@ def test_revision_checked_single_step_save_reset_and_restore(tmp_path):
         assert (
             restored["observation"] == moved["observation"] and restored["image"] == moved["image"]
         )
+
+
+def test_read_only_trial_ledger_exposes_four_separate_verified_lanes(tmp_path):
+    app = create_app(
+        tmp_path,
+        EXAMPLES,
+        trial_evidence_root=REPOSITORY,
+        trial_evidence_ledger=TRIAL_LEDGER,
+    )
+    with TestClient(app, base_url=ORIGIN) as http:
+        result = http.get("/api/trial-evidence").json()
+        assert result["configured"] is True and result["verified"] is True
+        assert set(result["evidence_lanes"]) == {
+            "real_recording",
+            "synthetic_mechanics",
+            "role_binding",
+            "ammunition",
+        }
+        assert result["evidence_lanes"]["real_recording"]["raw_pixels_reverified"] is False
+        assert result["evidence_lanes"]["synthetic_mechanics"]["hit_segments"] == 8
+        assert result["evidence_lanes"]["role_binding"]["wrong_profile_denials"] == 12
+        assert result["evidence_lanes"]["ammunition"]["final"] == 192
+        page = http.get("/").text
+        assert "试用验收账本" in page and "trial-lanes" in page
+
+
+def test_trial_ledger_requires_its_read_only_root(tmp_path):
+    with pytest.raises(ValueError, match="supplied together"):
+        create_app(tmp_path, trial_evidence_ledger=TRIAL_LEDGER)
 
 
 def test_local_validation_and_no_arbitrary_paths(tmp_path):
