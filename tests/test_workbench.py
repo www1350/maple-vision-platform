@@ -219,6 +219,7 @@ def test_read_only_recording_replay_and_reviewed_events(tmp_path):
     with TestClient(app, base_url=ORIGIN) as http:
         page = http.get("/").text
         assert "真实录像复核" in page and "recording-range" in page
+        assert "recording-event-prev" in page and "recording-event-next" in page
         listed = http.get("/api/recordings").json()
         assert len(listed) == 1
         assert listed[0]["session_id"] == imported["session_id"]
