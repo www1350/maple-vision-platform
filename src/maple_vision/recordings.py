@@ -57,6 +57,7 @@ _MANIFEST_KEYS = {
     "completion_reason",
     "frames",
 }
+_WINDOW_KEYS = {"source_start_frame"}
 _FRAME_KEYS = {
     "sequence",
     "timestamp_ms",
@@ -212,7 +213,9 @@ def _check_volume(frame_count: int, width: int, height: int, total_bytes: int) -
         raise ValueError("recording import exceeds its total pixel/encoded-byte budget")
 
 
-def _directory_frames(source: Path, stage: Path, fps: float, max_frames: int) -> dict[str, object]:
+def _directory_frames(
+    source: Path, stage: Path, fps: float, max_frames: int, start_frame: int
+) -> dict[str, object]:
     paths = sorted(
         (p for p in source.iterdir() if p.suffix.lower() == ".png"), key=lambda p: p.name
     )
@@ -221,7 +224,10 @@ def _directory_frames(source: Path, stage: Path, fps: float, max_frames: int) ->
     frames: list[dict[str, object]] = []
     dimensions: tuple[int, int] | None = None
     total_bytes = 0
-    for sequence, path in enumerate(paths[:max_frames]):
+    selected_paths = paths[start_frame : start_frame + max_frames]
+    if not selected_paths:
+        raise ValueError("start_frame is beyond the available source frames")
+    for sequence, path in enumerate(selected_paths):
         if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_FRAME_BYTES:
             raise ValueError("PNG source must be a regular local file within the size limit")
         _name(path.name)
@@ -245,8 +251,10 @@ def _directory_frames(source: Path, stage: Path, fps: float, max_frames: int) ->
         "fps": fps,
         "timebase": "nominal_fps_user",
         "total_source_frames": len(paths),
-        "truncated": len(paths) > len(frames),
-        "completion_reason": "frame_limit" if len(paths) > len(frames) else "directory_complete",
+        "truncated": len(paths) > start_frame + len(frames),
+        "completion_reason": (
+            "frame_limit" if len(paths) > start_frame + len(frames) else "directory_complete"
+        ),
         "source_sha256": _sha(canonical_json(selected).encode("utf-8")),
         "source_hash_basis": "selected_png_inputs",
     }
@@ -264,7 +272,7 @@ def _check_video(source: Path) -> None:
 
 
 def _video_frames(
-    source: Path, stage: Path, fps: float | None, max_frames: int
+    source: Path, stage: Path, fps: float | None, max_frames: int, start_frame: int
 ) -> dict[str, object]:
     _check_video(source)
     try:
@@ -295,6 +303,12 @@ def _video_frames(
                 else None
             )
             more = False
+            source_sequence = 0
+            while source_sequence < start_frame:
+                ok, _ = capture.read()
+                if not ok:
+                    raise ValueError("start_frame is beyond the available source frames")
+                source_sequence += 1
             for sequence in range(max_frames + 1):
                 ok, bgr = capture.read()
                 if not ok:
@@ -323,7 +337,7 @@ def _video_frames(
                     width,
                     height,
                     rgb.tobytes(),
-                    f"video-frame-{sequence:06d}",
+                    f"video-frame-{start_frame + sequence:06d}",
                     None,
                 )
                 total_bytes += (stage / str(frame["file"])).stat().st_size
@@ -332,6 +346,8 @@ def _video_frames(
         finally:
             capture.release()
     if not frames:
+        if start_frame:
+            raise ValueError("start_frame is beyond the available source frames")
         raise ValueError("MP4 produced no decodable frames")
     if _file_hash(source) != source_hash:
         raise ValueError("MP4 source changed during decoding")
@@ -347,7 +363,9 @@ def _video_frames(
     }
 
 
-def _presentation_frames(source: Path, stage: Path, max_frames: int) -> dict[str, object]:
+def _presentation_frames(
+    source: Path, stage: Path, max_frames: int, start_frame: int
+) -> dict[str, object]:
     _check_video(source)
     try:
         av = importlib.import_module("av")
@@ -374,16 +392,19 @@ def _presentation_frames(source: Path, stage: Path, max_frames: int) -> dict[str
         clock = stream.time_base
         if not isinstance(clock, Fraction) or clock <= 0:
             raise ValueError("missing video stream time base")
-        for i, decoded in enumerate(container.decode(stream)):
-            if i == max_frames:
+        selected = 0
+        for source_sequence, decoded in enumerate(container.decode(stream)):
+            if source_sequence < start_frame:
+                continue
+            if selected == max_frames:
                 more = True
                 break
             if decoded.time_base != clock or type(decoded.pts) is not int:
                 raise ValueError("video frame has missing or inconsistent presentation time")
             pts = _integer(decoded.pts, "PTS", -(2**63), 2**63 - 1)
-            if i and pts <= previous:
+            if selected and pts <= previous:
                 raise ValueError("presentation timestamps must increase strictly")
-            if i == 0:
+            if selected == 0:
                 first_pts = pts
                 dimensions = (decoded.width, decoded.height)
             previous = pts
@@ -391,29 +412,34 @@ def _presentation_frames(source: Path, stage: Path, max_frames: int) -> dict[str
             height = _integer(decoded.height, "height", 1, 8192)
             if (width, height) != dimensions or width * height > MAX_FRAME_PIXELS:
                 raise ValueError("video dimensions changed or exceed the pixel limit")
-            _check_volume(i + 1, width, height, total_bytes)
+            _check_volume(selected + 1, width, height, total_bytes)
             timestamp = round((pts - first_pts) * clock * 1000)
             row = _write_frame(
                 stage,
-                i,
+                selected,
                 timestamp,
                 width,
                 height,
                 decoded.to_image().tobytes(),
-                f"video-frame-{i:06d}",
+                f"video-frame-{source_sequence:06d}",
                 None,
             )
             row["pts"] = pts
             total_bytes += (stage / str(row["file"])).stat().st_size
-            _check_volume(i + 1, width, height, total_bytes)
+            _check_volume(selected + 1, width, height, total_bytes)
             frames.append(row)
+            selected += 1
         clock_data = {
             "numerator": clock.numerator,
             "denominator": clock.denominator,
             "stream_index": stream.index,
         }
-    if not frames or _file_hash(source) != source_hash:
-        raise ValueError("MP4 has no frames or changed during decoding")
+    if not frames:
+        if start_frame:
+            raise ValueError("start_frame is beyond the available source frames")
+        raise ValueError("MP4 has no frames")
+    if _file_hash(source) != source_hash:
+        raise ValueError("MP4 changed during decoding")
     return {
         "frames": frames,
         "fps": None,
@@ -437,14 +463,16 @@ def import_recording(
     fps: float | None = None,
     max_frames: int = 300,
     presentation_time: bool = False,
+    start_frame: int = 0,
 ) -> dict[str, object]:
     """Normalize a local PNG directory or MP4 into a hashed frame session.
 
     FPS determines a nominal constant-rate timeline. For exact MP4 timing,
     presentation_time binds the rational presentation clock to each decoded frame.
-    This importer keeps the first max_frames frames and does not invent frames.
+    This importer keeps at most max_frames frames from start_frame and does not invent frames.
     """
     max_frames = _integer(max_frames, "max_frames", 1, 10000)
+    start_frame = _integer(start_frame, "start_frame", 0, 2**53)
     rate = _fps(fps) if fps is not None else None
     validate_provenance(source_uri, permission, license)
     source = Path(source)
@@ -461,14 +489,16 @@ def import_recording(
     with _new_output(output, source) as (stage, destination):
         (stage / "frames").mkdir()
         if presentation_time:
-            imported = _presentation_frames(source, stage, max_frames)
+            imported = _presentation_frames(source, stage, max_frames, start_frame)
         elif directory and rate is not None:
-            imported = _directory_frames(source, stage, rate, max_frames)
+            imported = _directory_frames(source, stage, rate, max_frames, start_frame)
         else:
-            imported = _video_frames(source, stage, rate, max_frames)
+            imported = _video_frames(source, stage, rate, max_frames, start_frame)
         frames: Any = imported["frames"]
         manifest: dict[str, object] = {
-            "schema_version": 2 if presentation_time else RECORDING_SCHEMA_VERSION,
+            "schema_version": 3
+            if start_frame
+            else (2 if presentation_time else RECORDING_SCHEMA_VERSION),
             "kind": "offline_recording",
             "scope": "user_supplied_recording",
             "source_kind": "png_directory" if directory else "mp4",
@@ -482,6 +512,8 @@ def import_recording(
             "max_frames": max_frames,
             **imported,
         }
+        if start_frame:
+            manifest["source_start_frame"] = start_frame
         manifest["session_id"] = _sha(canonical_json(manifest).encode("utf-8"))
         _write_json(stage / "manifest.json", manifest)
         summary = validate_recording(stage)
@@ -500,16 +532,27 @@ def _validated_manifest(recording: Path) -> dict[str, Any]:
     manifest = strict_json(manifest_file.read_text(encoding="utf-8"))
     if not isinstance(manifest, dict):
         raise ValueError("recording manifest must be an object")
-    exact = manifest.get("schema_version") == 2
-    if set(manifest) != (_MANIFEST_KEYS | {"video_clock"} if exact else _MANIFEST_KEYS):
+    version = manifest.get("schema_version")
+    exact = manifest.get("timebase") == "video_presentation_ticks"
+    expected_keys = _MANIFEST_KEYS | (_WINDOW_KEYS if version == 3 else set())
+    if exact:
+        expected_keys.add("video_clock")
+    if set(manifest) != expected_keys:
         raise ValueError("recording manifest has missing or unknown fields")
     if (
         type(manifest["schema_version"]) is not int
-        or manifest["schema_version"] not in (1, 2)
+        or manifest["schema_version"] not in (1, 2, 3)
         or manifest["kind"] != "offline_recording"
         or manifest["scope"] != "user_supplied_recording"
     ):
         raise ValueError("unsupported recording schema/kind/scope")
+    if version == 1 and exact or version == 2 and not exact:
+        raise ValueError("recording schema and timebase are inconsistent")
+    source_start = (
+        _integer(manifest["source_start_frame"], "source_start_frame", 1, 2**53)
+        if version == 3
+        else 0
+    )
     identity = {key: value for key, value in manifest.items() if key != "session_id"}
     if manifest["session_id"] != _sha(canonical_json(identity).encode("utf-8")):
         raise ValueError("recording manifest/session hash mismatch")
@@ -553,10 +596,10 @@ def _validated_manifest(recording: Path) -> dict[str, Any]:
             manifest["source_hash_basis"] != "selected_png_inputs"
             or manifest["timebase"] != "nominal_fps_user"
             or hinted is None
-            or hinted < count
-            or manifest["truncated"] != (hinted > count)
+            or hinted < source_start + count
+            or manifest["truncated"] != (hinted > source_start + count)
             or manifest["completion_reason"]
-            != ("frame_limit" if hinted > count else "directory_complete")
+            != ("frame_limit" if hinted > source_start + count else "directory_complete")
         ):
             raise ValueError("inconsistent PNG directory timeline/provenance")
     elif kind == "mp4":
@@ -607,6 +650,12 @@ def _validated_manifest(recording: Path) -> dict[str, Any]:
         ):
             raise ValueError("frame sequence, timeline, dimensions, or path is inconsistent")
         _name(item["source_name"])
+        if (
+            version == 3
+            and kind == "mp4"
+            and item["source_name"] != (f"video-frame-{source_start + index:06d}")
+        ):
+            raise ValueError("MP4 source frame identity is inconsistent with its window")
         if item["source_name"] in source_names:
             raise ValueError("duplicate source frame name")
         source_names.add(item["source_name"])
@@ -657,25 +706,37 @@ def _load_frame(root: Path, item: dict[str, Any]) -> ImageFrame:
 
 
 def _summary(manifest: dict[str, Any]) -> dict[str, object]:
-    return {
-        key: manifest[key]
-        for key in (
-            "schema_version",
-            "session_id",
-            "scope",
-            "source_kind",
-            "frame_count",
-            "fps",
-            "timebase",
-            "width",
-            "height",
-            "truncated",
-            "completion_reason",
+    return (
+        {
+            key: manifest[key]
+            for key in (
+                "schema_version",
+                "session_id",
+                "scope",
+                "source_kind",
+                "frame_count",
+                "fps",
+                "timebase",
+                "width",
+                "height",
+                "truncated",
+                "completion_reason",
+            )
+        }
+        | (
+            {"source_start_frame": manifest["source_start_frame"]}
+            if "source_start_frame" in manifest
+            else {}
         )
-    } | {
-        "validated": True,
-        "timing_accuracy": "source_pts" if manifest["schema_version"] == 2 else "nominal_fps_only",
-    }
+        | {
+            "validated": True,
+            "timing_accuracy": (
+                "source_pts"
+                if manifest["timebase"] == "video_presentation_ticks"
+                else "nominal_fps_only"
+            ),
+        }
+    )
 
 
 def validate_recording(recording: Path) -> dict[str, object]:

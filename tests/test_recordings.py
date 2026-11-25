@@ -86,6 +86,35 @@ def test_import_is_reproducible_and_truncation_explicit(source, tmp_path):
     assert manifest["source_hash_basis"] == "selected_png_inputs"
 
 
+def test_explicit_zero_start_preserves_the_existing_session_identity(source, tmp_path):
+    ingest(source, tmp_path / "default", max_frames=2)
+    ingest(source, tmp_path / "zero", max_frames=2, start_frame=0)
+    assert (tmp_path / "default" / "manifest.json").read_bytes() == (
+        tmp_path / "zero" / "manifest.json"
+    ).read_bytes()
+
+
+def test_png_window_preserves_source_identity_and_reports_remaining_frames(source, tmp_path):
+    output = tmp_path / "window"
+    result = ingest(source, output, max_frames=1, start_frame=1)
+    manifest = json.loads((output / "manifest.json").read_bytes())
+    assert result["schema_version"] == 3
+    assert result["source_start_frame"] == 1
+    assert result["truncated"] is True
+    assert manifest["frames"][0]["source_name"] == "0002.png"
+    assert list(iter_recording(output))[0].timestamp_ms == 0
+
+
+def test_png_final_window_and_out_of_range_start(source, tmp_path):
+    result = ingest(source, tmp_path / "last", max_frames=2, start_frame=2)
+    assert result["frame_count"] == 1
+    assert result["truncated"] is False
+    assert result["completion_reason"] == "directory_complete"
+    with pytest.raises(ValueError, match="start_frame"):
+        ingest(source, tmp_path / "bad", start_frame=3)
+    assert not (tmp_path / "bad").exists()
+
+
 @pytest.mark.parametrize("fps", [None, True, 0, -1, 241, float("nan"), float("inf"), "20"])
 def test_directory_invalid_fps_rejected(source, tmp_path, fps):
     with pytest.raises(ValueError, match="fps"):
@@ -97,6 +126,12 @@ def test_directory_invalid_fps_rejected(source, tmp_path, fps):
 def test_invalid_frame_limit(source, tmp_path, maximum):
     with pytest.raises(ValueError, match="max_frames"):
         ingest(source, tmp_path / "bad", max_frames=maximum)
+
+
+@pytest.mark.parametrize("start", [-1, True, 1.5, 2**53 + 1])
+def test_invalid_start_frame(source, tmp_path, start):
+    with pytest.raises(ValueError, match="start_frame"):
+        ingest(source, tmp_path / "bad", start_frame=start)
 
 
 def test_fractional_fps_uses_explicit_nominal_timeline(source, tmp_path):
@@ -331,6 +366,35 @@ def test_exact_pts_come_from_the_same_decoded_frame(variable_rate_mp4, tmp_path,
     assert [f.timestamp_ms for f in frames] == expected
     for frame, shade in zip(frames, [20, 75, 130, 200][:maximum], strict=True):
         assert abs(frame.pixels[0] - shade) <= 4
+
+
+def test_exact_pts_window_keeps_original_frame_numbers_and_pts(variable_rate_mp4, tmp_path):
+    from fractions import Fraction
+
+    output = tmp_path / "window"
+    result = ingest(
+        variable_rate_mp4,
+        output,
+        fps=None,
+        presentation_time=True,
+        start_frame=2,
+        max_frames=2,
+    )
+    assert result["schema_version"] == 3
+    assert result["source_start_frame"] == 2
+    assert result["truncated"] is False
+    manifest = json.loads((output / "manifest.json").read_bytes())
+    assert [frame["source_name"] for frame in manifest["frames"]] == [
+        "video-frame-000002",
+        "video-frame-000003",
+    ]
+    clock = manifest["video_clock"]
+    unit = Fraction(clock["numerator"], clock["denominator"])
+    assert [frame["pts"] * unit for frame in manifest["frames"]] == [
+        Fraction(3, 10),
+        Fraction(13, 25),
+    ]
+    assert [frame.timestamp_ms for frame in iter_recording(output)] == [0, 220]
 
 
 @pytest.mark.parametrize(

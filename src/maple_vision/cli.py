@@ -187,6 +187,12 @@ def _parser() -> argparse.ArgumentParser:
     recording_import.add_argument("--presentation-time", action="store_true")
     recording_import.add_argument("--fps", type=float)
     recording_import.add_argument("--max-frames", type=int, default=300)
+    recording_import.add_argument(
+        "--start-frame",
+        type=int,
+        default=0,
+        help="zero-based source frame at which this bounded import window begins",
+    )
     label_command = recording_commands.add_parser("label-template")
     label_command.add_argument("path", type=Path)
     label_command.add_argument("output", type=Path)
@@ -766,6 +772,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 fps=args.fps,
                 max_frames=args.max_frames,
                 presentation_time=args.presentation_time,
+                start_frame=args.start_frame,
             )
         return validate_recording(args.path)
     if args.command == "model":

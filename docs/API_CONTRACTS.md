@@ -245,7 +245,8 @@ TesseractOCR(binary=None, language="eng", *, tessdata_dir=None,
              timeout_seconds=5, psm=6)
 ocr.recognize(frame: ImageFrame, crop=None) -> OCRResult
 import_recording(source: Path, output: Path, *, source_uri, permission, license,
-                 fps=None, max_frames=300) -> dict[str, object]
+                 fps=None, max_frames=300, presentation_time=False,
+                 start_frame=0) -> dict[str, object]
 validate_recording(recording: Path) -> dict[str, object]
 iter_recording(recording: Path) -> Iterator[ImageFrame]
 observe_recording(recording: Path, output: Path, detector=None) -> dict[str, object]

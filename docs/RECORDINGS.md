@@ -54,6 +54,17 @@ MP4 解码依赖可选的 OpenCV/FFmpeg 后端。入口检查普通本地文件�
 
 `fps=None` 时读取视频元数据 FPS；明确传入 fps 时采用调用方声明的时间基准。fps 不是抽帧频率：本入口保留连续的前 `max_frames` 个可解码帧。输出每帧仍记录其来源帧序号，避免将遗漏帧虚构为完整录像。
 
+较长录像可以用 `--start-frame` 从零基源帧号开始分段导入，而不提高单会话的资源上限：
+
+```bash
+python -m maple_vision recording import sample.mp4 artifacts/part-2 \
+  --source-uri urn:local:sample --permission explicit_permission \
+  --license "owner-approved local analysis" --presentation-time \
+  --start-frame 300 --max-frames 300
+```
+
+窗口会话使用 schema3，并保存 `source_start_frame`；MP4 帧的 `source_name` 保留原视频帧号，精确时序模式还保留原始 PTS。会话内的 `sequence` 和 `timestamp_ms` 仍从 0 开始，便于独立回放；跨窗口拼接必须使用源帧号，精确模式可进一步使用 PTS，不应把两个窗口各自的零点当成同一时刻。`start_frame=0` 与旧行为和会话身份完全兼容。起点已越过可解码帧时导入失败且不发布输出。
+
 默认导入按恒定帧率估算毫秒时间，报告标记 `timing_accuracy=nominal_fps_only`。对可变帧率 MP4，安装精确时序扩展并显式选用原视频时钟。
 
 ```bash
@@ -61,13 +72,13 @@ python -m pip install -e ".[video-pts]"
 python -m maple_vision recording import sample.mp4 artifacts/pts-session --source-uri urn:local:sample --permission explicit_permission --license "owner-approved local analysis" --presentation-time
 ```
 
-该模式读取第一路视频流。每一帧的 RGB 和显示时间戳取自同一解码帧。schema2 的 `video_clock` 保存流编号及有理数时基，每帧保存原始整数 `pts`。时间间隔等于两帧 PTS 差乘以时基，单位为秒。界面与旧接口使用从第一帧开始、舍入至毫秒的时间。缺失或倒序的时间戳会中止导入，完整校验后才发布目录。变帧率回归的四帧相对时间为 0、40、160、380 毫秒，测试也核对了对应画面和原始起点。报告标记 `timing_accuracy=source_pts`。旧 schema1 录像仍按其保存的恒定帧率读取。
+该模式读取第一路视频流。每一帧的 RGB 和显示时间戳取自同一解码帧。非窗口 schema2 和窗口 schema3 的 `video_clock` 保存流编号及有理数时基，每帧保存原始整数 `pts`。时间间隔等于两帧 PTS 差乘以时基，单位为秒。界面与旧接口使用从本窗口第一帧开始、舍入至毫秒的时间。缺失或倒序的时间戳会中止导入，完整校验后才发布目录。变帧率回归的四帧相对时间为 0、40、160、380 毫秒，测试也核对了对应画面和原始起点。报告标记 `timing_accuracy=source_pts`。旧 schema1 录像仍按其保存的恒定帧率读取。
 
 视频解码器返回停止时，记录 `decoder_stopped`；这一信号本身不区分文件结束和解码中断，元数据中的帧数只作为提示，不冒充实际完整性证明。`truncated=true` 特指已确认还有后续帧、但达到本次帧数上限的情况。
 
 ### 大小限制
 
-默认最多导入 300 帧，可显式设置 1–10000。FPS 范围为 0.1–240；单帧文件最多 64 MiB、尺寸各边最多 8192、最多 16 百万像素；一个会话额外限制累计十亿像素和 1 GiB 编码图像。MP4 输入上限为 2 GiB。达到资源限制时明确失败，不发布一个被误认为已验证的半成品会话。
+默认最多导入 300 帧，可显式设置 1–10000；`start_frame` 范围为 0–2^53。FPS 范围为 0.1–240；单帧文件最多 64 MiB、尺寸各边最多 8192、最多 16 百万像素；一个会话额外限制累计十亿像素和 1 GiB 编码图像。MP4 输入上限为 2 GiB。达到资源限制时明确失败，不发布一个被误认为已验证的半成品会话。
 
 ## 会话合同
 
@@ -83,7 +94,7 @@ recording-session/
 
 manifest 保存 schema、session_id、来源类型、来源说明、源内容指纹、FPS、时间基准、尺寸、帧数、截断状态和各帧条目。session_id 是完整 manifest 主体的规范 JSON SHA-256；每个帧条目记录连续序号、毫秒时间戳、文件路径、规范化 PNG 哈希、RGB 哈希和源帧名称。
 
-验证会拒绝重复/不连续序号、时间基准不一致、超界路径、缺失或额外帧文件、文件或像素哈希不符、尺寸变化和不兼容 schema。迭代器在消费每帧时再次校验内容，避免只在会话开始检查一次。返回的 `ImageFrame` 只包含像素和图像身份，不携带模拟器状态或训练标注。
+验证会拒绝重复/不连续序号、窗口起点与 MP4 源帧名不一致、时间基准不一致、超界路径、缺失或额外帧文件、文件或像素哈希不符、尺寸变化和不兼容 schema。迭代器在消费每帧时再次校验内容，避免只在会话开始检查一次。返回的 `ImageFrame` 只包含像素和图像身份，不携带模拟器状态或训练标注。
 
 文件哈希用于完整性校验，不是对来源真实性的密码学签名。PNG 目录的源指纹覆盖本次选中的原始 PNG 输入；MP4 的源指纹覆盖整个输入文件。源文件未打包进会话的情况会通过 `source_hash_basis` 区分。
 
