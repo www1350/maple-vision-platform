@@ -1,3 +1,4 @@
+import hashlib
 import json
 
 import pytest
@@ -314,6 +315,26 @@ def test_measure_reviewed_strike_preserves_distinct_feedback_frame_timing(tmp_pa
     report = json.loads(output.read_text())
     verify = ["recording", "verify-strike", str(session), str(labels), str(output)]
     assert main(verify) == 0
+    summary_path = tmp_path / "summary.json"
+    summary_args = [
+        "recording",
+        "summarize-strikes",
+        "--verified-case",
+        str(session),
+        str(labels),
+        str(output),
+        "--output",
+        str(summary_path),
+    ]
+    assert main(summary_args) == 0
+    summary = json.loads(summary_path.read_text())
+    assert summary["source_fields_verified"] == summary["observations"] == 1
+    assert summary["source_reports_sha256"] == [hashlib.sha256(output.read_bytes()).hexdigest()]
+    assert summary["domain"] == "authored_fixture"
+    assert (
+        not summary["calibrated_range"] and not summary["feedback_sequences"]["calibrated_timing"]
+    )
+    summary_path.unlink()
     for field, key, value in (
         ("start_geometry", "horizontal_edge_gap_px", 999),
         ("end", "rgb_sha256", "0" * 64),
@@ -322,6 +343,7 @@ def test_measure_reviewed_strike_preserves_distinct_feedback_frame_timing(tmp_pa
         changed[field][key] = value
         output.write_text(json.dumps(changed))
         assert main(verify) == 2
+        assert main(summary_args) == 2 and not summary_path.exists()
     changed = json.loads(json.dumps(report))
     changed["feedback_frames"][0]["rgb_sha256"] = "0" * 64
     output.write_text(json.dumps(changed))
