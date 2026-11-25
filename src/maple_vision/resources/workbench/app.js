@@ -230,6 +230,7 @@ function coverageLabel(coverage) {
 }
 const recordingEventNames={
   rope_contact_visible:"接绳可见",
+  layer_change_visible:"层位变化可见",
   level_change_visible:"层位变化可见",
   attack_motion_visible:"攻击动作可见",
   damage_feedback_visible:"伤害反馈可见"

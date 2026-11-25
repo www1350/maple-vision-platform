@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "kind": "offline_trial_evidence_ledger",
+  "trial_id": "throwing-star-dead-forest-layered-seed-17",
+  "scope": "synthetic_fixture_and_separate_read_only_recording",
+  "evidence": {
+    "real_recording": {
+      "coverage": {
+        "path": "reports/release-0.10.0/throwing-star-real-window-coverage.json",
+        "sha256": "b8e56936ed6c1a257f4ab53f9b736027e2974f356805451f9f571a3c3de7ef46"
+      },
+      "event_reports": [
+        {
+          "path": "reports/release-0.10.0/throwing-star-real-visible-events.json",
+          "sha256": "2de03d6e8f3228bdfea0fba6711a3131bc65e6283e97c548b7018c5828994a51"
+        },
+        {
+          "path": "reports/release-0.10.0/throwing-star-real-tail-visible-events.json",
+          "sha256": "db7d5f6f9f15f531dbea73a2d6670f8e5e0824193b5b6c01c301589bdcda4469"
+        }
+      ],
+      "expected_coverage_sha256": "0b2c6165e350838cce0c00263cdabb9f01efeff57aee5fc74ceea6e2c402c21f",
+      "expected_frames": 2197,
+      "expected_events": 6
+    },
+    "synthetic_mechanics": {
+      "acceptance_report": {
+        "path": "reports/release-0.10.0/throwing-star-layered-two-map-acceptance.json",
+        "sha256": "ca99a4453a16b2a9736d08dd2242c795bdc55a696fdfc5a5831a7f4d0cd77384"
+      },
+      "successful_run_archive": {
+        "path": "reports/release-0.10.0/throwing-star-layered-two-map-acceptance.tar.gz",
+        "sha256": "b7f7d1644fe4584992509965d6dac1ca00ea6fee766cb94eb779f111782c97cc"
+      },
+      "wrong_binding_archive": {
+        "path": "reports/release-0.10.0/throwing-star-layered-wrong-binding.tar.gz",
+        "sha256": "222fed7861edffb75759a2a8814addde91f8bc7ad1832c7aa3828015d3c9c1ae"
+      },
+      "class_package": {
+        "path": "examples/classes/throwing_star.json",
+        "sha256": "7874319aaf9ecbe9853162557f201caf7ab95fb419cc4d66e8798150c79f4456"
+      },
+      "map_package": {
+        "path": "examples/maps/dead-forest-drill.json",
+        "sha256": "36179d6266f05fd6458bdcaa4c342db5ce0c5290a916abdea72f1cd7d38e1805"
+      },
+      "mission_program": {
+        "path": "examples/missions/dead-forest-layered-hunt.json",
+        "sha256": "b0ebce51757bb09a7036187b4e8da50091b6090f8165a9937af1498762a9b556"
+      },
+      "expected": {
+        "steps": 266,
+        "climbs": 32,
+        "casts": 4,
+        "hit_segments": 8,
+        "kills": 2,
+        "reinferred_frames": 267
+      }
+    },
+    "role_binding": {
+      "profile": {
+        "path": "examples/input-bindings/throwing-star.json",
+        "sha256": "c729700df2933a37888862f59fb6282d3a31462236ab140e71a751cd81d7c7fa"
+      },
+      "profile_id": "synthetic-star-throw-demo",
+      "key": "S",
+      "skill": "lucky_seven",
+      "accepted_dispatches": 4,
+      "denied_dispatches": 12
+    },
+    "ammunition": {
+      "scope": "synthetic_fixture_rule",
+      "initial": 200,
+      "per_cast": 2,
+      "successful_casts": 4,
+      "final": 192
+    }
+  },
+  "limitations": [
+    "The real-recording lane verifies persistent report identity and cross-references; raw pixels require the owner-held MP4 and imported sessions for re-verification.",
+    "Visible attack motion is not automatically identified as Lucky Seven and temporal adjacency is not causality.",
+    "The S key, two-hit structure, range, timing and two-star ammunition cost are self-authored synthetic fixture rules, not calibrated CMS parameters.",
+    "No official client receives input and the closed fixed-configuration soak is outside this trial ledger."
+  ]
+}
