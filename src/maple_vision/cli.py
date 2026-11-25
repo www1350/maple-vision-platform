@@ -283,6 +283,11 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--game-version", default="fixture-v1")
     run.add_argument("--asset-registry", type=Path)
     run.add_argument("--sprite-map", type=Path)
+    run.add_argument(
+        "--input-bindings",
+        type=Path,
+        help="versioned role key profile for offline simulated skill dispatch",
+    )
     suite = lab_commands.add_parser("suite")
     suite.add_argument("--output", type=Path, required=True)
     suite.add_argument("--seeds", type=int, default=3)
@@ -845,6 +850,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         )
 
         if args.operation == "run":
+            from .input_bindings import load_input_profile
             from .profiles import load_class_profile
             from .sprite_pack import load_sprite_pack
 
@@ -877,6 +883,9 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 runtime=runtime,
                 animation=animation,
                 class_package=class_package,
+                input_profile=load_input_profile(args.input_bindings)
+                if args.input_bindings
+                else None,
             )
         if args.operation == "suite":
             return run_suite(
