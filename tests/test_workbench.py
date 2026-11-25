@@ -282,7 +282,24 @@ def test_task_run_binds_confirmed_profile_and_exposes_dispatch_evidence(tmp_path
         "profile_id": "小白兔 / 大美人乖乖",
         "bindings": [{"key": "A", "skill": "模拟范围攻击"}],
     }
+    # This synthetic UTF-8 layout fits the editor while its JSON exceeds 4 KiB.
+    input_profile["bindings"].extend(
+        {"skill": f"测试角色已确认的技能编号{index}", "key": f"K{index}"} for index in range(100)
+    )
     with client(tmp_path) as http:
+        assert http.post("/api/input-profile", json=input_profile).json() == input_profile
+        session = http.post("/api/sessions", json={"job": "dragon_knight"}).json()
+        manual = http.post(
+            f"/api/sessions/{session['id']}/key-step",
+            json={
+                "revision": 0,
+                "profile_id": input_profile["profile_id"],
+                "key": "A",
+                "bindings": {entry["key"]: entry["skill"] for entry in input_profile["bindings"]},
+            },
+        )
+        assert len(manual.request.content) > 4096
+        assert manual.json()["receipt"]["accepted"]
         duplicate = {
             **input_profile,
             "bindings": [

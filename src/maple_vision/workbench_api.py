@@ -1,6 +1,7 @@
 """Optional FastAPI interface for the local offline lab."""
 
 import json
+import re
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from importlib.resources import files
@@ -11,7 +12,7 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .input_bindings import InputBindingProfile
+from .input_bindings import MAX_INPUT_BINDINGS_BYTES, InputBindingProfile
 from .lab import FAULTS
 from .sim_types import SimAction
 from .workbench import Conflict, Workbench
@@ -117,8 +118,30 @@ def create_app(root: Path, examples: Path | None = None) -> FastAPI:
             if request.headers.get("content-type", "").split(";")[0] != "application/json":
                 return Response(status_code=415)
             length = request.headers.get("content-length")
-            if length is None or not length.isdecimal() or len(length) > 6 or int(length) > 4096:
+            if length is None or not length.isascii() or not length.isdecimal() or len(length) > 6:
                 return Response(status_code=413)
+            size = int(length)
+            if size > 4096:
+                path = request.url.path
+                if path == "/api/input-profile":
+                    limit = MAX_INPUT_BINDINGS_BYTES
+                elif path == "/api/jobs" or re.fullmatch(
+                    "/api/sessions/[0-9a-f]{32}/key-step", path
+                ):
+                    limit = MAX_INPUT_BINDINGS_BYTES + 4096
+                else:
+                    return Response(status_code=413)
+                if size > limit:
+                    return Response(status_code=413)
+                if path == "/api/jobs":
+                    try:
+                        body = await request.json()
+                    except (ValueError, RecursionError):
+                        return Response(status_code=413)
+                    if not isinstance(body, dict) or not isinstance(
+                        body.get("input_profile"), dict
+                    ):
+                        return Response(status_code=413)
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Cache-Control"] = "no-store"
