@@ -43,6 +43,16 @@
     "alive": true,
     "final_state_sha256": "37799b940073ab97e318a567322cfa0762df372644456ea9812aac96fc9a57e4"
   },
+  "raw_archive": {
+    "file": "spear-multihit-acceptance.tar.gz",
+    "sha256": "8f5ddd4b00bbe8f7f9b2017c5a9ff9a2bc41f08de7654d87ac2a23ac6e47c769",
+    "directory": "run",
+    "verification_commit": "139a99b6cd91f7f1bdb6699198eacbe372714c84",
+    "archived_files_match_manifest": true,
+    "extracted_replay_verified": true,
+    "extracted_reinference_verified": true,
+    "extracted_runtime_identity_matches": false
+  },
   "bundle_hashes": {
     "summary.json": "e920e45a6db38764de13ccdd19f3f34b324710dfefc4dbde6e40821b1d4eafda",
     "trace.jsonl": "d415aa37ecf7e35a7db75d121d2fd06f06b1d9b3824580adad6d1e37dbfd61a7",
@@ -72,6 +82,6 @@
     "This run uses the self-authored synthetic pixel fixture and no official client input.",
     "All three hits are resolved atomically in one simulator step; inter-hit animation timing is not calibrated.",
     "Damage, range, cooldown and MP cost are synthetic values and do not claim CMS Spear Crusher accuracy.",
-    "The transient raw bundle is represented by deterministic commands, tests and hashes rather than committed frame duplication."
+    "Archived frames and trace preserve the original run. Summary and manifest hashes identify those original files."
   ]
 }
