@@ -8,6 +8,8 @@ const names = {
   fire_poison:"火毒（合成）", ice_lightning:"冰雷（合成）", bandit:"刀飞", blood_knight:"血骑士（合成）", builtin:"内置两图", pixel:"像素基线",
   "three-map-fixture":"外部三图", "lifecycle-model":"已验收的混合模型",
   "branch-grove":"林地岔路", "grove-shortcut":"直达遗迹", standard:"逐图战斗、拾取、对话", "talk-then-clear":"先对话再清场", "three-map-visits":"三图访问",
+  cms_east_hill:"射手村东部", branch_fixture:"分支路线样例", henesys:"射手村", east_hill:"射手村东部小山",
+  east_grass:"射手村东部草丛", east_forest:"射手村东部树林", mushroom_forest:"青蘑菇树林",
   queued:"排队中", running:"运行中", finished:"已执行", cancelled:"已取消",
   interrupted:"已中断", error:"出错", completed:"目标完成", stopped:"已停止",
   failed:"目标失败", verified:"校验完成", run:"视觉闭环", replay:"动作重放",
@@ -67,6 +69,11 @@ function displayContent() {
   for (const id of ["map-select", "sim-map"]) options(id, Object.keys(catalog.maps).map(k=>[k,label(k)]));
   options("model-select", catalog.models.map(k=>[k,label(k)]));
   displayMissions();
+  const graphs = Object.keys(catalog.world_graphs);
+  show("routes-empty", !graphs.length);
+  show("routes-workspace", graphs.length > 0);
+  options("route-graph", graphs.map(k => [k, label(k)]));
+  if (graphs.length) displayRouteNodes();
   text("bootstrap-json", pretty(catalog));
 }
 function displayMissions() {
@@ -74,12 +81,53 @@ function displayMissions() {
   options("mission-select", ids.map(id => [id, label(id)]));
 }
 bind("map-select", "change", displayMissions);
+let routeRevision = 0;
+function clearRoute() {
+  routeRevision++;
+  text("route-status", "选择起终点后查询路线。");
+  el("route-steps").replaceChildren();
+}
+function displayRouteNodes() {
+  const graphId = el("route-graph").value;
+  const graph = catalog.world_graphs[graphId];
+  const nodes = graph.nodes.map(k => [k, label(k)]);
+  options("route-source", nodes);
+  options("route-target", nodes);
+  el("route-source").value = graph.nodes.includes("henesys") ? "henesys" : graph.nodes[0];
+  el("route-target").value = graph.nodes.includes("mushroom_forest") ? "mushroom_forest" : graph.nodes.at(-1);
+  text("route-scope", graph.scope === "game_reference" ? "按游戏资料登记的连接规划；实录通行情况待验证。" : "按独立模拟样例的有向连接规划。");
+  clearRoute();
+}
+async function queryRoute() {
+  clearRoute();
+  const revision = routeRevision;
+  const graph = el("route-graph").value;
+  const query = new URLSearchParams({source:el("route-source").value, target:el("route-target").value});
+  text("route-status", "正在查询…");
+  let response;
+  try { response = await api("world-graphs/" + encodeURIComponent(graph) + "/route?" + query); }
+  catch (error) { if (revision === routeRevision) text("route-status", error.message); return; }
+  if (revision !== routeRevision) return;
+  const route = response.route;
+  if (!route) { text("route-status", "已登记的出口无法到达目的地。"); return; }
+  if (!route.portals.length) { text("route-status", "起点和终点相同，无需换图。"); return; }
+  text("route-status", route.portals.length + " 次换图 · 总代价 " + route.total_cost);
+  for (const edge of route.portals) {
+    const step = document.createElement("li");
+    step.textContent = label(edge.source) + " → " + label(edge.target) + "（出口 ID " + edge.portal_id + "）";
+    el("route-steps").append(step);
+  }
+}
+bind("route-graph", "change", displayRouteNodes);
+bind("route-source", "change", clearRoute);
+bind("route-target", "change", clearRoute);
+bind("route-form", "submit", queryRoute);
 function chooseView(view) {
-  if (!["runs","simulator","content"].includes(view)) view = "runs";
+  if (!["runs","simulator","routes","content"].includes(view)) view = "runs";
   activeView = view; stopPlay();
   document.querySelectorAll(".view").forEach(e=>e.classList.toggle("hidden", e.id !== "view-"+view));
   document.querySelectorAll("[data-view]").forEach(e=>e.classList.toggle("active", e.dataset.view===view));
-  text("view-label", {runs:"任务与回放", simulator:"单步模拟器", content:"内容与模型"}[view]);
+  text("view-label", {runs:"任务与回放", simulator:"单步模拟器", routes:"地图路线", content:"内容与模型"}[view]);
 }
 function setupForm() {
   const kind = el("run-kind").value, run = kind === "run";

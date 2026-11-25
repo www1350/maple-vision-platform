@@ -21,6 +21,7 @@ from .failure_bundle import export_failure_bundle, verify_failure_bundle
 from .lab import CapabilityRunConfig, RunConfig, run_episode, verify_perception, verify_run
 from .map_pack import MapPack, load_map_pack
 from .mission_program import MissionProgram, load_mission_program
+from .navigation_graph import WorldMapGraph, load_world_graph
 from .onnx_detector import OnnxDetector
 from .runtime_pipeline import RuntimeConfig
 from .scene import SceneRenderer
@@ -40,6 +41,7 @@ class Workbench:
         self.database = self.root / "sessions.sqlite"
         self.classes: dict[str, ClassPackage | None] = dict.fromkeys(CLASS_SPECS)
         self.maps: dict[str, MapPack | None] = {"builtin": None}
+        self.world_graphs: dict[str, WorldMapGraph] = {}
         self.models: dict[str, Path | None] = {"pixel": None}
         self.missions: dict[str, MissionProgram | None] = {"standard": None}
         if examples is not None:
@@ -58,6 +60,13 @@ class Workbench:
                 if file.stem in self.missions:
                     raise ValueError("duplicate mission selection")
                 self.missions[file.stem] = load_mission_program(file)
+            for filename in ("cms-east-hill.json", "branch-world.json"):
+                path = examples / "navigation" / filename
+                if path.is_file():
+                    graph = load_world_graph(path)
+                    if graph.id in self.world_graphs:
+                        raise ValueError("duplicate world graph ID")
+                    self.world_graphs[graph.id] = graph
             model = examples / "lifecycle-model"
             if (model / "model.onnx").is_file() and (model / "manifest.json").is_file():
                 if find_spec("onnxruntime") is not None:

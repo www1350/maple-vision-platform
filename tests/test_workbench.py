@@ -193,3 +193,29 @@ def test_workbench_mission_selection_and_bound_evidence(tmp_path):
     with client(tmp_path) as http:
         restored = http.get(f"/api/jobs/{rid}").json()
         assert restored["config"]["mission_program"] == content["missions"]["three-map-visits"]
+
+
+def test_workbench_world_routes(tmp_path):
+    with client(tmp_path) as http:
+        graphs = http.get("/api/content").json()["world_graphs"]
+        assert graphs["cms_east_hill"]["scope"] == "game_reference"
+
+        def lookup(graph, source, target):
+            return http.get(
+                f"/api/world-graphs/{graph}/route", params={"source": source, "target": target}
+            )
+
+        route = lookup("cms_east_hill", "henesys", "mushroom_forest").json()["route"]
+        assert [e["target"] for e in route["portals"]] == [
+            "east_hill",
+            "east_grass",
+            "east_forest",
+            "mushroom_forest",
+        ]
+        assert route["total_cost"] == 4
+        assert lookup("cms_east_hill", "henesys", "henesys").json()["route"]["portals"] == []
+        assert lookup("branch_fixture", "camp", "island").json()["route"] is None
+        assert lookup("branch_fixture", "camp", "missing").status_code == 422
+        assert lookup("missing", "camp", "island").status_code == 404
+    with client(tmp_path, examples=None) as http:
+        assert http.get("/api/content").json()["world_graphs"] == {}

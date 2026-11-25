@@ -16,6 +16,7 @@
       <nav>
         <button class="nav-item active" data-view="runs" type="button"><span aria-hidden="true">▤</span> 任务与回放</button>
         <button class="nav-item" data-view="simulator" type="button"><span aria-hidden="true">◇</span> 单步模拟器</button>
+        <button class="nav-item" data-view="routes" type="button"><span aria-hidden="true">↱</span> 地图路线</button>
         <button class="nav-item" data-view="content" type="button"><span aria-hidden="true">▧</span> 内容与模型</button>
       </nav>
       <div class="sidebar-note"><span class="status-dot"></span> 本机离线运行<p>独立模拟环境<br>运行时 LLM 调用 0</p></div>
@@ -64,6 +65,23 @@
           <div class="workspace-grid">
             <section class="panel setup-panel"><div class="panel-heading"><h2>场景配置</h2></div><form id="sim-form"><label for="sim-class">职业</label><select id="sim-class"></select><label for="sim-map">地图</label><select id="sim-map"></select><label for="sim-seed">随机种子</label><input id="sim-seed" type="number" min="0" max="4294967295" value="0"><button id="sim-create" class="button primary full-width" type="submit">创建单步会话</button></form><p class="field-help">会话仅在明确的单步请求时推进。每步为 50ms 模拟时间。</p><div id="sim-controls" class="hidden"><hr><label for="sim-action">动作</label><select id="sim-action"><option value="idle">等待</option><option value="move">移动</option><option value="jump">跳跃</option><option value="attack">普通攻击</option><option value="cast">注册技能</option><option value="climb">攀爬</option><option value="loot">拾取</option><option value="potion_hp">HP 药品</option><option value="potion_mp">MP 药品</option><option value="interact">NPC 交互</option><option value="portal">使用传送门</option><option value="heal">旧职业治疗</option><option value="buff">旧职业 Buff</option><option value="jump_attack">旧职业跳标</option></select><div class="field-row"><div><label for="sim-direction">方向（移动和跳跃）</label><select id="sim-direction"><option value="1">右 / 下</option><option value="0">保持</option><option value="-1">左 / 上</option></select></div><div><label for="sim-skill">技能 ID</label><input id="sim-skill" autocomplete="off" placeholder="选择动作后输入技能 ID"></div></div><label for="sim-target">交互目标 ID</label><input id="sim-target" autocomplete="off" placeholder="NPC 或传送门 ID；普通动作留空"><div class="button-row"><button id="sim-step" class="button primary" type="button">执行一步 →</button><button id="sim-reset" class="button subtle" type="button">重置</button><button id="sim-save" class="button subtle" type="button">保存状态</button><button id="sim-restore" class="button subtle" type="button">恢复存档</button></div></div></section>
             <section class="panel simulator-panel"><div class="panel-heading"><h2>独立场景</h2><span id="sim-clock" class="count">尚未创建</span></div><div class="frame-stage large"><img id="sim-frame" alt="单步模拟器的实际渲染画面" class="hidden"><div id="sim-empty" class="frame-placeholder">创建会话以查看场景</div></div><div id="sim-outcome" class="notice hidden"></div><div class="evidence-tabs" role="tablist" aria-label="模拟器信息"><button class="tab active" data-sim-evidence="observation" role="tab" aria-selected="true" type="button">视觉观测</button><button class="tab" data-sim-evidence="ground_truth" role="tab" aria-selected="false" type="button">验证真值</button></div><p id="sim-evidence-note" class="field-help">视觉观测由实际渲染帧产生。</p><pre id="sim-json" class="json-view" tabindex="0"></pre></section>
+          </div>
+        </section>
+        <section id="view-routes" class="view hidden">
+          <div class="page-title"><h1>地图路线</h1></div>
+          <p id="routes-empty" class="notice hidden">启动工作台时指定 --examples examples 可载入示例世界图。</p>
+          <div id="routes-workspace" class="workspace-grid hidden">
+            <form id="route-form" class="panel setup-panel">
+              <h2>选择起终点</h2>
+              <label for="route-graph">世界图</label><select id="route-graph"></select>
+              <label for="route-source">出发地图</label><select id="route-source"></select>
+              <label for="route-target">目的地图</label><select id="route-target"></select>
+              <button class="button primary full-width" type="submit">查询路线</button>
+            </form>
+            <section class="panel"><h2>传送路线</h2>
+              <p id="route-scope" class="field-help"></p>
+              <p id="route-status" role="status"></p><ol id="route-steps"></ol>
+            </section>
           </div>
         </section>
         <section id="view-content" class="view hidden"><div class="page-title"><div><h1>内容与模型</h1><p class="subtitle">这里列出当前工作台登记的职业、地图、模型和证据输入。</p></div></div><div id="content-cards" class="content-grid"></div><section class="panel"><div class="panel-heading"><h2>工作台能力与配置</h2></div><pre id="bootstrap-json" class="json-view" tabindex="0"></pre></section></section>
