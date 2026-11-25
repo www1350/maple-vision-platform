@@ -29,3 +29,6 @@ wheel==0.48.0
 # Local web workbench and its ASGI test client.
 -r requirements-workbench.txt
 httpx==0.28.1
+
+# Exact local video presentation timestamps and variable-rate fixture tests.
+av==17.1.0

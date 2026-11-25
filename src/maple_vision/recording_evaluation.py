@@ -300,6 +300,7 @@ def benchmark_recordings(
                 "reviewer": case.reviewer,
                 "frames": len(session_samples),
                 "truncated": case.manifest["truncated"],
+                "timebase": case.manifest["timebase"],
                 "source_uri": case.manifest["source_uri"],
                 "permission": case.manifest["permission"],
                 "metrics": evaluate_predictions(session_samples, confidence_threshold=confidence),

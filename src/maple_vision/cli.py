@@ -184,6 +184,7 @@ def _parser() -> argparse.ArgumentParser:
     recording_import.add_argument("--source-uri", required=True)
     recording_import.add_argument("--permission", required=True)
     recording_import.add_argument("--license", required=True)
+    recording_import.add_argument("--presentation-time", action="store_true")
     recording_import.add_argument("--fps", type=float)
     recording_import.add_argument("--max-frames", type=int, default=300)
     label_command = recording_commands.add_parser("label-template")
@@ -622,6 +623,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 license=args.license,
                 fps=args.fps,
                 max_frames=args.max_frames,
+                presentation_time=args.presentation_time,
             )
         return validate_recording(args.path)
     if args.command == "model":

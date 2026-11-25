@@ -54,7 +54,16 @@ MP4 解码依赖可选的 OpenCV/FFmpeg 后端。入口检查普通本地文件�
 
 `fps=None` 时读取视频元数据 FPS；明确传入 fps 时采用调用方声明的时间基准。fps 不是抽帧频率：本入口保留连续的前 `max_frames` 个可解码帧。输出每帧仍记录其来源帧序号，避免将遗漏帧虚构为完整录像。
 
-**当前时间戳是恒定帧率估算，不是原始逐帧 PTS。** 对可变帧率视频不能据此测量精确技能时序；报告明确标记 `timing_accuracy=nominal_fps_only`。视频解码器返回停止时，记录 `decoder_stopped`；这一信号本身不区分文件结束和解码中断，元数据中的帧数只作为提示，不冒充实际完整性证明。`truncated=true` 特指已确认还有后续帧、但达到本次帧数上限的情况。
+默认导入按恒定帧率估算毫秒时间，报告标记 `timing_accuracy=nominal_fps_only`。对可变帧率 MP4，安装精确时序扩展并显式选用原视频时钟。
+
+```bash
+python -m pip install -e ".[video-pts]"
+python -m maple_vision recording import sample.mp4 artifacts/pts-session --source-uri urn:local:sample --permission explicit_permission --license "owner-approved local analysis" --presentation-time
+```
+
+该模式读取第一路视频流。每一帧的 RGB 和显示时间戳取自同一解码帧。schema2 的 `video_clock` 保存流编号及有理数时基，每帧保存原始整数 `pts`。时间间隔等于两帧 PTS 差乘以时基，单位为秒。界面与旧接口使用从第一帧开始、舍入至毫秒的时间。缺失或倒序的时间戳会中止导入，完整校验后才发布目录。变帧率回归的四帧相对时间为 0、40、160、380 毫秒，测试也核对了对应画面和原始起点。报告标记 `timing_accuracy=source_pts`。旧 schema1 录像仍按其保存的恒定帧率读取。
+
+视频解码器返回停止时，记录 `decoder_stopped`；这一信号本身不区分文件结束和解码中断，元数据中的帧数只作为提示，不冒充实际完整性证明。`truncated=true` 特指已确认还有后续帧、但达到本次帧数上限的情况。
 
 ### 大小限制
 
