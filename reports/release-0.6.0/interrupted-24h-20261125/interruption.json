@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "status": "interrupted_without_final_report",
+  "passed": false,
+  "continuous_24h": "not_completed",
+  "requested_wall_seconds": 86400,
+  "last_completed_checkpoint_wall_seconds": 2097.655431215,
+  "completed_episodes": 352,
+  "completed_statuses": {
+    "completed": 352
+  },
+  "independent_goals_passed": 352,
+  "jobs": {
+    "assassin": 118,
+    "dragon_knight": 117,
+    "cleric": 117
+  },
+  "frozen_source_tree": "3949467411e388a290646700fbb4282ee56820f3",
+  "runtime_identity": {
+    "packages": {
+      "Pillow": "13.0.0",
+      "maple-vision-platform": "0.6.0",
+      "numpy": "2.5.5",
+      "onnxruntime": "1.32.0"
+    },
+    "python": "3.12.14",
+    "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+  },
+  "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+  "scope": "v0.6 structured runtime, accepted hybrid ONNX, builtin jobs and two synthetic maps",
+  "observations": [
+    "checkpoint and partial episode stopped changing across repeated checks",
+    "execution handle 62887 returned Unknown process id",
+    "soak.json was absent; original exit code and termination cause unavailable"
+  ],
+  "termination_cause": "unknown",
+  "checkpoint_sha256": "f37e92387fd2d4e801bb1a80374edebbe8344a8a6ba177562860df283fa9df66",
+  "uncompressed_episodes_sha256": "8805e6215c486c987f2a1c4ead013e041c51cd1feee8e636ff79d58dc49f6543",
+  "archives": {
+    "episodes.jsonl.gz": {
+      "sha256": "32b518d1dbb11577f6a37c8a9b74d94bad8d0b3ae7af9fd1a825310179e63dae",
+      "bytes": 318005
+    },
+    "checkpoint.json": {
+      "sha256": "f37e92387fd2d4e801bb1a80374edebbe8344a8a6ba177562860df283fa9df66",
+      "bytes": 19295
+    },
+    "partial-episode.tar.gz": {
+      "sha256": "e8b6f76f0665a6b5179bb2fbb9c60b9f1cd5e361d5c391cef9b8b7378fef45b4",
+      "bytes": 24116
+    }
+  },
+  "partial_episode": "preserved as incomplete; excluded from completed episode denominator"
+}

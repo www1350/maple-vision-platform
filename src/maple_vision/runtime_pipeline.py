@@ -9,6 +9,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
+from .mission_program import MissionProgram
 from .state_estimation import StateConfig
 from .task_runtime import TaskRuntimeConfig
 
@@ -20,31 +21,43 @@ MAX_RUNTIME_CONFIG_BYTES = 64 * 1024
 class RuntimeConfig:
     state: StateConfig = field(default_factory=StateConfig)
     tasks: TaskRuntimeConfig = field(default_factory=TaskRuntimeConfig)
+    mission: MissionProgram | None = None
 
     def __post_init__(self) -> None:
         if type(self.state) is not StateConfig or type(self.tasks) is not TaskRuntimeConfig:
             raise ValueError("runtime configuration requires strict state and task configs")
+        if self.mission is not None and type(self.mission) is not MissionProgram:
+            raise ValueError("invalid mission program")
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "schema_version": 1,
+        result = {
+            "schema_version": 1 if self.mission is None else 2,
             "engine": RUNTIME_ENGINE,
             "state": self.state.to_dict(),
             "tasks": self.tasks.to_dict(),
         }
+        if self.mission is not None:
+            result["mission"] = self.mission.to_dict()
+        return result
 
     @classmethod
     def from_dict(cls, value: object) -> "RuntimeConfig":
+        if not isinstance(value, dict):
+            raise ValueError("invalid structured runtime configuration")
+        fields = {"schema_version", "engine", "state", "tasks"}
+        if value.get("schema_version") == 2:
+            fields.add("mission")
         if (
-            not isinstance(value, dict)
-            or set(value) != {"schema_version", "engine", "state", "tasks"}
+            set(value) != fields
             or type(value["schema_version"]) is not int
-            or value["schema_version"] != 1
+            or value["schema_version"] not in (1, 2)
             or value["engine"] != RUNTIME_ENGINE
         ):
             raise ValueError("invalid structured runtime configuration")
         return cls(
-            StateConfig.from_dict(value["state"]), TaskRuntimeConfig.from_dict(value["tasks"])
+            StateConfig.from_dict(value["state"]),
+            TaskRuntimeConfig.from_dict(value["tasks"]),
+            MissionProgram.from_dict(value["mission"]) if value["schema_version"] == 2 else None,
         )
 
     @property

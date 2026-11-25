@@ -34,6 +34,7 @@ class RunInput(SceneInput):
     max_steps: Annotated[int, Field(ge=1, le=2500)] = 1500
     model: Name = "pixel"
     fault: Name = "none"
+    mission: Name = "standard"
 
 
 class VerifyInput(StrictModel):
@@ -144,6 +145,7 @@ def create_app(root: Path, examples: Path | None = None) -> FastAPI:
                 for name, pack in m.maps.items()
             },
             "models": list(m.models),
+            "missions": {k: None if v is None else v.to_dict() for k, v in m.missions.items()},
             "faults": list(FAULTS),
             "scope": "synthetic_fixture",
         }

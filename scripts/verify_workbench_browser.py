@@ -50,6 +50,17 @@ def verify(url: str, executable: str) -> dict[str, object]:
                 }[action]
             )
             expect(page.locator("#detail-status")).to_have_text("校验完成", timeout=30000)
+        page.select_option("#run-kind", "run")
+        page.select_option("#map-select", "builtin")
+        page.select_option("#class-select", "assassin")
+        page.select_option("#fault-select", "none")
+        page.select_option("#mission-select", "talk-then-clear")
+        page.click("#submit-run")
+        expect(page.locator("#detail-status")).to_have_text("目标完成", timeout=30000)
+        page.click('[data-evidence="summary"]')
+        expect(page.locator("#evidence-json")).to_contain_text("mission_evidence")
+        page.reload()
+        expect(page.locator("#connection-label")).to_have_text("本机已连接")
         page.click('[data-view="simulator"]')
         page.select_option("#sim-class", "bandit")
         page.click("#sim-create")
@@ -75,6 +86,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
         result = {
             "chromium": browser.version,
             "run_outcome": "stopped",
+            "custom_mission_outcome": "completed",
             "evidence_operations": ["replay", "reinfer", "export_bundle", "verify_bundle"],
             "single_step_restore_after_reload": True,
             "mobile_width": 390,

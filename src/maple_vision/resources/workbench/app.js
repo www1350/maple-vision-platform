@@ -7,6 +7,7 @@ const names = {
   assassin:"标飞", dragon_knight:"龙骑士", cleric:"牧师", archer:"弓箭手",
   fire_poison:"火毒（合成）", ice_lightning:"冰雷（合成）", bandit:"刀飞", blood_knight:"血骑士（合成）", builtin:"内置两图", pixel:"像素基线",
   "three-map-fixture":"外部三图", "lifecycle-model":"已验收的混合模型",
+  standard:"逐图战斗、拾取、对话", "talk-then-clear":"先对话再清场", "three-map-visits":"三图访问",
   queued:"排队中", running:"运行中", finished:"已执行", cancelled:"已取消",
   interrupted:"已中断", error:"出错", completed:"目标完成", stopped:"已停止",
   failed:"目标失败", verified:"校验完成", run:"视觉闭环", replay:"动作重放",
@@ -65,8 +66,16 @@ function displayContent() {
   for (const id of ["class-select", "sim-class"]) options(id, Object.keys(catalog.classes).map(k=>[k,label(k)]));
   for (const id of ["map-select", "sim-map"]) options(id, Object.keys(catalog.maps).map(k=>[k,label(k)]));
   options("model-select", catalog.models.map(k=>[k,label(k)]));
+  displayMissions();
   text("bootstrap-json", pretty(catalog));
 }
+function displayMissions() {
+  const route = catalog.maps[el("map-select").value];
+  const compatible = Object.entries(catalog.missions).filter(([,program]) =>
+    program === null || program.stages.every((stage, i) => route[i] === stage.map_id));
+  options("mission-select", compatible.map(([id]) => [id, label(id)]));
+}
+bind("map-select", "change", displayMissions);
 function chooseView(view) {
   if (!["runs","simulator","content"].includes(view)) view = "runs";
   activeView = view; stopPlay();
@@ -202,7 +211,7 @@ bind("refresh","click",refresh); bind("run-kind","change",setupForm);
 bind("run-form","submit",async()=>{
   const kind=el("run-kind").value, body={kind};
   if(kind==="run") Object.assign(body,{job:el("class-select").value,map_id:el("map-select").value,
-    model:el("model-select").value,seed:+el("seed").value,max_steps:+el("max-steps").value,fault:el("fault-select").value});
+    model:el("model-select").value,mission:el("mission-select").value,seed:+el("seed").value,max_steps:+el("max-steps").value,fault:el("fault-select").value});
   else body.source=el("source-select").value;
   el("submit-run").disabled=true;
   try { const created=await api("jobs",body); await chooseJob(created.id); await refresh(); }

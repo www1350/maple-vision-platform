@@ -1,4 +1,6 @@
-# Maple Vision Platform v0.9.0
+# Maple Vision Platform v0.10.0
+
+可通过任务 JSON 和工作台「任务流程」编排每张地图上的战斗、拾取、对话。报告逐项记录实际完成顺序，并支持独立重放。[任务配置与运行](docs/MISSION_PROGRAMS.md)
 
 本地录像现可逐帧标注，按地图、会话、遮挡和目标大小统计漏检。评测报告记录原始像素、标注与检测器身份，可检查与指定训练集的像素重合。[录像评测用法](docs/RECORDINGS.md#逐帧标注与评测)
 

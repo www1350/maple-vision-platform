@@ -20,6 +20,7 @@ from .class_package import ClassPackage, load_class_package
 from .failure_bundle import export_failure_bundle, verify_failure_bundle
 from .lab import CapabilityRunConfig, RunConfig, run_episode, verify_perception, verify_run
 from .map_pack import MapPack, load_map_pack
+from .mission_program import MissionProgram, load_mission_program
 from .onnx_detector import OnnxDetector
 from .runtime_pipeline import RuntimeConfig
 from .scene import SceneRenderer
@@ -40,6 +41,7 @@ class Workbench:
         self.classes: dict[str, ClassPackage | None] = dict.fromkeys(CLASS_SPECS)
         self.maps: dict[str, MapPack | None] = {"builtin": None}
         self.models: dict[str, Path | None] = {"pixel": None}
+        self.missions: dict[str, MissionProgram | None] = {"standard": None}
         if examples is not None:
             if not examples.is_dir():
                 raise ValueError("examples directory does not exist")
@@ -52,6 +54,10 @@ class Workbench:
                 if file.stem in self.maps:
                     raise ValueError("duplicate map selection")
                 self.maps[file.stem] = load_map_pack(file)
+            for file in sorted((examples / "missions").glob("*.json")):
+                if file.stem in self.missions:
+                    raise ValueError("duplicate mission selection")
+                self.missions[file.stem] = load_mission_program(file)
             model = examples / "lifecycle-model"
             if (model / "model.onnx").is_file() and (model / "manifest.json").is_file():
                 if find_spec("onnxruntime") is not None:
@@ -107,8 +113,17 @@ class Workbench:
         return {**dict(row), "config": json.loads(row["config"])}
 
     def submit(self, kind: str, config: dict[str, Any]) -> str:
+        config = dict(config)
         if kind == "run":
             self.check_selection(config["job"], config["map_id"], config["model"])
+            mission_id = config.get("mission", "standard")
+            if mission_id not in self.missions:
+                raise ValueError("unknown mission selection")
+            mission = self.missions[mission_id]
+            if mission is not None:
+                pack = self.maps[config["map_id"]]
+                mission.bind_route(("meadow", "cavern") if pack is None else pack.map_ids)
+            config["mission_program"] = None if mission is None else mission.to_dict()
             config_type = RunConfig if self.classes[config["job"]] is None else CapabilityRunConfig
             config_type(
                 seed=config["seed"],
@@ -176,7 +191,11 @@ class Workbench:
                     self.detector(config["model"]),
                     map_pack=self.maps[config["map_id"]],
                     class_package=package,
-                    runtime=RuntimeConfig(),
+                    runtime=RuntimeConfig(
+                        mission=MissionProgram.from_dict(config["mission_program"])
+                        if config.get("mission_program") is not None
+                        else None
+                    ),
                 )
             else:
                 source = self.job(config["source"])

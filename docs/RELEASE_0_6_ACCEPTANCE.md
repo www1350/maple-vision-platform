@@ -76,3 +76,9 @@
 ### Windows 失败路径的补充验证
 
 PR #8 的首次远端运行中，Ubuntu 和原生训练成功，Windows 在伪造终帧和模拟写盘失败两项反例中失败。回放投影读取器在异常展开时仍持有源文件，Windows 无法移除临时文件。修复将读取器和所有输出流注册到同一个上下文，投影退出时显式关闭。写盘失败测试额外保留生成器引用并检查它已关闭，因而 Linux 也能覆盖该缺陷。该修复只涉及异常路径的资源寿命。上表为首次发布文件树的冻结证据，修复提交的跨平台结果见本轮 PR。[首次 CI](https://github.com/www1350/maple-vision-platform/actions/runs/45517512911) · [PR #8](https://github.com/www1350/maple-vision-platform/pull/8)
+
+## 2026-11-25 的长稳中断记录
+
+固定原始内容树 `3949467411e388a290646700fbb4282ee56820f3` 的一次 86400 秒请求，在最后已完成检查点记录了 **2097.655431215 秒、352 轮**。这些轮次全部达到独立目标条件。后续重复检查发现证据停止更新，原执行会话不可访问，缺少结束报告和退出码，停止原因尚未确定。完整 24 小时验收继续开放。
+
+[中断摘要](../reports/release-0.6.0/interrupted-24h-20261125/interruption.json)保存源代码与模型身份、分母及文件摘要。[原始检查点](../reports/release-0.6.0/interrupted-24h-20261125/checkpoint.json)、[逐轮日志](../reports/release-0.6.0/interrupted-24h-20261125/episodes.jsonl.gz)和[未完成轮次](../reports/release-0.6.0/interrupted-24h-20261125/partial-episode.tar.gz)一并保留。后续持续运行需要独立的稳定执行环境，从新的输出目录重新计时。
