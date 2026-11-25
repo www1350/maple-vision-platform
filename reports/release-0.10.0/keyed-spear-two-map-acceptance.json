@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "scope": "synthetic_fixture",
+  "created_at": "2026-11-25T10:28:07Z",
+  "source_state": "working_tree_before_commit",
+  "inputs": {
+    "class_package": "examples/classes/spear_fighter.json",
+    "class_package_sha256": "a94f5b965b11d802c8b9a76b9e7d5414ac234b394fe91d0d4d326cfac2a4d273",
+    "map_pack": "examples/maps/dead-forest-drill.json",
+    "map_pack_sha256": "498b2ef2dfd1e2acab64695c8981439df61a876d09ccbb2a84b3e7e09e8f2616",
+    "mission_program": "examples/missions/dead-forest-hunt.json",
+    "mission_program_sha256": "60a168894167670d414e50795b7022aa4a8705fca98831d4c76a42318535a0bc",
+    "input_bindings": "examples/input-bindings/spear-fighter.json",
+    "profile_id": "synthetic-spear-fighter-fixture",
+    "binding": {
+      "key": "S",
+      "skill": "triple_thrust"
+    }
+  },
+  "command": "PYTHONPATH=src python -m maple_vision lab run --class-pack examples/classes/spear_fighter.json --job spear_fighter --map-pack examples/maps/dead-forest-drill.json --mission-program examples/missions/dead-forest-hunt.json --input-bindings examples/input-bindings/spear-fighter.json --seed 17 --record-stride 1 --output RUN",
+  "result": {
+    "status": "completed",
+    "reason": "visual_mission_conditions_met",
+    "steps": 102,
+    "simulated_seconds": 5.1,
+    "maps_visited": [
+      "drill_forest_1",
+      "drill_forest_2"
+    ],
+    "actions": {
+      "cast": 2,
+      "idle": 6,
+      "move": 93,
+      "portal": 1
+    },
+    "events": {
+      "attack": 2,
+      "attack_hit": 6,
+      "cast": 2,
+      "map_changed": 1,
+      "monster_defeated": 2,
+      "skill:triple_thrust": 2
+    },
+    "input_dispatch_summary": {
+      "scope": "offline_simulated_skill_dispatch",
+      "attempts": 2,
+      "accepted": 2,
+      "denied": 0,
+      "reasons": {
+        "bound_skill": 2
+      }
+    },
+    "mission_completed": true,
+    "independent_goal_check": true,
+    "alive": true,
+    "final_state_sha256": "08549a5ca70c1d1b612bf773b54a36be6c2245c5f5103d219ec14bdfcfea4b71"
+  },
+  "bundle_hashes": {
+    "summary.json": "9eb97d871fd746d085d79d8c29a0035dd6ac9b887f629d9f6baa8c790d7e7fe4",
+    "trace.jsonl": "173f010f0760c69d8d10b5351449c7c3e602214ed7d5273311f28325a5aa0623",
+    "input-bindings.json": "1857fe07b445f79be656e7e2f2c7221ff27f5ae1aa168f1510f78a852e886312",
+    "class-package.json": "aa1bb1ac1edf45d5248a857a2e3c1405f5b376c1404b3a4f878b0ea4f5d27d7d",
+    "map-pack.json": "c8f31e264b1d4681b42459d8d0b2251dd8e2355560d8a93f31501bd91203fbbd",
+    "runtime-config.json": "c4b06ba07800fdcb6792cc54723084eeb48d8f990aafd20edc6f4a7e1e79efd4",
+    "manifest.json": "2c918eede3b3d9e3eca3539eeaa808818644329d7bf6e89b4278d655a473b398"
+  },
+  "verification": {
+    "action_replay": {
+      "verified": true,
+      "steps_replayed": 102,
+      "files_checked": 112,
+      "independent_goal_check": true,
+      "runtime_identity_matches": true
+    },
+    "reinference": {
+      "verified": true,
+      "action_replay_verified": true,
+      "perception_reproduced": true,
+      "policy_reproduced": true,
+      "structured_runtime_reproduced": true,
+      "trace_steps_compared": 102,
+      "frames_reinferred": 103,
+      "files_unchanged": true
+    }
+  },
+  "limits": [
+    "The key profile and skill are self-authored synthetic fixtures, not a claim about a user's real keyboard settings.",
+    "The run is entirely offline and sends no input to an official client.",
+    "The triple-hit structure is synthetic; real CMS range, damage, MP cost and timing remain uncalibrated.",
+    "The transient raw bundle is represented by deterministic commands, regression tests and file hashes rather than committed frame duplication."
+  ]
+}
