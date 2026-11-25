@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .catalog import strict_json
+from .class_package import ClassPackage
 from .runtime_pipeline import MAX_RUNTIME_CONFIG_BYTES, RuntimeConfig
 from .sim_types import SimAction
 from .task_runtime import ActionIntent
@@ -232,3 +233,36 @@ def validate_runtime_step(
 
 def runtime_summary_fields(runtime: RuntimeConfig | None) -> dict[str, Any]:
     return {} if runtime is None else {"runtime": runtime.manifest()}
+
+
+def validate_runtime_capabilities(data: dict[str, Any], package: ClassPackage | None) -> None:
+    """Bind static class identity without claiming derived beliefs were recomputed."""
+
+    def identity(container: object) -> None:
+        if not isinstance(container, dict):
+            raise ValueError("invalid runtime capability identity container")
+        if package is None:
+            if "capabilities" in container:
+                raise ValueError("unexpected runtime capability identity without external package")
+            return
+        value = container.get("capabilities")
+        if (
+            not isinstance(value, dict)
+            or value.get("class_id") != package.class_id
+            or value.get("package_sha256") != package.content_sha256
+        ):
+            raise ValueError("runtime capability identity disagrees with embedded class package")
+
+    def decision(value: object) -> None:
+        if value is None:
+            return
+        if not isinstance(value, dict):
+            raise ValueError("invalid runtime capability identity decision")
+        identity(value.get("evidence"))
+
+    state = data.get("state")
+    identity(state)
+    assert isinstance(state, dict)
+    decision(state.get("last_decision"))
+    decision(data.get("decision"))
+    decision(data.get("interruption"))

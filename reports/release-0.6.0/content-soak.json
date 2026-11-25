@@ -1,0 +1,1395 @@
+{
+  "24h_wall_soak": "not_completed",
+  "actual_wall_seconds": 60.641942,
+  "animation": {
+    "content": {
+      "bindings": {
+        "player": "acceptance.player"
+      },
+      "pack": {
+        "clips": [
+          {
+            "action_state": "idle",
+            "class_id": "player",
+            "clip_id": "acceptance.player",
+            "entity_id": "acceptance.player",
+            "frames": [
+              {
+                "anchor": [
+                  7,
+                  22
+                ],
+                "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                "duration_ms": 30
+              },
+              {
+                "anchor": [
+                  7,
+                  22
+                ],
+                "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                "duration_ms": 70
+              }
+            ],
+            "game_version": "fixture-v1",
+            "playback": "loop"
+          }
+        ],
+        "kind": "animation-pack",
+        "pack_sha256": "d1b47c03098e6b18f816cf0ef1b995b4eb956780aeadbe299a042accb5e965b4",
+        "schema_version": 1,
+        "scope": "synthetic_fixture",
+        "sources": {
+          "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e": {
+            "asset": {
+              "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+              "entity_id": "acceptance.player",
+              "game_version": "fixture-v1",
+              "height": 22,
+              "license": "CC0-1.0",
+              "media_type": "image/png",
+              "permission": "self_authored",
+              "relative_path": "objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+              "sha256": "4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a",
+              "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+              "width": 14
+            },
+            "rgba_sha256": "ffb82568719ba05ea4a1aa60b1801fcfe982a5839d69e0f905c54bed462a1688",
+            "source_file": "animation_objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+            "visible_bbox": [
+              0,
+              0,
+              14,
+              22
+            ]
+          },
+          "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343": {
+            "asset": {
+              "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+              "entity_id": "acceptance.player",
+              "game_version": "fixture-v1",
+              "height": 22,
+              "license": "CC0-1.0",
+              "media_type": "image/png",
+              "permission": "self_authored",
+              "relative_path": "objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+              "sha256": "f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb",
+              "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+              "width": 14
+            },
+            "rgba_sha256": "8654273991a28cdce94ec8b22ad191ba22b5c60a4e12a0fc1823e27a3c0e184e",
+            "source_file": "animation_objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+            "visible_bbox": [
+              0,
+              0,
+              14,
+              22
+            ]
+          }
+        }
+      }
+    },
+    "content_sha256": "5c4bbed87da69164dec159861560e9012e45ddb69921eff68c82fa2afb19243c",
+    "schema_version": 1
+  },
+  "class_packages": [
+    {
+      "compiler_version": 1,
+      "content": {
+        "bindings": {
+          "airborne": "leap_shot",
+          "area": null,
+          "buff": "focus",
+          "combat": "aimed_shot",
+          "heal": null
+        },
+        "class_id": "archer",
+        "id": "synthetic-archer",
+        "license": "CC0-1.0",
+        "permission": "self_authored",
+        "programs": [
+          {
+            "id": "aimed_shot",
+            "steps": [
+              {
+                "direction": "target",
+                "op": "cast",
+                "skill": "arrow_shot"
+              }
+            ]
+          },
+          {
+            "id": "focus",
+            "steps": [
+              {
+                "direction": 0,
+                "op": "cast",
+                "skill": "focus"
+              }
+            ]
+          },
+          {
+            "id": "leap_shot",
+            "steps": [
+              {
+                "direction": 0,
+                "op": "jump"
+              },
+              {
+                "duration_ms": 50,
+                "op": "wait"
+              },
+              {
+                "direction": "target",
+                "op": "cast",
+                "skill": "air_arrow"
+              }
+            ]
+          }
+        ],
+        "resources": {
+          "initial_ammo": 250,
+          "jump_speed": 280,
+          "max_hp": 110,
+          "max_mp": 70,
+          "walk_speed": 90
+        },
+        "schema_version": 1,
+        "scope": "synthetic_fixture",
+        "skills": [
+          {
+            "cooldown_group": "weapon",
+            "id": "air_arrow",
+            "kind": "damage",
+            "levels": [
+              {
+                "ammo_cost": 1,
+                "cooldown_ms": 250,
+                "duration_ms": 0,
+                "hp_cost": 0,
+                "level": 1,
+                "max_targets": 1,
+                "mp_cost": 2,
+                "power": 18,
+                "range_px": 112,
+                "vertical_range_px": 48
+              }
+            ],
+            "posture": "air",
+            "selected_level": 1,
+            "shape": "directional"
+          },
+          {
+            "cooldown_group": "weapon",
+            "id": "arrow_shot",
+            "kind": "damage",
+            "levels": [
+              {
+                "ammo_cost": 1,
+                "cooldown_ms": 250,
+                "duration_ms": 0,
+                "hp_cost": 0,
+                "level": 1,
+                "max_targets": 1,
+                "mp_cost": 1,
+                "power": 16,
+                "range_px": 108,
+                "vertical_range_px": 38
+              },
+              {
+                "ammo_cost": 1,
+                "cooldown_ms": 250,
+                "duration_ms": 0,
+                "hp_cost": 0,
+                "level": 2,
+                "max_targets": 1,
+                "mp_cost": 2,
+                "power": 22,
+                "range_px": 116,
+                "vertical_range_px": 38
+              }
+            ],
+            "posture": "ground",
+            "selected_level": 2,
+            "shape": "directional"
+          },
+          {
+            "cooldown_group": "focus",
+            "id": "focus",
+            "kind": "buff",
+            "levels": [
+              {
+                "ammo_cost": 0,
+                "cooldown_ms": 500,
+                "duration_ms": 3000,
+                "hp_cost": 0,
+                "level": 1,
+                "max_targets": 0,
+                "mp_cost": 4,
+                "power": 5,
+                "range_px": 0,
+                "vertical_range_px": 0
+              }
+            ],
+            "posture": "any",
+            "selected_level": 1,
+            "shape": "self"
+          }
+        ],
+        "source_uri": "urn:maple-vision:self-authored:archer:1",
+        "version": "1.0.0"
+      },
+      "content_sha256": "b1854737beb550eff4b0ef5d1139f99c9e2e3c8768c318b0d04f107edb11be53",
+      "schema_version": 1
+    },
+    {
+      "compiler_version": 1,
+      "content": {
+        "bindings": {
+          "airborne": null,
+          "area": null,
+          "buff": null,
+          "combat": "dagger_combo",
+          "heal": null
+        },
+        "class_id": "bandit",
+        "id": "synthetic-bandit",
+        "license": "CC0-1.0",
+        "permission": "self_authored",
+        "programs": [
+          {
+            "id": "dagger_combo",
+            "steps": [
+              {
+                "direction": "target",
+                "op": "cast",
+                "skill": "slash"
+              },
+              {
+                "duration_ms": 150,
+                "op": "wait"
+              },
+              {
+                "direction": "target",
+                "op": "cast",
+                "skill": "finisher"
+              }
+            ]
+          }
+        ],
+        "resources": {
+          "initial_ammo": 0,
+          "jump_speed": 280,
+          "max_hp": 120,
+          "max_mp": 70,
+          "walk_speed": 85
+        },
+        "schema_version": 1,
+        "scope": "synthetic_fixture",
+        "skills": [
+          {
+            "cooldown_group": "weapon",
+            "id": "finisher",
+            "kind": "damage",
+            "levels": [
+              {
+                "ammo_cost": 0,
+                "cooldown_ms": 300,
+                "duration_ms": 0,
+                "hp_cost": 3,
+                "level": 1,
+                "max_targets": 1,
+                "mp_cost": 2,
+                "power": 20,
+                "range_px": 42,
+                "vertical_range_px": 38
+              }
+            ],
+            "posture": "ground",
+            "selected_level": 1,
+            "shape": "directional"
+          },
+          {
+            "cooldown_group": "weapon",
+            "id": "slash",
+            "kind": "damage",
+            "levels": [
+              {
+                "ammo_cost": 0,
+                "cooldown_ms": 150,
+                "duration_ms": 0,
+                "hp_cost": 0,
+                "level": 1,
+                "max_targets": 1,
+                "mp_cost": 1,
+                "power": 12,
+                "range_px": 40,
+                "vertical_range_px": 38
+              },
+              {
+                "ammo_cost": 0,
+                "cooldown_ms": 150,
+                "duration_ms": 0,
+                "hp_cost": 0,
+                "level": 2,
+                "max_targets": 1,
+                "mp_cost": 2,
+                "power": 18,
+                "range_px": 42,
+                "vertical_range_px": 38
+              }
+            ],
+            "posture": "ground",
+            "selected_level": 2,
+            "shape": "directional"
+          }
+        ],
+        "source_uri": "urn:maple-vision:self-authored:bandit:1",
+        "version": "1.0.0"
+      },
+      "content_sha256": "4745663d89b2022a491db5d822947be8fc0cc02b822544c77ea949f7ae590da3",
+      "schema_version": 1
+    },
+    {
+      "compiler_version": 1,
+      "content": {
+        "bindings": {
+          "airborne": null,
+          "area": "blood_wave",
+          "buff": null,
+          "combat": "heavy_strike",
+          "heal": "recover"
+        },
+        "class_id": "blood_knight",
+        "id": "synthetic-blood_knight",
+        "license": "CC0-1.0",
+        "permission": "self_authored",
+        "programs": [
+          {
+            "id": "blood_wave",
+            "steps": [
+              {
+                "direction": "target",
+                "op": "cast",
+                "skill": "blood_wave"
+              }
+            ]
+          },
+          {
+            "id": "heavy_strike",
+            "steps": [
+              {
+                "direction": "target",
+                "op": "cast",
+                "skill": "heavy_strike"
+              }
+            ]
+          },
+          {
+            "id": "recover",
+            "steps": [
+              {
+                "direction": 0,
+                "op": "cast",
+                "skill": "recover"
+              }
+            ]
+          }
+        ],
+        "resources": {
+          "initial_ammo": 0,
+          "jump_speed": 280,
+          "max_hp": 160,
+          "max_mp": 60,
+          "walk_speed": 80
+        },
+        "schema_version": 1,
+        "scope": "synthetic_fixture",
+        "skills": [
+          {
+            "cooldown_group": "weapon",
+            "id": "blood_wave",
+            "kind": "damage",
+            "levels": [
+              {
+                "ammo_cost": 0,
+                "cooldown_ms": 300,
+                "duration_ms": 0,
+                "hp_cost": 12,
+                "level": 1,
+                "max_targets": 3,
+                "mp_cost": 0,
+                "power": 30,
+                "range_px": 72,
+                "vertical_range_px": 38
+              }
+            ],
+            "posture": "ground",
+            "selected_level": 1,
+            "shape": "radial"
+          },
+          {
+            "cooldown_group": "weapon",
+            "id": "heavy_strike",
+            "kind": "damage",
+            "levels": [
+              {
+                "ammo_cost": 0,
+                "cooldown_ms": 300,
+                "duration_ms": 0,
+                "hp_cost": 0,
+                "level": 1,
+                "max_targets": 1,
+                "mp_cost": 0,
+                "power": 24,
+                "range_px": 46,
+                "vertical_range_px": 38
+              }
+            ],
+            "posture": "ground",
+            "selected_level": 1,
+            "shape": "directional"
+          },
+          {
+            "cooldown_group": "recover",
+            "id": "recover",
+            "kind": "heal",
+            "levels": [
+              {
+                "ammo_cost": 0,
+                "cooldown_ms": 500,
+                "duration_ms": 0,
+                "hp_cost": 0,
+                "level": 1,
+                "max_targets": 0,
+                "mp_cost": 8,
+                "power": 35,
+                "range_px": 0,
+                "vertical_range_px": 0
+              }
+            ],
+            "posture": "ground",
+            "selected_level": 1,
+            "shape": "self"
+          }
+        ],
+        "source_uri": "urn:maple-vision:self-authored:blood_knight:1",
+        "version": "1.0.0"
+      },
+      "content_sha256": "b094b3b9e70fbc5d69833edd2c0db315230d2fd024552b916ab20444acd090cd",
+      "schema_version": 1
+    }
+  ],
+  "episode_capture": {
+    "bounded_storage": "one_active_episode_plus_retained_failures_and_requested_fault_bundles",
+    "failed_bundles": "retained_original_execution_not_rerun",
+    "full_action_observation_terminal_trace": true,
+    "mode": "single_execution_staging",
+    "record_stride": 16,
+    "successful_normal_bundles": "discarded_after_summary",
+    "wall_and_resources_include_capture_io": true
+  },
+  "episodes": 29,
+  "map_pack": {
+    "content": {
+      "ground": 168,
+      "height": 192,
+      "id": "three-map-fixture",
+      "license": "CC0-1.0",
+      "maps": [
+        {
+          "id": "grove",
+          "ladders": [
+            {
+              "h": 44,
+              "w": 10,
+              "x": 94,
+              "y": 124
+            }
+          ],
+          "marker": [
+            41,
+            157,
+            131
+          ],
+          "monster_x": [
+            130,
+            210,
+            258
+          ],
+          "npcs": [
+            {
+              "h": 24,
+              "id": "grove_guide",
+              "w": 14,
+              "x": 42,
+              "y": 144
+            }
+          ],
+          "platforms": [
+            {
+              "x1": 0,
+              "x2": 320,
+              "y": 168
+            },
+            {
+              "x1": 68,
+              "x2": 132,
+              "y": 124
+            },
+            {
+              "x1": 184,
+              "x2": 246,
+              "y": 100
+            }
+          ],
+          "portals": [
+            {
+              "destination": "quarry",
+              "h": 36,
+              "id": "to_quarry",
+              "w": 20,
+              "x": 292,
+              "y": 132
+            }
+          ],
+          "spawn_x": 24,
+          "theme": "meadow"
+        },
+        {
+          "id": "quarry",
+          "ladders": [
+            {
+              "h": 50,
+              "w": 10,
+              "x": 110,
+              "y": 118
+            }
+          ],
+          "marker": [
+            151,
+            93,
+            171
+          ],
+          "monster_x": [
+            74,
+            150,
+            224
+          ],
+          "npcs": [
+            {
+              "h": 24,
+              "id": "quarry_keeper",
+              "w": 14,
+              "x": 278,
+              "y": 144
+            }
+          ],
+          "platforms": [
+            {
+              "x1": 0,
+              "x2": 320,
+              "y": 168
+            },
+            {
+              "x1": 78,
+              "x2": 148,
+              "y": 118
+            },
+            {
+              "x1": 208,
+              "x2": 276,
+              "y": 94
+            }
+          ],
+          "portals": [
+            {
+              "destination": "ruins",
+              "h": 36,
+              "id": "to_ruins",
+              "w": 20,
+              "x": 8,
+              "y": 132
+            }
+          ],
+          "spawn_x": 268,
+          "theme": "cavern"
+        },
+        {
+          "id": "ruins",
+          "ladders": [
+            {
+              "h": 48,
+              "w": 10,
+              "x": 114,
+              "y": 120
+            }
+          ],
+          "marker": [
+            199,
+            143,
+            77
+          ],
+          "monster_x": [
+            120,
+            196,
+            258
+          ],
+          "npcs": [
+            {
+              "h": 24,
+              "id": "ruins_keeper",
+              "w": 14,
+              "x": 40,
+              "y": 144
+            }
+          ],
+          "platforms": [
+            {
+              "x1": 0,
+              "x2": 320,
+              "y": 168
+            },
+            {
+              "x1": 82,
+              "x2": 154,
+              "y": 120
+            },
+            {
+              "x1": 204,
+              "x2": 268,
+              "y": 96
+            }
+          ],
+          "portals": [
+            {
+              "destination": "grove",
+              "h": 36,
+              "id": "to_grove",
+              "w": 20,
+              "x": 292,
+              "y": 132
+            }
+          ],
+          "spawn_x": 24,
+          "theme": "cavern"
+        }
+      ],
+      "permission": "self_authored",
+      "route": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "source_uri": "urn:maple-vision:self-authored:three-map-fixture",
+      "version": "1.0.0",
+      "width": 320
+    },
+    "content_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+    "schema_version": 1
+  },
+  "model_manifest": null,
+  "partial_episode_bundle": null,
+  "passed": true,
+  "perception_settings": {
+    "implementation": "maple_vision.vision.PixelPerception",
+    "inference_options": null,
+    "loaded_model_sha256": null,
+    "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+    "model_manifest": null,
+    "pipeline": "pixel-fixture",
+    "verifiable_model_binding": true
+  },
+  "requested_wall_seconds": 60,
+  "resources": {
+    "cpu_source": "time.process_time",
+    "discarded_samples": 0,
+    "limitations": [
+      "Sampling may miss short peaks; cadence depends on OS scheduling.",
+      "Current RSS and process lifetime peak RSS are different counters.",
+      "Unsupported memory counters remain null with their reason.",
+      "CPU and memory include other work in this process, not only inference."
+    ],
+    "max_observed_cpu_percent": 100.509516669958,
+    "max_observed_current_rss_bytes": 151388160,
+    "max_samples": 1024,
+    "measurements": 62,
+    "requested_interval_seconds": 1.0,
+    "retained_samples": 62,
+    "retention": "bounded_decimation_preserves_first_and_latest",
+    "samples": [
+      {
+        "cpu_percent_since_previous": 65.690372,
+        "current_rss_bytes": 149938176,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 8.843e-06,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 5.809e-06,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.992479,
+        "current_rss_bytes": 149975040,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 1.001146314,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 1.001067987,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.405128,
+        "current_rss_bytes": 150085632,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 2.019961951,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 2.013822974,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.956395,
+        "current_rss_bytes": 150360064,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 3.040796446,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 3.034212331,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.892373,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 4.041323472,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 4.033662524,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.602866,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 5.045155877,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 5.033508365,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.004705,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 6.047813646,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 6.036213306,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.734452,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 7.04857821,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 7.034320355,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.025186,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 8.051308632,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 8.037303322,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.772718,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 9.051681547,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 9.035402573,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.001016,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 10.052429636,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 10.036160828,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.870021,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 11.055458993,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 11.037886459,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.003133,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 12.056055063,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 12.038513873,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.713127,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 13.057169384,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 13.036756272,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.832463,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 14.06235517,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 14.040258001,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.824696,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 15.063535587,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 15.039683311,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.651185,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 16.063958314,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 16.036616413,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.906141,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 17.067130719,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 17.038847247,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.279278,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 18.067389119,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 18.041899151,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.777615,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 19.068171707,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 19.040456146,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.981942,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 20.068606302,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 20.040710082,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.702441,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 21.071525946,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 21.040645448,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.988315,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 22.073700609,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 22.042703011,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.417045,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 23.074119249,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 23.037289657,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.142433,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 24.076624339,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 24.041222644,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.676352,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 25.076982799,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 25.038343463,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.079544,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 26.085993106,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 26.04815638,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.301423,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 27.087180522,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 27.042349734,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.280103,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 28.087925614,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 28.045897946,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.784208,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 29.089337629,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 29.045148995,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.998754,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 30.09215344,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 30.047952312,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.750147,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 31.092710897,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 31.046009843,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.054375,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 32.097179554,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 32.051024684,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.19896,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 33.09977416,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 33.045588103,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.039777,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 34.102172803,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 34.048385468,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.575956,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 35.104691165,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 35.046652708,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.998892,
+        "current_rss_bytes": 150896640,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 36.105195838,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 36.047146294,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.816586,
+        "current_rss_bytes": 150884352,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 37.106665991,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 37.046779608,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.002752,
+        "current_rss_bytes": 150884352,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 38.108328395,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 38.048469574,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.277958,
+        "current_rss_bytes": 150884352,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 39.108831359,
+        "lifetime_peak_rss_bytes": 151371776,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 39.041748484,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.032324,
+        "current_rss_bytes": 151371776,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 40.11025294,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 40.043493764,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.601116,
+        "current_rss_bytes": 151375872,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 41.111197504,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 41.040445716,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.993755,
+        "current_rss_bytes": 151388160,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 42.112121788,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 42.041307496,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.798353,
+        "current_rss_bytes": 151388160,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 43.113090728,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 43.04025801,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.867716,
+        "current_rss_bytes": 151388160,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 44.113709351,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 44.039552975,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.948529,
+        "current_rss_bytes": 151388160,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 45.116411137,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 45.041738656,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.000013,
+        "current_rss_bytes": 151388160,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 46.117038179,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 46.042365828,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.773352,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 47.117664635,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 47.040724386,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.0004,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 48.11837344,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 48.041437194,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.288053,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 49.123986002,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 49.039890326,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.509517,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 50.126762025,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 50.04777566,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.782639,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 51.127744843,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 51.046582727,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.836815,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 52.130152583,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 52.047354689,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.005737,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 53.149048697,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 53.066309258,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.548663,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 54.150804296,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 54.063543563,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.248189,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 55.153415063,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 55.068642696,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.68909,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 56.153734832,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 56.065852372,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.134704,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 57.155091412,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 57.068557822,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.816931,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 58.155711938,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 58.067346521,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.982957,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 59.158111703,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 59.069575451,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 99.385005,
+        "current_rss_bytes": 151240704,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 60.158508568,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 60.063819921,
+        "unavailable_reason": null
+      },
+      {
+        "cpu_percent_since_previous": 100.430757,
+        "current_rss_bytes": 151248896,
+        "current_rss_source": "linux:/proc/self/statm:resident_pages*SC_PAGE_SIZE",
+        "elapsed_wall_seconds": 60.641797516,
+        "lifetime_peak_rss_bytes": 165658624,
+        "lifetime_peak_rss_source": "resource.getrusage(RUSAGE_SELF).ru_maxrss:KiB",
+        "process_cpu_seconds": 60.54919067,
+        "unavailable_reason": null
+      }
+    ],
+    "sampling_error": null,
+    "schema_version": 1,
+    "scope": "current_process_all_threads_excluding_children",
+    "units": {
+      "cpu_percent_since_previous": "one_logical_cpu_percent; can_exceed_100",
+      "current_rss_bytes": "bytes",
+      "elapsed_wall_seconds": "seconds",
+      "lifetime_peak_rss_bytes": "bytes; process_lifetime_not_soak_only",
+      "process_cpu_seconds": "seconds_since_monitor_start"
+    },
+    "wall_clock_source": "time.monotonic"
+  },
+  "run_error": null,
+  "runtime": {
+    "schema_version": 1,
+    "settings": {
+      "engine": "structured-v1",
+      "schema_version": 1,
+      "state": {
+        "ambiguity_margin": 0.15,
+        "field_ttl_ms": 1000,
+        "max_age_ms": 250,
+        "max_detections": 128,
+        "max_match_distance": 48.0,
+        "max_tracks": 128,
+        "min_confidence": 0.5,
+        "schema_version": 1,
+        "track_ttl_ms": 500
+      },
+      "tasks": {
+        "clear_confirmations": 4,
+        "effect_timeout_ms": 500,
+        "history_limit": 128,
+        "intent_ttl_ms": 250,
+        "max_attack_attempts": 12,
+        "max_denied_actions": 6,
+        "max_observation_age_ms": 250,
+        "max_recoveries": 2,
+        "max_task_steps": 1000,
+        "max_unknown_steps": 12,
+        "minimum_detection_confidence": 0.5,
+        "plan_timeout_ms": 2000,
+        "schema_version": 1,
+        "stuck_steps": 8
+      }
+    },
+    "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+  },
+  "schema_version": 1,
+  "scope": "synthetic_fixture",
+  "simulated_seconds": 698.0999999999999
+}

@@ -519,6 +519,123 @@ print(json.dumps({'pipeline': observation.source_id, 'fixture_object_detection_c
             "source_deleted_before_verification": True,
             "frames_reinferred": map_reinfer["frames_reinferred"],
         }
+        domain_source = scratch / "domain-source.json"
+        shutil.copyfile(checkout / "fixtures/knowledge-domain-demo.json", domain_source)
+        domain_database = scratch / "domain-catalog.sqlite"
+        cli("knowledge", "init", str(domain_database))
+        cli("knowledge", "import", str(domain_database), str(domain_source))
+        domain_snapshot = scratch / "domain-source-snapshot"
+        cli("knowledge", "snapshot", str(domain_database), str(domain_snapshot))
+        domains = scratch / "domains"
+        projection = cli("knowledge", "project-domains", str(domain_snapshot), str(domains))
+        shutil.rmtree(domain_snapshot)
+        domain_source.unlink()
+        domain_database.unlink()
+        require(cli("knowledge", "verify-domains", str(domains))["verified"], "domain replay")
+        levels = cli(
+            "knowledge",
+            "query-domain",
+            str(domains),
+            "skill_levels",
+            "fixture-v1",
+            "--scope",
+            "synthetic_fixture",
+            "--entity-id",
+            "throw",
+        )["records"]
+        require([row["mp_cost"] for row in levels] == [1, 2], "normalized skill levels")
+        checks["catalog_domains"] = projection["summary"]
+
+        asset_index = scratch / "asset-index.sqlite"
+        cli("assets", "index", str(registry), str(asset_index), entry["asset_id"])
+        require(
+            cli("assets", "index-check", str(registry), str(asset_index))["verified"],
+            "installed asset index",
+        )
+        animations = scratch / "animation-pack"
+        shutil.copytree(checkout / "examples/animations/fixture", animations)
+        animation_check = cli("animations", "check", str(animations))
+        first_clip = animation_check["animation_pack"]["clips"][0]
+        binding = scratch / "bindings.json"
+        binding.write_text(json.dumps({first_clip["class_id"]: first_clip["clip_id"]}), "utf-8")
+        animation_scene = scratch / "animation-scene"
+        cli("animations", "scene", str(animations), str(binding), str(animation_scene))
+        cli(
+            "animations",
+            "sample",
+            str(animation_scene),
+            "--clip",
+            first_clip["clip_id"],
+            "--elapsed-ms",
+            "150",
+            "--output",
+            str(scratch / "animation.png"),
+        )
+        animated_data = scratch / "animation-dataset"
+        animation_created = cli(
+            "dataset",
+            "create",
+            str(animated_data),
+            "--profile",
+            "lifecycle",
+            "--sessions",
+            "3",
+            "--frames",
+            "12",
+            "--animation-scene",
+            str(animation_scene),
+        )
+        shutil.rmtree(animations)
+        shutil.rmtree(animation_scene)
+        require(
+            animation_created["schema_version"] == 4
+            and cli("dataset", "check", str(animated_data))["validated"],
+            "portable schema4",
+        )
+        checks["animation_content"] = {
+            "pack_verified": True,
+            "native_sample_written": True,
+            "dataset_schema": 4,
+            "frames": animation_created["frames"],
+        }
+
+        class_source = scratch / "archer.json"
+        shutil.copyfile(checkout / "examples/classes/archer.json", class_source)
+        compiled = cli("classes", "check", str(class_source))
+        class_run = scratch / "class-mission"
+        class_result = cli(
+            "lab",
+            "run",
+            "--output",
+            str(class_run),
+            "--class-pack",
+            str(class_source),
+            "--record-stride",
+            "32",
+        )
+        class_source.unlink()
+        require(
+            class_result["status"] == "completed" and class_result["independent_goal_check"],
+            "installed compiled-class mission",
+        )
+        class_reinfer = cli("lab", "reinfer", str(class_run))
+        require(
+            class_reinfer["structured_runtime_reproduced"]
+            and class_reinfer["frames_reinferred"] == class_result["steps"] + 1,
+            "installed external-class reexecution",
+        )
+        layered = scratch / "layered-bundle"
+        cli("lab", "export-bundle", str(class_run), str(layered))
+        shutil.rmtree(class_run)
+        bundle_check = cli("lab", "verify-bundle", str(layered), "--reinfer")
+        require(bundle_check["verified"], "portable layered replay without original run")
+        checks["external_class_and_bundle"] = {
+            "class_id": compiled["capabilities"]["class_id"],
+            "status": class_result["status"],
+            "steps": class_result["steps"],
+            "frames_reinferred": class_reinfer["frames_reinferred"],
+            "layered_bundle": bundle_check,
+        }
         # Exercise python -m as well as the console entry point, without sending messages.
         draft = strict_json(
             execute(

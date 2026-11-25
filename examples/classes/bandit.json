@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "id": "synthetic-bandit",
+  "version": "1.0.0",
+  "scope": "synthetic_fixture",
+  "class_id": "bandit",
+  "source_uri": "urn:maple-vision:self-authored:bandit:1",
+  "permission": "self_authored",
+  "license": "CC0-1.0",
+  "resources": {
+    "max_hp": 120,
+    "max_mp": 70,
+    "initial_ammo": 0,
+    "walk_speed": 85,
+    "jump_speed": 280
+  },
+  "skills": [
+    {
+      "id": "slash",
+      "kind": "damage",
+      "shape": "directional",
+      "posture": "ground",
+      "cooldown_group": "weapon",
+      "selected_level": 2,
+      "levels": [
+        {
+          "level": 1,
+          "power": 12,
+          "range_px": 40,
+          "vertical_range_px": 38,
+          "max_targets": 1,
+          "hp_cost": 0,
+          "mp_cost": 1,
+          "ammo_cost": 0,
+          "cooldown_ms": 150,
+          "duration_ms": 0
+        },
+        {
+          "level": 2,
+          "power": 18,
+          "range_px": 42,
+          "vertical_range_px": 38,
+          "max_targets": 1,
+          "hp_cost": 0,
+          "mp_cost": 2,
+          "ammo_cost": 0,
+          "cooldown_ms": 150,
+          "duration_ms": 0
+        }
+      ]
+    },
+    {
+      "id": "finisher",
+      "kind": "damage",
+      "shape": "directional",
+      "posture": "ground",
+      "cooldown_group": "weapon",
+      "selected_level": 1,
+      "levels": [
+        {
+          "level": 1,
+          "power": 20,
+          "range_px": 42,
+          "vertical_range_px": 38,
+          "max_targets": 1,
+          "hp_cost": 3,
+          "mp_cost": 2,
+          "ammo_cost": 0,
+          "cooldown_ms": 300,
+          "duration_ms": 0
+        }
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "id": "dagger_combo",
+      "steps": [
+        {
+          "op": "cast",
+          "skill": "slash",
+          "direction": "target"
+        },
+        {
+          "op": "wait",
+          "duration_ms": 150
+        },
+        {
+          "op": "cast",
+          "skill": "finisher",
+          "direction": "target"
+        }
+      ]
+    }
+  ],
+  "bindings": {
+    "combat": "dagger_combo",
+    "area": null,
+    "airborne": null,
+    "heal": null,
+    "buff": null
+  }
+}

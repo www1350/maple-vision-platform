@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "id": "synthetic-blood_knight",
+  "version": "1.0.0",
+  "scope": "synthetic_fixture",
+  "class_id": "blood_knight",
+  "source_uri": "urn:maple-vision:self-authored:blood_knight:1",
+  "permission": "self_authored",
+  "license": "CC0-1.0",
+  "resources": {
+    "max_hp": 160,
+    "max_mp": 60,
+    "initial_ammo": 0,
+    "walk_speed": 80,
+    "jump_speed": 280
+  },
+  "skills": [
+    {
+      "id": "heavy_strike",
+      "kind": "damage",
+      "shape": "directional",
+      "posture": "ground",
+      "cooldown_group": "weapon",
+      "selected_level": 1,
+      "levels": [
+        {
+          "level": 1,
+          "power": 24,
+          "range_px": 46,
+          "vertical_range_px": 38,
+          "max_targets": 1,
+          "hp_cost": 0,
+          "mp_cost": 0,
+          "ammo_cost": 0,
+          "cooldown_ms": 300,
+          "duration_ms": 0
+        }
+      ]
+    },
+    {
+      "id": "blood_wave",
+      "kind": "damage",
+      "shape": "radial",
+      "posture": "ground",
+      "cooldown_group": "weapon",
+      "selected_level": 1,
+      "levels": [
+        {
+          "level": 1,
+          "power": 30,
+          "range_px": 72,
+          "vertical_range_px": 38,
+          "max_targets": 3,
+          "hp_cost": 12,
+          "mp_cost": 0,
+          "ammo_cost": 0,
+          "cooldown_ms": 300,
+          "duration_ms": 0
+        }
+      ]
+    },
+    {
+      "id": "recover",
+      "kind": "heal",
+      "shape": "self",
+      "posture": "ground",
+      "cooldown_group": "recover",
+      "selected_level": 1,
+      "levels": [
+        {
+          "level": 1,
+          "power": 35,
+          "range_px": 0,
+          "vertical_range_px": 0,
+          "max_targets": 0,
+          "hp_cost": 0,
+          "mp_cost": 8,
+          "ammo_cost": 0,
+          "cooldown_ms": 500,
+          "duration_ms": 0
+        }
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "id": "heavy_strike",
+      "steps": [
+        {
+          "op": "cast",
+          "skill": "heavy_strike",
+          "direction": "target"
+        }
+      ]
+    },
+    {
+      "id": "blood_wave",
+      "steps": [
+        {
+          "op": "cast",
+          "skill": "blood_wave",
+          "direction": "target"
+        }
+      ]
+    },
+    {
+      "id": "recover",
+      "steps": [
+        {
+          "op": "cast",
+          "skill": "recover",
+          "direction": 0
+        }
+      ]
+    }
+  ],
+  "bindings": {
+    "combat": "heavy_strike",
+    "area": "blood_wave",
+    "airborne": null,
+    "heal": "recover",
+    "buff": null
+  }
+}

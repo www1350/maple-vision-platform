@@ -1,0 +1,902 @@
+{
+  "animation": {
+    "content": {
+      "bindings": {
+        "player": "acceptance.player"
+      },
+      "pack": {
+        "clips": [
+          {
+            "action_state": "idle",
+            "class_id": "player",
+            "clip_id": "acceptance.player",
+            "entity_id": "acceptance.player",
+            "frames": [
+              {
+                "anchor": [
+                  7,
+                  22
+                ],
+                "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                "duration_ms": 30
+              },
+              {
+                "anchor": [
+                  7,
+                  22
+                ],
+                "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                "duration_ms": 70
+              }
+            ],
+            "game_version": "fixture-v1",
+            "playback": "loop"
+          }
+        ],
+        "kind": "animation-pack",
+        "pack_sha256": "d1b47c03098e6b18f816cf0ef1b995b4eb956780aeadbe299a042accb5e965b4",
+        "schema_version": 1,
+        "scope": "synthetic_fixture",
+        "sources": {
+          "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e": {
+            "asset": {
+              "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+              "entity_id": "acceptance.player",
+              "game_version": "fixture-v1",
+              "height": 22,
+              "license": "CC0-1.0",
+              "media_type": "image/png",
+              "permission": "self_authored",
+              "relative_path": "objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+              "sha256": "4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a",
+              "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+              "width": 14
+            },
+            "rgba_sha256": "ffb82568719ba05ea4a1aa60b1801fcfe982a5839d69e0f905c54bed462a1688",
+            "source_file": "animation_objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+            "visible_bbox": [
+              0,
+              0,
+              14,
+              22
+            ]
+          },
+          "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343": {
+            "asset": {
+              "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+              "entity_id": "acceptance.player",
+              "game_version": "fixture-v1",
+              "height": 22,
+              "license": "CC0-1.0",
+              "media_type": "image/png",
+              "permission": "self_authored",
+              "relative_path": "objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+              "sha256": "f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb",
+              "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+              "width": 14
+            },
+            "rgba_sha256": "8654273991a28cdce94ec8b22ad191ba22b5c60a4e12a0fc1823e27a3c0e184e",
+            "source_file": "animation_objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+            "visible_bbox": [
+              0,
+              0,
+              14,
+              22
+            ]
+          }
+        }
+      }
+    },
+    "content_sha256": "5c4bbed87da69164dec159861560e9012e45ddb69921eff68c82fa2afb19243c",
+    "schema_version": 1
+  },
+  "animation_origin": "synthetic_geometry_with_versioned_animation",
+  "class_counts": {
+    "test": {
+      "ladder": 36,
+      "loot": 17,
+      "monster": 48,
+      "npc": 30,
+      "platform": 108,
+      "player": 36,
+      "portal": 36
+    },
+    "train": {
+      "ladder": 54,
+      "loot": 26,
+      "monster": 72,
+      "npc": 45,
+      "platform": 162,
+      "player": 54,
+      "portal": 54
+    },
+    "val": {
+      "ladder": 18,
+      "loot": 9,
+      "monster": 24,
+      "npc": 15,
+      "platform": 54,
+      "player": 18,
+      "portal": 18
+    }
+  },
+  "coverage": {
+    "basis": "replayed_training_scenario_truth_and_visible_rendered_labels",
+    "by_split": {
+      "test": {
+        "class_counts": {
+          "ladder": 36,
+          "loot": 17,
+          "monster": 48,
+          "npc": 30,
+          "platform": 108,
+          "player": 36,
+          "portal": 36
+        },
+        "frames": 36,
+        "maps": {
+          "grove": {
+            "class_counts": {
+              "ladder": 12,
+              "loot": 6,
+              "monster": 12,
+              "npc": 10,
+              "platform": 36,
+              "player": 12,
+              "portal": 12
+            },
+            "frames": 12,
+            "phase_counts": {
+              "cleared": 2,
+              "combat": 2,
+              "dialogue": 2,
+              "loot": 2,
+              "spawn": 2,
+              "transition": 2
+            },
+            "player_position_bins": {
+              "left": 4,
+              "left_edge": 4,
+              "middle": 2,
+              "right": 2,
+              "right_edge": 0
+            },
+            "tag_counts": {
+              "attack_hit": 4,
+              "cleared": 6,
+              "dialogue_visible": 2,
+              "high_platform": 0,
+              "left_edge": 4,
+              "loot_collected": 2,
+              "loot_present": 2,
+              "map_transition": 2,
+              "monsters_present": 4,
+              "not_grounded": 0,
+              "right_edge": 0
+            }
+          },
+          "quarry": {
+            "class_counts": {
+              "ladder": 12,
+              "loot": 6,
+              "monster": 18,
+              "npc": 10,
+              "platform": 36,
+              "player": 12,
+              "portal": 12
+            },
+            "frames": 12,
+            "phase_counts": {
+              "cleared": 2,
+              "combat": 2,
+              "dialogue": 2,
+              "loot": 2,
+              "spawn": 2,
+              "transition": 2
+            },
+            "player_position_bins": {
+              "left": 1,
+              "left_edge": 2,
+              "middle": 2,
+              "right": 7,
+              "right_edge": 0
+            },
+            "tag_counts": {
+              "attack_hit": 4,
+              "cleared": 4,
+              "dialogue_visible": 2,
+              "high_platform": 0,
+              "left_edge": 2,
+              "loot_collected": 2,
+              "loot_present": 2,
+              "map_transition": 2,
+              "monsters_present": 6,
+              "not_grounded": 0,
+              "right_edge": 0
+            }
+          },
+          "ruins": {
+            "class_counts": {
+              "ladder": 12,
+              "loot": 5,
+              "monster": 18,
+              "npc": 10,
+              "platform": 36,
+              "player": 12,
+              "portal": 12
+            },
+            "frames": 12,
+            "phase_counts": {
+              "cleared": 2,
+              "combat": 2,
+              "dialogue": 2,
+              "loot": 2,
+              "spawn": 2,
+              "transition": 2
+            },
+            "player_position_bins": {
+              "left": 4,
+              "left_edge": 4,
+              "middle": 2,
+              "right": 2,
+              "right_edge": 0
+            },
+            "tag_counts": {
+              "attack_hit": 4,
+              "cleared": 4,
+              "dialogue_visible": 2,
+              "high_platform": 0,
+              "left_edge": 4,
+              "loot_collected": 2,
+              "loot_present": 2,
+              "map_transition": 2,
+              "monsters_present": 6,
+              "not_grounded": 0,
+              "right_edge": 0
+            }
+          }
+        },
+        "phase_counts": {
+          "cleared": 6,
+          "combat": 6,
+          "dialogue": 6,
+          "loot": 6,
+          "spawn": 6,
+          "transition": 6
+        },
+        "player_position_bins": {
+          "left": 9,
+          "left_edge": 10,
+          "middle": 6,
+          "right": 11,
+          "right_edge": 0
+        },
+        "tag_counts": {
+          "attack_hit": 12,
+          "cleared": 14,
+          "dialogue_visible": 6,
+          "high_platform": 0,
+          "left_edge": 10,
+          "loot_collected": 6,
+          "loot_present": 6,
+          "map_transition": 6,
+          "monsters_present": 16,
+          "not_grounded": 0,
+          "right_edge": 0
+        }
+      },
+      "train": {
+        "class_counts": {
+          "ladder": 54,
+          "loot": 26,
+          "monster": 72,
+          "npc": 45,
+          "platform": 162,
+          "player": 54,
+          "portal": 54
+        },
+        "frames": 54,
+        "maps": {
+          "grove": {
+            "class_counts": {
+              "ladder": 18,
+              "loot": 9,
+              "monster": 18,
+              "npc": 15,
+              "platform": 54,
+              "player": 18,
+              "portal": 18
+            },
+            "frames": 18,
+            "phase_counts": {
+              "cleared": 3,
+              "combat": 3,
+              "dialogue": 3,
+              "loot": 3,
+              "spawn": 3,
+              "transition": 3
+            },
+            "player_position_bins": {
+              "left": 6,
+              "left_edge": 6,
+              "middle": 3,
+              "right": 3,
+              "right_edge": 0
+            },
+            "tag_counts": {
+              "attack_hit": 6,
+              "cleared": 9,
+              "dialogue_visible": 3,
+              "high_platform": 0,
+              "left_edge": 6,
+              "loot_collected": 3,
+              "loot_present": 3,
+              "map_transition": 3,
+              "monsters_present": 6,
+              "not_grounded": 0,
+              "right_edge": 0
+            }
+          },
+          "quarry": {
+            "class_counts": {
+              "ladder": 18,
+              "loot": 9,
+              "monster": 27,
+              "npc": 15,
+              "platform": 54,
+              "player": 18,
+              "portal": 18
+            },
+            "frames": 18,
+            "phase_counts": {
+              "cleared": 3,
+              "combat": 3,
+              "dialogue": 3,
+              "loot": 3,
+              "spawn": 3,
+              "transition": 3
+            },
+            "player_position_bins": {
+              "left": 3,
+              "left_edge": 2,
+              "middle": 3,
+              "right": 10,
+              "right_edge": 0
+            },
+            "tag_counts": {
+              "attack_hit": 6,
+              "cleared": 6,
+              "dialogue_visible": 3,
+              "high_platform": 0,
+              "left_edge": 2,
+              "loot_collected": 3,
+              "loot_present": 3,
+              "map_transition": 3,
+              "monsters_present": 9,
+              "not_grounded": 0,
+              "right_edge": 0
+            }
+          },
+          "ruins": {
+            "class_counts": {
+              "ladder": 18,
+              "loot": 8,
+              "monster": 27,
+              "npc": 15,
+              "platform": 54,
+              "player": 18,
+              "portal": 18
+            },
+            "frames": 18,
+            "phase_counts": {
+              "cleared": 3,
+              "combat": 3,
+              "dialogue": 3,
+              "loot": 3,
+              "spawn": 3,
+              "transition": 3
+            },
+            "player_position_bins": {
+              "left": 6,
+              "left_edge": 6,
+              "middle": 4,
+              "right": 2,
+              "right_edge": 0
+            },
+            "tag_counts": {
+              "attack_hit": 6,
+              "cleared": 6,
+              "dialogue_visible": 3,
+              "high_platform": 0,
+              "left_edge": 6,
+              "loot_collected": 3,
+              "loot_present": 3,
+              "map_transition": 3,
+              "monsters_present": 9,
+              "not_grounded": 0,
+              "right_edge": 0
+            }
+          }
+        },
+        "phase_counts": {
+          "cleared": 9,
+          "combat": 9,
+          "dialogue": 9,
+          "loot": 9,
+          "spawn": 9,
+          "transition": 9
+        },
+        "player_position_bins": {
+          "left": 15,
+          "left_edge": 14,
+          "middle": 10,
+          "right": 15,
+          "right_edge": 0
+        },
+        "tag_counts": {
+          "attack_hit": 18,
+          "cleared": 21,
+          "dialogue_visible": 9,
+          "high_platform": 0,
+          "left_edge": 14,
+          "loot_collected": 9,
+          "loot_present": 9,
+          "map_transition": 9,
+          "monsters_present": 24,
+          "not_grounded": 0,
+          "right_edge": 0
+        }
+      },
+      "val": {
+        "class_counts": {
+          "ladder": 18,
+          "loot": 9,
+          "monster": 24,
+          "npc": 15,
+          "platform": 54,
+          "player": 18,
+          "portal": 18
+        },
+        "frames": 18,
+        "maps": {
+          "grove": {
+            "class_counts": {
+              "ladder": 6,
+              "loot": 3,
+              "monster": 6,
+              "npc": 5,
+              "platform": 18,
+              "player": 6,
+              "portal": 6
+            },
+            "frames": 6,
+            "phase_counts": {
+              "cleared": 1,
+              "combat": 1,
+              "dialogue": 1,
+              "loot": 1,
+              "spawn": 1,
+              "transition": 1
+            },
+            "player_position_bins": {
+              "left": 2,
+              "left_edge": 2,
+              "middle": 1,
+              "right": 1,
+              "right_edge": 0
+            },
+            "tag_counts": {
+              "attack_hit": 2,
+              "cleared": 3,
+              "dialogue_visible": 1,
+              "high_platform": 0,
+              "left_edge": 2,
+              "loot_collected": 1,
+              "loot_present": 1,
+              "map_transition": 1,
+              "monsters_present": 2,
+              "not_grounded": 0,
+              "right_edge": 0
+            }
+          },
+          "quarry": {
+            "class_counts": {
+              "ladder": 6,
+              "loot": 3,
+              "monster": 9,
+              "npc": 5,
+              "platform": 18,
+              "player": 6,
+              "portal": 6
+            },
+            "frames": 6,
+            "phase_counts": {
+              "cleared": 1,
+              "combat": 1,
+              "dialogue": 1,
+              "loot": 1,
+              "spawn": 1,
+              "transition": 1
+            },
+            "player_position_bins": {
+              "left": 2,
+              "left_edge": 0,
+              "middle": 1,
+              "right": 3,
+              "right_edge": 0
+            },
+            "tag_counts": {
+              "attack_hit": 2,
+              "cleared": 2,
+              "dialogue_visible": 1,
+              "high_platform": 0,
+              "left_edge": 0,
+              "loot_collected": 1,
+              "loot_present": 1,
+              "map_transition": 1,
+              "monsters_present": 3,
+              "not_grounded": 0,
+              "right_edge": 0
+            }
+          },
+          "ruins": {
+            "class_counts": {
+              "ladder": 6,
+              "loot": 3,
+              "monster": 9,
+              "npc": 5,
+              "platform": 18,
+              "player": 6,
+              "portal": 6
+            },
+            "frames": 6,
+            "phase_counts": {
+              "cleared": 1,
+              "combat": 1,
+              "dialogue": 1,
+              "loot": 1,
+              "spawn": 1,
+              "transition": 1
+            },
+            "player_position_bins": {
+              "left": 2,
+              "left_edge": 2,
+              "middle": 1,
+              "right": 1,
+              "right_edge": 0
+            },
+            "tag_counts": {
+              "attack_hit": 2,
+              "cleared": 2,
+              "dialogue_visible": 1,
+              "high_platform": 0,
+              "left_edge": 2,
+              "loot_collected": 1,
+              "loot_present": 1,
+              "map_transition": 1,
+              "monsters_present": 3,
+              "not_grounded": 0,
+              "right_edge": 0
+            }
+          }
+        },
+        "phase_counts": {
+          "cleared": 3,
+          "combat": 3,
+          "dialogue": 3,
+          "loot": 3,
+          "spawn": 3,
+          "transition": 3
+        },
+        "player_position_bins": {
+          "left": 6,
+          "left_edge": 4,
+          "middle": 3,
+          "right": 5,
+          "right_edge": 0
+        },
+        "tag_counts": {
+          "attack_hit": 6,
+          "cleared": 7,
+          "dialogue_visible": 3,
+          "high_platform": 0,
+          "left_edge": 4,
+          "loot_collected": 3,
+          "loot_present": 3,
+          "map_transition": 3,
+          "monsters_present": 8,
+          "not_grounded": 0,
+          "right_edge": 0
+        }
+      }
+    },
+    "position_axis": "player sprite upper-left x in the 320-pixel fixture world",
+    "position_bins": [
+      {
+        "maximum_exclusive": 40,
+        "minimum_inclusive": 0,
+        "name": "left_edge"
+      },
+      {
+        "maximum_exclusive": 120,
+        "minimum_inclusive": 40,
+        "name": "left"
+      },
+      {
+        "maximum_exclusive": 200,
+        "minimum_inclusive": 120,
+        "name": "middle"
+      },
+      {
+        "maximum_exclusive": 280,
+        "minimum_inclusive": 200,
+        "name": "right"
+      },
+      {
+        "maximum_exclusive": 307,
+        "minimum_inclusive": 280,
+        "name": "right_edge"
+      }
+    ],
+    "required_phases_per_map_per_session": [
+      "spawn",
+      "combat",
+      "loot",
+      "cleared",
+      "dialogue",
+      "transition"
+    ],
+    "schema_version": 1,
+    "tags_overlap": true
+  },
+  "frames": 108,
+  "generator_version": "lifecycle-animation-v1",
+  "manifest_sha256": "98906d8f5914e56848a1ea5df8dda98d01447ee6a25ed2a2666d962eb44c88f4",
+  "map_pack": {
+    "content": {
+      "ground": 168,
+      "height": 192,
+      "id": "three-map-fixture",
+      "license": "CC0-1.0",
+      "maps": [
+        {
+          "id": "grove",
+          "ladders": [
+            {
+              "h": 44,
+              "w": 10,
+              "x": 94,
+              "y": 124
+            }
+          ],
+          "marker": [
+            41,
+            157,
+            131
+          ],
+          "monster_x": [
+            130,
+            210,
+            258
+          ],
+          "npcs": [
+            {
+              "h": 24,
+              "id": "grove_guide",
+              "w": 14,
+              "x": 42,
+              "y": 144
+            }
+          ],
+          "platforms": [
+            {
+              "x1": 0,
+              "x2": 320,
+              "y": 168
+            },
+            {
+              "x1": 68,
+              "x2": 132,
+              "y": 124
+            },
+            {
+              "x1": 184,
+              "x2": 246,
+              "y": 100
+            }
+          ],
+          "portals": [
+            {
+              "destination": "quarry",
+              "h": 36,
+              "id": "to_quarry",
+              "w": 20,
+              "x": 292,
+              "y": 132
+            }
+          ],
+          "spawn_x": 24,
+          "theme": "meadow"
+        },
+        {
+          "id": "quarry",
+          "ladders": [
+            {
+              "h": 50,
+              "w": 10,
+              "x": 110,
+              "y": 118
+            }
+          ],
+          "marker": [
+            151,
+            93,
+            171
+          ],
+          "monster_x": [
+            74,
+            150,
+            224
+          ],
+          "npcs": [
+            {
+              "h": 24,
+              "id": "quarry_keeper",
+              "w": 14,
+              "x": 278,
+              "y": 144
+            }
+          ],
+          "platforms": [
+            {
+              "x1": 0,
+              "x2": 320,
+              "y": 168
+            },
+            {
+              "x1": 78,
+              "x2": 148,
+              "y": 118
+            },
+            {
+              "x1": 208,
+              "x2": 276,
+              "y": 94
+            }
+          ],
+          "portals": [
+            {
+              "destination": "ruins",
+              "h": 36,
+              "id": "to_ruins",
+              "w": 20,
+              "x": 8,
+              "y": 132
+            }
+          ],
+          "spawn_x": 268,
+          "theme": "cavern"
+        },
+        {
+          "id": "ruins",
+          "ladders": [
+            {
+              "h": 48,
+              "w": 10,
+              "x": 114,
+              "y": 120
+            }
+          ],
+          "marker": [
+            199,
+            143,
+            77
+          ],
+          "monster_x": [
+            120,
+            196,
+            258
+          ],
+          "npcs": [
+            {
+              "h": 24,
+              "id": "ruins_keeper",
+              "w": 14,
+              "x": 40,
+              "y": 144
+            }
+          ],
+          "platforms": [
+            {
+              "x1": 0,
+              "x2": 320,
+              "y": 168
+            },
+            {
+              "x1": 82,
+              "x2": 154,
+              "y": 120
+            },
+            {
+              "x1": 204,
+              "x2": 268,
+              "y": 96
+            }
+          ],
+          "portals": [
+            {
+              "destination": "grove",
+              "h": 36,
+              "id": "to_grove",
+              "w": 20,
+              "x": 292,
+              "y": 132
+            }
+          ],
+          "spawn_x": 24,
+          "theme": "cavern"
+        }
+      ],
+      "permission": "self_authored",
+      "route": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "schema_version": 1,
+      "scope": "synthetic_fixture",
+      "source_uri": "urn:maple-vision:self-authored:three-map-fixture",
+      "version": "1.0.0",
+      "width": 320
+    },
+    "content_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+    "schema_version": 1
+  },
+  "missing_classes": {
+    "test": [],
+    "train": [],
+    "val": []
+  },
+  "missing_maps": {
+    "test": [],
+    "train": [],
+    "val": []
+  },
+  "objects": 934,
+  "origin": "synthetic-fixture-v1",
+  "output": "/workspace/scratch/3968a72df173/v06-acceptance-final/animation-dataset",
+  "profile": "lifecycle",
+  "schema_version": 4,
+  "sessions": 6,
+  "split_frames": {
+    "test": 36,
+    "train": 54,
+    "val": 18
+  },
+  "split_maps": {
+    "test": {
+      "grove": 12,
+      "quarry": 12,
+      "ruins": 12
+    },
+    "train": {
+      "grove": 18,
+      "quarry": 18,
+      "ruins": 18
+    },
+    "val": {
+      "grove": 6,
+      "quarry": 6,
+      "ruins": 6
+    }
+  },
+  "split_sessions": {
+    "test": 2,
+    "train": 3,
+    "val": 1
+  },
+  "trajectory_steps_verified": 5980,
+  "trajectory_verification": "actions_pixels_labels_and_phase_facts",
+  "validated": true,
+  "visual_agent_success_evaluated": false
+}

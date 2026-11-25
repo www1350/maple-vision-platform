@@ -284,6 +284,13 @@ def _training_yaml(dataset: Path, staging: Path) -> tuple[Path, list[str]]:
         # and reproduce a custom-sprite dataset after the source is unavailable.
         sprites = verify_dataset_sprite_pack(dataset, manifest["sprite_pack"])
         sprites.write_sources(snapshot)
+    if "animation" in manifest:
+        from .scene_animation import load_scene_animation
+
+        animation = load_scene_animation(dataset)
+        if animation.manifest() != manifest["animation"]:
+            raise ValueError("training input animation binding changed")
+        animation.write_sources(snapshot)
     # This checks the actual copied bytes, including concurrent source modifications.
     validate_dataset(snapshot)
     for split in ("train", "val", "test"):

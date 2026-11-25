@@ -5,6 +5,7 @@ import importlib.metadata
 import json
 import math
 import platform
+import re
 import shutil
 import time
 from collections import Counter
@@ -16,14 +17,22 @@ from typing import Any
 from PIL import Image
 
 from .agent import AgentDecision, HybridPerception, Supervisor, VisualAgent, verify_visual_effect
+from .animation_pack import MAX_SOURCE_BYTES
 from .catalog import strict_json
+from .class_package import MAX_CLASS_PACKAGE_BYTES, ClassPackage
 from .map_pack import MapPack
 from .onnx_detector import OnnxDetector
 from .profiles import LoadedClassProfile, parse_loaded_class_profile
-from .runtime_evidence import load_run_runtime, runtime_summary_fields, validate_runtime_step
+from .runtime_evidence import (
+    load_run_runtime,
+    runtime_summary_fields,
+    validate_runtime_capabilities,
+    validate_runtime_step,
+)
 from .runtime_pipeline import MAX_RUNTIME_CONFIG_BYTES, RuntimeConfig
 from .scene import ImageFrame, SceneRenderer
-from .sim_types import CLASS_SPECS, RULESET, SimAction
+from .scene_animation import MAX_SCENE_ANIMATION_BYTES, SceneAnimation, load_scene_animation
+from .sim_types import CLASS_SPECS, RULESET, ClassSpec, SimAction
 from .simulation import Simulator
 from .sprite_pack import SpritePack, verify_dataset_sprite_pack
 from .state_estimation import BeliefState, TemporalStateEstimator
@@ -79,6 +88,11 @@ class RunConfig:
     record_stride: int = 4
 
     def __post_init__(self) -> None:
+        self._validate_fields()
+        if self.job not in CLASS_SPECS:
+            raise ValueError("unknown job or fault")
+
+    def _validate_fields(self) -> None:
         for name, value, low, high in (
             ("seed", self.seed, 0, 2**32 - 1),
             ("max_steps", self.max_steps, 1, 100_000),
@@ -86,8 +100,41 @@ class RunConfig:
         ):
             if type(value) is not int or not low <= value <= high:
                 raise ValueError(f"{name} must be an integer in [{low}, {high}]")
-        if self.job not in CLASS_SPECS or self.fault not in FAULTS:
+        if self.fault not in FAULTS:
             raise ValueError("unknown job or fault")
+
+
+@dataclass(frozen=True)
+class CapabilityRunConfig(RunConfig):
+    """External class identity requires a separately supplied verified package."""
+
+    def __post_init__(self) -> None:
+        self._validate_fields()
+        if (
+            not isinstance(self.job, str)
+            or re.fullmatch(r"[a-z][a-z0-9_-]{0,39}", self.job) is None
+        ):
+            raise ValueError("invalid external class identity")
+
+
+def _recorded_config(summary: dict[str, Any]) -> RunConfig:
+    factory = CapabilityRunConfig if "class_package" in summary else RunConfig
+    return factory(**summary["config"])
+
+
+def _class_jobs(
+    packages: tuple[ClassPackage, ...] | None,
+) -> tuple[tuple[str, ClassPackage | None], ...]:
+    if packages is None:
+        return tuple((job, None) for job in CLASS_SPECS)
+    if (
+        not isinstance(packages, tuple)
+        or not 1 <= len(packages) <= 16
+        or any(type(package) is not ClassPackage for package in packages)
+        or len({package.class_id for package in packages}) != len(packages)
+    ):
+        raise ValueError("class packages must be 1..16 unique verified external classes")
+    return tuple((package.class_id, package) for package in packages)
 
 
 class _Frames:
@@ -132,6 +179,8 @@ def run_episode(
     map_pack: MapPack | None = None,
     terrain_source: TerrainSource = "fixture",
     runtime: RuntimeConfig | None = None,
+    animation: SceneAnimation | None = None,
+    class_package: ClassPackage | None = None,
 ) -> dict[str, Any]:
     return _execute_episode(
         output,
@@ -142,6 +191,8 @@ def run_episode(
         map_pack=map_pack,
         terrain_source=terrain_source,
         runtime=runtime,
+        animation=animation,
+        class_package=class_package,
     )
 
 
@@ -216,10 +267,18 @@ def _execute_episode(
     trace_consumer: Callable[[dict[str, Any]], None] | None = None,
     terrain_source: TerrainSource = "fixture",
     runtime: RuntimeConfig | None = None,
+    animation: SceneAnimation | None = None,
+    class_package: ClassPackage | None = None,
 ) -> dict[str, Any]:
-    config = config or RunConfig()
     if runtime is not None and type(runtime) is not RuntimeConfig:
         raise ValueError("runtime must be a structured RuntimeConfig or None")
+    if class_package is not None and (
+        type(class_package) is not ClassPackage or class_profile is not None or runtime is None
+    ):
+        raise ValueError("external class packages require structured runtime and no legacy profile")
+    config = config or (
+        RunConfig() if class_package is None else CapabilityRunConfig(job=class_package.class_id)
+    )
     bundle_schema = 1 if runtime is None else 2
     spec = None if class_profile is None else class_profile.class_spec
     simulator = (
@@ -229,17 +288,20 @@ def _execute_episode(
             map_id="meadow" if map_pack is None else map_pack.entry_map,
             class_spec=spec,
             map_pack=map_pack,
+            class_package=class_package,
         )
         if initial_state is None
         else Simulator.restore(initial_state)
     )
     if map_pack is not None and simulator.map_pack != map_pack:
         raise ValueError("requested map pack disagrees with embedded simulator content")
+    if simulator.class_package != class_package:
+        raise ValueError("requested class package disagrees with embedded simulator content")
     map_pack = simulator.map_pack
     settings = _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
     mission_maps, expected_drops = _mission_requirements(map_pack)
     markers = None if map_pack is None else map_pack.markers
-    renderer = SceneRenderer(sprite_pack=sprite_pack, map_pack=map_pack)
+    renderer = SceneRenderer(sprite_pack=sprite_pack, map_pack=map_pack, animation=animation)
     fault_frames = _Frames(config.fault)
     if output is not None:
         if output.exists():
@@ -255,7 +317,13 @@ def _execute_episode(
     policy = (
         VisualAgent(config.job, mission_maps, class_spec=spec)
         if runtime is None
-        else TaskRuntime(config.job, mission_maps, class_spec=spec, config=runtime.tasks)
+        else TaskRuntime(
+            config.job,
+            mission_maps,
+            class_spec=spec,
+            config=runtime.tasks,
+            **({"capabilities": simulator.capabilities} if class_package is not None else {}),
+        )
     )
     supervisor = Supervisor()
     estimator = None if runtime is None else TemporalStateEstimator(runtime.state)
@@ -269,6 +337,10 @@ def _execute_episode(
         if sprite_pack is not None:
             sprite_pack.write_sources(output)
             _write_json(output / "sprite-pack.json", sprite_pack.manifest())
+        if animation is not None:
+            animation.write_sources(output)
+        if class_package is not None:
+            _write_json(output / "class-package.json", class_package.manifest())
     trace: list[dict[str, Any]] = []
     previews: list[Image.Image] = []
     actions: Counter[str] = Counter()
@@ -497,6 +569,10 @@ def _execute_episode(
         }
     if sprite_pack is not None:
         summary["sprite_pack"] = sprite_pack.manifest()
+    if animation is not None:
+        summary["animation"] = animation.manifest()
+    if class_package is not None:
+        summary["class_package"] = class_package.manifest()
     if map_pack is not None:
         summary["map_pack"] = map_pack.manifest()
     if output:
@@ -552,17 +628,82 @@ def _run_evidence_path(output: Path, relative: object) -> Path:
 
 def _read_run_evidence(output: Path, relative: str) -> bytes:
     target = _run_evidence_path(output, relative)
-    if relative not in {"map-pack.json", "runtime-config.json"}:
+    budgets = {
+        "map-pack.json": _MAX_MAP_EVIDENCE_BYTES,
+        "runtime-config.json": MAX_RUNTIME_CONFIG_BYTES,
+        "scene-animation.json": MAX_SCENE_ANIMATION_BYTES,
+        "class-package.json": MAX_CLASS_PACKAGE_BYTES * 2,
+    }
+    budget = budgets.get(relative)
+    if relative.startswith("animation_objects/"):
+        budget = MAX_SOURCE_BYTES
+    if budget is None:
         return target.read_bytes()
-    label = "map pack" if relative == "map-pack.json" else "runtime config"
-    budget = _MAX_MAP_EVIDENCE_BYTES if relative == "map-pack.json" else MAX_RUNTIME_CONFIG_BYTES
+    label = {
+        "map-pack.json": "map pack",
+        "runtime-config.json": "runtime config",
+        "scene-animation.json": "scene animation",
+        "class-package.json": "class package",
+    }.get(relative, "animation source")
     if (output / relative).is_symlink():
-        raise ValueError(f"invalid run {label} manifest")
+        raise ValueError(f"invalid run {label} evidence")
     with target.open("rb") as source:
         contents = source.read(budget + 1)
     if len(contents) > budget:
-        raise ValueError(f"invalid run {label} manifest")
+        raise ValueError(f"run {label} evidence exceeds byte budget")
     return contents
+
+
+def _load_run_animation(
+    output: Path, summary: dict[str, Any], files: dict[str, Any]
+) -> SceneAnimation | None:
+    paths = {"scene-animation.json"} | {
+        path for path in files if path.startswith("animation_objects/")
+    }
+    if "animation" not in summary:
+        if any(path in files for path in paths) or any(
+            (output / path).exists() or (output / path).is_symlink()
+            for path in ("scene-animation.json", "animation_objects")
+        ):
+            raise ValueError("run has unmanifested animation evidence")
+        return None
+    if "scene-animation.json" not in files:
+        raise ValueError("run omits animation scene sidecar")
+    animation = load_scene_animation(output)
+    if canonical(animation.manifest()) != canonical(summary["animation"]):
+        raise ValueError("run animation metadata disagrees with summary")
+    expected = {"scene-animation.json"} | {s.source_file for s in animation.pack.sources}
+    if paths != expected:
+        raise ValueError("run animation source evidence differs from declared pack")
+    return animation
+
+
+def _load_run_class_package(
+    output: Path,
+    summary: dict[str, Any],
+    files: dict[str, Any],
+    simulator: Simulator,
+) -> ClassPackage | None:
+    package = simulator.class_package
+    path = output / "class-package.json"
+    if package is None:
+        if (
+            "class_package" in summary
+            or "class-package.json" in files
+            or path.exists()
+            or path.is_symlink()
+        ):
+            raise ValueError("run contains unmanifested class package evidence")
+        return None
+    if "class-package.json" not in files:
+        raise ValueError("run omits class package evidence")
+    sidecar = ClassPackage.from_manifest(
+        strict_json(_read_run_evidence(output, "class-package.json").decode("utf-8"))
+    )
+    declared = ClassPackage.from_manifest(summary.get("class_package"))
+    if sidecar != package or declared != package:
+        raise ValueError("run class package disagrees with embedded simulator rules")
+    return package
 
 
 def verify_run(output: Path) -> dict[str, Any]:
@@ -594,8 +735,13 @@ def verify_run(output: Path) -> dict[str, Any]:
     if not isinstance(initial, dict) or not isinstance(summary, dict):
         raise ValueError("run state and summary must be objects")
     runtime = load_run_runtime(output, manifest, summary)
-    config = RunConfig(**summary["config"])
+    config = _recorded_config(summary)
     simulator = Simulator.restore(initial)
+    class_package = _load_run_class_package(output, summary, files, simulator)
+    if class_package is not None and runtime is None:
+        raise ValueError("external class evidence requires structured runtime")
+    if runtime is not None:
+        validate_runtime_capabilities(summary["runtime_evidence"]["terminal"], class_package)
     profile_metadata = summary.get("class_profile")
     if profile_metadata is not None:
         profile = parse_loaded_class_profile(profile_metadata)
@@ -633,12 +779,16 @@ def verify_run(output: Path) -> dict[str, Any]:
     ):
         raise ValueError("run config disagrees with initial simulator state")
     if map_pack is not None or runtime is not None:
+        legacy_spec = simulator.class_spec if "class_profile" in initial else None
+        if legacy_spec is not None and not isinstance(legacy_spec, ClassSpec):
+            raise ValueError("legacy profile is not a fixture ClassSpec")
         expected_initial = Simulator(
             config.seed,
             config.job,
             map_id="meadow" if map_pack is None else map_pack.entry_map,
-            class_spec=simulator.class_spec if "class_profile" in initial else None,
+            class_spec=legacy_spec,
             map_pack=map_pack,
+            class_package=class_package,
         ).save()
         if canonical(simulator.save()) != canonical(expected_initial):
             raise ValueError("run initial state is not the declared fresh seeded world")
@@ -659,7 +809,8 @@ def verify_run(output: Path) -> dict[str, Any]:
         or (output / "sprite_objects").exists()
     ):
         raise ValueError("run contains unmanifested sprite evidence")
-    renderer = SceneRenderer(sprite_pack=sprite_pack, map_pack=map_pack)
+    animation = _load_run_animation(output, summary, files)
+    renderer = SceneRenderer(sprite_pack=sprite_pack, map_pack=map_pack, animation=animation)
     fault_frames = _Frames(config.fault)
     count = 0
     actions: Counter[str] = Counter()
@@ -708,6 +859,8 @@ def verify_run(output: Path) -> dict[str, Any]:
             authorized = validate_runtime_step(
                 row, runtime, now_ms=snapshot.timestamp_ms, seen_intents=seen_intents
             )
+            if runtime is not None:
+                validate_runtime_capabilities(row["runtime"], class_package)
             applied = SimAction(**execution["applied_action"])
             expected_action = (
                 SimAction()
@@ -865,7 +1018,7 @@ def verify_perception(
         "observation",
     }:
         raise ValueError("run terminal perception evidence is incomplete")
-    config = RunConfig(**summary["config"])
+    config = _recorded_config(summary)
     initial = strict_json(
         _run_evidence_path(output, "initial-state.json").read_text(encoding="utf-8")
     )
@@ -878,6 +1031,10 @@ def verify_perception(
         verify_dataset_sprite_pack(output, summary["sprite_pack"])
         if summary.get("sprite_pack") is not None
         else None
+    )
+    animation = _load_run_animation(output, summary, manifest["files"])
+    class_package = _load_run_class_package(
+        output, summary, manifest["files"], Simulator.restore(initial)
     )
     count = 0
     with _run_evidence_path(output, "trace.jsonl").open(encoding="utf-8") as stream:
@@ -909,6 +1066,8 @@ def verify_perception(
             trace_consumer=compare_trace,
             terrain_source=terrain_source,
             runtime=runtime,
+            animation=animation,
+            class_package=class_package,
         )
         if stream.readline():
             raise ValueError("perception replay terminated before all recorded steps")
@@ -947,6 +1106,8 @@ def verify_perception(
         "class_profile",
         "map_pack",
         "runtime_evidence",
+        "animation",
+        "class_package",
     ):
         if canonical(reproduced.get(key)) != canonical(summary.get(key)):
             raise ValueError(f"perception replay summary mismatch: {key}")
@@ -996,13 +1157,22 @@ def _record_episode(
     terrain_source: TerrainSource = "fixture",
     map_pack: MapPack | None = None,
     runtime: RuntimeConfig | None = None,
+    animation: SceneAnimation | None = None,
+    class_package: ClassPackage | None = None,
 ) -> dict[str, Any]:
     """Capture exactly once; retain the actual failure rather than executing a rerun."""
     staging = output / "active-episode"
     # run_episode refuses an existing path, so cleanup only targets the directory
     # created by this particular call in this already-new validation output.
     result = run_episode(
-        staging, config, detector, terrain_source=terrain_source, map_pack=map_pack, runtime=runtime
+        staging,
+        config,
+        detector,
+        terrain_source=terrain_source,
+        map_pack=map_pack,
+        runtime=runtime,
+        animation=animation,
+        class_package=class_package,
     )
     if result["status"] == "completed":
         shutil.rmtree(staging)
@@ -1044,11 +1214,16 @@ def run_suite(
     terrain_source: TerrainSource = "fixture",
     map_pack: MapPack | None = None,
     runtime: RuntimeConfig | None = None,
+    animation: SceneAnimation | None = None,
+    class_packages: tuple[ClassPackage, ...] | None = None,
 ) -> dict[str, Any]:
     if type(seeds) is not int or not 1 <= seeds <= 1000:
         raise ValueError("seeds must be in [1, 1000]")
     if runtime is not None and type(runtime) is not RuntimeConfig:
         raise ValueError("runtime must be a structured RuntimeConfig or None")
+    jobs = _class_jobs(class_packages)
+    if class_packages is not None and runtime is None:
+        raise ValueError("external class packages require structured runtime")
     settings = _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
     if output.exists():
         raise FileExistsError(f"suite output already exists: {output}")
@@ -1062,23 +1237,40 @@ def run_suite(
         source_options["map_pack"] = map_pack
     if runtime is not None:
         source_options["runtime"] = runtime
-    for job in CLASS_SPECS:
+    if animation is not None:
+        source_options["animation"] = animation
+    for job, class_package in jobs:
+        config_type = RunConfig if class_package is None else CapabilityRunConfig
+        episode_options: dict[str, Any] = dict(source_options)
+        if class_package is not None:
+            episode_options["class_package"] = class_package
         for seed in range(seeds):
-            config = RunConfig(seed, job, max_steps=_episode_budget(map_pack), record_stride=16)
+            config = config_type(seed, job, max_steps=_episode_budget(map_pack), record_stride=16)
             result = _record_episode(
-                output, config, detector, failure_name=f"failure-{job}-{seed}", **source_options
+                output,
+                config,
+                detector,
+                failure_name=f"failure-{job}-{seed}",
+                **episode_options,
             )
             rows.append(result)
+    fault_job, fault_class_package = jobs[0]
+    fault_config_type = RunConfig if fault_class_package is None else CapabilityRunConfig
     for fault in FAULTS[1:]:
         result = run_episode(
             output / fault,
-            RunConfig(
-                fault=fault, max_steps=_episode_budget(map_pack, fault=True), record_stride=16
+            fault_config_type(
+                job=fault_job,
+                fault=fault,
+                max_steps=_episode_budget(map_pack, fault=True),
+                record_stride=16,
             ),
             detector,
             terrain_source=terrain_source,
             map_pack=map_pack,
             runtime=runtime,
+            animation=animation,
+            class_package=fault_class_package,
         )
         result["episode_capture"] = {
             "mode": "original_single_execution",
@@ -1105,7 +1297,7 @@ def run_suite(
         "scope": "synthetic_fixture",
         "passed": passed,
         "episodes": len(rows),
-        "normal_episodes": seeds * len(CLASS_SPECS),
+        "normal_episodes": seeds * len(jobs),
         "actual_wall_seconds": round(time.monotonic() - started, 6),
         "episode_wall_seconds": round(sum(row["wall_seconds"] for row in rows), 6),
         "simulated_seconds": sum(row["simulated_seconds"] for row in rows),
@@ -1119,6 +1311,10 @@ def run_suite(
     if map_pack is not None:
         report["map_pack"] = map_pack.manifest()
     report.update(runtime_summary_fields(runtime))
+    if animation is not None:
+        report["animation"] = animation.manifest()
+    if class_packages is not None:
+        report["class_packages"] = [package.manifest() for package in class_packages]
     _write_json(output / "suite.json", report)
     return report
 
@@ -1133,6 +1329,8 @@ def run_soak(
     terrain_source: TerrainSource = "fixture",
     map_pack: MapPack | None = None,
     runtime: RuntimeConfig | None = None,
+    animation: SceneAnimation | None = None,
+    class_packages: tuple[ClassPackage, ...] | None = None,
 ) -> dict[str, Any]:
     """Wall-clock soak, checkpointed after each mission (up to one episode overrun).
 
@@ -1144,6 +1342,9 @@ def run_soak(
         raise ValueError("soak seconds must be in [1, 604800]")
     if runtime is not None and type(runtime) is not RuntimeConfig:
         raise ValueError("runtime must be a structured RuntimeConfig or None")
+    jobs = _class_jobs(class_packages)
+    if class_packages is not None and runtime is None:
+        raise ValueError("external class packages require structured runtime")
     resources = ProcessResourceMonitor(resource_interval_seconds, max_resource_samples)
     settings = _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
     if output.exists():
@@ -1162,20 +1363,26 @@ def run_soak(
         source_options["map_pack"] = map_pack
     if runtime is not None:
         source_options["runtime"] = runtime
+    if animation is not None:
+        source_options["animation"] = animation
     resources.start()
     try:
         with (output / "episodes.jsonl").open("x", encoding="utf-8") as stream:
             while time.monotonic() - start < seconds:
-                job = tuple(CLASS_SPECS)[completed % len(CLASS_SPECS)]
-                config = RunConfig(
+                job, class_package = jobs[completed % len(jobs)]
+                config_type = RunConfig if class_package is None else CapabilityRunConfig
+                config = config_type(
                     seed=completed, job=job, max_steps=_episode_budget(map_pack), record_stride=16
                 )
+                episode_options: dict[str, Any] = dict(source_options)
+                if class_package is not None:
+                    episode_options["class_package"] = class_package
                 result = _record_episode(
                     output,
                     config,
                     detector,
                     failure_name=f"failure-{completed + 1}",
-                    **source_options,
+                    **episode_options,
                 )
                 if canonical(settings) != canonical(
                     _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
@@ -1199,6 +1406,12 @@ def run_soak(
                         "episode_capture": _capture_contract(),
                         "resources": resources.report(),
                         **runtime_summary_fields(runtime),
+                        **({"animation": animation.manifest()} if animation is not None else {}),
+                        **(
+                            {"class_packages": [package.manifest() for package in class_packages]}
+                            if class_packages is not None
+                            else {}
+                        ),
                     },
                 )
     except BaseException as exc:
@@ -1232,6 +1445,10 @@ def run_soak(
         if map_pack is not None:
             report["map_pack"] = map_pack.manifest()
         report.update(runtime_summary_fields(runtime))
+        if animation is not None:
+            report["animation"] = animation.manifest()
+        if class_packages is not None:
+            report["class_packages"] = [package.manifest() for package in class_packages]
         _write_json(output / "soak.json", report)
     return report
 

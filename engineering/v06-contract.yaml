@@ -1,0 +1,89 @@
+schema_version: 1
+increment: v0.6
+status: local_final_source_accepted_exact_head_ci_recorded_in_pr
+baseline_commit: 24f73dbf832c81b1bcee71093e60e7cd030b533c
+original_chapters:
+- 3
+- 4
+- 5
+- 6
+- 10
+- 11
+- 12
+- 13
+- 15
+- 18
+scope: portable_offline_content_and_compiled_multiclass_runtime
+authorization: continuous_implementation_testing_and_repository_delivery
+compatibility:
+  original_master_spec_immutable: true
+  historical_models_and_experiments_immutable: true
+  legacy_run_config_and_default_policy: unchanged
+  none_package_simulator_state_and_pixels: unchanged
+  legacy_dataset_schemas:
+  - 1
+  - 2
+  - 3
+  animation_dataset_schema: 4
+  external_class_simulator_schema: 4
+  external_class_run_schema: 2
+catalog:
+  input: verified_v2_local_catalog_snapshot
+  output: immutable_normalized_domain_snapshot_with_source_copy
+  unknown_values: null_or_explicit_unmapped_issue
+  confidence: null_when_source_does_not_supply_it
+  verification: independently_reproject_schema_and_rows_from_archived_source
+  runtime_reads: verified_private_readonly_snapshot
+animation:
+  source: explicitly_registered_local_assets
+  timeline: integer_milliseconds_half_open_frame_intervals
+  placement: native_pixels_anchor_at_entity_bottom_center
+  scene_clock: absolute_simulator_timestamp_not_inferred_action_state
+  labels: actual_alpha_clipping_and_global_opaque_occlusion
+  captured_sources: required_for_runs_datasets_and_training_private_copies
+capabilities:
+  input: strict_bounded_immutable_class_package
+  compiler: selected_skill_levels_finite_programs_and_static_resource_checks
+  simulator_effects:
+  - damage
+  - heal
+  - finite_attack_buff
+  runtime: same_task_planner_scheduler_receipt_pipeline
+  cooldowns: based_on_actual_attempt_and_receipt_clock
+  resources: conservative_visible_hud_bounds_plus_pending_cast_debits
+  observations: no_hidden_simulator_state
+  unsupported_effects:
+  - damage_over_time
+  - control
+  - summons
+  - projectile_flight
+failure_bundles:
+  source: captured_original_single_execution
+  independent_projection: true
+  layers:
+  - ground_truth
+  - observations
+  - world_states
+  - task_trace
+  - action_trace
+  - verification
+  - supervisor
+  images: all_N_plus_1_frames_with_rgb_identity
+  video: optional_lossy_presentation_not_semantic_ground_truth
+  reinference: only_claimed_when_actually_executed
+acceptance:
+- independent_authored_content_and_semantic_tamper_counterexamples
+- complete_three_external_jobs_on_builtin_and_external_maps
+- animation_scene_pixels_and_alpha_labels
+- deleted_source_portability_and_actual_N_plus_1_reinference
+- catalog_domain_relations_and_independent_reprojection
+- original_failure_layers_verified_without_source_directory
+- all_legacy_tests_and_runtime_only_installed_wheel
+- exact_final_head_ubuntu_windows_and_native_ci
+not_claimed:
+- full_v8_acceptance
+- real_game_data_or_visual_quality
+- website_scraping_or_background_source_sync
+- arbitrary_branching_simulator_maps_or_general_navigation
+- complete_effect_catalog_or_live_chat_sending
+- model_promotion_or_24h_wall_clock_endurance

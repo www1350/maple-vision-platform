@@ -1,0 +1,235 @@
+{
+  "archives": [
+    {
+      "bytes": 221979,
+      "entry": "brief_dropout",
+      "format": "offline-run-bundle",
+      "name": "builtin-brief_dropout.tar.gz",
+      "original_single_execution": true,
+      "sha256": "d802aeabac3c8dfbe305cf34c7261f6784785eab682c898c4cf6ff6ad51930de"
+    },
+    {
+      "bytes": 29884,
+      "entry": "persistent_dropout",
+      "format": "offline-run-bundle",
+      "name": "builtin-persistent_dropout.tar.gz",
+      "original_single_execution": true,
+      "sha256": "a8c37acb4fcd363abaeefe2471a2ccf1c6d73e078af65bb0df80e114385ce965"
+    },
+    {
+      "bytes": 221983,
+      "entry": "duplicate_frames",
+      "format": "offline-run-bundle",
+      "name": "builtin-duplicate_frames.tar.gz",
+      "original_single_execution": true,
+      "sha256": "505c6b79f8148fc15b02aa19a40bf4b2e495999f181803aa182bce7b2c0d7152"
+    },
+    {
+      "bytes": 55999,
+      "entry": "freeze_input",
+      "format": "offline-run-bundle",
+      "name": "builtin-freeze_input.tar.gz",
+      "original_single_execution": true,
+      "sha256": "a4bbe568b616dd6fb555da912598c599ead85b364303bf70b46fe8d5043a0da7"
+    },
+    {
+      "bytes": 398954,
+      "entry": "brief_dropout",
+      "format": "offline-run-bundle",
+      "name": "external-brief_dropout.tar.gz",
+      "original_single_execution": true,
+      "sha256": "f916fee1d8dff4ca1d3d40276263c6a89ca247bc0e3375d6be01a6c9724991ef"
+    },
+    {
+      "bytes": 31938,
+      "entry": "persistent_dropout",
+      "format": "offline-run-bundle",
+      "name": "external-persistent_dropout.tar.gz",
+      "original_single_execution": true,
+      "sha256": "ffd34e295e6e591889aa1582aeb1ae6bc3ff2f5f05eb56d759e4ea235517ca06"
+    },
+    {
+      "bytes": 398996,
+      "entry": "duplicate_frames",
+      "format": "offline-run-bundle",
+      "name": "external-duplicate_frames.tar.gz",
+      "original_single_execution": true,
+      "sha256": "fdee9c82a3c1ad5ceb2bc438ed5d4fe2b39bd22c31fae7c22c09ded0010dedf1"
+    },
+    {
+      "bytes": 59509,
+      "entry": "freeze_input",
+      "format": "offline-run-bundle",
+      "name": "external-freeze_input.tar.gz",
+      "original_single_execution": true,
+      "sha256": "ce1b5df8ec18cc5b5ac921b9df8c4276a89677d4b775e8489325836476e469f6"
+    },
+    {
+      "bytes": 181497,
+      "entry": "failure-bundle",
+      "format": "offline-failure-bundle",
+      "name": "layered-freeze-failure.tar.gz",
+      "original_single_execution": true,
+      "sha256": "43cd4f65d8999b903bd5fcbc474ec13519b1f757aa3095979c502b9eae8f83bb"
+    }
+  ],
+  "layered_verification": {
+    "export": {
+      "action_replay": {
+        "files_checked": 17,
+        "independent_goal_check": false,
+        "perception_reproduced": false,
+        "runtime_identity_matches": true,
+        "scope": "deterministic_simulator",
+        "steps_replayed": 70,
+        "verified": true
+      },
+      "action_replay_verified": true,
+      "deterministic_state_reproduced": true,
+      "files_checked": 100,
+      "frames_reconstructed": 71,
+      "layer_projection_verified": true,
+      "output": "/workspace/scratch/3968a72df173/v06-acceptance-final/failure-bundle",
+      "perception_reproduced": false,
+      "policy_reproduced": false,
+      "recorded_reason": "combat_progress_timeout",
+      "recorded_status": "failed",
+      "reinference": null,
+      "rgb_reproduced": true,
+      "schema_version": 1,
+      "scope": "offline_failure_bundle",
+      "source_manifest_sha256": "17b66778c3cb61dfd9b25ca6d08523917a927bb11391dcd67ebe58636c2c71b6",
+      "source_schema": 2,
+      "steps_replayed": 70,
+      "verified": true,
+      "video": {
+        "decode_check": "not_applicable",
+        "present": false,
+        "semantic_reproduction": false
+      }
+    },
+    "portable_verify": {
+      "action_replay": {
+        "files_checked": 17,
+        "independent_goal_check": false,
+        "perception_reproduced": false,
+        "runtime_identity_matches": true,
+        "scope": "deterministic_simulator",
+        "steps_replayed": 70,
+        "verified": true
+      },
+      "action_replay_verified": true,
+      "deterministic_state_reproduced": true,
+      "files_checked": 100,
+      "frames_reconstructed": 71,
+      "layer_projection_verified": true,
+      "perception_reproduced": true,
+      "policy_reproduced": true,
+      "recorded_reason": "combat_progress_timeout",
+      "recorded_status": "failed",
+      "reinference": {
+        "action_replay_verified": true,
+        "belief_frames_recomputed": 71,
+        "decision_comparison": "exact; includes guard, action, reason, task and terminal state",
+        "files_unchanged": true,
+        "frames_reinferred": 71,
+        "independent_goal_check": false,
+        "model_hash_verified": false,
+        "observation_tolerances": {
+          "absolute": 1e-06,
+          "relative": 1e-06
+        },
+        "perception_reproduced": true,
+        "perception_settings": {
+          "implementation": "maple_vision.vision.PixelPerception",
+          "inference_options": null,
+          "loaded_model_sha256": null,
+          "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+          "model_manifest": null,
+          "pipeline": "pixel-fixture",
+          "verifiable_model_binding": true
+        },
+        "policy_reproduced": true,
+        "recorded_runtime_identity": {
+          "packages": {
+            "Pillow": "13.0.0",
+            "maple-vision-platform": "0.6.0",
+            "numpy": "2.5.5",
+            "onnxruntime": "1.32.0"
+          },
+          "python": "3.12.14",
+          "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+        },
+        "recorded_status": "failed",
+        "runtime_identity_matches": true,
+        "runtime_settings": {
+          "schema_version": 1,
+          "settings": {
+            "engine": "structured-v1",
+            "schema_version": 1,
+            "state": {
+              "ambiguity_margin": 0.15,
+              "field_ttl_ms": 1000,
+              "max_age_ms": 250,
+              "max_detections": 128,
+              "max_match_distance": 48.0,
+              "max_tracks": 128,
+              "min_confidence": 0.5,
+              "schema_version": 1,
+              "track_ttl_ms": 500
+            },
+            "tasks": {
+              "clear_confirmations": 4,
+              "effect_timeout_ms": 500,
+              "history_limit": 128,
+              "intent_ttl_ms": 250,
+              "max_attack_attempts": 12,
+              "max_denied_actions": 6,
+              "max_observation_age_ms": 250,
+              "max_recoveries": 2,
+              "max_task_steps": 1000,
+              "max_unknown_steps": 12,
+              "minimum_detection_confidence": 0.5,
+              "plan_timeout_ms": 2000,
+              "schema_version": 1,
+              "stuck_steps": 8
+            }
+          },
+          "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+        },
+        "schema_version": 1,
+        "scope": "synthetic_fixture_perception_and_policy_reexecution",
+        "structured_runtime_reproduced": true,
+        "terminal_decision_compared": true,
+        "terminal_guard_compared": true,
+        "terminal_observation_compared": true,
+        "terminal_runtime_compared": true,
+        "trace_steps_compared": 70,
+        "verification_runtime_identity": {
+          "packages": {
+            "Pillow": "13.0.0",
+            "maple-vision-platform": "0.6.0",
+            "numpy": "2.5.5",
+            "onnxruntime": "1.32.0"
+          },
+          "python": "3.12.14",
+          "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+        },
+        "verified": true
+      },
+      "rgb_reproduced": true,
+      "schema_version": 1,
+      "scope": "offline_failure_bundle",
+      "source_manifest_sha256": "17b66778c3cb61dfd9b25ca6d08523917a927bb11391dcd67ebe58636c2c71b6",
+      "source_schema": 2,
+      "steps_replayed": 70,
+      "verified": true,
+      "video": {
+        "decode_check": "not_applicable",
+        "present": false,
+        "semantic_reproduction": false
+      }
+    }
+  },
+  "scope": "actual_fault_executions; no_rerun_substitution"
+}

@@ -19,6 +19,7 @@ from typing import Any
 
 from .contracts import Detection
 from .dataset import (
+    ANIMATION_DATASET_VERSION,
     LIFECYCLE_DATASET_VERSION,
     LIFECYCLE_PHASES,
     LIFECYCLE_TAGS,
@@ -470,11 +471,15 @@ def benchmark_dataset(
             "Small image counts yield uncertain accuracy and latency estimates.",
         ],
     }
-    if manifest["schema_version"] in (LIFECYCLE_DATASET_VERSION, MAP_DATASET_VERSION):
+    if manifest["schema_version"] in (
+        LIFECYCLE_DATASET_VERSION,
+        MAP_DATASET_VERSION,
+        ANIMATION_DATASET_VERSION,
+    ):
         report["schema_version"] = 2
         map_ids = (
             MapPack.from_manifest(manifest["map_pack"]).map_ids
-            if manifest["schema_version"] == MAP_DATASET_VERSION
+            if "map_pack" in manifest
             else ("meadow", "cavern")
         )
         report["grouped_metrics"] = _grouped_metrics(

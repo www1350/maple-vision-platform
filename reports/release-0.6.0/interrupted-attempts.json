@@ -1,0 +1,10 @@
+{
+  "files": [
+    "local-pytest-interrupted.log",
+    "wheel-smoke-interrupted.log"
+  ],
+  "reason": "execution_sessions_ended_without_completion_status_or_final_reports",
+  "source_changed_between_attempts": false,
+  "status": "not_accepted",
+  "subsequent_complete_attempt": "local-pytest.log and wheel-smoke.json"
+}

@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "id": "synthetic-archer",
+  "version": "1.0.0",
+  "scope": "synthetic_fixture",
+  "class_id": "archer",
+  "source_uri": "urn:maple-vision:self-authored:archer:1",
+  "permission": "self_authored",
+  "license": "CC0-1.0",
+  "resources": {
+    "max_hp": 110,
+    "max_mp": 70,
+    "initial_ammo": 250,
+    "walk_speed": 90,
+    "jump_speed": 280
+  },
+  "skills": [
+    {
+      "id": "arrow_shot",
+      "kind": "damage",
+      "shape": "directional",
+      "posture": "ground",
+      "cooldown_group": "weapon",
+      "selected_level": 2,
+      "levels": [
+        {
+          "level": 1,
+          "power": 16,
+          "range_px": 108,
+          "vertical_range_px": 38,
+          "max_targets": 1,
+          "hp_cost": 0,
+          "mp_cost": 1,
+          "ammo_cost": 1,
+          "cooldown_ms": 250,
+          "duration_ms": 0
+        },
+        {
+          "level": 2,
+          "power": 22,
+          "range_px": 116,
+          "vertical_range_px": 38,
+          "max_targets": 1,
+          "hp_cost": 0,
+          "mp_cost": 2,
+          "ammo_cost": 1,
+          "cooldown_ms": 250,
+          "duration_ms": 0
+        }
+      ]
+    },
+    {
+      "id": "air_arrow",
+      "kind": "damage",
+      "shape": "directional",
+      "posture": "air",
+      "cooldown_group": "weapon",
+      "selected_level": 1,
+      "levels": [
+        {
+          "level": 1,
+          "power": 18,
+          "range_px": 112,
+          "vertical_range_px": 48,
+          "max_targets": 1,
+          "hp_cost": 0,
+          "mp_cost": 2,
+          "ammo_cost": 1,
+          "cooldown_ms": 250,
+          "duration_ms": 0
+        }
+      ]
+    },
+    {
+      "id": "focus",
+      "kind": "buff",
+      "shape": "self",
+      "posture": "any",
+      "cooldown_group": "focus",
+      "selected_level": 1,
+      "levels": [
+        {
+          "level": 1,
+          "power": 5,
+          "range_px": 0,
+          "vertical_range_px": 0,
+          "max_targets": 0,
+          "hp_cost": 0,
+          "mp_cost": 4,
+          "ammo_cost": 0,
+          "cooldown_ms": 500,
+          "duration_ms": 3000
+        }
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "id": "aimed_shot",
+      "steps": [
+        {
+          "op": "cast",
+          "skill": "arrow_shot",
+          "direction": "target"
+        }
+      ]
+    },
+    {
+      "id": "leap_shot",
+      "steps": [
+        {
+          "op": "jump",
+          "direction": 0
+        },
+        {
+          "op": "wait",
+          "duration_ms": 50
+        },
+        {
+          "op": "cast",
+          "skill": "air_arrow",
+          "direction": "target"
+        }
+      ]
+    },
+    {
+      "id": "focus",
+      "steps": [
+        {
+          "op": "cast",
+          "skill": "focus",
+          "direction": 0
+        }
+      ]
+    }
+  ],
+  "bindings": {
+    "combat": "aimed_shot",
+    "area": null,
+    "airborne": "leap_shot",
+    "heal": null,
+    "buff": "focus"
+  }
+}

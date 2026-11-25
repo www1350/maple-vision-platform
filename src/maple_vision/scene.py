@@ -16,6 +16,7 @@ from PIL import Image, ImageChops, ImageDraw
 
 from .contracts import Detection, nonnegative_int
 from .map_pack import MapPack
+from .scene_animation import SceneAnimation
 from .sprite_pack import SpritePack
 
 if TYPE_CHECKING:
@@ -95,6 +96,7 @@ class SceneRenderer:
         *,
         sprite_pack: SpritePack | None = None,
         map_pack: MapPack | None = None,
+        animation: SceneAnimation | None = None,
     ) -> None:
         if any(type(v) is not int or not 160 <= v <= 4096 for v in (width, height)):
             raise ValueError("viewport dimensions must be integers in [160, 4096]")
@@ -104,6 +106,8 @@ class SceneRenderer:
             raise ValueError("sprite_pack must be a verified SpritePack")
         if map_pack is not None and not isinstance(map_pack, MapPack):
             raise ValueError("map_pack must be a verified MapPack")
+        if animation is not None and type(animation) is not SceneAnimation:
+            raise ValueError("animation must be a verified SceneAnimation")
         if map_pack is not None and (width, height) != (320, 192):
             raise ValueError("external map packs require a 320 x 192 viewport")
         self.width = width
@@ -111,6 +115,7 @@ class SceneRenderer:
         self.style_seed = style_seed
         self.sprite_pack = sprite_pack
         self.map_pack = map_pack
+        self.animation = animation
         self.map_markers = MAP_MARKERS if map_pack is None else map_pack.markers
 
     def camera_x(self, snapshot: "SimSnapshot") -> int:
@@ -155,9 +160,10 @@ class SceneRenderer:
         masks = ImageDraw.Draw(mask)
         instances: list[tuple[int, str, int]] = []
         visible_masks: list[Image.Image] = []
+        has_assets = self.sprite_pack is not None or self.animation is not None
 
         def erase_labels(box: tuple[int, int, int, int]) -> None:
-            if self.sprite_pack is None:
+            if not has_assets:
                 masks.rectangle(box, fill=0)
             else:
                 for visible in visible_masks:
@@ -171,14 +177,26 @@ class SceneRenderer:
                 0, min(self.height, y2) - max(0, y1)
             )
             asset = self.sprite_pack.get(class_id) if self.sprite_pack is not None else None
-            if asset is None:
+            animated = (
+                self.animation.sample(class_id, snapshot.timestamp_ms)
+                if self.animation is not None
+                else None
+            )
+            if animated is not None:
+                sprite = animated.source.image()
+                x1 = round(x + w / 2 - offset) - animated.anchor[0]
+                y1 = round(y + h) - animated.anchor[1]
+                x2, y2 = x1 + sprite.width, y1 + sprite.height
+                alpha = sprite.getchannel("A")
+                image.paste(sprite.convert("RGB"), (x1, y1), alpha)
+            elif asset is None:
                 draw.rectangle((x1, y1, x2 - 1, y2 - 1), fill=PALETTE[class_id])
                 alpha = Image.new("L", (x2 - x1, y2 - y1), 255)
             else:
                 sprite = asset.image().resize((x2 - x1, y2 - y1), Image.Resampling.NEAREST)
                 alpha = sprite.getchannel("A")
                 image.paste(sprite.convert("RGB"), (x1, y1), alpha)
-            if with_labels and self.sprite_pack is not None:
+            if with_labels and has_assets:
                 # Partial alpha contributes visible pixels but does not completely
                 # hide the underlying object. Only fully opaque pixels erase it.
                 visible = Image.new("L", (self.width, self.height), 0)
@@ -214,7 +232,13 @@ class SceneRenderer:
         player = snapshot.player
         if player.alive:
             rectangle("player", player.x, player.y, player.w, player.h)
-            if self.sprite_pack is None or self.sprite_pack.get("player") is None:
+            animated_player = (
+                self.animation is not None
+                and self.animation.sample("player", snapshot.timestamp_ms) is not None
+            )
+            if not animated_player and (
+                self.sprite_pack is None or self.sprite_pack.get("player") is None
+            ):
                 # The authored fixture eye must not paint over a registered sprite.
                 eye_x = round(player.x - offset + (player.w - 4 if player.facing > 0 else 2))
                 eye_y = round(player.y + 4)
@@ -249,7 +273,7 @@ class SceneRenderer:
             for instance_id, class_id, area in instances:
                 visible_pixels = (
                     instance_pixels == instance_id
-                    if self.sprite_pack is None
+                    if not has_assets
                     else np.asarray(visible_masks[instance_id - 1]) > 0
                 )
                 ys, xs = np.nonzero(visible_pixels)
