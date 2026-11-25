@@ -171,6 +171,19 @@ python -m maple_vision recording benchmark --case artifacts/recording-session ar
 
 每个会话和地图分别报告 IoU 0.50 下的 TP、FP、FN 及逐类指标。汇总 AP 使用固定分数阈值后的 101 点精度包络，按有真值的类别求均值，IoU 从 0.50 至 0.95，间隔 0.05。默认分数阈值是 0.25。遮挡对象由标注人逐个声明，小目标为原画面积小于 32×32 像素的目标。分母为零时召回值为 null。耗时覆盖本次检测器逐帧调用，包括首次调用。报告仅评估固定画面上的目标检测。真实国服识别率仍需要独立标注的实录。
 
+## 稀疏可见事件复核
+
+只需要标记少量可见时间窗时，不必先给每一帧画全量物体框。下面的命令把人工选定的闭区间绑定到会话 ID、原视频 SHA-256、起止帧序号、原始显示时间和 RGB 像素哈希。输出仍须放在录像会话之外，且只允许新建，不能覆盖。
+
+```bash
+python -m maple_vision recording review-events artifacts/pts-session artifacts/visible-events.json --reviewer reviewer-id --event rope_contact_visible 120 180 --event layer_change_visible 120 190 --event damage_feedback_visible 210 225
+python -m maple_vision recording verify-events artifacts/pts-session artifacts/visible-events.json
+```
+
+允许的事件名为 `attack_motion_visible`、`projectile_visible`、`damage_feedback_visible`、`airborne_visible`、`rope_contact_visible`、`layer_change_visible` 和 `camera_motion_visible`。一次报告接受 1–256 个不重复区间，起止序号均计入；输出按起点排序。复验会重新完整校验录像会话、从源帧重建每个区间，并逐字段比较报告，帧内容或报告被修改都会失败。
+
+这些名字只陈述复核者在像素中看到的现象。它们不证明按了哪个键，不把相邻的攻击画面和伤害数字自动连成因果，也不能仅凭攻击或投射物画面识别技能。截断导入报告会明确保留 `truncated=true`，未导入的尾帧不在证据范围内。要测距离、目标框或技能反馈时序，仍需使用完整逐帧物体标注及施放测量入口。
+
 ## 核对实录标注中的换图
 
 `python -m maple_vision recording audit-route SESSION LABELS examples/navigation/cms-east-hill.json REPORT`
