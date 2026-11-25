@@ -422,6 +422,7 @@ def measure_strike(
     facing: str,
     feedback: str,
     feedback_frames: Sequence[int] = (),
+    movement_frame: int | None = None,
 ) -> dict[str, Any]:
     """Measure a reviewer-selected cast window in the recording's native pixel space."""
     if output is not None and output.resolve().is_relative_to(recording.resolve()):
@@ -445,6 +446,12 @@ def measure_strike(
         or (feedback == "no_feedback" and feedback_frames)
     ):
         raise ValueError("invalid reviewed feedback frame sequence")
+    if movement_frame is not None and (
+        type(movement_frame) is not int
+        or not feedback_frames
+        or not feedback_frames[-1] <= movement_frame <= end
+    ):
+        raise ValueError("movement frame must follow or coincide with final reviewed feedback")
     map_id, objects, occluded = case.annotations[start]
     if any(entry[0] != map_id for entry in case.annotations[start : end + 1]):
         raise ValueError("strike interval crosses a reviewed map change")
@@ -503,6 +510,14 @@ def measure_strike(
                 }
             )
             previous_ms = timestamp_ms
+    if movement_frame is not None:
+        movement = case.manifest["frames"][movement_frame]
+        report["schema_version"] = 3
+        report["reviewed_movement"] = {
+            **{k: movement[k] for k in ("sequence", "timestamp_ms", "rgb_sha256")},
+            "after_last_feedback_ms": movement["timestamp_ms"]
+            - case.manifest["frames"][feedback_frames[-1]]["timestamp_ms"],
+        }
     if output is not None:
         _write(output, report)
     return report
@@ -536,6 +551,7 @@ def _verify_strike_source(recording: Path, labels: Path, raw: dict[str, Any]) ->
         reviewer=raw["strike_reviewer"],
         facing=raw["facing"],
         feedback=raw["reviewed_feedback"],
+        movement_frame=raw.get("reviewed_movement", {}).get("sequence"),
         feedback_frames=[frame["sequence"] for frame in raw.get("feedback_frames", [])],
     )
     if canonical_json(raw) != canonical_json(measured):
@@ -566,11 +582,13 @@ def _strike_report(path: Path) -> tuple[dict[str, Any], str]:
         "source_frame_size",
         "start_geometry",
     }
-    if isinstance(raw, dict) and raw.get("schema_version") == 2:
+    if isinstance(raw, dict) and raw.get("schema_version") in (2, 3):
         required.add("feedback_frames")
+        if raw["schema_version"] == 3:
+            required.add("reviewed_movement")
     if not isinstance(raw, dict) or set(raw) != required:
         raise ValueError("invalid strike report schema")
-    if raw["schema_version"] not in (1, 2) or raw["kind"] != "reviewed_strike_window":
+    if raw["schema_version"] not in (1, 2, 3) or raw["kind"] != "reviewed_strike_window":
         raise ValueError("unsupported strike report")
     if raw["domain"] not in ("authored_fixture", "game_recording"):
         raise ValueError("invalid strike report domain")
@@ -614,7 +632,7 @@ def _strike_report(path: Path) -> tuple[dict[str, Any], str]:
             raise ValueError("invalid strike frame timing")
         if not isinstance(frame["rgb_sha256"], str) or len(frame["rgb_sha256"]) != 64:
             raise ValueError("invalid strike frame hash")
-    if raw["schema_version"] == 2:
+    if raw["schema_version"] in (2, 3):
         frames = raw["feedback_frames"]
         if (
             not isinstance(frames, list)
@@ -654,6 +672,23 @@ def _strike_report(path: Path) -> tuple[dict[str, Any], str]:
             ):
                 raise ValueError("invalid strike feedback gap")
             previous_sequence, previous_ms = sequence, timestamp
+    if raw["schema_version"] == 3:
+        movement = raw["reviewed_movement"]
+        final = raw["feedback_frames"][-1]
+        if (
+            not isinstance(movement, dict)
+            or set(movement) != {"sequence", "timestamp_ms", "rgb_sha256", "after_last_feedback_ms"}
+            or type(movement["sequence"]) is not int
+            or type(movement["timestamp_ms"]) is not int
+            or type(movement["after_last_feedback_ms"]) is not int
+            or not final["sequence"] <= movement["sequence"] <= raw["end"]["sequence"]
+            or not final["timestamp_ms"] <= movement["timestamp_ms"] <= raw["end"]["timestamp_ms"]
+            or movement["after_last_feedback_ms"]
+            != movement["timestamp_ms"] - final["timestamp_ms"]
+            or not isinstance(movement["rgb_sha256"], str)
+            or len(movement["rgb_sha256"]) != 64
+        ):
+            raise ValueError("invalid reviewed movement frame")
     return raw, hashlib.sha256(contents).hexdigest()
 
 
@@ -716,7 +751,7 @@ def summarize_strikes(
         feedback: metrics([item for item in documents if item["reviewed_feedback"] == feedback])
         for feedback in ("damage_visible", "miss_text_visible", "no_feedback")
     }
-    sequenced = [item for item in documents if item["schema_version"] == 2]
+    sequenced = [item for item in documents if item["schema_version"] >= 2]
     report = {
         "schema_version": 2 if sequenced else 1,
         "kind": "reviewed_strike_summary",
@@ -780,5 +815,19 @@ def summarize_strikes(
             "reviewed feedback frames are visible event evidence, not guaranteed "
             "one-to-one hit packets"
         )
+    delays = [
+        item["reviewed_movement"]["after_last_feedback_ms"]
+        for item in sequenced
+        if "reviewed_movement" in item
+    ]
+    if delays:
+        report["schema_version"] = 3
+        report["observed_movement_after_feedback_ms"] = {
+            "observations": len(delays),
+            "min": min(delays),
+            "median": statistics.median(delays),
+            "max": max(delays),
+        }
+        report["limitations"].append("visible movement depends on player input and frame sampling")
     _write(output, report)
     return report

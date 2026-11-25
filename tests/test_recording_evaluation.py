@@ -304,13 +304,13 @@ def test_measure_reviewed_strike_preserves_distinct_feedback_frame_timing(tmp_pa
         "damage_visible",
         "--feedback-frame",
         "0",
-        "--feedback-frame",
-        "1",
         "--player-index",
         "1",
         "--monster-index",
         "0",
     ]
+    movement_args = args + ["--movement-frame", "1"]
+    args.extend(["--feedback-frame", "1"])
     assert main(args) == 0
     report = json.loads(output.read_text())
     verify = ["recording", "verify-strike", str(session), str(labels), str(output)]
@@ -352,6 +352,23 @@ def test_measure_reviewed_strike_preserves_distinct_feedback_frame_timing(tmp_pa
     assert [frame["offset_ms"] for frame in report["feedback_frames"]] == [0, 83]
     assert [frame["gap_ms"] for frame in report["feedback_frames"]] == [None, 83]
     output.unlink()
+    assert main(movement_args) == 0
+    measured = json.loads(output.read_text())
+    assert measured["schema_version"] == 3
+    assert measured["reviewed_movement"]["after_last_feedback_ms"] == 83
+    assert main(verify) == 0 and main(summary_args) == 0
+    summary = json.loads(summary_path.read_text())
+    assert summary["observed_movement_after_feedback_ms"] == {
+        "observations": 1,
+        "min": 83,
+        "median": 83,
+        "max": 83,
+    }
+    measured["reviewed_movement"]["rgb_sha256"] = "0" * 64
+    output.write_text(json.dumps(measured))
+    assert main(verify) == 2
+    output.unlink()
+    assert main(args + ["--movement-frame", "0"]) == 2 and not output.exists()
     invalid = args.copy()
     invalid[invalid.index("damage_visible")] = "no_feedback"
     assert main(invalid) == 2 and not output.exists()
