@@ -15,6 +15,8 @@ from urllib.request import urlopen
 from PIL import Image
 from playwright.sync_api import expect, sync_playwright
 
+from maple_vision.input_bindings import load_input_profile
+
 
 def verify(url: str, executable: str) -> dict[str, object]:
     with sync_playwright() as p:
@@ -94,10 +96,21 @@ def verify(url: str, executable: str) -> dict[str, object]:
         )
         expect(page.locator("#keys-image")).to_have_js_property("naturalWidth", 32)
         page.fill("#keys-list", "示例技能 = Ctrl")
-        page.locator("#keys-form button").click()
+        page.locator("#keys-form button[type=submit]").click()
         expect(page.locator("#keys-status")).to_contain_text("保存 1 项")
+        page.fill("#keys-list", "未确认技能 = X")
+        with page.expect_download() as download_info:
+            page.click("#keys-export")
+        download = download_info.value
+        assert download.suggested_filename == "input-bindings.json"
+        with tempfile.TemporaryDirectory() as download_dir:
+            exported = Path(download_dir) / download.suggested_filename
+            download.save_as(exported)
+            profile = load_input_profile(exported)
+            assert profile.profile_id == "示例区 / 一号"
+            assert [(item.skill, item.key) for item in profile.bindings] == [("示例技能", "Ctrl")]
         page.fill("#keys-list", "示例技能 = Ctrl\n跳跃 = CTRL")
-        page.locator("#keys-form button").click()
+        page.locator("#keys-form button[type=submit]").click()
         expect(page.locator("#keys-status")).to_contain_text("出现了两次")
         page.fill("#keys-character", "示例区 / 二号")
         expect(page.locator("#keys-image")).to_be_hidden()
@@ -106,7 +119,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
         page.fill("#keys-character", "示例区 / 一号")
         expect(page.locator("#keys-list")).to_have_value("示例技能 = Ctrl")
         page.fill("#keys-list", "模拟范围攻击 = A")
-        page.locator("#keys-form button").click()
+        page.locator("#keys-form button[type=submit]").click()
         page.click('[data-view="runs"]')
         page.select_option("#run-kind", "run")
         page.select_option("#class-select", "dragon_knight")
@@ -126,7 +139,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
         expect(page.locator("#sim-key-status")).to_contain_text("已执行")
         page.click('[data-view="keys"]')
         page.fill("#keys-list", "模拟范围攻击 = S")
-        page.locator("#keys-form button").click()
+        page.locator("#keys-form button[type=submit]").click()
         page.click('[data-view="simulator"]')
         page.click("#sim-key")
         page.locator("#sim-key").press("a")
@@ -152,6 +165,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
             "evidence_operations": ["replay", "reinfer", "export_bundle", "verify_bundle"],
             "single_step_restore_after_reload": True,
             "keyed_two_map_task": "completed_and_evidenced",
+            "confirmed_profile_export_loaded": True,
             "local_key_image_preview_and_clear": True,
             "mobile_width": 390,
             "horizontal_overflow": overflow,
