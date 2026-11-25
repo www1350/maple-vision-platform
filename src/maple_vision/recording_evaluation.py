@@ -255,13 +255,11 @@ def verify_events(recording: Path, report: Path) -> dict[str, Any]:
     return _verify_event_report(_validated_manifest(recording), report)
 
 
-def _recording_window_document(recordings: Sequence[Path]) -> dict[str, Any]:
-    if (
-        not isinstance(recordings, (list, tuple))
-        or not 2 <= len(recordings) <= MAX_RECORDING_WINDOWS
-    ):
+def _recording_window_document_from_manifests(
+    manifests: Sequence[dict[str, Any]],
+) -> dict[str, Any]:
+    if not isinstance(manifests, (list, tuple)) or not 2 <= len(manifests) <= MAX_RECORDING_WINDOWS:
         raise ValueError("supply 2..256 recording windows")
-    manifests = [_validated_manifest(Path(recording)) for recording in recordings]
     if any(
         manifest["source_kind"] != "mp4"
         or manifest["source_hash_basis"] != "mp4_file"
@@ -349,6 +347,44 @@ def _recording_window_document(recordings: Sequence[Path]) -> dict[str, Any]:
     return document
 
 
+def _recording_window_document(recordings: Sequence[Path]) -> dict[str, Any]:
+    if not isinstance(recordings, (list, tuple)):
+        raise ValueError("supply 2..256 recording windows")
+    return _recording_window_document_from_manifests(
+        [_validated_manifest(Path(recording)) for recording in recordings]
+    )
+
+
+def _recording_window_report(report: Path) -> dict[str, Any]:
+    raw = strict_json(
+        read_regular(report, MAX_WINDOW_REPORT_BYTES, "recording window report").decode()
+    )
+    if (
+        not isinstance(raw, dict)
+        or raw.get("schema_version") != 1
+        or raw.get("kind") != "recording_window_coverage"
+        or not isinstance(raw.get("windows"), list)
+        or not 2 <= len(raw["windows"]) <= MAX_RECORDING_WINDOWS
+    ):
+        raise ValueError("invalid recording window report")
+    return raw
+
+
+def _verify_recording_window_report(
+    manifests: Sequence[dict[str, Any]], report: Path
+) -> dict[str, object]:
+    raw = _recording_window_report(report)
+    measured = _recording_window_document_from_manifests(manifests)
+    if canonical_json(raw) != canonical_json(measured):
+        raise ValueError("recording window report differs from its source sessions")
+    return {
+        "verified": True,
+        "coverage_sha256": measured["coverage_sha256"],
+        "windows": measured["window_count"],
+        "decoded_frames": measured["decoded_frame_count"],
+    }
+
+
 def summarize_recording_windows(recordings: Sequence[Path], output: Path | None) -> dict[str, Any]:
     """Bind a contiguous, bounded MP4 import chain into one source coverage report."""
     report = _recording_window_document(recordings)
@@ -358,18 +394,11 @@ def summarize_recording_windows(recordings: Sequence[Path], output: Path | None)
 
 
 def verify_recording_windows(recordings: Sequence[Path], report: Path) -> dict[str, object]:
-    raw = strict_json(
-        read_regular(report, MAX_WINDOW_REPORT_BYTES, "recording window report").decode()
+    if not isinstance(recordings, (list, tuple)):
+        raise ValueError("supply 2..256 recording windows")
+    return _verify_recording_window_report(
+        [_validated_manifest(Path(recording)) for recording in recordings], report
     )
-    measured = _recording_window_document(recordings)
-    if not isinstance(raw, dict) or canonical_json(raw) != canonical_json(measured):
-        raise ValueError("recording window report differs from its source sessions")
-    return {
-        "verified": True,
-        "coverage_sha256": measured["coverage_sha256"],
-        "windows": measured["window_count"],
-        "decoded_frames": measured["decoded_frame_count"],
-    }
 
 
 def _case(recording: Path, labels: Path, available_frames: int) -> Case:

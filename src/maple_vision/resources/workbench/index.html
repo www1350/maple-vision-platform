@@ -65,12 +65,12 @@
           </section>
         </section>
         <section id="view-recordings" class="view hidden">
-          <div class="page-title"><div><h1>真实录像复核</h1><p class="subtitle">逐帧查看启动时登记并完整校验的本地录像会话与人工可见事件。</p></div><span class="scope-pill">只读真实像素</span></div>
-          <div id="recordings-empty" class="notice hidden">本次工作台未登记录像。使用 --recordings 指定只读会话目录；可用 --recording-events 附加已复验的可见事件报告。</div>
+          <div class="page-title"><div><h1>真实录像复核</h1><p class="subtitle">逐帧查看已校验的本地录像、跨窗口连续覆盖和人工可见事件。</p></div><span class="scope-pill">只读真实像素</span></div>
+          <div id="recordings-empty" class="notice hidden">本次工作台未登记录像。使用 --recordings 指定只读会话目录；可用 --recording-events 附加可见事件，--recording-coverage 附加跨窗口覆盖报告。</div>
           <div id="recordings-workspace" class="workspace-grid hidden">
             <section class="panel setup-panel" aria-labelledby="recordings-heading">
-              <div class="panel-heading"><h2 id="recordings-heading">已校验会话</h2><span id="recording-count" class="count">0</span></div>
-              <form><label for="recording-select">录像窗口</label><select id="recording-select"></select><p id="recording-source" class="field-help"></p></form>
+              <div class="panel-heading"><h2 id="recordings-heading">已校验证据</h2><span id="recording-count" class="count">0</span></div>
+              <form><label for="recording-select">连续覆盖或单窗口</label><select id="recording-select"></select><p id="recording-source" class="field-help"></p></form>
               <p class="field-help">目录在服务启动时固定，浏览器不能提交任意文件路径。原视频和导入像素不会进入 Git 仓库。</p>
             </section>
             <section class="panel recording-panel" aria-labelledby="recording-detail-heading">

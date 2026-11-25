@@ -1,6 +1,7 @@
 """Exercise the installed workbench through Chromium against its real HTTP server."""
 
 import argparse
+import hashlib
 import io
 import json
 import shutil
@@ -15,9 +16,65 @@ from urllib.request import urlopen
 from PIL import Image
 from playwright.sync_api import expect, sync_playwright
 
+from maple_vision.catalog import canonical_json
 from maple_vision.input_bindings import load_input_profile
-from maple_vision.recording_evaluation import review_events
-from maple_vision.recordings import import_recording
+from maple_vision.recording_evaluation import review_events, summarize_recording_windows
+from maple_vision.scene import ImageFrame
+
+
+def recording_window(root: Path, name: str, start: int, pts: list[int], truncated: bool) -> Path:
+    session = root / name
+    frames = session / "frames"
+    frames.mkdir(parents=True)
+    rows = []
+    for sequence, timestamp in enumerate(pts):
+        pixels = bytes([50 + 20 * (start + sequence), 80, 120]) * (64 * 36)
+        frame = ImageFrame(sequence, timestamp - pts[0], 64, 36, pixels)
+        data = frame.png_bytes()
+        file = f"frames/{sequence:06d}.png"
+        (session / file).write_bytes(data)
+        rows.append(
+            {
+                "sequence": sequence,
+                "timestamp_ms": timestamp - pts[0],
+                "file": file,
+                "sha256": hashlib.sha256(data).hexdigest(),
+                "rgb_sha256": hashlib.sha256(pixels).hexdigest(),
+                "source_name": f"video-frame-{start + sequence:06d}",
+                "source_sha256": None,
+                "width": 64,
+                "height": 36,
+                "pts": timestamp,
+            }
+        )
+    manifest = {
+        "schema_version": 2 if start == 0 else 3,
+        "kind": "offline_recording",
+        "scope": "user_supplied_recording",
+        "source_kind": "mp4",
+        "source_uri": "urn:self:browser-workbench",
+        "permission": "self_authored",
+        "license": "CC0-1.0",
+        "source_name": "browser-fixture.mp4",
+        "source_sha256": "b" * 64,
+        "source_hash_basis": "mp4_file",
+        "fps": None,
+        "timebase": "video_presentation_ticks",
+        "frame_count": len(rows),
+        "width": 64,
+        "height": 36,
+        "max_frames": len(rows),
+        "total_source_frames": None,
+        "truncated": truncated,
+        "completion_reason": "frame_limit" if truncated else "decoder_stopped",
+        "frames": rows,
+        "video_clock": {"stream_index": 0, "numerator": 1, "denominator": 1000},
+    }
+    if start:
+        manifest["source_start_frame"] = start
+    manifest["session_id"] = hashlib.sha256(canonical_json(manifest).encode()).hexdigest()
+    (session / "manifest.json").write_text(canonical_json(manifest) + "\n", encoding="utf-8")
+    return session
 
 
 def verify(url: str, executable: str) -> dict[str, object]:
@@ -37,7 +94,9 @@ def verify(url: str, executable: str) -> dict[str, object]:
         expect(page.locator("#recording-evidence")).to_contain_text("attack_motion_visible")
         expect(page.locator("#recording-frame-caption")).to_contain_text("源帧 0")
         page.click("#recording-next")
-        expect(page.locator("#recording-frame-caption")).to_contain_text("50 ms")
+        expect(page.locator("#recording-frame-caption")).to_contain_text("40 ms")
+        page.click("#recording-next")
+        expect(page.locator("#recording-frame-caption")).to_contain_text("源帧 2")
         page.click('[data-view="runs"]')
         page.select_option("#class-select", "archer")
         page.select_option("#map-select", "three-map-fixture")
@@ -224,29 +283,26 @@ def main() -> None:
         parser.error("a local Chromium or Chrome executable is required")
     with tempfile.TemporaryDirectory(prefix="maple-browser-") as folder:
         root = Path(folder)
-        source = root / "recording-source"
-        source.mkdir()
-        Image.new("RGB", (64, 36), "#244f3e").save(source / "0000.png")
-        Image.new("RGB", (64, 36), "#c67242").save(source / "0001.png")
         recordings = root / "recordings"
         recordings.mkdir()
-        session = recordings / "window-zero"
-        import_recording(
-            source,
-            session,
-            source_uri="urn:self:browser-workbench",
-            permission="self_authored",
-            license="CC0-1.0",
-            fps=20,
-        )
+        first = recording_window(recordings, "window-zero", 0, [100, 140], True)
+        final = recording_window(recordings, "window-two", 2, [220, 360], False)
         event_reports = root / "recording-events"
         event_reports.mkdir()
         review_events(
-            session,
-            event_reports / "visible.json",
+            first,
+            event_reports / "first.json",
+            reviewer="browser-fixture",
+            events=[("rope_contact_visible", 1, 1)],
+        )
+        review_events(
+            final,
+            event_reports / "final.json",
             reviewer="browser-fixture",
             events=[("attack_motion_visible", 0, 1)],
         )
+        coverage = root / "coverage.json"
+        summarize_recording_windows([first, final], coverage)
         with socket.socket() as probe:
             probe.bind(("127.0.0.1", 0))
             port = probe.getsockname()[1]
@@ -265,6 +321,8 @@ def main() -> None:
                 str(recordings),
                 "--recording-events",
                 str(event_reports),
+                "--recording-coverage",
+                str(coverage),
                 "--port",
                 str(port),
             ]
