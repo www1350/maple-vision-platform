@@ -64,6 +64,15 @@ def _parser() -> argparse.ArgumentParser:
             subparser.add_argument("--allow-unverified", action="store_true")
         elif operation == "snapshot":
             subparser.add_argument("output", type=Path)
+    fetch = knowledge_commands.add_parser(
+        "fetch-plan", help="capture a permitted HTTPS JSON export for offline review"
+    )
+    fetch.add_argument("path", type=Path)
+    fetch.add_argument("url")
+    fetch.add_argument("output", type=Path)
+    fetch.add_argument("--permission", required=True)
+    fetch.add_argument("--license", required=True)
+    fetch.add_argument("--sha256")
     for operation in ("project-domains", "verify-domains", "query-domain"):
         subparser = knowledge_commands.add_parser(operation)
         subparser.add_argument("path", type=Path)
@@ -368,6 +377,14 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
             "verification": None if result.path is None else graph.verify_path(result.path),
         }
     if args.command == "knowledge":
+        if args.operation == "fetch-plan":
+            from .knowledge_sync import HttpsExportSource, plan_from_source
+
+            return plan_from_source(
+                args.path,
+                HttpsExportSource(args.url, args.permission, args.license, args.sha256),
+                args.output,
+            )
         if args.operation in {"project-domains", "verify-domains", "query-domain"}:
             from .catalog_domains import (
                 build_domain_snapshot,

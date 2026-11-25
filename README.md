@@ -1,6 +1,10 @@
-# Maple Vision Platform v0.7.0
+# Maple Vision Platform v0.8.0
 
 一个可在本机运行、训练和验证的**离线视觉研究平台与独立模拟器**。它包含本地知识目录、素材登记、合成数据集、YOLO 训练与 ONNX 推理、多职业/多地图任务，以及可重放的验证证据。
+
+支持从明确获准的 HTTPS JSON 导出预取静态知识，审查后离线应用至 SQLite。[知识同步](docs/KNOWLEDGE_SYNC.md)
+
+**时限技能**增加火毒、冰雷两个合成职业样例，支持按模拟时钟结算持续伤害、按目标暂停接触伤害，均可保存和复验。[职业包规则](docs/CLASS_PACKAGES.md)
 
 **本机工作台支持创建视觉闭环任务、查看故障回放和逐步操作独立模拟器。** 在仓库根目录用 Python 3.12 启动，打开 [本机工作台](http://127.0.0.1:8765)。
 
@@ -21,7 +25,7 @@ python -m maple_vision lab verify-bundle artifacts/bandit-replay --reinfer
 python scripts/verify_content_platform.py --output artifacts/content-acceptance
 ```
 
-`--class-pack` 自动选用 structured 任务链。实际技能规则为自写的合成测试规则；当前不支持完整控制、召唤或持续伤害技能。动画数据使用 schema4，旧数据格式保持兼容。分层报告中的 MP4 是可选展示，权威像素来自逐步重放和全帧 PNG。本地完整 **1582 项通过、0 跳过**，6 条实际跨图任务、两组 13 场景、108 帧动画数据与干净安装均通过。短时实际 60.64 秒、29 轮；完整 24 小时仍开放。[v0.6 实际验收](docs/RELEASE_0_6_ACCEPTANCE.md) 保存明细，准确 head 的远端检查与合并由 PR 记录。
+`--class-pack` 自动选用 structured 任务链。实际技能规则为自写的合成测试规则；v0.6 的三份职业包覆盖直接伤害、治疗和 Buff。动画数据使用 schema4，旧数据格式保持兼容。分层报告中的 MP4 是可选展示，权威像素来自逐步重放和全帧 PNG。本地完整 **1582 项通过、0 跳过**，6 条实际跨图任务、两组 13 场景、108 帧动画数据与干净安装均通过。短时实际 60.64 秒、29 轮；完整 24 小时仍开放。[v0.6 实际验收](docs/RELEASE_0_6_ACCEPTANCE.md) 保存明细，准确 head 的远端检查与合并由 PR 记录。
 
 **原始整体方案：[Maple Vision Platform v8.0 — 最终工程实施总纲](MASTER_SPEC.md)**。这是用户指定的[共享方案](https://chatgpt.com/s/t_6b05d66c4fac81918da3094a5f80f7dc)的完整 22 章 Markdown 正文，逐字保留；图表和交互原型的[完整源文本](docs/source-plan/shared-plan-v8.source.txt)及[来源与校验值](docs/source-plan/shared-plan-v8.metadata.json)一并归档。GitHub 不执行这些交互组件，产品原型不代表管理界面已经实现。
 

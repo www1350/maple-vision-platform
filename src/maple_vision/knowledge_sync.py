@@ -11,11 +11,14 @@ import os
 import sqlite3
 import stat
 import tempfile
+import time
 from collections.abc import Iterator
 from contextlib import closing, contextmanager
 from dataclasses import asdict, dataclass, replace
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Protocol
+from urllib.parse import urlsplit, urlunsplit
 
 from .catalog import (
     _COLUMNS,
@@ -32,6 +35,7 @@ from .catalog import (
     _validate_schema,
     canonical_json,
     strict_json,
+    validate_provenance,
 )
 from .knowledge import _normalized_sql
 
@@ -127,12 +131,35 @@ def _parse_export(data: bytes) -> tuple[CatalogRecord, ...]:
 
 
 @dataclass(frozen=True)
+class RemoteReceipt:
+    endpoint: str
+    request_url_sha256: str
+    permission: str
+    license: str
+    fetched_at: str
+
+    def __post_init__(self) -> None:
+        validate_provenance(self.endpoint, self.permission, self.license)
+        parts = urlsplit(self.endpoint)
+        if parts.scheme != "https" or parts.query or parts.fragment:
+            raise ValueError("source receipt needs an HTTPS endpoint without a query or fragment")
+        if not _valid_hash(self.request_url_sha256):
+            raise ValueError("invalid request URL hash")
+        if not isinstance(self.fetched_at, str) or len(self.fetched_at) > 48:
+            raise ValueError("invalid retrieval time")
+        when = datetime.fromisoformat(self.fetched_at)
+        if when.utcoffset() != UTC.utcoffset(None):
+            raise ValueError("retrieval time must be UTC")
+
+
+@dataclass(frozen=True)
 class SourceSnapshot:
     """The exact bytes read once, plus their parsed immutable records."""
 
     name: str
     content: bytes
     records: tuple[CatalogRecord, ...]
+    retrieval: RemoteReceipt | None = None
 
 
 class SourceAdapter(Protocol):
@@ -155,6 +182,78 @@ class LocalExportSource:
         name = _source_name(path.name)
         content = _read_regular(path, MAX_IMPORT_BYTES, "knowledge export")
         return SourceSnapshot(name, content, _parse_export(content))
+
+
+@dataclass(frozen=True)
+class HttpsExportSource:
+    """Fetch one operator-selected, permitted catalog export, only during planning."""
+
+    url: str
+    permission: str
+    license: str
+    expected_sha256: str | None = None
+
+    @property
+    def adapter_id(self) -> str:
+        return "https_catalog_json_v1"
+
+    def read(self) -> SourceSnapshot:
+        try:
+            import httpx
+        except ModuleNotFoundError as exc:
+            raise ValueError("install the sync extra to fetch HTTPS exports") from exc
+        if not isinstance(self.url, str) or len(self.url) > 4096:
+            raise ValueError("invalid export URL")
+        validate_provenance(self.url, self.permission, self.license)
+        parts = urlsplit(self.url)
+        if parts.scheme != "https" or parts.fragment or any(ord(c) < 32 for c in self.url):
+            raise ValueError("an absolute HTTPS export URL is required")
+        if self.expected_sha256 is not None and not _valid_hash(self.expected_sha256):
+            raise ValueError("expected export digest must be a lowercase SHA-256")
+        endpoint = urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
+        name = _source_name(Path(parts.path).name or "export.json")
+        data = bytearray()
+        started = time.monotonic()
+        try:
+            with httpx.stream(
+                "GET",
+                self.url,
+                follow_redirects=False,
+                timeout=15.0,
+                headers={"Accept": "application/json", "Accept-Encoding": "identity"},
+            ) as response:
+                if response.status_code != 200:
+                    raise ValueError(f"export endpoint returned HTTP {response.status_code}")
+                if response.headers.get("content-encoding", "identity").lower() != "identity":
+                    raise ValueError("export endpoint must serve the original uncompressed JSON")
+                size = response.headers.get("content-length")
+                if size is not None and (
+                    not size.isdecimal() or len(size) > 10 or int(size) > MAX_IMPORT_BYTES
+                ):
+                    raise ValueError("declared export exceeds the size limit")
+                for block in response.iter_bytes():
+                    if time.monotonic() - started > 60:
+                        raise ValueError("export exceeded its download time budget")
+                    if len(data) + len(block) > MAX_IMPORT_BYTES:
+                        raise ValueError("export exceeds the size limit")
+                    data.extend(block)
+                if size is not None and int(size) != len(data):
+                    raise ValueError("export length differs from Content-Length")
+        except ImportError as exc:
+            raise ValueError("install the sync extra for this proxy configuration") from exc
+        except httpx.HTTPError as exc:
+            raise ValueError(f"HTTPS export failed ({type(exc).__name__})") from None
+        content = bytes(data)
+        if self.expected_sha256 is not None and _sha(content) != self.expected_sha256:
+            raise ValueError("export content differs from pinned SHA-256")
+        receipt = RemoteReceipt(
+            endpoint,
+            _sha(self.url.encode()),
+            self.permission,
+            self.license,
+            datetime.now(UTC).isoformat(),
+        )
+        return SourceSnapshot(name, content, _parse_export(content), receipt)
 
 
 @dataclass(frozen=True)
@@ -398,9 +497,10 @@ def _plan_document(
 ) -> tuple[dict[str, object], _CatalogState]:
     expected, result = _expected_state(baseline, source.records)
     document: dict[str, object] = {
-        "schema_version": PLAN_SCHEMA_VERSION,
+        "schema_version": 2 if source.retrieval is not None else PLAN_SCHEMA_VERSION,
         "kind": "knowledge_sync_plan",
-        "adapter": ADAPTER_ID,
+        "adapter": "https_catalog_json_v1" if source.retrieval is not None else ADAPTER_ID,
+        **({"retrieval": asdict(source.retrieval)} if source.retrieval is not None else {}),
         "source": _source_document(source),
         "baseline": baseline.document(),
         "baseline_fingerprint": baseline.fingerprint,
@@ -432,9 +532,9 @@ def _publish_plan(path: Path, data: bytes) -> None:
 
 def _plan_summary(document: dict[str, Any]) -> dict[str, object]:
     return {
-        "schema_version": PLAN_SCHEMA_VERSION,
+        "schema_version": document["schema_version"],
         "plan_id": document["plan_id"],
-        "adapter": ADAPTER_ID,
+        "adapter": document["adapter"],
         "source_sha256": document["source"]["sha256"],
         "baseline_fingerprint": document["baseline_fingerprint"],
         "expected_fingerprint": document["expected_fingerprint"],
@@ -448,10 +548,15 @@ def plan_sync(
     database: str | Path, source_json: str | Path, output_plan: str | Path
 ) -> dict[str, object]:
     """Capture a stable local export and a consistent full logical catalog baseline."""
+    return plan_from_source(database, LocalExportSource(Path(source_json)), output_plan)
+
+
+def plan_from_source(
+    database: str | Path, adapter: SourceAdapter, output_plan: str | Path
+) -> dict[str, object]:
     path = Path(output_plan).absolute()
     if path.exists() or path.is_symlink():
         raise FileExistsError(f"plan already exists: {path}")
-    adapter: SourceAdapter = LocalExportSource(Path(source_json))
     source = adapter.read()
     with _catalog_transaction(database, write=False) as connection:
         baseline = _catalog_state(connection)
@@ -465,13 +570,16 @@ def _read_plan(
 ) -> tuple[dict[str, Any], SourceSnapshot, _CatalogState, _CatalogState]:
     content = _read_regular(plan_path, MAX_PLAN_BYTES, "sync plan")
     document = strict_json(content.decode("utf-8"))
-    if not isinstance(document, dict) or set(document) != _PLAN_KEYS:
+    if not isinstance(document, dict) or set(document) != (
+        _PLAN_KEYS | {"retrieval"} if document.get("schema_version") == 2 else _PLAN_KEYS
+    ):
         raise ValueError("sync plan has unknown or missing fields")
     if (
         type(document["schema_version"]) is not int
-        or document["schema_version"] != PLAN_SCHEMA_VERSION
+        or document["schema_version"] not in (PLAN_SCHEMA_VERSION, 2)
         or document["kind"] != "knowledge_sync_plan"
-        or document["adapter"] != ADAPTER_ID
+        or document["adapter"]
+        != ("https_catalog_json_v1" if document["schema_version"] == 2 else ADAPTER_ID)
     ):
         raise ValueError("unsupported sync plan format or source adapter")
     body = {key: value for key, value in document.items() if key != "plan_id"}
@@ -490,7 +598,13 @@ def _read_plan(
         or metadata["size_bytes"] != len(data)
     ):
         raise ValueError("captured source bytes/hash/size disagree")
-    source = SourceSnapshot(name, data, _parse_export(data))
+    retrieval = None
+    if document["schema_version"] == 2:
+        item = document["retrieval"]
+        if not isinstance(item, dict) or set(item) != set(RemoteReceipt.__dataclass_fields__):
+            raise ValueError("invalid captured retrieval receipt")
+        retrieval = RemoteReceipt(**item)
+    source = SourceSnapshot(name, data, _parse_export(data), retrieval)
     baseline = _state_from_document(document["baseline"])
     rebuilt, expected = _plan_document(source, baseline)
     # Recompute all deltas, provenance, fingerprints and counts; a recomputed outer

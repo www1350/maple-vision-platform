@@ -229,3 +229,17 @@ python -m pytest tests/test_capability_runtime.py -q
 ```
 
 测试覆盖三个外部职业在两图/三图的完整像素任务和独立真值目标，另以真实像素的密集目标及低 HP 场景验证范围/治疗程序选择；还包含真实多步调度、延迟回执冷却、未更新画面的资源预算、急救抢占、暂停/UNKNOWN/来源切换/目标变化取消、冻结输入的有界失败，以及删除源包后的运行重放和重推理。独立真值仅在模拟器及测试 oracle 使用，不进入候选、Planner 或执行调度。
+
+## 时限效果与合成职业样例
+
+职业内容 schema 2 在已注册的伤害技能上声明 `timed_effects`。火毒样例的直接命中附加持续伤害，冰雷样例的命中暂停该怪物的接触伤害。两份样例均为自写试验规则。用同一任务引擎启动：
+
+```bash
+python -m maple_vision lab run --class-pack examples/classes/fire_poison.json --seed 14 --output artifacts/fire-poison
+python -m maple_vision lab reinfer artifacts/fire-poison
+python -m maple_vision lab run --class-pack examples/classes/ice_lightning.json --seed 14 --output artifacts/ice-lightning
+```
+
+每项效果绑定一个技能。持续伤害的间隔、伤害和期限使用整数，最短间隔 100 ms。以首次命中时的模拟时钟为起点，在跨过刻度的固定步结算；若末次刻度恰好到期，先结算再移除。同一目标同种活跃效果保留原来的期限，多次释放仍可产生直接伤害。控制只阻止命中目标的接触伤害，其他怪物照常结算。击杀只产生一次掉落。切图清除旧地图的活跃效果。
+
+schema 5 存档随职业规则保存目标 ID、技能和实际施加时间，恢复时检查存活目标、规则、时间界限和时钟对齐。历史职业包和存档继续使用原有格式。运行时策略仍只看视觉观测；后台记录的中毒或控制不能直接充当视觉确认。
