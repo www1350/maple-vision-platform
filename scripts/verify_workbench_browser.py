@@ -109,6 +109,13 @@ def verify(url: str, executable: str) -> dict[str, object]:
             profile = load_input_profile(exported)
             assert profile.profile_id == "示例区 / 一号"
             assert [(item.skill, item.key) for item in profile.bindings] == [("示例技能", "Ctrl")]
+            page.locator("#keys-import").set_input_files(exported)
+            expect(page.locator("#keys-status")).to_contain_text("1 项草稿")
+            expect(page.locator("#keys-list")).to_have_value("示例技能 = Ctrl")
+            bad = {"name": "bad.json", "mimeType": "application/json", "buffer": b"invalid"}
+            page.locator("#keys-import").set_input_files(bad)
+            expect(page.locator("#keys-status")).to_contain_text("导入失败")
+            expect(page.locator("#keys-list")).to_have_value("示例技能 = Ctrl")
         page.fill("#keys-list", "示例技能 = Ctrl\n跳跃 = Control")
         page.locator("#keys-form button[type=submit]").click()
         expect(page.locator("#keys-status")).to_contain_text("出现了两次")
@@ -118,7 +125,24 @@ def verify(url: str, executable: str) -> dict[str, object]:
         expect(page.locator("#keys-list")).to_have_value("")
         page.fill("#keys-character", "示例区 / 一号")
         expect(page.locator("#keys-list")).to_have_value("示例技能 = Ctrl")
-        page.fill("#keys-list", "模拟范围攻击 = A")
+        draft = {
+            "schema_version": 1,
+            "profile_id": "示例区 / 一号",
+            "bindings": [{"skill": "模拟范围攻击", "key": "A"}],
+        }
+        page.locator("#keys-import").set_input_files(
+            {
+                "name": "bindings.json",
+                "mimeType": "application/json",
+                "buffer": json.dumps(draft, ensure_ascii=False).encode(),
+            }
+        )
+        expect(page.locator("#keys-status")).to_contain_text("1 项草稿")
+        expect(page.locator("#keys-list")).to_have_value("模拟范围攻击 = A")
+        assert (
+            page.evaluate("localStorage.getItem('maple.keybindings.v1.示例区 / 一号')")
+            == "示例技能 = Ctrl"
+        )
         page.locator("#keys-form button[type=submit]").click()
         expect(page.locator("#keys-status")).to_contain_text("保存 1 项")
         page.click('[data-view="runs"]')
