@@ -58,7 +58,7 @@ schema2 地图包允许每张图声明最多四个出口，第一个出口定义
 
 ## 国服怀旧服地图连接核查
 
-[小册子的射手村东部小山地图详情](https://mxdc.dvg.cn/map_info.php?id=100010000)登记两个传送点。[地图工具](https://mxdc.dvg.cn/tools/maptools-v2/?dataset=cms-mxdc&map=100010000)标出西侧通向射手村、东侧通向射手村东部草丛。2026-11-25 根据公开页面手工编写两条有向边，地图 ID 为 100010000。示例中的节点标识和出口标识为项目自定义名称，范围标为 game_reference。原图、平台、梯子、行走距离和反向连接均未纳入样本。
+[小册子的射手村东部小山地图详情](https://mxdc.dvg.cn/map_info.php?id=100010000)登记两个传送点。[地图工具](https://mxdc.dvg.cn/tools/maptools-v2/?dataset=cms-mxdc&map=100010000)标出西侧通向射手村、东侧通向射手村东部草丛。东部小山的地图 ID 为 100010000。示例中的节点标识和出口标识为项目自定义名称，范围标为 game_reference。图中每条有向边均有资料依据。平台、梯子和行走距离仍待录像校准。
 
 ```bash
 python -m maple_vision maps route examples/navigation/cms-east-hill.json east_hill henesys
@@ -66,3 +66,20 @@ python -m maple_vision maps route examples/navigation/cms-east-hill.json east_hi
 ```
 
 两条查询分别返回 west 和 east，均通过路线复核。每条边的代价 1 表示一次换图。真实画面中的门识别、平台跳跃和梯子攀爬仍需要单独实测。
+
+### 射手村往返青蘑菇树林
+
+本样本覆盖五张地图之间的八条有向连接。每一段代价为一次跨图。射手村前往东部小山依据小册子的推荐走法，其余连接依据出发地图的传送点列表。出口名称以目的地作为程序标识。
+
+| 地图 | 核对依据 |
+|---|---|
+| 射手村 → 东部小山 | [东部小山详情的推荐走法](https://mxdc.dvg.cn/map_info.php?id=100010000) |
+| 东部小山 → 射手村、东部草丛 | [东部小山地图分布](https://mxdc.dvg.cn/map_info.php?id=100010000) |
+| 东部草丛 → 东部小山、东部树林 | [东部草丛地图分布](https://mxdc.dvg.cn/map_info.php?id=100020000) |
+| 东部树林 → 东部草丛、青蘑菇树林 | [东部树林地图分布](https://mxdc.dvg.cn/map_info.php?id=100030000) |
+| 青蘑菇树林 → 东部树林 | [青蘑菇树林地图分布](https://mxdc.dvg.cn/map_info.php?id=100030001) |
+
+```bash
+python -m maple_vision maps route examples/navigation/cms-east-hill.json henesys mushroom_forest
+python -m maple_vision maps route examples/navigation/cms-east-hill.json mushroom_forest henesys
+```

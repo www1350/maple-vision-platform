@@ -5,7 +5,9 @@
   "nodes": [
     "east_hill",
     "henesys",
-    "east_grass"
+    "east_grass",
+    "east_forest",
+    "mushroom_forest"
   ],
   "portals": [
     {
@@ -19,6 +21,42 @@
       "portal_id": "east",
       "target": "east_grass",
       "cost": 1
+    },
+    {
+      "source": "henesys",
+      "portal_id": "to_east_hill",
+      "target": "east_hill",
+      "cost": 1
+    },
+    {
+      "source": "east_grass",
+      "portal_id": "to_east_hill",
+      "target": "east_hill",
+      "cost": 1
+    },
+    {
+      "source": "east_grass",
+      "portal_id": "to_east_forest",
+      "target": "east_forest",
+      "cost": 1
+    },
+    {
+      "source": "east_forest",
+      "portal_id": "to_east_grass",
+      "target": "east_grass",
+      "cost": 1
+    },
+    {
+      "source": "east_forest",
+      "portal_id": "to_mushroom_forest",
+      "target": "mushroom_forest",
+      "cost": 1
+    },
+    {
+      "source": "mushroom_forest",
+      "portal_id": "to_east_forest",
+      "target": "east_forest",
+      "cost": 1
     }
   ],
   "provenance": {
@@ -26,7 +64,7 @@
     "scope": "game_reference",
     "game_version": "CMS classic community reference accessed 2026-11-25",
     "permission": "self_authored",
-    "license": "Self-authored graph of two factual connections. No third-party assets included.",
+    "license": "Self-authored factual route graph. Source pages and scope are listed in docs/MISSION_PROGRAMS.md.",
     "source_sha256": null
   }
 }
