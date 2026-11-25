@@ -55,3 +55,14 @@ python -m maple_vision lab reinfer artifacts/shortcut
 ```
 
 schema2 地图包允许每张图声明最多四个出口，第一个出口定义默认巡回路线，其余出口可以通向包内其他地图。每张图的出口编号和目的地唯一，相邻出口的横坐标至少相距 56 像素。两图间的任务步骤必须有直接连接。寻路命令返回最短路线，任务文件决定实际执行路线。
+
+## 国服怀旧服地图连接核查
+
+[小册子的射手村东部小山地图详情](https://mxdc.dvg.cn/map_info.php?id=100010000)登记两个传送点。[地图工具](https://mxdc.dvg.cn/tools/maptools-v2/?dataset=cms-mxdc&map=100010000)标出西侧通向射手村、东侧通向射手村东部草丛。2026-11-25 根据公开页面手工编写两条有向边，地图 ID 为 100010000。示例中的节点标识和出口标识为项目自定义名称，范围标为 game_reference。原图、平台、梯子、行走距离和反向连接均未纳入样本。
+
+```bash
+python -m maple_vision maps route examples/navigation/cms-east-hill.json east_hill henesys
+python -m maple_vision maps route examples/navigation/cms-east-hill.json east_hill east_grass
+```
+
+两条查询分别返回 west 和 east，均通过路线复核。每条边的代价 1 表示一次换图。真实画面中的门识别、平台跳跃和梯子攀爬仍需要单独实测。
