@@ -255,6 +255,17 @@ def _parser() -> argparse.ArgumentParser:
         metavar=("RECORDING", "LABELS", "REPORT"),
     )
     strike_summary.add_argument("--output", type=Path, required=True)
+    strike_readiness = recording_commands.add_parser("assess-strike-readiness")
+    strike_readiness.add_argument("requirements", type=Path)
+    strike_readiness.add_argument("--output", type=Path, required=True)
+    strike_readiness.add_argument(
+        "--verified-case",
+        type=Path,
+        nargs=3,
+        action="append",
+        required=True,
+        metavar=("RECORDING", "LABELS", "REPORT"),
+    )
     event_review = recording_commands.add_parser("review-events")
     event_review.add_argument("path", type=Path)
     event_review.add_argument("output", type=Path)
@@ -776,6 +787,10 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 sources=[(recording, labels) for recording, labels, _ in args.verified_case],
             )
         return summarize_strikes(args.report, args.output)
+    if args.command == "recording" and args.operation == "assess-strike-readiness":
+        from .recording_evaluation import assess_strike_readiness
+
+        return assess_strike_readiness(args.requirements, args.verified_case, args.output)
     if args.command == "recording" and args.operation == "review-events":
         from .recording_evaluation import review_events
 

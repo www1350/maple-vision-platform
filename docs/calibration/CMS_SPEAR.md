@@ -42,6 +42,16 @@ python -m maple_vision recording summarize-strikes --verified-case SESSION_A LAB
 
 每个窗口的来源字段都通过重算后，汇总才会发布，`source_fields_verified` 记录通过复核的窗口数。报告摘要取自参与统计的同一份字节。技能、朝向和伤害归属仍由复核人判断。
 
+在真实连续实录进入参数讨论前，可使用仓库内的采集合同做一次独立门禁：
+
+```bash
+python -m maple_vision recording assess-strike-readiness examples/calibration/cms-spear-triple-thrust-readiness.json --verified-case SESSION LABELS.json HIT-1.json --verified-case SESSION LABELS.json HIT-2.json --verified-case SESSION LABELS.json NO-FEEDBACK.json --output READINESS.json
+```
+
+合同冻结了本次研究所需的技能、等级、武器、左右朝向、最少正反例、每个伤害窗口的可见反馈数，以及是否必须具备同一会话、攻速上下文、角色键位和收招后移动标记。命令逐份重放原录像与标注后才计算门禁；身份不符、重复施放起点或来源字段被改动会直接拒绝。样本不足则仍发布 `ready_for_manual_parameter_review=false` 的缺口报告，便于明确补录内容。
+
+示例中的“两份可见伤害、一份非伤害、每份三次可见反馈”是项目为本轮枪连击研究冻结的采集下限，不是国服官方参数，也不证明三次伤害包。即使全部门禁通过，报告仍固定 `calibrated_range=false`、`calibrated_timing=false`；它只表示资料可交给人工做下一步参数审查，不能直接写入运行配置。
+
 有连续收招画面时，把 `--end` 延长到观察结束，并用 `--movement-frame` 标记最后一次可见反馈后首次可归因于角色主动移动的帧。无法区分主动移动、击退或镜头平移时留空。报告保存原帧身份与两帧之间的毫秒数；汇总只统计实际标记的窗口。玩家可能延迟移动，因此这项观察仍无法确定技能最早可取消或可移动的时刻。
 
 汇总按录像会话与施放起始帧计数。对同次施放延长观察窗口或改选目标时，选定一份报告参与该汇总。不同施放即使首尾画面像素相同也分别计数。汇总保留录像的时间基准；原始视频 PTS、视频标称帧率及手填帧率应各自汇总。

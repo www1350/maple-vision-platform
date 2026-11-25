@@ -34,6 +34,7 @@ MAX_OBJECTS = 50_000
 MAX_OBJECTS_PER_FRAME = 128
 MAX_LABEL_BYTES = 16 * 1024 * 1024
 MAX_STRIKE_REPORT_BYTES = 1024 * 1024
+MAX_STRIKE_REQUIREMENTS_BYTES = 64 * 1024
 MAX_EVENT_REPORT_BYTES = 4 * 1024 * 1024
 MAX_REVIEWED_EVENTS = 256
 MAX_WINDOW_REPORT_BYTES = 4 * 1024 * 1024
@@ -1386,5 +1387,216 @@ def summarize_strikes(
             "max": max(delays),
         }
         report["limitations"].append("visible movement depends on player input and frame sampling")
+    _write(output, report)
+    return report
+
+
+def _strike_readiness_requirements(path: Path) -> tuple[dict[str, Any], str]:
+    contents = read_regular(path, MAX_STRIKE_REQUIREMENTS_BYTES, "strike readiness requirements")
+    raw = strict_json(contents.decode())
+    fields = {
+        "schema_version",
+        "kind",
+        "domain",
+        "skill_id",
+        "level",
+        "weapon",
+        "required_feedback_events_per_damage",
+        "minimum_damage_windows",
+        "minimum_nondamage_windows",
+        "required_facings",
+        "require_single_session",
+        "require_attack_context",
+        "require_input_binding",
+        "require_reviewed_movement_after_damage",
+    }
+    if not isinstance(raw, dict) or set(raw) != fields:
+        raise ValueError("invalid strike readiness requirements schema")
+    if raw["schema_version"] != 1 or raw["kind"] != "strike_readiness_requirements":
+        raise ValueError("unsupported strike readiness requirements")
+    for field in ("domain", "skill_id", "weapon"):
+        _text(raw[field], field)
+    if raw["domain"] not in ("authored_fixture", "game_recording"):
+        raise ValueError("invalid strike readiness domain")
+    if type(raw["level"]) is not int or raw["level"] < 1:
+        raise ValueError("invalid strike readiness level")
+    for field, low, high in (
+        ("required_feedback_events_per_damage", 1, 16),
+        ("minimum_damage_windows", 1, 10_000),
+        ("minimum_nondamage_windows", 0, 10_000),
+    ):
+        if type(raw[field]) is not int or not low <= raw[field] <= high:
+            raise ValueError(f"invalid {field}")
+    facings = raw["required_facings"]
+    if (
+        not isinstance(facings, list)
+        or not facings
+        or len(facings) > 2
+        or facings != sorted(set(facings))
+        or any(facing not in ("left", "right") for facing in facings)
+    ):
+        raise ValueError("invalid required facings")
+    for field in (
+        "require_single_session",
+        "require_attack_context",
+        "require_input_binding",
+        "require_reviewed_movement_after_damage",
+    ):
+        if type(raw[field]) is not bool:
+            raise ValueError(f"invalid {field}")
+    return raw, hashlib.sha256(contents).hexdigest()
+
+
+def assess_strike_readiness(
+    requirements_path: Path,
+    cases: Sequence[tuple[Path, Path, Path]],
+    output: Path,
+) -> dict[str, Any]:
+    """Check source-verified observations against an explicit collection contract."""
+    if not cases or len(cases) > 10_000:
+        raise ValueError("supply 1..10000 verified strike cases")
+    if any(output.resolve().is_relative_to(recording.resolve()) for recording, _, _ in cases):
+        raise ValueError("write evidence outside the recording")
+    requirements, requirements_sha256 = _strike_readiness_requirements(requirements_path)
+    snapshots = [_strike_report(report) for _, _, report in cases]
+    documents = [document for document, _ in snapshots]
+    by_source: dict[tuple[Path, Path], list[dict[str, Any]]] = {}
+    for (recording, labels, _), document in zip(cases, documents, strict=True):
+        by_source.setdefault((recording, labels), []).append(document)
+    for (recording, labels), windows in by_source.items():
+        case = _case(recording, labels, MAX_FRAMES)
+        for window in windows:
+            _verify_strike_source(case, window)
+
+    identity_fields = ("domain", "skill_id", "level", "weapon")
+    identity = {field: requirements[field] for field in identity_fields}
+    if any(
+        any(document[field] != identity[field] for field in identity_fields)
+        for document in documents
+    ):
+        raise ValueError("verified strike case does not match the readiness requirements")
+    sample_ids = [(document["session_id"], document["start"]["sequence"]) for document in documents]
+    if len(set(sample_ids)) != len(sample_ids):
+        raise ValueError("duplicate strike observation")
+
+    sessions = sorted({document["session_id"] for document in documents})
+    frame_sizes = {tuple(document["source_frame_size"]) for document in documents}
+    timebases = {document["timebase"] for document in documents}
+    damage = [
+        document for document in documents if document["reviewed_feedback"] == "damage_visible"
+    ]
+    nondamage = [
+        document for document in documents if document["reviewed_feedback"] != "damage_visible"
+    ]
+    observed_facings = sorted({document["facing"] for document in documents})
+    attack_contexts = [document.get("attack_context") for document in documents]
+    input_bindings = [document.get("input_binding") for document in documents]
+    intervals_by_session: dict[str, list[tuple[int, int]]] = {}
+    for document in documents:
+        intervals_by_session.setdefault(document["session_id"], []).append(
+            (document["start"]["sequence"], document["end"]["sequence"])
+        )
+    nonoverlapping = all(
+        all(first[1] < second[0] for first, second in zip(ordered, ordered[1:]))
+        for windows in intervals_by_session.values()
+        for ordered in [sorted(windows)]
+    )
+
+    def gate(name: str, passed: bool, required: Any, observed: Any) -> dict[str, Any]:
+        return {"name": name, "passed": passed, "required": required, "observed": observed}
+
+    expected_events = requirements["required_feedback_events_per_damage"]
+    feedback_counts = [len(document.get("feedback_frames", [])) for document in damage]
+    gates = [
+        gate("source_fields_reverified", True, len(documents), len(documents)),
+        gate(
+            "single_source_session",
+            not requirements["require_single_session"] or len(sessions) == 1,
+            requirements["require_single_session"],
+            len(sessions),
+        ),
+        gate("consistent_frame_size", len(frame_sizes) == 1, 1, len(frame_sizes)),
+        gate("consistent_timebase", len(timebases) == 1, 1, len(timebases)),
+        gate("nonoverlapping_windows", nonoverlapping, True, nonoverlapping),
+        gate(
+            "attack_context_bound",
+            not requirements["require_attack_context"]
+            or (
+                attack_contexts[0] is not None
+                and len({canonical_json(x) for x in attack_contexts}) == 1
+            ),
+            requirements["require_attack_context"],
+            attack_contexts[0]
+            if len({canonical_json(x) for x in attack_contexts}) == 1
+            else "mixed",
+        ),
+        gate(
+            "input_binding_bound",
+            not requirements["require_input_binding"]
+            or (
+                input_bindings[0] is not None
+                and len({canonical_json(x) for x in input_bindings}) == 1
+            ),
+            requirements["require_input_binding"],
+            input_bindings[0] if len({canonical_json(x) for x in input_bindings}) == 1 else "mixed",
+        ),
+        gate(
+            "damage_windows",
+            len(damage) >= requirements["minimum_damage_windows"],
+            requirements["minimum_damage_windows"],
+            len(damage),
+        ),
+        gate(
+            "nondamage_windows",
+            len(nondamage) >= requirements["minimum_nondamage_windows"],
+            requirements["minimum_nondamage_windows"],
+            len(nondamage),
+        ),
+        gate(
+            "feedback_events_per_damage",
+            bool(damage) and all(count == expected_events for count in feedback_counts),
+            expected_events,
+            feedback_counts,
+        ),
+        gate(
+            "reviewed_movement_after_damage",
+            not requirements["require_reviewed_movement_after_damage"]
+            or (bool(damage) and all("reviewed_movement" in document for document in damage)),
+            requirements["require_reviewed_movement_after_damage"],
+            sum("reviewed_movement" in document for document in damage),
+        ),
+        gate(
+            "required_facings",
+            set(requirements["required_facings"]).issubset(observed_facings),
+            requirements["required_facings"],
+            observed_facings,
+        ),
+    ]
+    report = {
+        "schema_version": 1,
+        "kind": "strike_calibration_readiness",
+        **identity,
+        "requirements": requirements,
+        "requirements_sha256": requirements_sha256,
+        "observations": len(documents),
+        "sessions": len(sessions),
+        "maps": sorted({document["map_id"] for document in documents}),
+        "feedback_categories": {
+            category: sum(document["reviewed_feedback"] == category for document in documents)
+            for category in ("damage_visible", "miss_text_visible", "no_feedback")
+        },
+        "source_fields_verified": len(documents),
+        "source_reports_sha256": [digest for _, digest in snapshots],
+        "gates": gates,
+        "ready_for_manual_parameter_review": all(item["passed"] for item in gates),
+        "calibrated_range": False,
+        "calibrated_timing": False,
+        "limitations": [
+            "readiness only checks the declared evidence-collection contract",
+            "reviewed feedback is visible evidence and is not guaranteed to equal hit packets",
+            "a single imported session does not prove that the original capture is complete",
+            "passing readiness does not publish game range, timing, damage or resource parameters",
+        ],
+    }
     _write(output, report)
     return report
