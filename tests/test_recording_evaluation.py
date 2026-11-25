@@ -6,7 +6,11 @@ from PIL import Image, ImageDraw
 
 from maple_vision.cli import main
 from maple_vision.contracts import Detection
-from maple_vision.recording_evaluation import benchmark_recordings, create_label_template
+from maple_vision.recording_evaluation import (
+    benchmark_recordings,
+    create_label_template,
+    measure_strike,
+)
 from maple_vision.recordings import import_recording
 from maple_vision.scene import PALETTE
 
@@ -564,3 +568,53 @@ def test_summarize_feedback_sequences_without_claiming_hit_timing_calibration(tm
     forged["feedback_frames"][1]["gap_ms"] = 999
     reports[0].write_text(json.dumps(forged))
     assert main(args) == 2 and not output.exists()
+
+
+def test_source_verified_intervals_pair_only_ordered_onsets_in_one_session(tmp_path):
+    cases = []
+    for name in ("first", "second"):
+        recording, labels = case(tmp_path, name)
+        data = json.loads(labels.read_text())
+        for frame in data["frames"]:
+            frame["objects"] = [
+                {"class_id": "player", "bbox": [10, 10, 20, 30], "occluded": False},
+                {"class_id": "monster", "bbox": [30, 10, 40, 30], "occluded": False},
+            ]
+        labels.write_text(json.dumps(data))
+        for index in range(2) if name == "first" else range(1):
+            report = tmp_path / f"{name}-{index}.json"
+            measure_strike(
+                recording,
+                labels,
+                report,
+                start=index,
+                end=index,
+                player_index=0,
+                monster_index=1,
+                skill_id="fixture",
+                level=1,
+                weapon="spear",
+                reviewer="tester",
+                facing="right",
+                feedback="no_feedback",
+            )
+            cases.append((recording, labels, report))
+    output = tmp_path / "summary.json"
+    args = ["recording", "summarize-strikes", "--output", str(output)]
+    for recording, labels, report in reversed(cases):
+        args.extend(["--verified-case", str(recording), str(labels), str(report)])
+    assert main(args) == 0
+    summary = json.loads(output.read_bytes())
+    intervals = summary["reviewed_onset_intervals"]
+    assert summary["source_fields_verified"] == 3 and intervals["count"] == 1
+    assert intervals["pairs"] == [
+        {
+            "session_id": json.loads(cases[0][2].read_bytes())["session_id"],
+            "map_id": "first",
+            "first_sequence": 0,
+            "second_sequence": 1,
+            "elapsed_ms": 83,
+            "first_report_sha256": hashlib.sha256(cases[0][2].read_bytes()).hexdigest(),
+            "second_report_sha256": hashlib.sha256(cases[1][2].read_bytes()).hexdigest(),
+        }
+    ]

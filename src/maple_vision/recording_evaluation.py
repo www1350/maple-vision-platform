@@ -792,6 +792,29 @@ def summarize_strikes(
     }
     if sources is not None:
         report["source_fields_verified"] = len(documents)
+        ordered = sorted(
+            snapshots, key=lambda item: (item[0]["session_id"], item[0]["start"]["sequence"])
+        )
+        intervals = []
+        for (first, first_digest), (second, second_digest) in zip(ordered, ordered[1:]):
+            if first["session_id"] != second["session_id"] or first["map_id"] != second["map_id"]:
+                continue
+            intervals.append(
+                {
+                    "session_id": first["session_id"],
+                    "map_id": first["map_id"],
+                    "first_report_sha256": first_digest,
+                    "second_report_sha256": second_digest,
+                    "first_sequence": first["start"]["sequence"],
+                    "second_sequence": second["start"]["sequence"],
+                    "elapsed_ms": second["start"]["timestamp_ms"] - first["start"]["timestamp_ms"],
+                }
+            )
+        report["reviewed_onset_intervals"] = {"count": len(intervals), "pairs": intervals}
+        report["limitations"].append(
+            "reviewed onsets may omit intervening casts or include player pauses; "
+            "their spacing is not a calibrated attack period"
+        )
     if sequenced:
         counts = [len(item["feedback_frames"]) for item in sequenced]
         first_offsets = [item["feedback_frames"][0]["offset_ms"] for item in sequenced]
