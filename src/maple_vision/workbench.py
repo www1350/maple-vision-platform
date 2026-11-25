@@ -60,7 +60,7 @@ class Workbench:
                 if file.stem in self.missions:
                     raise ValueError("duplicate mission selection")
                 self.missions[file.stem] = load_mission_program(file)
-            for filename in ("cms-east-hill.json", "branch-world.json"):
+            for filename in ("cms-east-hill.json", "cms-dead-forest.json", "branch-world.json"):
                 path = examples / "navigation" / filename
                 if path.is_file():
                     graph = load_world_graph(path)
