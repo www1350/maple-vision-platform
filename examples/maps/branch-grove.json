@@ -1,0 +1,204 @@
+{
+  "schema_version": 2,
+  "id": "branch-grove",
+  "version": "1.0.0",
+  "scope": "synthetic_fixture",
+  "source_uri": "urn:maple-vision:self-authored:branch-grove",
+  "permission": "self_authored",
+  "license": "CC0-1.0",
+  "width": 320,
+  "height": 192,
+  "ground": 168,
+  "route": [
+    "grove",
+    "quarry",
+    "ruins"
+  ],
+  "maps": [
+    {
+      "id": "grove",
+      "theme": "meadow",
+      "marker": [
+        41,
+        157,
+        131
+      ],
+      "spawn_x": 24,
+      "platforms": [
+        {
+          "x1": 0,
+          "x2": 320,
+          "y": 168
+        },
+        {
+          "x1": 68,
+          "x2": 132,
+          "y": 124
+        },
+        {
+          "x1": 184,
+          "x2": 246,
+          "y": 100
+        }
+      ],
+      "portals": [
+        {
+          "id": "to_quarry",
+          "x": 292,
+          "y": 132,
+          "w": 20,
+          "h": 36,
+          "destination": "quarry"
+        },
+        {
+          "id": "shortcut",
+          "x": 72,
+          "y": 132,
+          "w": 20,
+          "h": 36,
+          "destination": "ruins"
+        }
+      ],
+      "npcs": [
+        {
+          "id": "grove_guide",
+          "x": 42,
+          "y": 144,
+          "w": 14,
+          "h": 24
+        }
+      ],
+      "ladders": [
+        {
+          "x": 94,
+          "y": 124,
+          "w": 10,
+          "h": 44
+        }
+      ],
+      "monster_x": [
+        130,
+        210,
+        258
+      ]
+    },
+    {
+      "id": "quarry",
+      "theme": "cavern",
+      "marker": [
+        151,
+        93,
+        171
+      ],
+      "spawn_x": 268,
+      "platforms": [
+        {
+          "x1": 0,
+          "x2": 320,
+          "y": 168
+        },
+        {
+          "x1": 78,
+          "x2": 148,
+          "y": 118
+        },
+        {
+          "x1": 208,
+          "x2": 276,
+          "y": 94
+        }
+      ],
+      "portals": [
+        {
+          "id": "to_ruins",
+          "x": 8,
+          "y": 132,
+          "w": 20,
+          "h": 36,
+          "destination": "ruins"
+        }
+      ],
+      "npcs": [
+        {
+          "id": "quarry_keeper",
+          "x": 278,
+          "y": 144,
+          "w": 14,
+          "h": 24
+        }
+      ],
+      "ladders": [
+        {
+          "x": 110,
+          "y": 118,
+          "w": 10,
+          "h": 50
+        }
+      ],
+      "monster_x": [
+        74,
+        150,
+        224
+      ]
+    },
+    {
+      "id": "ruins",
+      "theme": "cavern",
+      "marker": [
+        199,
+        143,
+        77
+      ],
+      "spawn_x": 24,
+      "platforms": [
+        {
+          "x1": 0,
+          "x2": 320,
+          "y": 168
+        },
+        {
+          "x1": 82,
+          "x2": 154,
+          "y": 120
+        },
+        {
+          "x1": 204,
+          "x2": 268,
+          "y": 96
+        }
+      ],
+      "portals": [
+        {
+          "id": "to_grove",
+          "x": 292,
+          "y": 132,
+          "w": 20,
+          "h": 36,
+          "destination": "grove"
+        }
+      ],
+      "npcs": [
+        {
+          "id": "ruins_keeper",
+          "x": 40,
+          "y": 144,
+          "w": 14,
+          "h": 24
+        }
+      ],
+      "ladders": [
+        {
+          "x": 114,
+          "y": 120,
+          "w": 10,
+          "h": 48
+        }
+      ],
+      "monster_x": [
+        120,
+        196,
+        258
+      ]
+    }
+  ]
+}

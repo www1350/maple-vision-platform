@@ -301,9 +301,11 @@ def _execute_episode(
     map_pack = simulator.map_pack
     settings = _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
     mission_maps, expected_drops = _mission_requirements(map_pack)
+    if runtime is None and map_pack is not None and any(len(m.portals) > 1 for m in map_pack.maps):
+        raise ValueError("branching map packs require the structured runtime")
     mission_oracle = None
     if runtime is not None and runtime.mission is not None:
-        runtime.mission.bind_route(mission_maps)
+        runtime.mission.bind_map_pack(map_pack)
         mission_oracle = MissionOracle(runtime.mission)
     markers = None if map_pack is None else map_pack.markers
     renderer = SceneRenderer(sprite_pack=sprite_pack, map_pack=map_pack, animation=animation)
@@ -324,10 +326,18 @@ def _execute_episode(
         if runtime is None
         else TaskRuntime(
             config.job,
-            mission_maps,
+            runtime.mission.maps if runtime.mission is not None else mission_maps,
             class_spec=spec,
             config=runtime.tasks,
             mission=runtime.mission,
+            portal_centers={
+                (m.id, p.destination): p.x + p.w / 2
+                for m in map_pack.maps
+                if len(m.portals) > 1
+                for p in m.portals
+            }
+            if map_pack is not None
+            else None,
             **({"capabilities": simulator.capabilities} if class_package is not None else {}),
         )
     )
@@ -767,7 +777,7 @@ def verify_run(output: Path) -> dict[str, Any]:
     mission_maps, expected_drops = _mission_requirements(map_pack)
     mission_oracle = None
     if runtime is not None and runtime.mission is not None:
-        runtime.mission.bind_route(mission_maps)
+        runtime.mission.bind_map_pack(map_pack)
         mission_oracle = MissionOracle(runtime.mission)
     map_manifest_path = output / "map-pack.json"
     if map_pack is not None:

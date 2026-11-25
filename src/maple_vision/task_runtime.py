@@ -1108,6 +1108,7 @@ class TaskRuntime:
         config: TaskRuntimeConfig | None = None,
         capabilities: CompiledCapabilities | None = None,
         mission: MissionProgram | None = None,
+        portal_centers: dict[tuple[str, str], float] | None = None,
     ) -> None:
         if capabilities is not None and (
             type(capabilities) is not CompiledCapabilities
@@ -1150,6 +1151,7 @@ class TaskRuntime:
         ):
             raise ValueError("capability program exceeds configured plan time budget")
         self._capability_state = None if capabilities is None else _CapabilityAttempts(capabilities)
+        self.portal_centers = dict(portal_centers or {})
         self.mission = mission
         if mission is not None:
             if type(mission) is not MissionProgram:
@@ -1447,6 +1449,12 @@ class TaskRuntime:
                 for d in observation.detections
                 if d.class_id == role and d.confidence >= self.config.minimum_detection_confidence
             )
+            if self.phase == "travel" and self.map_index + 1 < len(self.maps):
+                center = self.portal_centers.get(
+                    (self.maps[self.map_index], self.maps[self.map_index + 1])
+                )
+                if center is not None:
+                    targets = tuple(t for t in targets if abs(_center(t)[0] - center) <= 10)
             if targets:
                 add(
                     "interaction" if self.phase == "talk" else "transition",

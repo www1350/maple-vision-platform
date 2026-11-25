@@ -98,6 +98,17 @@ class Workbench:
         if job not in self.classes or map_id not in self.maps or model not in self.models:
             raise ValueError("unknown class, map or perception selection")
 
+    def compatible_missions(self, pack: MapPack | None) -> list[str]:
+        names = []
+        for name, mission in self.missions.items():
+            if mission is not None:
+                try:
+                    mission.bind_map_pack(pack)
+                except ValueError:
+                    continue
+            names.append(name)
+        return names
+
     def entries(self) -> list[dict[str, Any]]:
         with self.db() as db:
             rows = db.execute(
@@ -122,7 +133,7 @@ class Workbench:
             mission = self.missions[mission_id]
             if mission is not None:
                 pack = self.maps[config["map_id"]]
-                mission.bind_route(("meadow", "cavern") if pack is None else pack.map_ids)
+                mission.bind_map_pack(pack)
             config["mission_program"] = None if mission is None else mission.to_dict()
             config_type = RunConfig if self.classes[config["job"]] is None else CapabilityRunConfig
             config_type(

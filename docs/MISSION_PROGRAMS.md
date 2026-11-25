@@ -43,3 +43,15 @@ python scripts/verify_workbench_browser.py
 ```
 
 回归覆盖三种内置职业、更改目标顺序、单图提前结束、外部三图与弓手、输入文件删除、配置摘要篡改、重算文件哈希后的伪造见证、动作冻结失败和重启恢复。浏览器验证实际选择任务并检查完成报告。
+
+## 双出口地图
+
+在工作台选择「林地岔路」地图，选择「直达遗迹」可从 grove 直接前往 ruins。选择「三图访问」则经过 quarry。两个任务从同一个入口出发，模拟器加载同一份地图包。每个出口有固定位置和目的地，视觉任务结合当前画面中的传送门位置选择对应出口，到达后再读取地图标记。
+
+```bash
+python -m maple_vision maps route examples/maps/branch-grove.json grove ruins --map-pack
+python -m maple_vision lab run --map-pack examples/maps/branch-grove.json --mission-program examples/missions/grove-shortcut.json --output artifacts/shortcut
+python -m maple_vision lab reinfer artifacts/shortcut
+```
+
+schema2 地图包允许每张图声明最多四个出口，第一个出口定义默认巡回路线，其余出口可以通向包内其他地图。每张图的出口编号和目的地唯一，相邻出口的横坐标至少相距 56 像素。两图间的任务步骤必须有直接连接。寻路命令返回最短路线，任务文件决定实际执行路线。

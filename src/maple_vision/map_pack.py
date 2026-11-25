@@ -120,24 +120,31 @@ class MapDefinition:
                     platform.x2, other.x2
                 ):
                     raise ValueError("platforms on the same level must not overlap or touch")
-        _immutable_entries(self.portals, Portal, "portals", 1, 1)
-        portal = self.portals[0]
-        _identifier(portal.id, "portal id")
-        _identifier(portal.destination, "portal destination")
-        _integer(portal.x, "portal x", 0, MAP_WIDTH - 20)
-        for field, actual, required in (
-            ("y", portal.y, 132),
-            ("w", portal.w, 20),
-            ("h", portal.h, 36),
-        ):
-            _integer(actual, f"portal {field}", required, required)
+        _immutable_entries(self.portals, Portal, "portals", 1, 4)
+        for portal in self.portals:
+            _identifier(portal.id, "portal id")
+            _identifier(portal.destination, "portal destination")
+            _integer(portal.x, "portal x", 0, MAP_WIDTH - 20)
+            for field, actual, required in (
+                ("y", portal.y, 132),
+                ("w", portal.w, 20),
+                ("h", portal.h, 36),
+            ):
+                _integer(actual, f"portal {field}", required, required)
+        if len({p.id for p in self.portals}) != len(self.portals) or len(
+            {p.destination for p in self.portals}
+        ) != len(self.portals):
+            raise ValueError("portal IDs and destinations must be distinct within a map")
+        for i, portal in enumerate(self.portals):
+            if any(abs(portal.x - other.x) < 56 for other in self.portals[:i]):
+                raise ValueError("portal interaction areas must be separate")
         _immutable_entries(self.npcs, NPC, "npcs", 1, 1)
         npc = self.npcs[0]
         _identifier(npc.id, "npc id")
         _integer(npc.x, "npc x", 0, MAP_WIDTH - 14)
         for field, actual, required in (("y", npc.y, 144), ("w", npc.w, 14), ("h", npc.h, 24)):
             _integer(actual, f"npc {field}", required, required)
-        if portal.id == npc.id:
+        if any(p.id == npc.id for p in self.portals):
             raise ValueError("portal and NPC ids must be distinct within a map")
         _immutable_entries(self.ladders, Ladder, "ladders", 1, 4)
         for ladder in self.ladders:
@@ -225,7 +232,7 @@ class MapDefinition:
             ),
             portals=tuple(
                 Portal(**_object(item, {"id", "x", "y", "w", "h", "destination"}, "portal"))
-                for item in _array(raw["portals"], "portals", 1, 1)
+                for item in _array(raw["portals"], "portals", 1, 4)
             ),
             npcs=tuple(
                 NPC(**_object(item, {"id", "x", "y", "w", "h"}, "npc"))
@@ -274,6 +281,8 @@ class MapPack:
             raise ValueError("map markers must be unique")
         for index, map_id in enumerate(self.route):
             expected = self.route[(index + 1) % len(self.route)]
+            if any(p.destination not in by_id for p in by_id[map_id].portals):
+                raise ValueError("portal destination missing from map pack")
             if by_id[map_id].portals[0].destination != expected:
                 raise ValueError("portal destinations must follow the complete cyclic route")
         try:
@@ -319,7 +328,7 @@ class MapPack:
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "schema_version": 1,
+            "schema_version": 2 if any(len(m.portals) > 1 for m in self.maps) else 1,
             "id": self.id,
             "version": self.version,
             "scope": "synthetic_fixture",
@@ -360,7 +369,7 @@ class MapPack:
             },
             "map pack",
         )
-        _integer(raw["schema_version"], "map pack schema_version", 1, 1)
+        schema = _integer(raw["schema_version"], "map pack schema_version", 1, 2)
         for field, required in (
             ("width", MAP_WIDTH),
             ("height", MAP_HEIGHT),
@@ -369,7 +378,7 @@ class MapPack:
             _integer(raw[field], field, required, required)
         if raw["scope"] != "synthetic_fixture":
             raise ValueError("map pack scope must be synthetic_fixture")
-        return cls(
+        pack = cls(
             id=raw["id"],
             version=raw["version"],
             source_uri=raw["source_uri"],
@@ -378,6 +387,10 @@ class MapPack:
             maps=tuple(MapDefinition.from_dict(item) for item in _array(raw["maps"], "maps", 2, 8)),
             route=tuple(_array(raw["route"], "route", 2, 8)),
         )
+
+        if pack.to_dict()["schema_version"] != schema:
+            raise ValueError("map pack schema must match its portal topology")
+        return pack
 
     @classmethod
     def from_manifest(cls, value: object) -> "MapPack":
