@@ -62,3 +62,5 @@ python -m maple_vision lab run --output artifacts/keyed-forest --job dragon_knig
 外部职业也走同一链。`examples/input-bindings/spear-fighter.json` 将合成键 `S` 绑定到合成技能 `triple_thrust`；固定 seed 17 在死亡之林两图各施放一次，每次 3 段，共 2 次绑定接受、6 个伤害事件和 2 次击杀。102 步 action replay 与 103 帧完整 reinfer 均通过，摘要及文件哈希见 `reports/release-0.10.0/keyed-spear-two-map-acceptance.json`。该 fixture 不代表用户真实键位，也不代表国服枪连击参数已校准。
 
 「导出已保存的键位 JSON」使用当前角色最后确认的绑定。下载的 `input-bindings.json` 可直接用于 `lab run --input-bindings`。截图与尚未保存的编辑不进入文件。
+
+单步试放会把所选角色配置名与按键回执一起保存在本地会话历史。攻击回执按该步的直接伤害事件显示总命中段数，跨目标相加；零段表示这次已执行的攻击没有直接命中。旧会话中未记录角色名的按键保留原记录。

@@ -85,11 +85,14 @@ class Workbench:
                         sim_id TEXT NOT NULL, revision INTEGER NOT NULL, sequence INTEGER NOT NULL,
                         key_name TEXT NOT NULL, skill TEXT, accepted INTEGER NOT NULL,
                         reason TEXT NOT NULL,
-                        events TEXT NOT NULL, PRIMARY KEY(sim_id, revision));
+                        events TEXT NOT NULL, profile_id TEXT, PRIMARY KEY(sim_id, revision));
                     CREATE TABLE IF NOT EXISTS sims (
                         id TEXT PRIMARY KEY, version INTEGER NOT NULL, initial TEXT NOT NULL,
                         current TEXT NOT NULL, saved TEXT);
                 """)
+                columns = {row["name"] for row in db.execute("PRAGMA table_info(key_steps)")}
+                if "profile_id" not in columns:
+                    db.execute("ALTER TABLE key_steps ADD COLUMN profile_id TEXT")
                 db.execute(
                     "UPDATE jobs SET state='interrupted' WHERE state IN ('queued','running')"
                 )
@@ -327,6 +330,7 @@ class Workbench:
         *,
         key: str | None = None,
         bindings: dict[str, str] | None = None,
+        profile_id: str | None = None,
     ) -> dict[str, Any]:
         with self.db() as db:
             db.execute("BEGIN IMMEDIATE")
@@ -347,12 +351,16 @@ class Workbench:
             sim = Simulator.restore(json.loads(current))
             receipt: dict[str, Any] | None = None
             if mode == "key-step":
+                if profile_id is not None and not 1 <= len(profile_id.strip()) <= 100:
+                    raise ValueError("invalid profile ID")
                 if not key:
                     raise ValueError("invalid or duplicate key")
                 if not normalize_key(key):
                     raise ValueError("invalid or duplicate key")
                 if bindings:
-                    profile = InputBindingProfile.from_key_map("interactive", bindings)
+                    profile = InputBindingProfile.from_key_map(
+                        profile_id or "interactive", bindings
+                    )
                     skill, action = profile.action_for_key(key, sim.job, sim.class_package)
                 else:
                     skill, action = None, None
@@ -371,7 +379,8 @@ class Workbench:
                     }
                     current = json.dumps(sim.save())
                 db.execute(
-                    "INSERT INTO key_steps VALUES (?,?,?,?,?,?,?,?)",
+                    "INSERT INTO key_steps (sim_id, revision, sequence, key_name, skill, "
+                    "accepted, reason, events, profile_id) VALUES (?,?,?,?,?,?,?,?,?)",
                     (
                         identity,
                         row["version"] + 1,
@@ -381,6 +390,7 @@ class Workbench:
                         receipt["accepted"],
                         receipt["reason"],
                         json.dumps(receipt["events"]),
+                        profile_id,
                     ),
                 )
             if mode == "step":

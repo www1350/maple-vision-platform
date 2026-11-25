@@ -361,6 +361,11 @@ bind("keys-form", "submit", () => {
   text("keys-status", "已确认并保存 " + result.length + " 项绑定。");
 });
 
+function keyResult(receipt) {
+  if (!receipt.events.includes("attack")) return receipt.reason;
+  const hits = receipt.events.filter(event => event === "attack_hit").length;
+  return "本步直接命中 " + hits + " 段";
+}
 el("sim-key").addEventListener("keydown", async event => {
   if (event.key === "Tab" || event.isComposing) return;
   event.preventDefault();
@@ -380,9 +385,9 @@ el("sim-key").addEventListener("keydown", async event => {
   const key = event.key === " " ? "Space" : event.key;
   simBusy = true;
   try {
-    const data = await api("sessions/" + sim.id + "/key-step", {revision:sim.revision, key, bindings});
+    const data = await api("sessions/" + sim.id + "/key-step", {revision:sim.revision, key, bindings, profile_id:profile});
     drawSim(data);
-    text("sim-key-status", key + " · " + (data.receipt.accepted ? "已执行" : "未执行") + " · " + data.receipt.reason);
+    text("sim-key-status", key + " · " + (data.receipt.accepted ? "已执行" : "未执行") + " · " + keyResult(data.receipt));
   } catch(error) { fail(error); }
   finally { simBusy = false; }
 });
@@ -390,6 +395,6 @@ bind("sim-key-history", "click", async () => {
   const id = sim.id;
   const rows = await api("sessions/" + id + "/key-log");
   if (sim.id !== id) return;
-  text("sim-key-log", rows.map(r => "第 " + r.sequence + " 帧 · " + r.key_name + " → " + (r.skill || "未绑定") + " · " + r.reason + " " + r.events.join("、")).join("\n") || "暂无按键记录");
+  text("sim-key-log", rows.map(r => (r.profile_id ? r.profile_id + " · " : "") + "第 " + r.sequence + " 帧 · " + r.key_name + " → " + (r.skill || "未绑定") + " · " + keyResult(r) + " " + r.events.join("、")).join("\n") || "暂无按键记录");
   show("sim-key-log", true);
 });
