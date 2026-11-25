@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "stages": [
+    {
+      "map_id": "drill_forest_1",
+      "phases": [
+        "fight"
+      ]
+    },
+    {
+      "map_id": "drill_forest_2",
+      "phases": [
+        "fight"
+      ]
+    }
+  ]
+}

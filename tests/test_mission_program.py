@@ -143,3 +143,48 @@ def test_talk_completion_does_not_imply_clearing():
     oracle = MissionOracle(program)
     oracle.observe(before, after.snapshot, after.events)
     assert after.snapshot.monsters and oracle.result(after.snapshot)["completed"]
+
+
+@pytest.mark.parametrize("fault", ["none", "freeze_input"])
+def test_two_forest_combat_drill(tmp_path, fault):
+    from maple_vision.map_pack import load_map_pack
+
+    root = tmp_path / "forest"
+    program = load_mission_program(EXAMPLES / "missions/dead-forest-hunt.json")
+    pack = load_map_pack(EXAMPLES / "maps/dead-forest-drill.json")
+    result = run_episode(
+        root,
+        RunConfig(job="dragon_knight", fault=fault),
+        map_pack=pack,
+        runtime=RuntimeConfig(mission=program),
+    )
+    if fault == "freeze_input":
+        assert result["status"] != "completed"
+        assert not result["mission_evidence"]["completed"]
+        assert result["events"].get("monster_defeated", 0) == 0
+        return
+    assert result["status"] == "completed"
+    rows = [json.loads(line) for line in (root / "trace.jsonl").read_text().splitlines()]
+    milestones = []
+    for row in rows:
+        for event in row["execution"]["events"]:
+            if event in {"monster_defeated", "map_changed"}:
+                milestones.append((row["observation"]["map_id"], event))
+    assert milestones == [
+        ("drill_forest_1", "monster_defeated"),
+        ("drill_forest_1", "map_changed"),
+        ("drill_forest_2", "monster_defeated"),
+    ]
+    for map_id in program.maps:
+        local = [row for row in rows if row["observation"]["map_id"] == map_id]
+        first_hit = next(
+            i for i, row in enumerate(local) if "attack_hit" in row["execution"]["events"]
+        )
+
+        def player_x(row):
+            return next(
+                d["bbox"][0] for d in row["observation"]["detections"] if d["class_id"] == "player"
+            )
+
+        assert abs(player_x(local[first_hit]) - player_x(local[0])) > 20
+    assert verify_run(root)["verified"]

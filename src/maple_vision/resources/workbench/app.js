@@ -8,6 +8,7 @@ const names = {
   fire_poison:"火毒（合成）", ice_lightning:"冰雷（合成）", bandit:"刀飞", blood_knight:"血骑士（合成）", builtin:"内置两图", pixel:"像素基线",
   "three-map-fixture":"外部三图", "lifecycle-model":"已验收的混合模型",
   "branch-grove":"林地岔路", "grove-shortcut":"直达遗迹", standard:"逐图战斗、拾取、对话", "talk-then-clear":"先对话再清场", "three-map-visits":"三图访问",
+  "dead-forest-drill":"死亡之林双图演练（合成）", "dead-forest-hunt":"两图各击败一只怪物",
   cms_dead_forest:"死亡之林", dead_forest_1:"死亡之林Ⅰ", dead_forest_2:"死亡之林Ⅱ",
   cms_east_hill:"射手村东部", branch_fixture:"分支路线样例", henesys:"射手村", east_hill:"射手村东部小山",
   east_grass:"射手村东部草丛", east_forest:"射手村东部树林", mushroom_forest:"青蘑菇树林",
