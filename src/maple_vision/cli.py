@@ -376,6 +376,12 @@ def _parser() -> argparse.ArgumentParser:
         "verify-bundle", help="replay and independently reproject every recorded evidence layer"
     )
     verify_bundle.add_argument("path", type=Path)
+    verify_trial = lab_commands.add_parser(
+        "verify-trial-evidence",
+        help="recheck separated real, synthetic, key-binding and resource evidence lanes",
+    )
+    verify_trial.add_argument("path", type=Path)
+    verify_trial.add_argument("--root", type=Path, default=Path("."))
     for bundle_command in (export_bundle, verify_bundle):
         bundle_command.add_argument("--reinfer", action="store_true")
     soak = lab_commands.add_parser("soak")
@@ -836,6 +842,10 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         from .lab import chat_draft
 
         return chat_draft(args.incoming, args.reply)
+    if args.command == "lab" and args.operation == "verify-trial-evidence":
+        from .trial_evidence import verify_trial_evidence
+
+        return verify_trial_evidence(args.path, args.root)
     if args.command in {"vision", "lab", "recording"}:
         from .onnx_detector import OnnxDetector
         from .vision import validate_terrain_source
