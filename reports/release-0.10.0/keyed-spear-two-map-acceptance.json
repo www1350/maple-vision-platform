@@ -55,6 +55,16 @@
     "alive": true,
     "final_state_sha256": "08549a5ca70c1d1b612bf773b54a36be6c2245c5f5103d219ec14bdfcfea4b71"
   },
+  "raw_archive": {
+    "file": "keyed-spear-two-map-acceptance.tar.gz",
+    "sha256": "cb67ea0ff7472b64db24ae3b372480c0e3d2c14027c703b232a4729d20971225",
+    "directory": "run",
+    "verification_commit": "139a99b6cd91f7f1bdb6699198eacbe372714c84",
+    "archived_files_match_manifest": true,
+    "extracted_replay_verified": true,
+    "extracted_reinference_verified": true,
+    "extracted_runtime_identity_matches": true
+  },
   "bundle_hashes": {
     "summary.json": "9eb97d871fd746d085d79d8c29a0035dd6ac9b887f629d9f6baa8c790d7e7fe4",
     "trace.jsonl": "173f010f0760c69d8d10b5351449c7c3e602214ed7d5273311f28325a5aa0623",
@@ -87,6 +97,6 @@
     "The key profile and skill are self-authored synthetic fixtures, not a claim about a user's real keyboard settings.",
     "The run is entirely offline and sends no input to an official client.",
     "The triple-hit structure is synthetic; real CMS range, damage, MP cost and timing remain uncalibrated.",
-    "The transient raw bundle is represented by deterministic commands, regression tests and file hashes rather than committed frame duplication."
+    "Archived frames and trace preserve the original run. Summary and manifest hashes identify those original files."
   ]
 }
