@@ -226,6 +226,15 @@ def _parser() -> argparse.ArgumentParser:
         default=[],
         help="reviewed attack-speed effect; repeat for each active effect",
     )
+    strike.add_argument(
+        "--input-profile",
+        type=Path,
+        help="reviewed local key-binding profile to bind into the evidence",
+    )
+    strike.add_argument(
+        "--input-key",
+        help="configured key used for this cast; requires --input-profile",
+    )
     verify_strike_command = recording_commands.add_parser("verify-strike")
     for name in ("path", "labels", "report"):
         verify_strike_command.add_argument(name, type=Path)
@@ -670,6 +679,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
             )
         return validate_dataset(args.path)
     if args.command == "recording" and args.operation == "measure-strike":
+        from .input_bindings import load_input_profile
         from .recording_evaluation import measure_strike
 
         return measure_strike(
@@ -690,6 +700,8 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
             movement_frame=args.movement_frame,
             weapon_speed_grade=args.weapon_speed_grade,
             speed_effects=args.speed_effect,
+            input_profile=load_input_profile(args.input_profile) if args.input_profile else None,
+            input_key=args.input_key,
         )
     if args.command == "recording" and args.operation == "verify-strike":
         from .recording_evaluation import verify_strike

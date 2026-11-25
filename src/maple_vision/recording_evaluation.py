@@ -23,6 +23,7 @@ from .evaluation import (
     _iou,
     evaluate_predictions,
 )
+from .input_bindings import InputBindingProfile, normalize_key
 from .local_files import publish_new, read_regular
 from .recordings import _load_frame, _validated_manifest
 from .scene import CLASS_NAMES
@@ -425,6 +426,8 @@ def measure_strike(
     movement_frame: int | None = None,
     weapon_speed_grade: int | None = None,
     speed_effects: Sequence[str] = (),
+    input_profile: InputBindingProfile | None = None,
+    input_key: str | None = None,
 ) -> dict[str, Any]:
     """Measure a reviewer-selected cast window in the recording's native pixel space."""
     if output is not None and output.resolve().is_relative_to(recording.resolve()):
@@ -445,6 +448,8 @@ def measure_strike(
         movement_frame=movement_frame,
         weapon_speed_grade=weapon_speed_grade,
         speed_effects=speed_effects,
+        input_profile=input_profile,
+        input_key=input_key,
     )
     if output is not None:
         _write(output, report)
@@ -468,6 +473,8 @@ def _measure_strike_window(
     movement_frame: int | None = None,
     weapon_speed_grade: int | None = None,
     speed_effects: Sequence[str] = (),
+    input_profile: InputBindingProfile | None = None,
+    input_key: str | None = None,
 ) -> dict[str, Any]:
     if (
         type(start) is not int
@@ -493,6 +500,25 @@ def _measure_strike_window(
     ):
         raise ValueError("invalid reviewed speed effect sequence")
     reviewed_effects.sort()
+    if (input_profile is None) != (input_key is None):
+        raise ValueError("input profile and input key must be supplied together")
+    reviewed_binding = None
+    if input_profile is not None:
+        if not isinstance(input_profile, InputBindingProfile):
+            raise ValueError("input profile must be a validated binding profile")
+        assert input_key is not None
+        binding = input_profile.binding_for_key(input_key)
+        if binding is None:
+            raise ValueError("input key is absent from the reviewed binding profile")
+        manifest = input_profile.manifest()
+        reviewed_binding = {
+            "scope": "reviewed_key_layout_context",
+            "profile": manifest,
+            "profile_sha256": hashlib.sha256(canonical_json(manifest).encode()).hexdigest(),
+            "key": binding.key,
+            "normalized_key": normalize_key(binding.key),
+            "configured_skill": binding.skill,
+        }
     if (
         not isinstance(feedback_frames, (list, tuple))
         or len(feedback_frames) > 16
@@ -579,6 +605,9 @@ def _measure_strike_window(
             "weapon_speed_grade": weapon_speed_grade,
             "speed_effects": reviewed_effects,
         }
+    if reviewed_binding is not None:
+        report["schema_version"] = 5
+        report["input_binding"] = reviewed_binding
     return report
 
 
@@ -612,6 +641,12 @@ def _verify_strike_source(case: Case, raw: dict[str, Any]) -> None:
         feedback_frames=[frame["sequence"] for frame in raw.get("feedback_frames", [])],
         weapon_speed_grade=raw.get("attack_context", {}).get("weapon_speed_grade"),
         speed_effects=raw.get("attack_context", {}).get("speed_effects", []),
+        input_profile=(
+            InputBindingProfile.from_manifest(raw["input_binding"]["profile"])
+            if "input_binding" in raw
+            else None
+        ),
+        input_key=raw.get("input_binding", {}).get("key"),
     )
     if canonical_json(raw) != canonical_json(measured):
         raise ValueError("strike report differs from recording or reviewed labels")
@@ -652,9 +687,18 @@ def _strike_report(path: Path) -> tuple[dict[str, Any], str]:
         if "reviewed_movement" in raw:
             required.add("feedback_frames")
             required.add("reviewed_movement")
+    if isinstance(raw, dict) and raw.get("schema_version") == 5:
+        required.add("input_binding")
+        if "attack_context" in raw:
+            required.add("attack_context")
+        if "feedback_frames" in raw:
+            required.add("feedback_frames")
+        if "reviewed_movement" in raw:
+            required.add("feedback_frames")
+            required.add("reviewed_movement")
     if not isinstance(raw, dict) or set(raw) != required:
         raise ValueError("invalid strike report schema")
-    if raw["schema_version"] not in (1, 2, 3, 4) or raw["kind"] != "reviewed_strike_window":
+    if raw["schema_version"] not in (1, 2, 3, 4, 5) or raw["kind"] != "reviewed_strike_window":
         raise ValueError("unsupported strike report")
     if raw["domain"] not in ("authored_fixture", "game_recording"):
         raise ValueError("invalid strike report domain")
@@ -755,7 +799,7 @@ def _strike_report(path: Path) -> tuple[dict[str, Any], str]:
             or len(movement["rgb_sha256"]) != 64
         ):
             raise ValueError("invalid reviewed movement frame")
-    if raw["schema_version"] == 4:
+    if "attack_context" in raw:
         context = raw["attack_context"]
         if (
             not isinstance(context, dict)
@@ -775,6 +819,31 @@ def _strike_report(path: Path) -> tuple[dict[str, Any], str]:
             or context["speed_effects"] != sorted(set(context["speed_effects"]))
         ):
             raise ValueError("invalid reviewed attack context")
+    if raw["schema_version"] == 5:
+        context = raw["input_binding"]
+        if not isinstance(context, dict) or set(context) != {
+            "scope",
+            "profile",
+            "profile_sha256",
+            "key",
+            "normalized_key",
+            "configured_skill",
+        }:
+            raise ValueError("invalid reviewed input binding")
+        try:
+            profile = InputBindingProfile.from_manifest(context["profile"])
+            binding = profile.binding_for_key(context["key"])
+        except (TypeError, ValueError) as exc:
+            raise ValueError("invalid reviewed input binding") from exc
+        digest = hashlib.sha256(canonical_json(profile.manifest()).encode()).hexdigest()
+        if (
+            context["scope"] != "reviewed_key_layout_context"
+            or context["profile_sha256"] != digest
+            or binding is None
+            or context["normalized_key"] != normalize_key(binding.key)
+            or context["configured_skill"] != binding.skill
+        ):
+            raise ValueError("invalid reviewed input binding")
     return raw, hashlib.sha256(contents).hexdigest()
 
 
@@ -803,6 +872,7 @@ def summarize_strikes(
                 _verify_strike_source(case, window)
     identity = tuple(documents[0][key] for key in ("domain", "skill_id", "level", "weapon"))
     attack_context = documents[0].get("attack_context")
+    input_binding = documents[0].get("input_binding")
     frame_size = documents[0]["source_frame_size"]
     if any(
         tuple(document[key] for key in ("domain", "skill_id", "level", "weapon")) != identity
@@ -811,6 +881,8 @@ def summarize_strikes(
         raise ValueError("strike reports must describe the same domain, skill, level and weapon")
     if any(document.get("attack_context") != attack_context for document in documents):
         raise ValueError("strike reports need the same reviewed attack context")
+    if any(document.get("input_binding") != input_binding for document in documents):
+        raise ValueError("strike reports need the same reviewed input binding")
     if any(document["source_frame_size"] != frame_size for document in documents):
         raise ValueError("strike reports need the same source frame size")
     timebase = documents[0]["timebase"]
@@ -849,7 +921,11 @@ def summarize_strikes(
     }
     sequenced = [item for item in documents if "feedback_frames" in item]
     report = {
-        "schema_version": 4 if attack_context is not None else (2 if sequenced else 1),
+        "schema_version": (
+            5
+            if input_binding is not None
+            else (4 if attack_context is not None else (2 if sequenced else 1))
+        ),
         "kind": "reviewed_strike_summary",
         "domain": identity[0],
         "skill_id": identity[1],
@@ -886,6 +962,12 @@ def summarize_strikes(
     }
     if attack_context is not None:
         report["attack_context"] = attack_context
+    if input_binding is not None:
+        report["input_binding"] = input_binding
+        report["limitations"].append(
+            "the reviewed key profile associates this cast with a configured key; "
+            "recording pixels do not prove keyboard input"
+        )
     if sources is not None:
         report["source_fields_verified"] = len(documents)
         ordered = sorted(
@@ -943,7 +1025,7 @@ def summarize_strikes(
         if "reviewed_movement" in item
     ]
     if delays:
-        if attack_context is None:
+        if attack_context is None and input_binding is None:
             report["schema_version"] = 3
         report["observed_movement_after_feedback_ms"] = {
             "observations": len(delays),

@@ -764,3 +764,131 @@ def test_reviewed_attack_speed_context_is_bound_and_cannot_be_mixed(tmp_path):
         )
         == 2
     )
+
+
+def test_reviewed_key_profile_is_embedded_verified_and_cannot_be_mixed(tmp_path):
+    recording, labels = case(tmp_path, "key-context")
+    data = json.loads(labels.read_text())
+    for frame in data["frames"]:
+        frame["objects"] = [
+            {"class_id": "player", "bbox": [10, 10, 20, 30], "occluded": False},
+            {"class_id": "monster", "bbox": [30, 10, 40, 30], "occluded": False},
+        ]
+    labels.write_text(json.dumps(data))
+    profile = tmp_path / "layout.json"
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "profile_id": "reviewed-layout",
+                "bindings": [
+                    {"key": "S", "skill": "triple_thrust"},
+                    {"key": "Ctrl", "skill": "basic"},
+                ],
+            }
+        )
+    )
+    report_path = tmp_path / "bound.json"
+    base = [
+        "recording",
+        "measure-strike",
+        str(recording),
+        str(labels),
+        str(report_path),
+        "--start",
+        "0",
+        "--end",
+        "1",
+        "--player-index",
+        "0",
+        "--monster-index",
+        "1",
+        "--level",
+        "30",
+        "--skill-id",
+        "1311001",
+        "--weapon",
+        "spear",
+        "--reviewer",
+        "tester",
+        "--facing",
+        "right",
+        "--feedback",
+        "damage_visible",
+        "--feedback-frame",
+        "0",
+        "--movement-frame",
+        "1",
+        "--weapon-speed-grade",
+        "6",
+    ]
+    assert main(base + ["--input-profile", str(profile), "--input-key", "s"]) == 0
+    report = json.loads(report_path.read_bytes())
+    assert report["schema_version"] == 5
+    assert report["input_binding"]["profile"]["profile_id"] == "reviewed-layout"
+    assert report["input_binding"]["key"] == "S"
+    assert report["input_binding"]["normalized_key"] == "s"
+    assert report["input_binding"]["configured_skill"] == "triple_thrust"
+    assert len(report["input_binding"]["profile_sha256"]) == 64
+    assert report["attack_context"]["weapon_speed_grade"] == 6
+    assert main(["recording", "verify-strike", str(recording), str(labels), str(report_path)]) == 0
+
+    summary = tmp_path / "summary.json"
+    assert (
+        main(
+            [
+                "recording",
+                "summarize-strikes",
+                "--verified-case",
+                str(recording),
+                str(labels),
+                str(report_path),
+                "--output",
+                str(summary),
+            ]
+        )
+        == 0
+    )
+    aggregate = json.loads(summary.read_bytes())
+    assert aggregate["schema_version"] == 5
+    assert aggregate["input_binding"] == report["input_binding"]
+    assert any(
+        "recording pixels do not prove keyboard input" in limitation
+        for limitation in aggregate["limitations"]
+    )
+
+    forged = json.loads(report_path.read_bytes())
+    forged["input_binding"]["profile_sha256"] = "0" * 64
+    forged_path = tmp_path / "forged.json"
+    forged_path.write_text(json.dumps(forged))
+    assert main(["recording", "verify-strike", str(recording), str(labels), str(forged_path)]) == 2
+
+    missing = base.copy()
+    missing[missing.index(str(report_path))] = str(tmp_path / "missing.json")
+    assert main(missing + ["--input-profile", str(profile), "--input-key", "F12"]) == 2
+    assert main(missing + ["--input-profile", str(profile)]) == 2
+    assert main(missing + ["--input-key", "S"]) == 2
+
+    unbound_path = tmp_path / "unbound.json"
+    unbound = base.copy()
+    unbound[unbound.index(str(report_path))] = str(unbound_path)
+    unbound[unbound.index("0", unbound.index("--start"))] = "1"
+    unbound[unbound.index("0", unbound.index("--feedback-frame"))] = "1"
+    assert main(unbound) == 0
+    summary.unlink()
+    assert (
+        main(
+            [
+                "recording",
+                "summarize-strikes",
+                "--report",
+                str(report_path),
+                "--report",
+                str(unbound_path),
+                "--output",
+                str(summary),
+            ]
+        )
+        == 2
+    )
+    assert not summary.exists()
