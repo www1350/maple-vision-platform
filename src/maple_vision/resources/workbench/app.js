@@ -21,6 +21,8 @@ const label = (key) => names[key] || key;
 let catalog = null, jobs = [], selected = "", detail = null, evidence = "summary";
 let traceOffset = 0, activeView = "runs", sim = null, simEvidence = "observation";
 let playTimer = null, selectionRevision = 0, refreshing = false, simBusy = false;
+let recordingSessions = [], selectedRecording = "", recordingDetail = null;
+let recordingPlayTimer = null, recordingRevision = 0, recordingsLoaded = false;
 
 async function api(path, body) {
   const options = body === undefined ? {} : {
@@ -125,11 +127,12 @@ bind("route-source", "change", clearRoute);
 bind("route-target", "change", clearRoute);
 bind("route-form", "submit", queryRoute);
 function chooseView(view) {
-  if (!["runs","simulator","routes","keys","content"].includes(view)) view = "runs";
-  activeView = view; stopPlay();
+  if (!["runs","recordings","simulator","routes","keys","content"].includes(view)) view = "runs";
+  activeView = view; stopPlay(); stopRecordingPlay();
   document.querySelectorAll(".view").forEach(e=>e.classList.toggle("hidden", e.id !== "view-"+view));
   document.querySelectorAll("[data-view]").forEach(e=>e.classList.toggle("active", e.dataset.view===view));
-  text("view-label", {runs:"任务与回放", simulator:"单步模拟器", routes:"地图路线", keys:"角色键位", content:"内容与模型"}[view]);
+  text("view-label", {runs:"任务与回放", recordings:"真实录像复核", simulator:"单步模拟器", routes:"地图路线", keys:"角色键位", content:"内容与模型"}[view]);
+  if (view === "recordings" && !recordingsLoaded) loadRecordings().catch(fail);
 }
 function setupForm() {
   const kind = el("run-kind").value, run = kind === "run";
@@ -214,6 +217,84 @@ async function drawEvidence() {
     text("evidence-json",pretty(tab==="config"?detail.config:(detail.result || {state:detail.state,error:detail.error})));
   }
 }
+
+function stopRecordingPlay() {
+  clearTimeout(recordingPlayTimer); recordingPlayTimer=null; text("recording-play","▷");
+}
+function recordingLabel(session) {
+  const start=session.source_start_frame || 0;
+  return session.source_name + " · 源帧 " + start + "–" + session.source_end_frame;
+}
+async function loadRecordings() {
+  const version=++recordingRevision;
+  recordingSessions=await api("recordings");
+  if (version!==recordingRevision) return;
+  recordingsLoaded=true;
+  text("recording-count",recordingSessions.length);
+  show("recordings-empty",!recordingSessions.length);
+  show("recordings-workspace",!!recordingSessions.length);
+  if (!recordingSessions.length) { selectedRecording=""; recordingDetail=null; return; }
+  options("recording-select",recordingSessions.map(session=>[session.session_id,recordingLabel(session)]));
+  if (!recordingSessions.some(session=>session.session_id===selectedRecording)) {
+    selectedRecording=recordingSessions[0].session_id;
+    el("recording-select").value=selectedRecording;
+  }
+  await loadRecording();
+}
+async function loadRecording() {
+  const identity=selectedRecording, version=++recordingRevision;
+  stopRecordingPlay(); recordingDetail=null;
+  const data=await api("recordings/"+identity);
+  if (identity!==selectedRecording || version!==recordingRevision) return;
+  recordingDetail=data;
+  const start=data.source_start_frame || 0;
+  text("recording-source",data.source_name+" · SHA-256 "+data.source_sha256.slice(0,16)+"… · "+data.permission+" / "+data.license);
+  const events=data.reviewed_event_reports.reduce((total,item)=>total+item.report.events.length,0);
+  const metrics=el("recording-metrics"); metrics.replaceChildren();
+  for (const [name,value] of [["帧数",data.frame_count],["可见事件",events],["源帧范围",start+"–"+data.source_end_frame]]) {
+    const item=document.createElement("div"); item.className="metric";
+    const dt=document.createElement("dt"), dd=document.createElement("dd"); dt.textContent=name; dd.textContent=value;
+    item.append(dt,dd); metrics.append(item);
+  }
+  const range=el("recording-range"); range.max=Math.max(0,data.frames.length-1); range.value=0;
+  drawRecordingFrame();
+}
+function drawRecordingFrame() {
+  const range=el("recording-range"), frame=recordingDetail?.frames[Number(range.value)];
+  show("recording-frame",!!frame); show("recording-frame-empty",!frame);
+  for (const id of ["recording-prev","recording-play","recording-range","recording-next"]) el(id).disabled=!frame;
+  if (!frame) { text("recording-frame-caption",""); text("recording-evidence",""); return; }
+  const source=(recordingDetail.source_start_frame || 0)+frame.sequence;
+  text("recording-frame-caption","源帧 "+source+" · 会话帧 "+frame.sequence+" · "+frame.timestamp_ms+" ms");
+  el("recording-frame").src="/api/recordings/"+selectedRecording+"/frames/"+frame.sequence;
+  const reports=recordingDetail.reviewed_event_reports.map(item=>({
+    verified:item.verification.verified,
+    scope:item.verification.scope,
+    reviewer:item.report.reviewer,
+    visible_events:item.report.events,
+    limitations:item.report.limitations
+  }));
+  const visibleNow=[];
+  for (const report of reports) for (const event of report.visible_events) {
+    if (event.start.sequence<=frame.sequence && frame.sequence<=event.end.sequence) visibleNow.push(event.kind);
+  }
+  text("recording-evidence",pretty({
+    session:{session_id:recordingDetail.session_id,validated:recordingDetail.validated,timing_accuracy:recordingDetail.timing_accuracy,timebase:recordingDetail.timebase,truncated:recordingDetail.truncated,completion_reason:recordingDetail.completion_reason},
+    current_frame:{...frame,source_sequence:source,visible_events:visibleNow},
+    reviewed_event_reports:reports,
+    limitations:recordingDetail.limitations
+  }));
+}
+function moveRecordingFrame(step) {
+  const range=el("recording-range"); range.value=Math.max(0,Math.min(+range.max,+range.value+step)); drawRecordingFrame();
+}
+function playRecordingFrame() {
+  const range=el("recording-range");
+  if (+range.value>=+range.max) return stopRecordingPlay();
+  const current=recordingDetail.frames[+range.value], next=recordingDetail.frames[+range.value+1];
+  moveRecordingFrame(1);
+  recordingPlayTimer=setTimeout(playRecordingFrame,Math.max(20,Math.min(500,next.timestamp_ms-current.timestamp_ms)));
+}
 function drawSim(data) {
   show("sim-key-log", false);
   sim=data; sessionStorage.setItem("maple-session",data.id);
@@ -277,6 +358,15 @@ bind("frame-play","click",()=>{
   const range=el("frame-range"); if (+range.value===+range.max) range.value=0;
   drawFrame(); text("frame-play","Ⅱ");
   playTimer=setInterval(()=>{ if(+range.value>=+range.max) stopPlay(); else moveFrame(1); },200);
+});
+bind("recording-select","change",async()=>{selectedRecording=el("recording-select").value; await loadRecording();});
+bind("recording-range","input",drawRecordingFrame);
+bind("recording-prev","click",()=>moveRecordingFrame(-1));
+bind("recording-next","click",()=>moveRecordingFrame(1));
+bind("recording-play","click",()=>{
+  if(recordingPlayTimer) return stopRecordingPlay();
+  const range=el("recording-range"); if(+range.value===+range.max) range.value=0;
+  drawRecordingFrame(); text("recording-play","Ⅱ"); playRecordingFrame();
 });
 bind("trace-next","click",async()=>{traceOffset+=4; await drawEvidence();});
 bind("trace-prev","click",async()=>{traceOffset=Math.max(0,traceOffset-4); await drawEvidence();});

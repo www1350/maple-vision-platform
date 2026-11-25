@@ -14,12 +14,17 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .input_bindings import MAX_INPUT_BINDINGS_BYTES, InputBindingProfile
 from .lab import FAULTS
+from .recording_evaluation import _event_report, _verify_event_report
+from .recordings import _load_frame, _validated_manifest
 from .sim_types import SimAction
 from .workbench import Conflict, Workbench
 
 Identifier = Annotated[str, Field(pattern=r"^[0-9a-f]{32}$")]
+RecordingIdentifier = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 Name = Annotated[str, Field(min_length=1, max_length=80)]
 Seed = Annotated[int, Field(ge=0, le=2**32 - 1)]
+MAX_WORKBENCH_RECORDINGS = 128
+MAX_WORKBENCH_EVENT_REPORTS = 256
 
 
 class StrictModel(BaseModel):
@@ -83,11 +88,118 @@ class ChangeInput(StrictModel):
         return self
 
 
-def create_app(root: Path, examples: Path | None = None) -> FastAPI:
+def _plain_directory(path: Path, label: str) -> Path:
+    resolved = Path(path).absolute()
+    if resolved.is_symlink() or not resolved.is_dir():
+        raise ValueError(f"{label} must be a real local directory")
+    return resolved
+
+
+def _recording_catalog(
+    recordings: Path | None, event_reports: Path | None
+) -> dict[str, dict[str, Any]]:
+    if recordings is None:
+        if event_reports is not None:
+            raise ValueError("recording event reports require a recordings directory")
+        return {}
+    root = _plain_directory(recordings, "recordings")
+    children = sorted(root.iterdir(), key=lambda path: path.name)
+    if len(children) > MAX_WORKBENCH_RECORDINGS:
+        raise ValueError("recordings directory exceeds the 128-session workbench limit")
+    catalog: dict[str, dict[str, Any]] = {}
+    for child in children:
+        if child.is_symlink() or not child.is_dir():
+            raise ValueError("recordings directory may contain only real session directories")
+        manifest = _validated_manifest(child)
+        identity = manifest["session_id"]
+        if identity in catalog:
+            raise ValueError("recordings directory contains duplicate session identities")
+        catalog[identity] = {"root": child, "manifest": manifest, "events": []}
+    if event_reports is None:
+        return catalog
+    report_root = _plain_directory(event_reports, "recording event reports")
+    reports = sorted(report_root.iterdir(), key=lambda path: path.name)
+    if len(reports) > MAX_WORKBENCH_EVENT_REPORTS:
+        raise ValueError("recording event report directory exceeds the 256-file limit")
+    for report_path in reports:
+        if report_path.is_symlink() or not report_path.is_file() or report_path.suffix != ".json":
+            raise ValueError("recording event report directory may contain only JSON files")
+        report = _event_report(report_path)
+        identity = report["source"].get("session_id")
+        entry = catalog.get(identity)
+        if entry is None:
+            raise ValueError("recording event report references an unregistered session")
+        verification = _verify_event_report(entry["manifest"], report_path)
+        entry["events"].append({"report": report, "verification": verification})
+    return catalog
+
+
+def _recording_summary(entry: dict[str, Any], *, frames: bool = False) -> dict[str, Any]:
+    manifest = entry["manifest"]
+    summary = {
+        **{
+            key: manifest[key]
+            for key in (
+                "schema_version",
+                "session_id",
+                "scope",
+                "source_kind",
+                "frame_count",
+                "fps",
+                "timebase",
+                "width",
+                "height",
+                "truncated",
+                "completion_reason",
+            )
+        },
+        **(
+            {"source_start_frame": manifest["source_start_frame"]}
+            if "source_start_frame" in manifest
+            else {}
+        ),
+        "validated": True,
+        "timing_accuracy": (
+            "source_pts"
+            if manifest["timebase"] == "video_presentation_ticks"
+            else "nominal_fps_only"
+        ),
+        "source_name": manifest["source_name"],
+        "source_sha256": manifest["source_sha256"],
+        "permission": manifest["permission"],
+        "license": manifest["license"],
+        "event_reports": len(entry["events"]),
+        "source_end_frame": manifest.get("source_start_frame", 0) + manifest["frame_count"] - 1,
+    }
+    if frames:
+        summary["frames"] = [
+            {
+                "sequence": item["sequence"],
+                "timestamp_ms": item["timestamp_ms"],
+                "source_name": item["source_name"],
+            }
+            for item in manifest["frames"]
+        ]
+        summary["reviewed_event_reports"] = entry["events"]
+        summary["limitations"] = [
+            "fixed recording frames cannot validate counterfactual actions or action success",
+            "visible event labels do not identify a skill, actor, target, or keyboard input",
+            "synthetic mechanics, key bindings, and ammunition rules remain separate evidence",
+        ]
+    return summary
+
+
+def create_app(
+    root: Path,
+    examples: Path | None = None,
+    recordings: Path | None = None,
+    recording_events: Path | None = None,
+) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         manager = Workbench(root, examples)
         app.state.manager = manager
+        app.state.recordings = _recording_catalog(recordings, recording_events)
         try:
             yield
         finally:
@@ -104,6 +216,12 @@ def create_app(root: Path, examples: Path | None = None) -> FastAPI:
     def manager() -> Workbench:
         service: Workbench = api.state.manager
         return service
+
+    def recording(identity: str) -> dict[str, Any]:
+        entry: dict[str, Any] | None = api.state.recordings.get(identity)
+        if entry is None:
+            raise HTTPException(404, "找不到指定的录像会话")
+        return entry
 
     @api.middleware("http")
     async def local_origin(
@@ -199,6 +317,30 @@ def create_app(root: Path, examples: Path | None = None) -> FastAPI:
             "faults": list(FAULTS),
             "scope": "synthetic_fixture",
         }
+
+    @api.get("/api/recordings")
+    def recording_sessions() -> list[dict[str, Any]]:
+        return [
+            _recording_summary(entry)
+            for _, entry in sorted(api.state.recordings.items(), key=lambda item: item[0])
+        ]
+
+    @api.get("/api/recordings/{identity}")
+    def recording_detail(identity: RecordingIdentifier) -> dict[str, Any]:
+        return _recording_summary(recording(identity), frames=True)
+
+    @api.get("/api/recordings/{identity}/frames/{sequence}")
+    def recording_frame(
+        identity: RecordingIdentifier,
+        sequence: Annotated[int, Field(ge=0, le=9999)],
+    ) -> Response:
+        entry = recording(identity)
+        root_path: Path = entry["root"]
+        manifest = entry["manifest"]
+        if root_path.is_symlink() or sequence >= manifest["frame_count"]:
+            raise HTTPException(404, "找不到指定的录像帧")
+        frame_value = _load_frame(root_path, manifest["frames"][sequence])
+        return Response(frame_value.png_bytes(), media_type="image/png")
 
     @api.get("/api/world-graphs/{graph_id}/route")
     def route(graph_id: Name, source: Name, target: Name) -> dict[str, Any]:
