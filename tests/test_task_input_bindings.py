@@ -138,7 +138,7 @@ def test_replay_recomputes_dispatch_instead_of_trusting_rehashed_trace(tmp_path)
 def test_cli_loads_the_same_bounded_profile_and_rejects_invalid_files(tmp_path, capsys):
     configured = profile(("A", "模拟范围攻击"))
     bindings = tmp_path / "role-keys.json"
-    bindings.write_text(json.dumps(configured.manifest()))
+    bindings.write_text(json.dumps(configured.manifest()), encoding="utf-8")
     output = tmp_path / "cli-run"
     args = [
         "lab",
@@ -158,13 +158,13 @@ def test_cli_loads_the_same_bounded_profile_and_rejects_invalid_files(tmp_path, 
     ]
     assert main(args) == 0
     capsys.readouterr()
-    summary = json.loads((output / "summary.json").read_text())
+    summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
     assert summary["status"] == "completed"
     assert summary["input_profile"] == configured.manifest()
     assert verify_run(output)["verified"]
 
     invalid = tmp_path / "invalid.json"
-    invalid.write_text("{}")
+    invalid.write_text("{}", encoding="utf-8")
     invalid_output = tmp_path / "invalid-run"
     invalid_args = [*args]
     invalid_args[invalid_args.index(str(output))] = str(invalid_output)
