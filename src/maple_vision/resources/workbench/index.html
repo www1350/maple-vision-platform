@@ -91,6 +91,8 @@
           <div class="page-title"><div><h1>角色键位</h1><p class="subtitle">先打开游戏里的键位设置，对照当前角色的技能图标和键帽填写。</p></div></div>
           <div class="workspace-grid">
             <form id="keys-form" class="panel setup-panel">
+              <label for="keys-import">从键位 JSON 载入草稿</label>
+              <input id="keys-import" type="file" accept=".json,application/json">
               <label for="keys-character">区服与角色名</label><input id="keys-character" required maxlength="100" placeholder="例如：小白兔 / 大美人乖乖">
               <label for="keys-list">每行一项：技能名 = 键位</label>
               <textarea id="keys-list" rows="7" maxlength="3000" aria-describedby="keys-help"></textarea>

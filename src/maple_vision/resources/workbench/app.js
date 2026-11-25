@@ -337,6 +337,33 @@ bind("keys-image-file", "change", () => {
   show("keys-image", true);
 });
 let keyEditRevision = 0;
+bind("keys-import", "change", async () => {
+  const input = el("keys-import");
+  const file = input.files[0];
+  input.value = "";
+  if (!file) return;
+  const revision = ++keyEditRevision;
+  try {
+    if (file.size > 65536) throw new Error("请选择 64 KiB 以内的键位配置。");
+    const source = new TextDecoder("utf-8", {fatal:true}).decode(await file.arrayBuffer());
+    const profile = await api("input-profile", JSON.parse(source));
+    if (revision !== keyEditRevision) return;
+    const editor = el("keys-list"), character = el("keys-character");
+    const representable = value => value === value.trim() && !/[\r\n]/.test(value);
+    if (!representable(profile.profile_id) || profile.profile_id.length > character.maxLength ||
+        profile.bindings.some(({skill, key}) => !representable(skill) || skill.includes("=") || !representable(key))) {
+      throw new Error("此配置含当前编辑器无法完整保留的名称或键位。");
+    }
+    const draft = profile.bindings.map(({skill, key}) => skill + " = " + key).join("\n");
+    if (draft.length > editor.maxLength) throw new Error("键位表超出当前编辑器的长度限制。");
+    if (character.value.trim() !== profile.profile_id) clearKeyImage();
+    character.value = profile.profile_id;
+    editor.value = draft;
+    text("keys-status", "已载入 " + profile.bindings.length + " 项草稿，核对后点击确认并保存。");
+  } catch (error) {
+    if (revision === keyEditRevision) text("keys-status", "导入失败：" + error.message);
+  }
+});
 for (const id of ["keys-list", "keys-character"]) {
   el(id).addEventListener("input", () => { keyEditRevision++; });
 }
