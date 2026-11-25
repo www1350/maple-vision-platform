@@ -1,0 +1,365 @@
+{
+  "scope": "synthetic two-map ground combat drill; authored geometry, generic monster and simulator rules",
+  "runs": {
+    "run-0": {
+      "config": {
+        "fault": "none",
+        "job": "dragon_knight",
+        "max_steps": 1000,
+        "record_stride": 1,
+        "seed": 0
+      },
+      "status": "completed",
+      "reason": "visual_mission_conditions_met",
+      "detector": "pixel-fixture",
+      "steps": 112,
+      "actions": {
+        "attack": 4,
+        "buff": 2,
+        "idle": 15,
+        "move": 89,
+        "portal": 1,
+        "potion_mp": 1
+      },
+      "events": {
+        "attack": 4,
+        "attack_hit": 4,
+        "buff": 2,
+        "buff_expired": 1,
+        "map_changed": 1,
+        "monster_defeated": 2,
+        "potion_mp": 1
+      },
+      "mission_evidence": {
+        "completed": true,
+        "invalid_transition": false,
+        "program_sha256": "60a168894167670d414e50795b7022aa4a8705fca98831d4c76a42318535a0bc",
+        "witnesses": [
+          {
+            "map_id": "drill_forest_1",
+            "phase": "fight",
+            "sequence": 28
+          },
+          {
+            "map_id": "drill_forest_2",
+            "phase": "fight",
+            "sequence": 109
+          }
+        ]
+      },
+      "simulated_seconds": 5.6,
+      "trace_sha256": "47d16072b08ffe41fee4f9754a83941e92c00d9f76b50382140dc212be5baf45"
+    },
+    "run-1": {
+      "config": {
+        "fault": "none",
+        "job": "dragon_knight",
+        "max_steps": 1000,
+        "record_stride": 1,
+        "seed": 1
+      },
+      "status": "completed",
+      "reason": "visual_mission_conditions_met",
+      "detector": "pixel-fixture",
+      "steps": 112,
+      "actions": {
+        "attack": 4,
+        "buff": 2,
+        "idle": 15,
+        "move": 89,
+        "portal": 1,
+        "potion_mp": 1
+      },
+      "events": {
+        "attack": 4,
+        "attack_hit": 4,
+        "buff": 2,
+        "buff_expired": 1,
+        "map_changed": 1,
+        "monster_defeated": 2,
+        "potion_mp": 1
+      },
+      "mission_evidence": {
+        "completed": true,
+        "invalid_transition": false,
+        "program_sha256": "60a168894167670d414e50795b7022aa4a8705fca98831d4c76a42318535a0bc",
+        "witnesses": [
+          {
+            "map_id": "drill_forest_1",
+            "phase": "fight",
+            "sequence": 29
+          },
+          {
+            "map_id": "drill_forest_2",
+            "phase": "fight",
+            "sequence": 109
+          }
+        ]
+      },
+      "simulated_seconds": 5.6,
+      "trace_sha256": "e8c7ce26de142797f4396ee5387fc1bf405226cb8d7fb6caba772b9beb6f02c8"
+    },
+    "run-2": {
+      "config": {
+        "fault": "none",
+        "job": "dragon_knight",
+        "max_steps": 1000,
+        "record_stride": 1,
+        "seed": 2
+      },
+      "status": "completed",
+      "reason": "visual_mission_conditions_met",
+      "detector": "pixel-fixture",
+      "steps": 111,
+      "actions": {
+        "attack": 4,
+        "buff": 2,
+        "idle": 15,
+        "move": 88,
+        "portal": 1,
+        "potion_mp": 1
+      },
+      "events": {
+        "attack": 4,
+        "attack_hit": 4,
+        "buff": 2,
+        "buff_expired": 1,
+        "map_changed": 1,
+        "monster_defeated": 2,
+        "potion_mp": 1
+      },
+      "mission_evidence": {
+        "completed": true,
+        "invalid_transition": false,
+        "program_sha256": "60a168894167670d414e50795b7022aa4a8705fca98831d4c76a42318535a0bc",
+        "witnesses": [
+          {
+            "map_id": "drill_forest_1",
+            "phase": "fight",
+            "sequence": 28
+          },
+          {
+            "map_id": "drill_forest_2",
+            "phase": "fight",
+            "sequence": 108
+          }
+        ]
+      },
+      "simulated_seconds": 5.55,
+      "trace_sha256": "e8f4ba6a508d17303940288b19503871e92d2d0908368bed2d4d1f7e826dffb2"
+    },
+    "frozen": {
+      "config": {
+        "fault": "freeze_input",
+        "job": "dragon_knight",
+        "max_steps": 1000,
+        "record_stride": 4,
+        "seed": 0
+      },
+      "status": "failed",
+      "reason": "recovery_budget_exhausted",
+      "detector": "pixel-fixture",
+      "steps": 46,
+      "actions": {
+        "buff": 1,
+        "jump": 2,
+        "move": 43
+      },
+      "events": {
+        "buff": 1
+      },
+      "mission_evidence": {
+        "completed": false,
+        "invalid_transition": false,
+        "program_sha256": "60a168894167670d414e50795b7022aa4a8705fca98831d4c76a42318535a0bc",
+        "witnesses": []
+      },
+      "simulated_seconds": 2.3,
+      "trace_sha256": "a47597687054d95a3fcf39ec31f9a781882228c6f56a5d528d01c987889c8498"
+    },
+    "onnx": {
+      "config": {
+        "fault": "none",
+        "job": "dragon_knight",
+        "max_steps": 1000,
+        "record_stride": 1,
+        "seed": 0
+      },
+      "status": "completed",
+      "reason": "visual_mission_conditions_met",
+      "detector": "onnx",
+      "steps": 112,
+      "actions": {
+        "attack": 4,
+        "buff": 2,
+        "idle": 15,
+        "move": 89,
+        "portal": 1,
+        "potion_mp": 1
+      },
+      "events": {
+        "attack": 4,
+        "attack_hit": 4,
+        "buff": 2,
+        "buff_expired": 1,
+        "map_changed": 1,
+        "monster_defeated": 2,
+        "potion_mp": 1
+      },
+      "mission_evidence": {
+        "completed": true,
+        "invalid_transition": false,
+        "program_sha256": "60a168894167670d414e50795b7022aa4a8705fca98831d4c76a42318535a0bc",
+        "witnesses": [
+          {
+            "map_id": "drill_forest_1",
+            "phase": "fight",
+            "sequence": 28
+          },
+          {
+            "map_id": "drill_forest_2",
+            "phase": "fight",
+            "sequence": 109
+          }
+        ]
+      },
+      "simulated_seconds": 5.6,
+      "trace_sha256": "79e3939476e0f9519ec55b604680da950872c0fdaf01e51e05e168081967d75f"
+    }
+  },
+  "onnx_action_replay": {
+    "verified": true,
+    "steps_replayed": 112,
+    "scope": "deterministic_simulator",
+    "files_checked": 120,
+    "independent_goal_check": true,
+    "perception_reproduced": false,
+    "runtime_identity_matches": true
+  },
+  "onnx_reinference": {
+    "schema_version": 1,
+    "verified": true,
+    "scope": "synthetic_fixture_perception_and_policy_reexecution",
+    "action_replay_verified": true,
+    "perception_reproduced": true,
+    "policy_reproduced": true,
+    "trace_steps_compared": 112,
+    "frames_reinferred": 113,
+    "terminal_observation_compared": true,
+    "terminal_guard_compared": true,
+    "terminal_decision_compared": true,
+    "model_hash_verified": true,
+    "perception_settings": {
+      "pipeline": "onnx-objects+fixture-terrain-hud-v1",
+      "implementation": "maple_vision.onnx_detector.OnnxDetector",
+      "model_manifest": {
+        "model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+        "class_names": [
+          "player",
+          "monster",
+          "loot",
+          "portal",
+          "npc",
+          "platform",
+          "ladder"
+        ],
+        "input_width": 320,
+        "input_height": 320,
+        "output_format": "raw_xywh",
+        "scope": "synthetic_fixture",
+        "schema_version": 1
+      },
+      "loaded_model_sha256": "7e9f61576f63be400909db6f9eb6cb89b5b935385d01a24155c7f765d2beb6e3",
+      "inference_options": {
+        "confidence_threshold": 0.25,
+        "iou_threshold": 0.45
+      },
+      "verifiable_model_binding": true,
+      "map_pack_sha256": "498b2ef2dfd1e2acab64695c8981439df61a876d09ccbb2a84b3e7e09e8f2616"
+    },
+    "observation_tolerances": {
+      "absolute": 1e-06,
+      "relative": 1e-06
+    },
+    "decision_comparison": "exact; includes guard, action, reason, task and terminal state",
+    "recorded_status": "completed",
+    "independent_goal_check": true,
+    "files_unchanged": true,
+    "runtime_identity_matches": true,
+    "recorded_runtime_identity": {
+      "packages": {
+        "Pillow": "13.0.0",
+        "maple-vision-platform": "0.10.0",
+        "numpy": "2.5.5",
+        "onnxruntime": "1.32.0"
+      },
+      "python": "3.12.14",
+      "source_sha256": "c341618aaba4bb6d20b30aaf1f4fc5babeff950d849daad53e956305c4adc4eb"
+    },
+    "verification_runtime_identity": {
+      "python": "3.12.14",
+      "packages": {
+        "maple-vision-platform": "0.10.0",
+        "Pillow": "13.0.0",
+        "numpy": "2.5.5",
+        "onnxruntime": "1.32.0"
+      },
+      "source_sha256": "c341618aaba4bb6d20b30aaf1f4fc5babeff950d849daad53e956305c4adc4eb"
+    },
+    "structured_runtime_reproduced": true,
+    "runtime_settings": {
+      "schema_version": 1,
+      "settings": {
+        "schema_version": 2,
+        "engine": "structured-v1",
+        "state": {
+          "schema_version": 1,
+          "max_age_ms": 250,
+          "field_ttl_ms": 1000,
+          "track_ttl_ms": 500,
+          "max_tracks": 128,
+          "max_detections": 128,
+          "min_confidence": 0.5,
+          "max_match_distance": 48.0,
+          "ambiguity_margin": 0.15
+        },
+        "tasks": {
+          "clear_confirmations": 4,
+          "effect_timeout_ms": 500,
+          "history_limit": 128,
+          "intent_ttl_ms": 250,
+          "max_attack_attempts": 12,
+          "max_denied_actions": 6,
+          "max_observation_age_ms": 250,
+          "max_recoveries": 2,
+          "max_task_steps": 1000,
+          "max_unknown_steps": 12,
+          "minimum_detection_confidence": 0.5,
+          "plan_timeout_ms": 2000,
+          "schema_version": 1,
+          "stuck_steps": 8
+        },
+        "mission": {
+          "schema_version": 1,
+          "stages": [
+            {
+              "map_id": "drill_forest_1",
+              "phases": [
+                "fight"
+              ]
+            },
+            {
+              "map_id": "drill_forest_2",
+              "phases": [
+                "fight"
+              ]
+            }
+          ]
+        }
+      },
+      "settings_sha256": "4873eba037ede802df132396d4bbb29fef19f47353d5d4d82c7cb5f03f8ad125"
+    },
+    "belief_frames_recomputed": 113,
+    "terminal_runtime_compared": true
+  }
+}

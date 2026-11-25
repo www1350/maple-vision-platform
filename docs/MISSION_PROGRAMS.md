@@ -83,3 +83,15 @@ python -m maple_vision maps route examples/navigation/cms-east-hill.json east_hi
 python -m maple_vision maps route examples/navigation/cms-east-hill.json henesys mushroom_forest
 python -m maple_vision maps route examples/navigation/cms-east-hill.json mushroom_forest henesys
 ```
+
+## 双图近战演练
+
+在工作台选择龙骑士、「死亡之林双图演练（合成）」和「两图各击败一只怪物」。两张图各放一只通用模拟怪物，角色须在第一张图接敌并击杀，移动至传送门，进入第二张图再次接敌并击杀。工作台的「死亡之林」资料路线和此演练使用不同标识。演练平台、出生点、怪物属性和技能数值均来自独立模拟器。
+
+以下命令用已登记的混合 ONNX 模型保存每一步的画面，然后重新执行感知与策略。默认种子为 0。去掉模型和清单参数可测像素基线；加上 `--fault freeze_input` 可核对无法走位时的失败结果。
+
+```bash
+python -m maple_vision lab run --job dragon_knight --map-pack examples/maps/dead-forest-drill.json --mission-program examples/missions/dead-forest-hunt.json --record-stride 1 --model examples/lifecycle-model/model.onnx --manifest examples/lifecycle-model/manifest.json --output artifacts/forest-hunt
+python -m maple_vision lab replay artifacts/forest-hunt
+python -m maple_vision lab reinfer artifacts/forest-hunt --model examples/lifecycle-model/model.onnx --manifest examples/lifecycle-model/manifest.json
+```
