@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Maple · 离线验证工作台</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="主导航">
+      <a class="brand" href="#runs"><span class="brand-mark" aria-hidden="true">M</span><span>Maple<span class="brand-caption">VISION PLATFORM</span></span></a>
+      
+      <nav>
+        <button class="nav-item active" data-view="runs" type="button"><span aria-hidden="true">▤</span> 任务与回放</button>
+        <button class="nav-item" data-view="simulator" type="button"><span aria-hidden="true">◇</span> 单步模拟器</button>
+        <button class="nav-item" data-view="content" type="button"><span aria-hidden="true">▧</span> 内容与模型</button>
+      </nav>
+      <div class="sidebar-note"><span class="status-dot"></span> 本机离线运行<p>独立模拟环境<br>运行时 LLM 调用 0</p></div>
+      <div id="server-version" class="version">正在连接工作台…</div>
+    </aside>
+    <div class="main-shell">
+      <header class="topbar"><div class="breadcrumb">工作空间 <span>/</span> <strong id="view-label">任务与回放</strong></div><div class="connection"><span id="connection-dot" class="status-dot muted"></span><span id="connection-label">连接中</span><button id="refresh" class="icon-button" type="button" aria-label="刷新工作台">↻</button></div></header>
+      <main>
+        <div id="global-error" class="notice error hidden" role="alert"></div>
+        <section id="view-runs" class="view">
+          <div class="page-title"><div><h1>任务与回放</h1><p class="subtitle">启动任务，查看实际结果，并回放观测、动作与状态。</p></div><span class="scope-pill">独立模拟器</span></div>
+          <div class="workspace-grid">
+            <section class="panel setup-panel" aria-labelledby="new-run-heading">
+              <div class="panel-heading"><h2 id="new-run-heading">新建验证任务</h2></div>
+              <form id="run-form">
+                <label for="run-kind">验证方式</label><select id="run-kind"><option value="run">视觉闭环任务</option><option value="replay">动作重放</option><option value="reinfer">感知与任务重推理</option><option value="export_bundle">导出分层回放包</option><option value="verify_bundle">验证分层回放包</option></select>
+                <div id="run-config-fields">
+                  <label for="class-select">职业与能力包</label><select id="class-select" required><option value="">正在读取内容…</option></select>
+                  <label for="map-select">地图</label><select id="map-select"></select>
+                  <label for="model-select">感知方式</label><select id="model-select"></select>
+                  <div class="field-row"><div><label for="seed">随机种子</label><input id="seed" type="number" min="0" max="4294967295" value="0" required></div><div><label for="max-steps">最大步数</label><input id="max-steps" type="number" min="1" max="2500" value="1500" required></div></div>
+                  <label for="fault-select">故障场景</label><select id="fault-select"><option value="none">正常运行</option><option value="brief_dropout">短时画面丢失</option><option value="persistent_dropout">持续画面丢失</option><option value="duplicate_frames">重复帧</option><option value="freeze_input">动作冻结</option></select>
+                </div>
+                <div id="run-source-fields" class="hidden"><label for="source-select">已登记的运行或回放包</label><select id="source-select"></select><p class="field-help">重推理使用原任务登记的感知方式。</p></div>
+                <button id="submit-run" class="button primary full-width" type="submit">启动验证 <span aria-hidden="true">↗</span></button>
+                <p id="run-form-note" class="field-help">结果由独立目标检查判定；动作被接受不等于任务成功。</p>
+              </form>
+            </section>
+            <section class="panel runs-panel" aria-labelledby="runs-heading">
+              <div class="panel-heading"><h2 id="runs-heading">运行记录</h2><span id="run-count" class="count">0</span></div>
+              <div id="runs-empty" class="empty-state"><div class="empty-symbol" aria-hidden="true">↗</div><h3>暂无运行记录</h3><p>选择左侧的职业和地图，启动第一次任务。</p></div>
+              <div class="table-scroll"><table id="run-table" class="hidden"><thead><tr><th>任务</th><th>状态</th><th>创建时间</th><th><span class="sr-only">操作</span></th></tr></thead><tbody id="run-list"></tbody></table></div>
+            </section>
+          </div>
+          <section id="run-detail" class="panel detail-panel hidden" aria-labelledby="detail-heading">
+            <div class="panel-heading"><h2 id="detail-heading">执行证据</h2><span id="detail-status" class="badge"></span><button id="cancel-job" class="button subtle hidden" type="button">取消排队</button></div>
+            <div class="detail-grid">
+              <div class="replay-area"><div class="frame-stage"><img id="replay-frame" alt="所选运行的实际记录帧" class="hidden"><div id="frame-empty" class="frame-placeholder">选择一帧查看实际画面</div><span id="frame-caption" class="frame-caption"></span></div><div class="timeline-controls"><button id="frame-prev" class="icon-button" type="button" aria-label="上一帧">‹</button><button id="frame-play" class="icon-button" type="button" aria-label="播放记录帧">▷</button><input id="frame-range" type="range" min="0" max="0" value="0" aria-label="记录帧时间轴"><button id="frame-next" class="icon-button" type="button" aria-label="下一帧">›</button></div><p id="frame-note" class="field-help">原始运行包保留采样帧；分层回放包保留全部 N+1 帧。</p></div>
+              <div class="result-area"><dl id="result-metrics" class="result-metrics"></dl><div class="evidence-tabs" role="tablist" aria-label="证据类型"><button class="tab active" data-evidence="summary" role="tab" aria-selected="true" type="button">结果摘要</button><button class="tab" data-evidence="trace" role="tab" aria-selected="false" type="button">动作与观测</button><button class="tab" data-evidence="config" role="tab" aria-selected="false" type="button">运行配置</button></div><pre id="evidence-json" class="json-view" tabindex="0"></pre><div class="trace-controls hidden" id="trace-controls"><button id="trace-prev" class="button subtle" type="button">上一页</button><span id="trace-page"></span><button id="trace-next" class="button subtle" type="button">下一页</button></div></div>
+            </div>
+          </section>
+        </section>
+        <section id="view-simulator" class="view hidden">
+          <div class="page-title"><div><h1>单步模拟器</h1><p class="subtitle">手动驱动独立模拟器，分别查看可见观测与验证真值。</p></div></div>
+          <div class="workspace-grid">
+            <section class="panel setup-panel"><div class="panel-heading"><h2>场景配置</h2></div><form id="sim-form"><label for="sim-class">职业</label><select id="sim-class"></select><label for="sim-map">地图</label><select id="sim-map"></select><label for="sim-seed">随机种子</label><input id="sim-seed" type="number" min="0" max="4294967295" value="0"><button id="sim-create" class="button primary full-width" type="submit">创建单步会话</button></form><p class="field-help">会话仅在明确的单步请求时推进。每步为 50ms 模拟时间。</p><div id="sim-controls" class="hidden"><hr><label for="sim-action">动作</label><select id="sim-action"><option value="idle">等待</option><option value="move">移动</option><option value="jump">跳跃</option><option value="attack">普通攻击</option><option value="cast">注册技能</option><option value="climb">攀爬</option><option value="loot">拾取</option><option value="potion_hp">HP 药品</option><option value="potion_mp">MP 药品</option><option value="interact">NPC 交互</option><option value="portal">使用传送门</option><option value="heal">旧职业治疗</option><option value="buff">旧职业 Buff</option><option value="jump_attack">旧职业跳标</option></select><div class="field-row"><div><label for="sim-direction">方向（移动和跳跃）</label><select id="sim-direction"><option value="1">右 / 下</option><option value="0">保持</option><option value="-1">左 / 上</option></select></div><div><label for="sim-skill">技能 ID</label><input id="sim-skill" autocomplete="off" placeholder="选择动作后输入技能 ID"></div></div><label for="sim-target">交互目标 ID</label><input id="sim-target" autocomplete="off" placeholder="NPC 或传送门 ID；普通动作留空"><div class="button-row"><button id="sim-step" class="button primary" type="button">执行一步 →</button><button id="sim-reset" class="button subtle" type="button">重置</button><button id="sim-save" class="button subtle" type="button">保存状态</button><button id="sim-restore" class="button subtle" type="button">恢复存档</button></div></div></section>
+            <section class="panel simulator-panel"><div class="panel-heading"><h2>独立场景</h2><span id="sim-clock" class="count">尚未创建</span></div><div class="frame-stage large"><img id="sim-frame" alt="单步模拟器的实际渲染画面" class="hidden"><div id="sim-empty" class="frame-placeholder">创建会话以查看场景</div></div><div id="sim-outcome" class="notice hidden"></div><div class="evidence-tabs" role="tablist" aria-label="模拟器信息"><button class="tab active" data-sim-evidence="observation" role="tab" aria-selected="true" type="button">视觉观测</button><button class="tab" data-sim-evidence="ground_truth" role="tab" aria-selected="false" type="button">验证真值</button></div><p id="sim-evidence-note" class="field-help">视觉观测由实际渲染帧产生。</p><pre id="sim-json" class="json-view" tabindex="0"></pre></section>
+          </div>
+        </section>
+        <section id="view-content" class="view hidden"><div class="page-title"><div><h1>内容与模型</h1><p class="subtitle">这里列出当前工作台登记的职业、地图、模型和证据输入。</p></div></div><div id="content-cards" class="content-grid"></div><section class="panel"><div class="panel-heading"><h2>工作台能力与配置</h2></div><pre id="bootstrap-json" class="json-view" tabindex="0"></pre></section></section>
+      </main>
+      <footer>Maple Vision Platform <span>本地模拟器</span></footer>
+    </div>
+  </div>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+</body>
+</html>

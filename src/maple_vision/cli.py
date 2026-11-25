@@ -286,6 +286,19 @@ def _parser() -> argparse.ArgumentParser:
     )
     chat.add_argument("--incoming", required=True)
     chat.add_argument("--reply", required=True)
+    bench = commands.add_parser("workbench", help="start the local simulator workbench")
+    bench.add_argument("--workspace", type=Path, required=True)
+    bench.add_argument("--examples", type=Path)
+    bench.add_argument("--port", type=int, default=8765)
+    world = map_commands.add_parser("route", help="plan a weighted route between maps")
+    world.add_argument("path", type=Path)
+    world.add_argument("source")
+    world.add_argument("target")
+    platform = map_commands.add_parser("platform-route", help="search a fixed-step movement graph")
+    platform.add_argument("geometry", type=Path)
+    platform.add_argument("movement", type=Path)
+    platform.add_argument("--start", type=float, nargs=2, required=True)
+    platform.add_argument("--target", required=True)
     return parser
 
 
@@ -328,6 +341,32 @@ def _database(command: str, path: Path) -> dict[str, str | int]:
 
 
 def _extended(args: argparse.Namespace) -> dict[str, Any]:
+    if args.command == "maps" and args.operation == "route":
+        from .navigation_graph import load_world_graph
+
+        world = load_world_graph(args.path)
+        route = world.shortest_path(args.source, args.target)
+        return {
+            "found": route is not None,
+            "route": None if route is None else route.to_dict(),
+            "verification": None if route is None else world.verify_route(route),
+        }
+    if args.command == "maps" and args.operation == "platform-route":
+        from .navigation_graph import (
+            MotionState,
+            build_platform_graph,
+            load_movement_capabilities,
+            load_platform_geometry,
+        )
+
+        graph = build_platform_graph(
+            load_platform_geometry(args.geometry), load_movement_capabilities(args.movement)
+        )
+        result = graph.find_path(MotionState(*args.start), args.target)
+        return {
+            "search": result.to_dict(),
+            "verification": None if result.path is None else graph.verify_path(result.path),
+        }
     if args.command == "knowledge":
         if args.operation in {"project-domains", "verify-domains", "query-domain"}:
             from .catalog_domains import (
@@ -754,6 +793,22 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
+        if args.command == "workbench":
+            if not 1 <= args.port <= 65535:
+                raise ValueError("port must be in [1, 65535]")
+            try:
+                import uvicorn
+
+                from .workbench_api import create_app
+            except ModuleNotFoundError as exc:
+                raise ValueError("install the workbench extra: pip install '.[workbench]'") from exc
+            uvicorn.run(
+                create_app(args.workspace, args.examples),
+                host="127.0.0.1",
+                port=args.port,
+                proxy_headers=False,
+            )
+            return 0
         if args.command == "demo":
             config = load_config(args.config) if args.config else RuntimeConfig()
             if args.frames is not None:

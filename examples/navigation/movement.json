@@ -1,0 +1,1 @@
+{"body_height":22,"body_width":14,"can_climb":true,"can_drop":true,"can_jump":true,"can_walk":true,"climb_speed":60,"gravity":650,"jump_speed":280,"kind":"movement-capabilities","physics_model":"synthetic-fixture-motion-v1","schema_version":1,"step_ms":50,"walk_speed":80}
