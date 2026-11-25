@@ -32,6 +32,7 @@ MAX_FRAMES = 5000
 MAX_OBJECTS = 50_000
 MAX_OBJECTS_PER_FRAME = 128
 MAX_LABEL_BYTES = 16 * 1024 * 1024
+MAX_STRIKE_REPORT_BYTES = 1024 * 1024
 
 
 @dataclass(frozen=True)
@@ -478,6 +479,168 @@ def measure_strike(
             "vertical_center_delta_px": (m[1] + m[3] - p[1] - p[3]) / 2,
             "horizontal_edge_gap_px": max(0, p[0] - m[2], m[0] - p[2]),
         },
+    }
+    _write(output, report)
+    return report
+
+
+def _strike_report(path: Path) -> dict[str, Any]:
+    raw = strict_json(read_regular(path, MAX_STRIKE_REPORT_BYTES, "strike report").decode())
+    required = {
+        "schema_version",
+        "kind",
+        "session_id",
+        "domain",
+        "labels_sha256",
+        "label_reviewer",
+        "strike_reviewer",
+        "skill_id",
+        "level",
+        "weapon",
+        "facing",
+        "map_id",
+        "reviewed_feedback",
+        "timebase",
+        "start",
+        "end",
+        "window_ms",
+        "source_frame_size",
+        "start_geometry",
+    }
+    if not isinstance(raw, dict) or set(raw) != required:
+        raise ValueError("invalid strike report schema")
+    if raw["schema_version"] != 1 or raw["kind"] != "reviewed_strike_window":
+        raise ValueError("unsupported strike report")
+    if raw["domain"] not in ("authored_fixture", "game_recording"):
+        raise ValueError("invalid strike report domain")
+    if raw["facing"] not in ("left", "right") or raw["reviewed_feedback"] not in (
+        "damage_visible",
+        "miss_text_visible",
+        "no_feedback",
+    ):
+        raise ValueError("invalid strike review category")
+    if type(raw["level"]) is not int or raw["level"] < 1:
+        raise ValueError("invalid strike skill level")
+    if type(raw["window_ms"]) is not int or raw["window_ms"] < 0:
+        raise ValueError("invalid strike window")
+    if (
+        not isinstance(raw["source_frame_size"], list)
+        or len(raw["source_frame_size"]) != 2
+        or any(type(value) is not int or value < 1 for value in raw["source_frame_size"])
+    ):
+        raise ValueError("invalid strike frame size")
+    geometry = raw["start_geometry"]
+    geometry_fields = {
+        "player_index",
+        "monster_index",
+        "player_bbox",
+        "monster_bbox",
+        "player_occluded",
+        "monster_occluded",
+        "forward_center_delta_px",
+        "vertical_center_delta_px",
+        "horizontal_edge_gap_px",
+    }
+    if not isinstance(geometry, dict) or set(geometry) != geometry_fields:
+        raise ValueError("invalid strike geometry")
+    for field in ("forward_center_delta_px", "vertical_center_delta_px", "horizontal_edge_gap_px"):
+        if not isinstance(geometry[field], (int, float)) or isinstance(geometry[field], bool):
+            raise ValueError("invalid strike distance")
+    for frame in (raw["start"], raw["end"]):
+        if not isinstance(frame, dict) or set(frame) != {"sequence", "timestamp_ms", "rgb_sha256"}:
+            raise ValueError("invalid strike frame identity")
+        if type(frame["sequence"]) is not int or type(frame["timestamp_ms"]) is not int:
+            raise ValueError("invalid strike frame timing")
+        if not isinstance(frame["rgb_sha256"], str) or len(frame["rgb_sha256"]) != 64:
+            raise ValueError("invalid strike frame hash")
+    return raw
+
+
+def summarize_strikes(reports: Sequence[Path], output: Path) -> dict[str, Any]:
+    """Aggregate reviewed observations without promoting them into a calibrated range."""
+    if not reports or len(reports) > 10_000:
+        raise ValueError("supply 1..10000 strike reports")
+    documents = [_strike_report(Path(path)) for path in reports]
+    identity = tuple(documents[0][key] for key in ("domain", "skill_id", "level", "weapon"))
+    frame_size = documents[0]["source_frame_size"]
+    if any(
+        tuple(document[key] for key in ("domain", "skill_id", "level", "weapon")) != identity
+        for document in documents
+    ):
+        raise ValueError("strike reports must describe the same domain, skill, level and weapon")
+    if any(document["source_frame_size"] != frame_size for document in documents):
+        raise ValueError("strike reports need the same source frame size")
+    sample_ids = [
+        (document["session_id"], document["start"]["rgb_sha256"], document["end"]["rgb_sha256"])
+        for document in documents
+    ]
+    if len(set(sample_ids)) != len(sample_ids):
+        raise ValueError("duplicate strike observation")
+
+    def metrics(items: list[dict[str, Any]]) -> dict[str, Any]:
+        forward = [float(item["start_geometry"]["forward_center_delta_px"]) for item in items]
+        vertical = [float(item["start_geometry"]["vertical_center_delta_px"]) for item in items]
+        windows = [item["window_ms"] for item in items]
+        return {
+            "observations": len(items),
+            "forward_center_delta_px": {
+                "min": min(forward) if forward else None,
+                "max": max(forward) if forward else None,
+            },
+            "vertical_center_delta_px": {
+                "min": min(vertical) if vertical else None,
+                "max": max(vertical) if vertical else None,
+            },
+            "window_ms": {
+                "min": min(windows) if windows else None,
+                "median": statistics.median(windows) if windows else None,
+                "max": max(windows) if windows else None,
+            },
+        }
+
+    by_feedback = {
+        feedback: metrics([item for item in documents if item["reviewed_feedback"] == feedback])
+        for feedback in ("damage_visible", "miss_text_visible", "no_feedback")
+    }
+    report = {
+        "schema_version": 1,
+        "kind": "reviewed_strike_summary",
+        "domain": identity[0],
+        "skill_id": identity[1],
+        "level": identity[2],
+        "weapon": identity[3],
+        "source_frame_size": frame_size,
+        "observations": len(documents),
+        "sessions": len({item["session_id"] for item in documents}),
+        "maps": sorted({item["map_id"] for item in documents}),
+        "by_feedback": by_feedback,
+        "by_facing": {
+            facing: metrics([item for item in documents if item["facing"] == facing])
+            for facing in ("left", "right")
+        },
+        "observed_damage_distance_lower_bound_px": max(
+            (
+                float(item["start_geometry"]["forward_center_delta_px"])
+                for item in documents
+                if item["reviewed_feedback"] == "damage_visible"
+                and float(item["start_geometry"]["forward_center_delta_px"]) >= 0
+            ),
+            default=None,
+        ),
+        "range_upper_bound_px": None,
+        "calibrated_range": False,
+        "limitations": [
+            "damage feedback only establishes an observed hit at the measured geometry",
+            "MISS text can be an accuracy outcome and does not establish an out-of-range sample",
+            "no feedback can result from occlusion, timing or attribution error",
+            "distances are native pixels for one fixed source frame size",
+        ],
+        "source_reports_sha256": [
+            hashlib.sha256(
+                read_regular(Path(path), MAX_STRIKE_REPORT_BYTES, "strike report")
+            ).hexdigest()
+            for path in reports
+        ],
     }
     _write(output, report)
     return report

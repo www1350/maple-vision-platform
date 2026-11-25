@@ -204,6 +204,9 @@ def _parser() -> argparse.ArgumentParser:
     strike.add_argument(
         "--feedback", choices=("damage_visible", "miss_text_visible", "no_feedback"), required=True
     )
+    strike_summary = recording_commands.add_parser("summarize-strikes")
+    strike_summary.add_argument("--report", type=Path, action="append", required=True)
+    strike_summary.add_argument("--output", type=Path, required=True)
     score = recording_commands.add_parser("benchmark")
     score.add_argument(
         "--case",
@@ -646,6 +649,10 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
             facing=args.facing,
             feedback=args.feedback,
         )
+    if args.command == "recording" and args.operation == "summarize-strikes":
+        from .recording_evaluation import summarize_strikes
+
+        return summarize_strikes(args.report, args.output)
     if args.command == "recording" and args.operation == "audit-route":
         from .recording_evaluation import audit_route
 
