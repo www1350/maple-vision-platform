@@ -228,6 +228,48 @@ function recordingLabel(session) {
 function coverageLabel(coverage) {
   return "连续覆盖 · " + coverage.source_name + " · 源帧 " + coverage.decoded_source_range.join("–");
 }
+const recordingEventNames={
+  rope_contact_visible:"接绳可见",
+  level_change_visible:"层位变化可见",
+  attack_motion_visible:"攻击动作可见",
+  damage_feedback_visible:"伤害反馈可见"
+};
+function recordingEvents() {
+  if (!recordingDetail) return [];
+  if (recordingDetail.viewer_kind==="coverage") {
+    return recordingDetail.reviewed_visible_events.map(event=>({
+      ...event,
+      start_index:recordingDetail.frames.findIndex(frame=>frame.source_sequence===event.start_source_sequence),
+      end_index:recordingDetail.frames.findIndex(frame=>frame.source_sequence===event.end_source_sequence),
+      display_range:"源帧 "+event.start_source_sequence+"–"+event.end_source_sequence
+    }));
+  }
+  const events=[];
+  for (const item of recordingDetail.reviewed_event_reports) for (const event of item.report.events) {
+    events.push({
+      ...event,
+      reviewer:item.report.reviewer,
+      verified:item.verification.verified,
+      start_index:event.start.sequence,
+      end_index:event.end.sequence,
+      display_range:"窗口帧 "+event.start.sequence+"–"+event.end.sequence
+    });
+  }
+  return events.sort((a,b)=>a.start_index-b.start_index || a.end_index-b.end_index || a.kind.localeCompare(b.kind));
+}
+function updateRecordingEventNavigation(current) {
+  const events=recordingEvents().filter(event=>event.start_index>=0 && event.end_index>=event.start_index);
+  const active=events.filter(event=>event.start_index<=current && current<=event.end_index);
+  const previous=[...events].reverse().find(event=>event.start_index<current);
+  const next=events.find(event=>event.start_index>current);
+  el("recording-event-prev").disabled=!previous;
+  el("recording-event-next").disabled=!next;
+  if (active.length) {
+    text("recording-event-status","当前："+active.map(event=>(recordingEventNames[event.kind] || event.kind)+"（"+event.display_range+"）").join("；"));
+  } else {
+    text("recording-event-status","当前帧无已复核事件 · 共 "+events.length+" 条");
+  }
+}
 async function loadRecordings() {
   const version=++recordingRevision;
   [recordingSessions,recordingCoverages]=await Promise.all([api("recordings"),api("recording-coverages")]);
@@ -272,7 +314,11 @@ function drawRecordingFrame() {
   const range=el("recording-range"), frame=recordingDetail?.frames[Number(range.value)];
   show("recording-frame",!!frame); show("recording-frame-empty",!frame);
   for (const id of ["recording-prev","recording-play","recording-range","recording-next"]) el(id).disabled=!frame;
-  if (!frame) { text("recording-frame-caption",""); text("recording-evidence",""); return; }
+  if (!frame) {
+    el("recording-event-prev").disabled=true; el("recording-event-next").disabled=true;
+    text("recording-frame-caption",""); text("recording-event-status","当前帧无已复核事件。"); text("recording-evidence",""); return;
+  }
+  updateRecordingEventNavigation(Number(range.value));
   const coverage=recordingDetail.viewer_kind==="coverage";
   const source=coverage?frame.source_sequence:(recordingDetail.source_start_frame || 0)+frame.sequence;
   text("recording-frame-caption","源帧 "+source+" · 窗口帧 "+frame.sequence+" · "+frame.timestamp_ms+" ms");
@@ -311,6 +357,15 @@ function drawRecordingFrame() {
 }
 function moveRecordingFrame(step) {
   const range=el("recording-range"); range.value=Math.max(0,Math.min(+range.max,+range.value+step)); drawRecordingFrame();
+}
+function moveRecordingEvent(direction) {
+  const range=el("recording-range"), current=Number(range.value);
+  const events=recordingEvents().filter(event=>event.start_index>=0 && event.end_index>=event.start_index);
+  const target=direction<0
+    ? [...events].reverse().find(event=>event.start_index<current)
+    : events.find(event=>event.start_index>current);
+  if (!target) return;
+  stopRecordingPlay(); range.value=target.start_index; drawRecordingFrame();
 }
 function playRecordingFrame() {
   const range=el("recording-range");
@@ -387,6 +442,8 @@ bind("recording-select","change",async()=>{selectedRecording=el("recording-selec
 bind("recording-range","input",drawRecordingFrame);
 bind("recording-prev","click",()=>moveRecordingFrame(-1));
 bind("recording-next","click",()=>moveRecordingFrame(1));
+bind("recording-event-prev","click",()=>moveRecordingEvent(-1));
+bind("recording-event-next","click",()=>moveRecordingEvent(1));
 bind("recording-play","click",()=>{
   if(recordingPlayTimer) return stopRecordingPlay();
   const range=el("recording-range"); if(+range.value===+range.max) range.value=0;
