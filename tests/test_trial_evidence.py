@@ -1,10 +1,11 @@
+import hashlib
 import json
 from pathlib import Path
 
 import pytest
 
 from maple_vision.cli import main
-from maple_vision.trial_evidence import verify_trial_evidence
+from maple_vision.trial_evidence import _rooted_file, verify_trial_evidence
 
 ROOT = Path(__file__).parents[1]
 LEDGER = ROOT / "reports/release-0.10.0/throwing-star-trial-evidence-ledger.json"
@@ -47,3 +48,18 @@ def test_trial_evidence_rejects_paths_outside_its_root(tmp_path):
 
     with pytest.raises(ValueError, match="invalid recording coverage report path"):
         verify_trial_evidence(target, tmp_path)
+
+
+def test_trial_text_checksums_are_checkout_newline_independent(tmp_path):
+    lf = b'{\n  "verified": true\n}\n'
+    crlf = lf.replace(b"\n", b"\r\n")
+    target = tmp_path / "report.json"
+    target.write_bytes(crlf)
+    reference = {"path": "report.json", "sha256": hashlib.sha256(lf).hexdigest()}
+
+    path, data = _rooted_file(tmp_path, reference, "report", canonical_text=True)
+
+    assert path == target
+    assert data == crlf
+    with pytest.raises(ValueError, match="report checksum mismatch"):
+        _rooted_file(tmp_path, reference, "report")

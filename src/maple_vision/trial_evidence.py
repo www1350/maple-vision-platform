@@ -39,7 +39,13 @@ def _text(value: object, label: str) -> str:
     return value
 
 
-def _rooted_file(root: Path, reference: object, label: str) -> tuple[Path, bytes]:
+def _rooted_file(
+    root: Path,
+    reference: object,
+    label: str,
+    *,
+    canonical_text: bool = False,
+) -> tuple[Path, bytes]:
     item = _object(reference, {"path", "sha256"}, label)
     relative = PurePosixPath(_text(item["path"], f"{label} path"))
     if relative.is_absolute() or any(part in {"", ".", ".."} for part in relative.parts):
@@ -54,13 +60,14 @@ def _rooted_file(root: Path, reference: object, label: str) -> tuple[Path, bytes
         if current.is_symlink():
             raise ValueError(f"{label} path must not contain symbolic links")
     data = read_regular(path, MAX_TRIAL_FILE_BYTES, label)
-    if hashlib.sha256(data).hexdigest() != sha256:
+    checksum_data = data.replace(b"\r\n", b"\n") if canonical_text else data
+    if hashlib.sha256(checksum_data).hexdigest() != sha256:
         raise ValueError(f"{label} checksum mismatch")
     return path, data
 
 
 def _json_file(root: Path, reference: object, label: str) -> tuple[Path, dict[str, Any]]:
-    path, data = _rooted_file(root, reference, label)
+    path, data = _rooted_file(root, reference, label, canonical_text=True)
     try:
         value = strict_json(data.decode("utf-8"))
     except UnicodeError as exc:
@@ -321,7 +328,7 @@ def verify_trial_evidence(path: Path, root: Path) -> dict[str, Any]:
         "mission_program": synthetic["mission_program"],
     }
     for field, reference in source_refs.items():
-        source_path, _ = _rooted_file(root, reference, field.replace("_", " "))
+        source_path, _ = _rooted_file(root, reference, field.replace("_", " "), canonical_text=True)
         if (
             acceptance.get("synthetic_inputs", {}).get(field) != reference["path"]
             or acceptance["synthetic_inputs"].get(f"{field}_sha256") != reference["sha256"]
@@ -388,7 +395,9 @@ def verify_trial_evidence(path: Path, root: Path) -> dict[str, Any]:
         {"profile", "profile_id", "key", "skill", "accepted_dispatches", "denied_dispatches"},
         "role binding evidence",
     )
-    profile_path, _ = _rooted_file(root, binding["profile"], "input binding profile")
+    profile_path, _ = _rooted_file(
+        root, binding["profile"], "input binding profile", canonical_text=True
+    )
     profile = load_input_profile(profile_path)
     configured = profile.binding_for_key(_text(binding["key"], "binding key"))
     if (
