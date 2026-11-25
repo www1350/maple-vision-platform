@@ -189,6 +189,7 @@ OCRResult 包含帧身份、language、source_id、crop、words 和 text；OCRWo
 |---|---|
 | `initial-state.json` / `final-state.json` | 完整模拟器保存状态 |
 | `trace.jsonl` | 每步帧哈希、观测、监督决策、任务决策、实际动作、执行事件、可见效果、结果状态哈希 |
+| `input-bindings.json`（可选） | 用户确认的角色配置名及 1–128 条技能/键位；仅用于离线模拟技能解析 |
 | `frames/*.png` / `final.png` | 间隔采样画面与最终画面 |
 | `preview.gif` | 最多 600 个采样帧组成的预览，不能替代完整动作记录 |
 | `summary.json` | 配置、状态/原因、步骤、模拟/实际时长、行为/事件统计、独立目标检查、模型及运行身份 |
@@ -203,3 +204,5 @@ suite.json 记录多职业/种子和故障结果；soak 另写 episodes.jsonl、
 外部地图运行的 summary 额外保存 `map_pack`，`summary.perception_evidence.settings.map_pack_sha256` 绑定实际地图内容。suite/soak 摘要同样携带地图 manifest，内部感知设置也包含同一内容摘要；默认内置地图路径不写这些新增字段。
 
 `verify_run` 必须核对包内 map-pack.json、initial state 和 summary 的完整地图身份，再使用恢复后的包重放所有动作和采样像素；地图证据缺失、混用或未登记会被拒绝。`verify_perception` 在此基础上重建相同地图标记表与路线，检查绑定地图后的感知 settings 并重新执行 N+1 帧感知、监督与策略。两种验证都无需再次提供外部地图文件；数据内容哈希仍不能代替模型在这些新地图上的准确率或闭环准入证据。
+
+选择角色键位配置时，summary.input_profile 与 `input-bindings.json` 必须逐字段相同。每个受键位约束的技能步骤增加 `execution.input_dispatch`，记录 profile、技能语义、原始/归一化键、是否绑定及原因；非技能步骤为 `null`。重放器根据调度授权动作和配置重新计算该字段，再决定实际应用原动作或 idle。此字段是离线模拟输入证据，不是操作系统或正式客户端输入回执。

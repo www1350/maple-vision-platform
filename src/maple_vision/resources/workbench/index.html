@@ -41,6 +41,8 @@
                   <label for="model-select">感知方式</label><select id="model-select"></select>
                   <div class="field-row"><div><label for="seed">随机种子</label><input id="seed" type="number" min="0" max="4294967295" value="0" required></div><div><label for="max-steps">最大步数</label><input id="max-steps" type="number" min="1" max="2500" value="1500" required></div></div>
                   <label for="fault-select">故障场景</label><select id="fault-select"><option value="none">正常运行</option><option value="brief_dropout">短时画面丢失</option><option value="persistent_dropout">持续画面丢失</option><option value="duplicate_frames">重复帧</option><option value="freeze_input">动作冻结</option></select>
+                  <label for="run-profile">角色键位配置（可选）</label><input id="run-profile" maxlength="100" autocomplete="off" placeholder="与角色键位页的区服与角色名一致">
+                  <p class="field-help">填写后，受支持的技能必须先解析到该角色键位，绑定结果进入任务证据；不会向游戏客户端发送按键。</p>
                 </div>
                 <div id="run-source-fields" class="hidden"><label for="source-select">已登记的运行或回放包</label><select id="source-select"></select><p class="field-help">重推理使用原任务登记的感知方式。</p></div>
                 <button id="submit-run" class="button primary full-width" type="submit">启动验证 <span aria-hidden="true">↗</span></button>

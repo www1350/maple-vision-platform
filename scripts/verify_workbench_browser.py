@@ -97,6 +97,15 @@ def verify(url: str, executable: str) -> dict[str, object]:
         expect(page.locator("#keys-list")).to_have_value("示例技能 = Ctrl")
         page.fill("#keys-list", "模拟范围攻击 = A")
         page.locator("#keys-form button").click()
+        page.click('[data-view="runs"]')
+        page.select_option("#run-kind", "run")
+        page.select_option("#class-select", "dragon_knight")
+        page.select_option("#map-select", "dead-forest-drill")
+        page.select_option("#mission-select", "dead-forest-hunt")
+        page.fill("#run-profile", "示例区 / 一号")
+        page.click("#submit-run")
+        expect(page.locator("#detail-status")).to_have_text("目标完成", timeout=30000)
+        expect(page.locator("#evidence-json")).to_contain_text("input_dispatch_summary")
         page.click('[data-view="simulator"]')
         page.select_option("#sim-class", "dragon_knight")
         page.click("#sim-create")
@@ -132,6 +141,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
             "custom_mission_outcome": "completed",
             "evidence_operations": ["replay", "reinfer", "export_bundle", "verify_bundle"],
             "single_step_restore_after_reload": True,
+            "keyed_two_map_task": "completed_and_evidenced",
             "mobile_width": 390,
             "horizontal_overflow": overflow,
             "page_errors": errors,
