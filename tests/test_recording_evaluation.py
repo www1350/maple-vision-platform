@@ -260,6 +260,7 @@ def test_measure_reviewed_strike(tmp_path):
     assert main(args) == 0
     report = json.loads(output.read_text())
     assert report["window_ms"] == 83
+    assert main(["recording", "verify-strike", str(session), str(labels), str(output)]) == 0
     geometry = report["start_geometry"]
     assert geometry["forward_center_delta_px"] == 30 and geometry["horizontal_edge_gap_px"] == 20
     assert geometry["monster_occluded"] and report["reviewed_feedback"] == "no_feedback"
@@ -311,6 +312,20 @@ def test_measure_reviewed_strike_preserves_distinct_feedback_frame_timing(tmp_pa
     ]
     assert main(args) == 0
     report = json.loads(output.read_text())
+    verify = ["recording", "verify-strike", str(session), str(labels), str(output)]
+    assert main(verify) == 0
+    for field, key, value in (
+        ("start_geometry", "horizontal_edge_gap_px", 999),
+        ("end", "rgb_sha256", "0" * 64),
+    ):
+        changed = json.loads(json.dumps(report))
+        changed[field][key] = value
+        output.write_text(json.dumps(changed))
+        assert main(verify) == 2
+    changed = json.loads(json.dumps(report))
+    changed["feedback_frames"][0]["rgb_sha256"] = "0" * 64
+    output.write_text(json.dumps(changed))
+    assert main(verify) == 2
     assert report["schema_version"] == 2
     assert [frame["offset_ms"] for frame in report["feedback_frames"]] == [0, 83]
     assert [frame["gap_ms"] for frame in report["feedback_frames"]] == [None, 83]
