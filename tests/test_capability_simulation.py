@@ -128,6 +128,26 @@ def test_one_cast_applies_bounded_multi_hits_to_each_selected_target_once():
     assert Simulator.restore(sim.save()).save() == sim.save()
 
 
+def test_maximum_packet_cast_can_be_restored_and_continued():
+    package = load_class_package(EXAMPLES / "spear_fighter.json")
+    skill = package.skills[0]
+    level = replace(skill.selected, hit_count=16, max_targets=8)
+    package = replace(package, skills=(replace(skill, levels=(level,)),))
+    state = Simulator(job=package.class_id, class_package=package).save()
+    state["maps"]["meadow"]["monsters"] = [monster(60, hp=192, key=f"m{i}") for i in range(8)]
+    sim = Simulator.restore(state)
+    result = sim.step(cast(skill.id))
+    assert result.events.count("attack_hit") == 128
+    assert result.events.count("monster_defeated") == len(result.snapshot.drops) == 8
+    saved = sim.save()
+    restored = Simulator.restore(saved)
+    assert restored.save() == saved
+    assert restored.step() == sim.step()
+    saved["events"] *= 5
+    with pytest.raises(ValueError, match="events must be a bounded list"):
+        Simulator.restore(saved)
+
+
 @pytest.mark.parametrize("hp", [1, 12])
 def test_health_cost_cannot_spend_last_hp_and_denial_is_resource_atomic(hp):
     sim = configured("blood_knight", hp=hp)
