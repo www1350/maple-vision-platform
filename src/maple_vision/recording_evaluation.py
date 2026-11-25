@@ -403,3 +403,81 @@ def audit_route(recording: Path, labels: Path, graph_path: Path, output: Path) -
     }
     _write(output, report)
     return report
+
+
+def measure_strike(
+    recording: Path,
+    labels: Path,
+    output: Path,
+    *,
+    start: int,
+    end: int,
+    player_index: int,
+    monster_index: int,
+    level: int,
+    skill_id: str,
+    weapon: str,
+    reviewer: str,
+    facing: str,
+    feedback: str,
+) -> dict[str, Any]:
+    """Measure a reviewer-selected cast window in the recording's native pixel space."""
+    if output.resolve().is_relative_to(recording.resolve()):
+        raise ValueError("write evidence outside the recording")
+    case = _case(recording, labels, MAX_FRAMES)
+    if (
+        type(start) is not int
+        or type(end) is not int
+        or not 0 <= start <= end < len(case.annotations)
+    ):
+        raise ValueError("invalid strike frame interval")
+    if type(level) is not int or level < 1 or facing not in ("left", "right"):
+        raise ValueError("invalid skill level or facing")
+    if feedback not in ("damage_visible", "miss_text_visible", "no_feedback"):
+        raise ValueError("invalid feedback category")
+    map_id, objects, occluded = case.annotations[start]
+    if any(entry[0] != map_id for entry in case.annotations[start : end + 1]):
+        raise ValueError("strike interval crosses a reviewed map change")
+    for index, category in ((player_index, "player"), (monster_index, "monster")):
+        if (
+            type(index) is not int
+            or not 0 <= index < len(objects)
+            or objects[index].class_id != category
+        ):
+            raise ValueError(f"select a reviewed {category} object in the start frame")
+    p, m = objects[player_index].bbox, objects[monster_index].bbox
+    first, last = (case.manifest["frames"][i] for i in (start, end))
+    sign = 1 if facing == "right" else -1
+    report = {
+        "schema_version": 1,
+        "kind": "reviewed_strike_window",
+        "session_id": case.manifest["session_id"],
+        "domain": case.domain,
+        "labels_sha256": case.label_sha256,
+        "label_reviewer": case.reviewer,
+        "strike_reviewer": _text(reviewer, "strike reviewer"),
+        "skill_id": _text(skill_id, "skill ID"),
+        "level": level,
+        "weapon": _text(weapon, "weapon"),
+        "facing": facing,
+        "map_id": map_id,
+        "reviewed_feedback": feedback,
+        "timebase": case.manifest["timebase"],
+        "start": {k: first[k] for k in ("sequence", "timestamp_ms", "rgb_sha256")},
+        "end": {k: last[k] for k in ("sequence", "timestamp_ms", "rgb_sha256")},
+        "window_ms": last["timestamp_ms"] - first["timestamp_ms"],
+        "source_frame_size": [case.manifest["width"], case.manifest["height"]],
+        "start_geometry": {
+            "player_index": player_index,
+            "monster_index": monster_index,
+            "player_bbox": list(p),
+            "monster_bbox": list(m),
+            "player_occluded": occluded[player_index],
+            "monster_occluded": occluded[monster_index],
+            "forward_center_delta_px": sign * (m[0] + m[2] - p[0] - p[2]) / 2,
+            "vertical_center_delta_px": (m[1] + m[3] - p[1] - p[3]) / 2,
+            "horizontal_edge_gap_px": max(0, p[0] - m[2], m[0] - p[2]),
+        },
+    }
+    _write(output, report)
+    return report
