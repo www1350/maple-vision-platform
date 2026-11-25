@@ -100,6 +100,34 @@ def test_health_cost_radial_skill_hits_both_sides_with_target_budget():
     assert result.snapshot.player.mp == 60
 
 
+def test_one_cast_applies_bounded_multi_hits_to_each_selected_target_once():
+    sim = configured(
+        "spear_fighter",
+        x=90,
+        monsters=[
+            monster(115, hp=100, key="a"),
+            monster(125, hp=20, key="b"),
+            monster(135, hp=100, key="c"),
+            monster(145, hp=100, key="d"),
+            monster(60, hp=100, key="behind"),
+        ],
+    )
+    result = sim.step(cast("triple_thrust"))
+    assert result.accepted and result.events.count("cast") == 1
+    assert result.events.count("attack") == 1
+    assert result.events.count("attack_hit") == 8
+    assert result.events.count("monster_defeated") == 1
+    assert result.snapshot.player.mp == 63
+    assert {item.id: item.hp for item in result.snapshot.monsters} == {
+        "a": 64,
+        "c": 64,
+        "d": 100,
+        "behind": 100,
+    }
+    assert len(result.snapshot.drops) == 1
+    assert Simulator.restore(sim.save()).save() == sim.save()
+
+
 @pytest.mark.parametrize("hp", [1, 12])
 def test_health_cost_cannot_spend_last_hp_and_denial_is_resource_atomic(hp):
     sim = configured("blood_knight", hp=hp)
@@ -179,7 +207,7 @@ def test_legacy_skill_entry_cannot_bypass_package_registry():
     assert Simulator().step(cast("arrow_shot")).reason == "capability_package_required"
 
 
-@pytest.mark.parametrize("name", ["archer", "bandit", "blood_knight"])
+@pytest.mark.parametrize("name", ["archer", "bandit", "blood_knight", "spear_fighter"])
 @pytest.mark.parametrize("external_maps", [False, True])
 def test_full_embedded_sources_restore_after_deletion_and_continue_identically(
     name, external_maps, tmp_path

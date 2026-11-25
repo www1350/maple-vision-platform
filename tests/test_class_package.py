@@ -26,7 +26,7 @@ def skill(value, key):
     return next(item for item in value["skills"] if item["id"] == key)
 
 
-@pytest.mark.parametrize("name", ["archer", "bandit", "blood_knight"])
+@pytest.mark.parametrize("name", ["archer", "bandit", "blood_knight", "spear_fighter"])
 def test_packages_roundtrip_full_sources_hash_and_static_compilation(name):
     package = load_class_package(EXAMPLES / f"{name}.json")
     restored = ClassPackage.from_manifest(json.loads(json.dumps(package.manifest())))
@@ -58,6 +58,21 @@ def test_selected_levels_compile_effects_and_preserve_unselected_source():
     assert lower.class_spec.attack_range == 108
     assert lower.package_sha256 != selected.package_sha256
     assert len(skill(original, "arrow_shot")["levels"]) == 2
+
+
+def test_multi_hit_schema_is_explicit_compiled_and_backward_compatible():
+    package = load_class_package(EXAMPLES / "spear_fighter.json")
+    compiled = compile_class_package(package)
+    assert package.compiler_version == 3
+    assert compiled.skills["triple_thrust"].hit_count == 3
+    assert compiled.class_spec.attack_damage == 36
+    assert ClassPackage.from_manifest(package.manifest()) == package
+    assert "hit_count" not in source()["skills"][0]["levels"][0]
+    legacy = load_class_package(EXAMPLES / "archer.json").to_dict()
+    assert legacy["schema_version"] == 1
+    assert all("hit_count" not in level for item in legacy["skills"] for level in item["levels"])
+    compiled_legacy = compile_class_package(load_class_package(EXAMPLES / "archer.json")).to_dict()
+    assert all("hit_count" not in item for item in compiled_legacy["skills"])
 
 
 def test_compound_program_resolves_distinct_skills_wait_offsets_and_cooldown_groups():
@@ -138,6 +153,18 @@ def test_invalid_or_unsafe_sources_fail_before_execution(change):
     change(value)
     with pytest.raises(ValueError):
         ClassPackage.from_dict(value)
+
+
+@pytest.mark.parametrize("hit_count", [True, 0, 17])
+def test_multi_hit_count_is_bounded_and_cannot_hide_in_legacy_schema(hit_count):
+    value = json.loads((EXAMPLES / "spear_fighter.json").read_text())
+    skill(value, "triple_thrust")["levels"][0]["hit_count"] = hit_count
+    with pytest.raises(ValueError):
+        ClassPackage.from_dict(value)
+    legacy = source()
+    skill(legacy, "arrow_shot")["levels"][0]["hit_count"] = 2
+    with pytest.raises(ValueError):
+        ClassPackage.from_dict(legacy)
 
 
 def test_dsl_rejects_implicit_cooldown_violations_and_impossible_total_resources():

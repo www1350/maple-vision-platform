@@ -19,7 +19,7 @@ from .catalog import canonical_json, strict_json, validate_provenance
 from .sim_types import SimAction
 
 MAX_CLASS_PACKAGE_BYTES = 64 * 1024
-CAPABILITY_COMPILER_VERSION = 2
+CAPABILITY_COMPILER_VERSION = 3
 _ID = re.compile(r"[a-z][a-z0-9_-]{0,39}\Z")
 _VERSION = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+\Z")
 _SHA = re.compile(r"[0-9a-f]{64}\Z")
@@ -100,6 +100,7 @@ class SkillLevel:
     ammo_cost: int
     cooldown_ms: int
     duration_ms: int
+    hit_count: int = 1
 
     def __post_init__(self) -> None:
         for field, low, high in (
@@ -113,12 +114,25 @@ class SkillLevel:
             ("ammo_cost", 0, 200),
             ("cooldown_ms", 10, 60_000),
             ("duration_ms", 0, 60_000),
+            ("hit_count", 1, 16),
         ):
             _integer(getattr(self, field), field, low, high)
 
     @classmethod
-    def from_dict(cls, value: object) -> SkillLevel:
-        return cls(**_object(value, {field.name for field in fields(cls)}, "skill level"))
+    def from_dict(cls, value: object, *, include_hit_count: bool = False) -> SkillLevel:
+        names = {field.name for field in fields(cls)}
+        if not include_hit_count:
+            names.remove("hit_count")
+        raw = dict(_object(value, names, "skill level"))
+        if not include_hit_count:
+            raw["hit_count"] = 1
+        return cls(**raw)
+
+    def to_dict(self, *, include_hit_count: bool = False) -> dict[str, int]:
+        result = asdict(self)
+        if not include_hit_count:
+            result.pop("hit_count")
+        return result
 
 
 @dataclass(frozen=True)
@@ -160,7 +174,7 @@ class SkillDefinition:
     def selected(self) -> SkillLevel:
         return next(level for level in self.levels if level.level == self.selected_level)
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self, *, include_hit_count: bool = False) -> dict[str, object]:
         return {
             "id": self.id,
             "kind": self.kind,
@@ -168,14 +182,15 @@ class SkillDefinition:
             "posture": self.posture,
             "cooldown_group": self.cooldown_group,
             "selected_level": self.selected_level,
-            "levels": [asdict(level) for level in self.levels],
+            "levels": [level.to_dict(include_hit_count=include_hit_count) for level in self.levels],
         }
 
     @classmethod
-    def from_dict(cls, value: object) -> SkillDefinition:
+    def from_dict(cls, value: object, *, include_hit_count: bool = False) -> SkillDefinition:
         raw = dict(_object(value, {field.name for field in fields(cls)}, "skill definition"))
         raw["levels"] = tuple(
-            SkillLevel.from_dict(level) for level in _array(raw["levels"], "levels", 1, 16)
+            SkillLevel.from_dict(level, include_hit_count=include_hit_count)
+            for level in _array(raw["levels"], "levels", 1, 16)
         )
         return cls(**raw)
 
@@ -362,11 +377,12 @@ class ClassPackage:
         compile_class_package(self)
 
     def to_dict(self) -> dict[str, object]:
+        version = self.compiler_version
         return {
-            "schema_version": self.compiler_version,
+            "schema_version": version,
             **(
                 {"timed_effects": [asdict(effect) for effect in self.timed_effects]}
-                if self.timed_effects
+                if version >= 2
                 else {}
             ),
             "id": self.id,
@@ -377,7 +393,7 @@ class ClassPackage:
             "permission": self.permission,
             "license": self.license,
             "resources": asdict(self.resources),
-            "skills": [skill.to_dict() for skill in self.skills],
+            "skills": [skill.to_dict(include_hit_count=version >= 3) for skill in self.skills],
             "programs": [program.to_dict() for program in self.programs],
             "bindings": asdict(self.bindings),
         }
@@ -388,7 +404,9 @@ class ClassPackage:
 
     @property
     def compiler_version(self) -> int:
-        return CAPABILITY_COMPILER_VERSION if self.timed_effects else 1
+        if any(level.hit_count != 1 for skill in self.skills for level in skill.levels):
+            return 3
+        return 2 if self.timed_effects else 1
 
     def manifest(self) -> dict[str, object]:
         return {
@@ -403,27 +421,35 @@ class ClassPackage:
         names = {field.name for field in fields(cls)} | {"schema_version", "scope"}
         if not isinstance(value, dict):
             raise ValueError("invalid class package")
-        version = _integer(value.get("schema_version"), "class package schema", 1, 2)
+        version = _integer(
+            value.get("schema_version"), "class package schema", 1, CAPABILITY_COMPILER_VERSION
+        )
         if version == 1:
             names.remove("timed_effects")
         raw = dict(_object(value, names, "class package"))
         raw.pop("schema_version")
-        if version == 2:
+        if version >= 2:
             raw["timed_effects"] = tuple(
                 TimedEffect.from_dict(row)
-                for row in _array(raw["timed_effects"], "timed effects", 1, 16)
+                for row in _array(
+                    raw["timed_effects"], "timed effects", 0 if version >= 3 else 1, 16
+                )
             )
         if raw.pop("scope") != "synthetic_fixture":
             raise ValueError("class package scope must be synthetic_fixture")
         raw["resources"] = ClassResources.from_dict(raw["resources"])
         raw["bindings"] = ProgramBindings.from_dict(raw["bindings"])
         raw["skills"] = tuple(
-            SkillDefinition.from_dict(item) for item in _array(raw["skills"], "skills", 1, 16)
+            SkillDefinition.from_dict(item, include_hit_count=version >= 3)
+            for item in _array(raw["skills"], "skills", 1, 16)
         )
         raw["programs"] = tuple(
             ActionProgram.from_dict(item) for item in _array(raw["programs"], "programs", 1, 16)
         )
-        return cls(**raw)
+        package = cls(**raw)
+        if package.compiler_version != version:
+            raise ValueError("class package schema disagrees with declared capabilities")
+        return package
 
     @classmethod
     def from_manifest(cls, value: object) -> ClassPackage:
@@ -464,6 +490,7 @@ class CompiledSkill:
     ammo_cost: int
     cooldown_ms: int
     duration_ms: int
+    hit_count: int
 
 
 @dataclass(frozen=True)
@@ -568,13 +595,17 @@ class CompiledCapabilities:
         return None if key is None else self.programs[key]
 
     def to_dict(self) -> dict[str, object]:
+        skills = [asdict(skill) for skill in self.skill_entries]
+        if self.package.compiler_version < 3:
+            for skill in skills:
+                skill.pop("hit_count")
         return {
             "schema_version": 1,
             "compiler_version": self.package.compiler_version,
             "class_id": self.class_id,
             "package_sha256": self.package_sha256,
             "class_spec": asdict(self.class_spec),
-            "skills": [asdict(skill) for skill in self.skill_entries],
+            "skills": skills,
             "programs": [program.to_dict() for program in self.program_entries],
             "bindings": asdict(self.package.bindings),
         }
@@ -673,7 +704,7 @@ def compile_class_package(package: ClassPackage) -> CompiledCapabilities:
         package.class_id,
         resources.max_hp,
         resources.max_mp,
-        sum(skills[key].power for key in combat.skill_ids),
+        sum(skills[key].power * skills[key].hit_count for key in combat.skill_ids),
         combat.range_px,
         combat.mp_cost,
         combat.reuse_after_ms,
