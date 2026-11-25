@@ -64,6 +64,7 @@ class ActionInput(StrictModel):
 
 
 class KeyStepInput(StrictModel):
+    profile_id: Annotated[str, Field(min_length=1, max_length=100)] | None = None
     revision: Annotated[int, Field(ge=0)]
     key: Name
     bindings: Annotated[dict[Name, Name], Field(max_length=128)]
@@ -226,7 +227,12 @@ def create_app(root: Path, examples: Path | None = None) -> FastAPI:
     @api.post("/api/sessions/{identity}/key-step")
     def key_step(identity: Identifier, config: KeyStepInput) -> dict[str, Any]:
         return manager().session(
-            identity, "key-step", config.revision, key=config.key, bindings=config.bindings
+            identity,
+            "key-step",
+            config.revision,
+            key=config.key,
+            bindings=config.bindings,
+            profile_id=config.profile_id,
         )
 
     @api.get("/api/sessions/{identity}/key-log")
@@ -241,8 +247,8 @@ def create_app(root: Path, examples: Path | None = None) -> FastAPI:
                     "events": json.loads(row["events"]),
                 }
                 for row in db.execute(
-                    "SELECT revision, sequence, key_name, skill, accepted, reason, events "
-                    "FROM key_steps WHERE sim_id=? ORDER BY revision DESC LIMIT 50",
+                    "SELECT revision, sequence, key_name, skill, accepted, reason, events, "
+                    "profile_id FROM key_steps WHERE sim_id=? ORDER BY revision DESC LIMIT 50",
                     (identity,),
                 )
             ]

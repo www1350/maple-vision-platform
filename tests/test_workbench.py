@@ -236,12 +236,13 @@ def test_key_steps_rebind_unbind_rejection_and_audit(tmp_path):
         session = http.post("/api/sessions", json={"job": "dragon_knight"}).json()
         base = "/api/sessions/" + session["id"]
 
-        def press(version, key, bindings):
+        def press(version, key, bindings, **extra):
             return http.post(
-                base + "/key-step", json={"revision": version, "key": key, "bindings": bindings}
+                base + "/key-step",
+                json={"revision": version, "key": key, "bindings": bindings, **extra},
             )
 
-        used = press(0, "a", {"A": "模拟范围攻击"}).json()
+        used = press(0, "a", {"A": "模拟范围攻击"}, profile_id="测试区 / 一号").json()
         assert used["receipt"]["accepted"] and "attack" in used["receipt"]["events"]
         old = press(1, "a", {"S": "模拟范围攻击"}).json()
         assert old["receipt"]["reason"] == "unbound_key" and old["sequence"] == 1
@@ -252,7 +253,27 @@ def test_key_steps_rebind_unbind_rejection_and_audit(tmp_path):
         assert press(5, "s", {}).status_code == 409
     with client(tmp_path) as http:
         logs = http.get(base + "/key-log").json()
+        assert [r["profile_id"] for r in logs] == [None, None, None, None, "测试区 / 一号"]
         assert [r["revision"] for r in logs] == [6, 5, 4, 2, 1]
+
+
+def test_key_log_upgrades_existing_workspace_without_attributing_old_steps(tmp_path):
+    with client(tmp_path) as http:
+        identity = http.post("/api/sessions", json={"job": "dragon_knight"}).json()["id"]
+        base = "/api/sessions/" + identity
+        press = {"revision": 0, "key": "A", "bindings": {"A": "模拟范围攻击"}}
+        assert http.post(base + "/key-step", json=press).status_code == 200
+    with sqlite3.connect(tmp_path / "sessions.sqlite") as db:
+        db.execute("ALTER TABLE key_steps DROP COLUMN profile_id")
+    db.close()
+    with client(tmp_path) as http:
+        assert http.get(base + "/key-log").json()[0]["profile_id"] is None
+        press.update(revision=1, profile_id="fixture")
+        assert http.post(base + "/key-step", json=press).status_code == 200
+        assert [row["profile_id"] for row in http.get(base + "/key-log").json()] == [
+            "fixture",
+            None,
+        ]
 
 
 def test_task_run_binds_confirmed_profile_and_exposes_dispatch_evidence(tmp_path):
