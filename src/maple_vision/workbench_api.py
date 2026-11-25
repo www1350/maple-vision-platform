@@ -144,9 +144,7 @@ def create_app(root: Path, examples: Path | None = None) -> FastAPI:
                 name: ["meadow", "cavern"] if pack is None else list(pack.map_ids)
                 for name, pack in m.maps.items()
             },
-            "mission_options": {
-                name: m.compatible_missions(pack) for name, pack in m.maps.items()
-            },
+            "mission_options": {name: m.compatible_missions(pack) for name, pack in m.maps.items()},
             "models": list(m.models),
             "missions": {k: None if v is None else v.to_dict() for k, v in m.missions.items()},
             "faults": list(FAULTS),
