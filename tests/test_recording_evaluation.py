@@ -458,6 +458,37 @@ def test_summarize_reviewed_strikes_without_inventing_range(tmp_path):
     )
     assert not output.exists()
 
+    repeat = json.loads(reports[0].read_bytes())
+    repeat["end"].update(sequence=3, timestamp_ms=180, rgb_sha256="e" * 64)
+    repeat["window_ms"] = 180
+    duplicate.write_text(json.dumps(repeat))
+    pair = [
+        "recording",
+        "summarize-strikes",
+        "--report",
+        str(reports[0]),
+        "--report",
+        str(duplicate),
+        "--output",
+        str(output),
+    ]
+    assert main(pair) == 2 and not output.exists()
+
+    # A later cast can have exactly the same start and end pixels.
+    later = json.loads(reports[0].read_bytes())
+    for frame in ("start", "end"):
+        later[frame]["sequence"] += 10
+        later[frame]["timestamp_ms"] += 1000
+    duplicate.write_text(json.dumps(later))
+    assert main(pair) == 0
+    combined = json.loads(output.read_bytes())
+    assert combined["sessions"] == 1 and combined["observations"] == 2
+    assert combined["timebase"] == later["timebase"]
+    output.unlink()
+    later["timebase"] = "nominal_fps_user"
+    duplicate.write_text(json.dumps(later))
+    assert main(pair) == 2 and not output.exists()
+
 
 def test_summarize_feedback_sequences_without_claiming_hit_timing_calibration(tmp_path):
     reports = []
