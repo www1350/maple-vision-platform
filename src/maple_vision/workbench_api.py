@@ -30,12 +30,24 @@ class SceneInput(StrictModel):
     seed: Seed = 0
 
 
+class KeyBindingEntryInput(StrictModel):
+    key: Name
+    skill: Name
+
+
+class InputProfileInput(StrictModel):
+    schema_version: Literal[1]
+    profile_id: Annotated[str, Field(min_length=1, max_length=100)]
+    bindings: Annotated[list[KeyBindingEntryInput], Field(min_length=1, max_length=128)]
+
+
 class RunInput(SceneInput):
     kind: Literal["run"]
     max_steps: Annotated[int, Field(ge=1, le=2500)] = 1500
     model: Name = "pixel"
     fault: Name = "none"
     mission: Name = "standard"
+    input_profile: InputProfileInput | None = None
 
 
 class VerifyInput(StrictModel):

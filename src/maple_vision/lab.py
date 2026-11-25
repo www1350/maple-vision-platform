@@ -20,6 +20,7 @@ from .agent import AgentDecision, HybridPerception, Supervisor, VisualAgent, ver
 from .animation_pack import MAX_SOURCE_BYTES
 from .catalog import strict_json
 from .class_package import MAX_CLASS_PACKAGE_BYTES, ClassPackage
+from .input_bindings import MAX_INPUT_BINDINGS_BYTES, InputBindingProfile
 from .map_pack import MapPack
 from .mission_verification import MissionOracle
 from .onnx_detector import OnnxDetector
@@ -182,6 +183,7 @@ def run_episode(
     runtime: RuntimeConfig | None = None,
     animation: SceneAnimation | None = None,
     class_package: ClassPackage | None = None,
+    input_profile: InputBindingProfile | None = None,
 ) -> dict[str, Any]:
     return _execute_episode(
         output,
@@ -194,6 +196,7 @@ def run_episode(
         runtime=runtime,
         animation=animation,
         class_package=class_package,
+        input_profile=input_profile,
     )
 
 
@@ -270,6 +273,7 @@ def _execute_episode(
     runtime: RuntimeConfig | None = None,
     animation: SceneAnimation | None = None,
     class_package: ClassPackage | None = None,
+    input_profile: InputBindingProfile | None = None,
 ) -> dict[str, Any]:
     if runtime is not None and type(runtime) is not RuntimeConfig:
         raise ValueError("runtime must be a structured RuntimeConfig or None")
@@ -277,6 +281,8 @@ def _execute_episode(
         type(class_package) is not ClassPackage or class_profile is not None or runtime is None
     ):
         raise ValueError("external class packages require structured runtime and no legacy profile")
+    if input_profile is not None and type(input_profile) is not InputBindingProfile:
+        raise ValueError("input profile must be a verified InputBindingProfile or None")
     config = config or (
         RunConfig() if class_package is None else CapabilityRunConfig(job=class_package.class_id)
     )
@@ -357,11 +363,15 @@ def _execute_episode(
             animation.write_sources(output)
         if class_package is not None:
             _write_json(output / "class-package.json", class_package.manifest())
+        if input_profile is not None:
+            _write_json(output / "input-bindings.json", input_profile.manifest())
     trace: list[dict[str, Any]] = []
     previews: list[Image.Image] = []
     actions: Counter[str] = Counter()
     events: Counter[str] = Counter()
     effects: Counter[str] = Counter()
+    input_dispatch_reasons: Counter[str] = Counter()
+    input_dispatch_accepted = 0
     paused_steps = 0
     visited: set[str] = set()
     dialogue_maps: set[str] = set()
@@ -443,10 +453,19 @@ def _execute_episode(
                     authorized_action = dispatch.action
                 else:
                     policy.interrupt(f"dispatch_denied:{dispatch.reason}", before.timestamp_ms)
+        input_action = authorized_action
+        input_dispatch = None
+        if input_profile is not None:
+            input_action, input_dispatch = input_profile.dispatch(
+                authorized_action, config.job, class_package
+            )
+            if input_dispatch is not None:
+                input_dispatch_reasons[input_dispatch["reason"]] += 1
+                input_dispatch_accepted += int(input_dispatch["accepted"])
         applied = (
             SimAction()
             if config.fault == "freeze_input" and before.sequence >= 20
-            else authorized_action
+            else input_action
         )
         actions[action.kind] += 1
         if output and before.sequence % config.record_stride == 0:
@@ -480,6 +499,14 @@ def _execute_episode(
         following = perception.observe(following_frame)
         effect = verify_visual_effect(observation, following, action)
         effects[effect] += 1
+        execution_evidence = {
+            "applied_action": asdict(applied),
+            "accepted": outcome.accepted,
+            "reason": outcome.reason,
+            "events": list(outcome.events),
+        }
+        if input_profile is not None:
+            execution_evidence["input_dispatch"] = input_dispatch
         row = {
             "schema_version": bundle_schema,
             "sequence": before.sequence,
@@ -487,12 +514,7 @@ def _execute_episode(
             "observation": asdict(observation),
             "guard": asdict(guard),
             "decision": asdict(decision),
-            "execution": {
-                "applied_action": asdict(applied),
-                "accepted": outcome.accepted,
-                "reason": outcome.reason,
-                "events": list(outcome.events),
-            },
+            "execution": execution_evidence,
             "visual_effect": effect,
             "after_state_sha256": digest(simulator.save()),
         }
@@ -597,6 +619,16 @@ def _execute_episode(
         summary["animation"] = animation.manifest()
     if class_package is not None:
         summary["class_package"] = class_package.manifest()
+    if input_profile is not None:
+        summary["input_profile"] = input_profile.manifest()
+        attempts = sum(input_dispatch_reasons.values())
+        summary["input_dispatch_summary"] = {
+            "scope": "offline_simulated_skill_dispatch",
+            "attempts": attempts,
+            "accepted": input_dispatch_accepted,
+            "denied": attempts - input_dispatch_accepted,
+            "reasons": dict(sorted(input_dispatch_reasons.items())),
+        }
     if map_pack is not None:
         summary["map_pack"] = map_pack.manifest()
     if output:
@@ -657,6 +689,7 @@ def _read_run_evidence(output: Path, relative: str) -> bytes:
         "runtime-config.json": MAX_RUNTIME_CONFIG_BYTES,
         "scene-animation.json": MAX_SCENE_ANIMATION_BYTES,
         "class-package.json": MAX_CLASS_PACKAGE_BYTES * 2,
+        "input-bindings.json": MAX_INPUT_BINDINGS_BYTES,
     }
     budget = budgets.get(relative)
     if relative.startswith("animation_objects/"):
@@ -668,6 +701,7 @@ def _read_run_evidence(output: Path, relative: str) -> bytes:
         "runtime-config.json": "runtime config",
         "scene-animation.json": "scene animation",
         "class-package.json": "class package",
+        "input-bindings.json": "input bindings",
     }.get(relative, "animation source")
     if (output / relative).is_symlink():
         raise ValueError(f"invalid run {label} evidence")
@@ -730,6 +764,26 @@ def _load_run_class_package(
     return package
 
 
+def _load_run_input_profile(
+    output: Path, summary: dict[str, Any], files: dict[str, Any]
+) -> InputBindingProfile | None:
+    path = output / "input-bindings.json"
+    declared = summary.get("input_profile")
+    if declared is None:
+        if "input-bindings.json" in files or path.exists() or path.is_symlink():
+            raise ValueError("run contains unmanifested input binding evidence")
+        return None
+    if "input-bindings.json" not in files:
+        raise ValueError("run omits input binding evidence")
+    sidecar = InputBindingProfile.from_manifest(
+        strict_json(_read_run_evidence(output, "input-bindings.json").decode("utf-8"))
+    )
+    summary_profile = InputBindingProfile.from_manifest(declared)
+    if sidecar != summary_profile:
+        raise ValueError("run input binding sidecar disagrees with summary")
+    return sidecar
+
+
 def verify_run(output: Path) -> dict[str, Any]:
     """Check evidence integrity then replay every applied action and resulting state."""
     manifest = strict_json((output / "manifest.json").read_text(encoding="utf-8"))
@@ -762,6 +816,7 @@ def verify_run(output: Path) -> dict[str, Any]:
     config = _recorded_config(summary)
     simulator = Simulator.restore(initial)
     class_package = _load_run_class_package(output, summary, files, simulator)
+    input_profile = _load_run_input_profile(output, summary, files)
     if class_package is not None and runtime is None:
         raise ValueError("external class evidence requires structured runtime")
     if runtime is not None:
@@ -848,6 +903,8 @@ def verify_run(output: Path) -> dict[str, Any]:
     collected_drops: set[tuple[str, str]] = set()
     cleared: dict[str, bool] = {}
     seen_intents: set[str] = set()
+    input_dispatch_reasons: Counter[str] = Counter()
+    input_dispatch_accepted = 0
 
     def check_image(path: Path, expected: ImageFrame) -> None:
         actual = ImageFrame.from_file(path)
@@ -890,10 +947,25 @@ def verify_run(output: Path) -> dict[str, Any]:
             if runtime is not None:
                 validate_runtime_capabilities(row["runtime"], class_package)
             applied = SimAction(**execution["applied_action"])
+            input_action = authorized
+            expected_input_dispatch = None
+            if input_profile is not None:
+                input_action, expected_input_dispatch = input_profile.dispatch(
+                    authorized, config.job, class_package
+                )
+                if canonical(execution.get("input_dispatch")) != canonical(
+                    expected_input_dispatch
+                ):
+                    raise ValueError("recorded input dispatch disagrees with bound profile")
+                if expected_input_dispatch is not None:
+                    input_dispatch_reasons[expected_input_dispatch["reason"]] += 1
+                    input_dispatch_accepted += int(expected_input_dispatch["accepted"])
+            elif "input_dispatch" in execution:
+                raise ValueError("trace has input dispatch without a bound profile")
             expected_action = (
                 SimAction()
                 if config.fault == "freeze_input" and snapshot.sequence >= 20
-                else authorized
+                else input_action
             )
             if applied != expected_action:
                 raise ValueError("applied action disagrees with recorded fault configuration")
@@ -962,6 +1034,15 @@ def verify_run(output: Path) -> dict[str, Any]:
         "alive": snapshot.player.alive,
         "simulated_seconds": snapshot.timestamp_ms / 1000,
     }
+    if input_profile is not None:
+        attempts = sum(input_dispatch_reasons.values())
+        derived["input_dispatch_summary"] = {
+            "scope": "offline_simulated_skill_dispatch",
+            "attempts": attempts,
+            "accepted": input_dispatch_accepted,
+            "denied": attempts - input_dispatch_accepted,
+            "reasons": dict(sorted(input_dispatch_reasons.items())),
+        }
     if count > config.max_steps or any(summary.get(key) != value for key, value in derived.items()):
         raise ValueError("run summary disagrees with replay evidence")
     return {
@@ -1074,6 +1155,7 @@ def verify_perception(
     class_package = _load_run_class_package(
         output, summary, manifest["files"], Simulator.restore(initial)
     )
+    input_profile = _load_run_input_profile(output, summary, manifest["files"])
     count = 0
     with _run_evidence_path(output, "trace.jsonl").open(encoding="utf-8") as stream:
 
@@ -1106,6 +1188,7 @@ def verify_perception(
             runtime=runtime,
             animation=animation,
             class_package=class_package,
+            input_profile=input_profile,
         )
         if stream.readline():
             raise ValueError("perception replay terminated before all recorded steps")
@@ -1146,6 +1229,8 @@ def verify_perception(
         "runtime_evidence",
         "animation",
         "class_package",
+        "input_profile",
+        "input_dispatch_summary",
         "mission_evidence",
     ):
         if canonical(reproduced.get(key)) != canonical(summary.get(key)):

@@ -5,7 +5,6 @@ import json
 import re
 import sqlite3
 import threading
-import unicodedata
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing, contextmanager
@@ -19,6 +18,7 @@ from uuid import uuid4
 
 from .class_package import ClassPackage, load_class_package
 from .failure_bundle import export_failure_bundle, verify_failure_bundle
+from .input_bindings import InputBindingProfile, normalize_key
 from .lab import CapabilityRunConfig, RunConfig, run_episode, verify_perception, verify_run
 from .map_pack import MapPack, load_map_pack
 from .mission_program import MissionProgram, load_mission_program
@@ -142,6 +142,8 @@ class Workbench:
         config = dict(config)
         if kind == "run":
             self.check_selection(config["job"], config["map_id"], config["model"])
+            if config.get("input_profile") is not None:
+                InputBindingProfile.from_manifest(config["input_profile"])
             mission_id = config.get("mission", "standard")
             if mission_id not in self.missions:
                 raise ValueError("unknown mission selection")
@@ -222,6 +224,9 @@ class Workbench:
                         if config.get("mission_program") is not None
                         else None
                     ),
+                    input_profile=InputBindingProfile.from_manifest(config["input_profile"])
+                    if config.get("input_profile") is not None
+                    else None,
                 )
             else:
                 source = self.job(config["source"])
@@ -342,32 +347,15 @@ class Workbench:
             sim = Simulator.restore(json.loads(current))
             receipt: dict[str, Any] | None = None
             if mode == "key-step":
-
-                def canonical(value: str) -> str:
-                    name = "".join(unicodedata.normalize("NFKC", value).casefold().split())
-                    return {"control": "ctrl", "esc": "escape"}.get(name, name)
-
-                mapping = {canonical(k): v.strip() for k, v in (bindings or {}).items()}
-                if (
-                    not key
-                    or not canonical(key)
-                    or "" in mapping
-                    or len(mapping) != len(bindings or {})
-                ):
+                if not key:
                     raise ValueError("invalid or duplicate key")
-                skill = mapping.get(canonical(key))
-                skills = sim.class_package
-                action = None
-                if skills is not None and skill in {item.id for item in skills.skills}:
-                    action = SimAction("cast", skill=str(skill))
-                elif skills is None and skill in {"basic", "普通攻击"}:
-                    action = SimAction("attack")
-                elif (
-                    skills is None
-                    and sim.job == "dragon_knight"
-                    and skill in {"area", "模拟范围攻击"}
-                ):
-                    action = SimAction("attack", skill="area")
+                if not normalize_key(key):
+                    raise ValueError("invalid or duplicate key")
+                if bindings:
+                    profile = InputBindingProfile.from_key_map("interactive", bindings)
+                    skill, action = profile.action_for_key(key, sim.job, sim.class_package)
+                else:
+                    skill, action = None, None
                 if action is None:
                     receipt = {
                         "accepted": False,

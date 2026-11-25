@@ -259,8 +259,12 @@ document.querySelectorAll("[data-sim-evidence]").forEach(b=>b.onclick=()=>{
 bind("refresh","click",refresh); bind("run-kind","change",setupForm);
 bind("run-form","submit",async()=>{
   const kind=el("run-kind").value, body={kind};
-  if(kind==="run") Object.assign(body,{job:el("class-select").value,map_id:el("map-select").value,
-    model:el("model-select").value,mission:el("mission-select").value,seed:+el("seed").value,max_steps:+el("max-steps").value,fault:el("fault-select").value});
+  if(kind==="run") {
+    Object.assign(body,{job:el("class-select").value,map_id:el("map-select").value,
+      model:el("model-select").value,mission:el("mission-select").value,seed:+el("seed").value,max_steps:+el("max-steps").value,fault:el("fault-select").value});
+    const profile = el("run-profile").value.trim();
+    if (profile) body.input_profile = storedKeyProfile(profile);
+  }
   else body.source=el("source-select").value;
   el("submit-run").disabled=true;
   try { const created=await api("jobs",body); await chooseJob(created.id); await refresh(); }
@@ -285,6 +289,18 @@ setInterval(()=>{ if (activeView==="runs" && !document.hidden) refresh().catch(f
 
 function keyProfileId() {
   return "maple.keybindings.v1." + el("keys-character").value.trim();
+}
+function storedKeyProfile(profile) {
+  const saved = localStorage.getItem("maple.keybindings.v1." + profile);
+  if (saved === null) throw new Error("请先在角色键位页确认该角色。");
+  const bindings = [];
+  for (const line of saved.split("\n").filter(Boolean)) {
+    const split = line.indexOf("=");
+    if (split < 1) throw new Error("保存的角色键位格式无效，请重新确认。");
+    bindings.push({skill:line.slice(0,split).trim(),key:line.slice(split+1).trim()});
+  }
+  if (!bindings.length) throw new Error("该角色没有已确认的键位。");
+  return {schema_version:1,profile_id:profile,bindings};
 }
 function clearKeyImage() {
   const image = el("keys-image");
@@ -315,7 +331,7 @@ bind("keys-form", "submit", () => {
   if (!el("keys-character").value.trim()) {
     text("keys-status", "请填写区服和角色。"); return;
   }
-  const keys = new Set();
+  const keys = new Set(), skills = new Set();
   const result = [];
   for (const line of lines) {
     const split = line.indexOf("=");
@@ -324,8 +340,11 @@ bind("keys-form", "submit", () => {
       text("keys-status", "请按「技能名 = 键位」逐行填写。"); return;
     }
     const normalized = key.normalize("NFKC").toLowerCase().replace(/\s+/g, "");
+    const normalizedSkill = skill.normalize("NFKC").toLowerCase().trim();
     if (keys.has(normalized)) { text("keys-status", "同一个键位出现了两次，请核对。"); return; }
+    if (skills.has(normalizedSkill)) { text("keys-status", "同一个技能出现了两次，请核对。"); return; }
     keys.add(normalized);
+    skills.add(normalizedSkill);
     result.push(skill + " = " + key);
   }
   localStorage.setItem(keyProfileId(), result.join("\n"));

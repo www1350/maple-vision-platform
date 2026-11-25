@@ -253,3 +253,47 @@ def test_key_steps_rebind_unbind_rejection_and_audit(tmp_path):
     with client(tmp_path) as http:
         logs = http.get(base + "/key-log").json()
         assert [r["revision"] for r in logs] == [6, 5, 4, 2, 1]
+
+
+def test_task_run_binds_confirmed_profile_and_exposes_dispatch_evidence(tmp_path):
+    input_profile = {
+        "schema_version": 1,
+        "profile_id": "小白兔 / 大美人乖乖",
+        "bindings": [{"key": "A", "skill": "模拟范围攻击"}],
+    }
+    with client(tmp_path) as http:
+        duplicate = {
+            **input_profile,
+            "bindings": [
+                {"key": "Control", "skill": "普通攻击"},
+                {"key": "ctrl", "skill": "模拟范围攻击"},
+            ],
+        }
+        rejected = http.post(
+            "/api/jobs",
+            json={
+                "kind": "run",
+                "job": "dragon_knight",
+                "map_id": "dead-forest-drill",
+                "mission": "dead-forest-hunt",
+                "input_profile": duplicate,
+            },
+        )
+        assert rejected.status_code == 422 and "duplicate normalized keys" in rejected.text
+        identity = submit(
+            http,
+            {
+                "kind": "run",
+                "job": "dragon_knight",
+                "map_id": "dead-forest-drill",
+                "mission": "dead-forest-hunt",
+                "input_profile": input_profile,
+            },
+        )
+        run = wait(http, identity)
+        assert run["outcome"] == "completed"
+        assert run["config"]["input_profile"] == input_profile
+        rows = http.get(f"/api/jobs/{identity}/trace").json()
+        assert all("input_dispatch" in row["execution"] for row in rows)
+        reinfer = wait(http, submit(http, {"kind": "reinfer", "source": identity}))
+        assert reinfer["outcome"] == "verified"

@@ -208,6 +208,8 @@ fault 仅支持 none/brief_dropout/persistent_dropout/duplicate_frames/freeze_in
 运行任务状态为 completed/failed/stopped；completed 还必须满足独立 oracle，策略自称完成但真值不符会降为 failed。
 `output=None` 只返回摘要；指定输出则保存采样图片、完整动作轨迹、状态、摘要和文件 manifest；提供 sprite_pack 时同时保存其原始图片和元数据，回放时独立验证并恢复相同渲染。
 `verify_run()` 做动作/状态/像素回放，返回 `perception_reproduced=False`；不重新执行学习模型。
+
+`run_episode(..., input_profile=InputBindingProfile(...))` 可选地把用户确认的键位表绑定到任务。当前约束内置普通攻击、龙骑士模拟范围攻击和外部职业 `cast`；未绑定的受约束技能转换为 idle 并保留拒绝证据。其他动作不经过此表。配置、sidecar、逐步 dispatch、动作 replay 和完整 reinfer 必须一致。该参数只路由独立模拟器动作，不提供官方客户端控制后端。
 v0.1 的 suite 与 soak 固定使用像素基线；当前版本可通过前述增量接口显式传入 detector 和 terrain_source。没有 detector 时仍使用像素基线。
 
 soak 的 seconds 是墙上时间预算，范围 1–604800；会完成当前 episode 后退出，可能多运行一个 episode 的时长。模拟时长单列，不能替代 24 小时真实进程运行。

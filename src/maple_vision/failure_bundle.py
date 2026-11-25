@@ -581,8 +581,11 @@ def _project(source: _Source, output: Path) -> list[dict[str, Any]]:
             if terminal:
                 continue
             assert row is not None
+            execution_fields = {"applied_action", "accepted", "reason", "events"}
+            if source.summary.get("input_profile") is not None:
+                execution_fields.add("input_dispatch")
             execution = _object(
-                row["execution"], {"applied_action", "accepted", "reason", "events"}, "execution"
+                row["execution"], execution_fields, "execution"
             )
             if type(execution["accepted"]) is not bool:
                 raise ValueError("execution accepted must be a boolean")
@@ -594,8 +597,12 @@ def _project(source: _Source, output: Path) -> list[dict[str, Any]]:
                 "reason": outcome.reason,
                 "events": list(outcome.events),
             }
-            if canonical(actual) != canonical(execution):
+            recorded_actual = {key: execution[key] for key in actual}
+            if canonical(actual) != canonical(recorded_actual):
                 raise ValueError("actual action replay disagrees with recorded execution")
+            projected_execution = dict(actual)
+            if "input_dispatch" in execution:
+                projected_execution["input_dispatch"] = execution["input_dispatch"]
             if digest(simulator.save()) != row["after_state_sha256"]:
                 raise ValueError("actual action replay disagrees with recorded state")
             writer.line(
@@ -603,7 +610,7 @@ def _project(source: _Source, output: Path) -> list[dict[str, Any]]:
                 {
                     **common,
                     "requested_action": row["decision"]["action"],
-                    "execution": actual,
+                    "execution": projected_execution,
                     "dispatch": None if runtime is None else runtime["dispatch"],
                     "receipt": None if runtime is None else runtime["receipt"],
                     "after_state_sha256": row["after_state_sha256"],
@@ -614,7 +621,7 @@ def _project(source: _Source, output: Path) -> list[dict[str, Any]]:
                 {
                     **common,
                     "action_replay_verified": True,
-                    "actual_execution": actual,
+                    "actual_execution": projected_execution,
                     "resulting_state_sha256": digest(simulator.save()),
                     "recorded_visual_effect": row["visual_effect"],
                     "perception_reproduced": False,
