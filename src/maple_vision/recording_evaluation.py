@@ -409,7 +409,7 @@ def audit_route(recording: Path, labels: Path, graph_path: Path, output: Path) -
 def measure_strike(
     recording: Path,
     labels: Path,
-    output: Path,
+    output: Path | None,
     *,
     start: int,
     end: int,
@@ -424,7 +424,7 @@ def measure_strike(
     feedback_frames: Sequence[int] = (),
 ) -> dict[str, Any]:
     """Measure a reviewer-selected cast window in the recording's native pixel space."""
-    if output.resolve().is_relative_to(recording.resolve()):
+    if output is not None and output.resolve().is_relative_to(recording.resolve()):
         raise ValueError("write evidence outside the recording")
     case = _case(recording, labels, MAX_FRAMES)
     if (
@@ -503,8 +503,39 @@ def measure_strike(
                 }
             )
             previous_ms = timestamp_ms
-    _write(output, report)
+    if output is not None:
+        _write(output, report)
     return report
+
+
+def verify_strike(recording: Path, labels: Path, report_path: Path) -> dict[str, Any]:
+    """Recompute source-derived fields while retaining the reviewer's selections."""
+    raw = _strike_report(report_path)
+    geometry = raw["start_geometry"]
+    measured = measure_strike(
+        recording,
+        labels,
+        None,
+        start=raw["start"]["sequence"],
+        end=raw["end"]["sequence"],
+        player_index=geometry["player_index"],
+        monster_index=geometry["monster_index"],
+        level=raw["level"],
+        skill_id=raw["skill_id"],
+        weapon=raw["weapon"],
+        reviewer=raw["strike_reviewer"],
+        facing=raw["facing"],
+        feedback=raw["reviewed_feedback"],
+        feedback_frames=[frame["sequence"] for frame in raw.get("feedback_frames", [])],
+    )
+    if canonical_json(raw) != canonical_json(measured):
+        raise ValueError("strike report differs from recording or reviewed labels")
+    return {
+        "source_fields_verified": True,
+        "session_id": measured["session_id"],
+        "domain": measured["domain"],
+        "labels_sha256": measured["labels_sha256"],
+    }
 
 
 def _strike_report(path: Path) -> dict[str, Any]:
