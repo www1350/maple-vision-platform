@@ -894,9 +894,31 @@ def summarize_strikes(
     if len(set(sample_ids)) != len(sample_ids):
         raise ValueError("duplicate strike observation")
 
+    def forward_edge_gap(item: dict[str, Any]) -> float:
+        geometry = item["start_geometry"]
+        player = geometry["player_bbox"]
+        monster = geometry["monster_bbox"]
+        return (
+            float(monster[0] - player[2])
+            if item["facing"] == "right"
+            else float(player[0] - monster[2])
+        )
+
     def metrics(items: list[dict[str, Any]]) -> dict[str, Any]:
         forward = [float(item["start_geometry"]["forward_center_delta_px"]) for item in items]
         vertical = [float(item["start_geometry"]["vertical_center_delta_px"]) for item in items]
+        forward_edges = []
+        vertical_edges = []
+        vertical_overlaps = []
+        for item in items:
+            geometry = item["start_geometry"]
+            player = geometry["player_bbox"]
+            monster = geometry["monster_bbox"]
+            forward_edges.append(forward_edge_gap(item))
+            vertical_edges.append(float(max(0, player[1] - monster[3], monster[1] - player[3])))
+            vertical_overlaps.append(
+                float(max(0, min(player[3], monster[3]) - max(player[1], monster[1])))
+            )
         windows = [item["window_ms"] for item in items]
         return {
             "observations": len(items),
@@ -907,6 +929,18 @@ def summarize_strikes(
             "vertical_center_delta_px": {
                 "min": min(vertical) if vertical else None,
                 "max": max(vertical) if vertical else None,
+            },
+            "forward_edge_gap_px": {
+                "min": min(forward_edges) if forward_edges else None,
+                "max": max(forward_edges) if forward_edges else None,
+            },
+            "vertical_edge_gap_px": {
+                "min": min(vertical_edges) if vertical_edges else None,
+                "max": max(vertical_edges) if vertical_edges else None,
+            },
+            "vertical_overlap_px": {
+                "min": min(vertical_overlaps) if vertical_overlaps else None,
+                "max": max(vertical_overlaps) if vertical_overlaps else None,
             },
             "window_ms": {
                 "min": min(windows) if windows else None,
@@ -950,6 +984,16 @@ def summarize_strikes(
             ),
             default=None,
         ),
+        "observed_damage_forward_edge_gap_lower_bound_px": max(
+            (
+                forward_edge_gap(item)
+                for item in documents
+                if item["reviewed_feedback"] == "damage_visible"
+                and float(item["start_geometry"]["forward_center_delta_px"]) >= 0
+                and forward_edge_gap(item) >= 0
+            ),
+            default=None,
+        ),
         "range_upper_bound_px": None,
         "calibrated_range": False,
         "limitations": [
@@ -957,6 +1001,7 @@ def summarize_strikes(
             "MISS text can be an accuracy outcome and does not establish an out-of-range sample",
             "no feedback can result from occlusion, timing or attribution error",
             "distances are native pixels for one fixed source frame size",
+            "forward edge gaps use reviewed bounding boxes, not collision or attack hitboxes",
         ],
         "source_reports_sha256": [digest for _, digest in snapshots],
     }
