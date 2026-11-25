@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "kind": "world-map-graph",
+  "id": "cms_dead_forest",
+  "nodes": [
+    "dead_forest_1",
+    "dead_forest_2"
+  ],
+  "portals": [
+    {
+      "source": "dead_forest_1",
+      "target": "dead_forest_2",
+      "portal_id": "to_dead_forest_2",
+      "cost": 1
+    },
+    {
+      "source": "dead_forest_2",
+      "target": "dead_forest_1",
+      "portal_id": "to_dead_forest_1",
+      "cost": 1
+    }
+  ],
+  "provenance": {
+    "scope": "game_reference",
+    "source_uri": "https://mxdzlk.com/map/211041100/?v=CMSC",
+    "game_version": "CMSC community reference 2026-11-25",
+    "permission": "self_authored",
+    "license": "Self-authored two-map subset. Both source pages are listed in docs/WORKBENCH_NAVIGATION.md.",
+    "source_sha256": null
+  }
+}

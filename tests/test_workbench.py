@@ -213,6 +213,16 @@ def test_workbench_world_routes(tmp_path):
             "mushroom_forest",
         ]
         assert route["total_cost"] == 4
+        for source, target in (
+            ("dead_forest_1", "dead_forest_2"),
+            ("dead_forest_2", "dead_forest_1"),
+        ):
+            result = lookup("cms_dead_forest", source, target).json()
+            assert result["scope"] == "game_reference"
+            assert result["route"]["portals"] == [
+                {"source": source, "target": target, "portal_id": "to_" + target, "cost": 1}
+            ]
+
         assert lookup("cms_east_hill", "henesys", "henesys").json()["route"]["portals"] == []
         assert lookup("branch_fixture", "camp", "island").json()["route"] is None
         assert lookup("branch_fixture", "camp", "missing").status_code == 422
