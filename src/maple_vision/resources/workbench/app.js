@@ -169,6 +169,8 @@ function drawSim(data) {
 async function simOperation(operation) {
   if (simBusy || !sim) return;
   simBusy=true;
+  const controls=["sim-step","sim-save","sim-restore","sim-reset","sim-create"].map(el);
+  controls.forEach(button=>{button.disabled=true;});
   try {
     const request={operation,revision:sim.revision};
     if(operation==="step") {
@@ -179,8 +181,12 @@ async function simOperation(operation) {
         target:["interact","portal"].includes(kind)?el("sim-target").value:""};
     }
     drawSim(await api("sessions/"+sim.id,request));
+    if (operation !== "step") {
+      text("sim-outcome", {save:"已保存当前状态",restore:"已恢复存档",reset:"已重置到初始状态"}[operation]);
+      show("sim-outcome",true);
+    }
   } catch(error) { drawSim(await api("sessions/"+sim.id)); throw error; }
-  finally { simBusy=false; }
+  finally { simBusy=false; controls.forEach(button=>{button.disabled=false;}); }
 }
 document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{location.hash=b.dataset.view;});
 window.addEventListener("hashchange",()=>chooseView(location.hash.slice(1)));

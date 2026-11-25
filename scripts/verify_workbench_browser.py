@@ -39,7 +39,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
         expect(page.locator("#trace-page")).to_have_text("5–8")
         for action in ["replay", "reinfer", "export_bundle", "verify_bundle"]:
             page.select_option("#run-kind", action)
-            page.wait_for_function("!document.getElementById('submit-run').disabled")
+            expect(page.locator("#submit-run")).to_be_enabled()
             page.click("#submit-run")
             expect(page.locator("#detail-heading")).to_contain_text(
                 {
@@ -58,7 +58,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
         page.click("#sim-step")
         expect(page.locator("#sim-clock")).to_contain_text("第 1 帧")
         page.click("#sim-save")
-        page.wait_for_function("!simBusy")
+        expect(page.locator("#sim-outcome")).to_have_text("已保存当前状态")
         page.click("#sim-reset")
         expect(page.locator("#sim-clock")).to_contain_text("第 0 帧")
         page.click("#sim-restore")
