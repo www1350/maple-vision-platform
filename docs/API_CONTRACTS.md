@@ -250,6 +250,8 @@ import_recording(source: Path, output: Path, *, source_uri, permission, license,
 validate_recording(recording: Path) -> dict[str, object]
 iter_recording(recording: Path) -> Iterator[ImageFrame]
 observe_recording(recording: Path, output: Path, detector=None) -> dict[str, object]
+summarize_recording_windows(recordings, output) -> dict[str, object]
+verify_recording_windows(recordings, report) -> dict[str, object]
 ```
 
 OCR 使用已安装的本地 Tesseract 和语言包，不下载；crop 是原图内正面积 xyxy 整数 tuple，结果框映射回原图坐标。

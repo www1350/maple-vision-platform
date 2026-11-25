@@ -65,6 +65,18 @@ python -m maple_vision recording import sample.mp4 artifacts/part-2 \
 
 窗口会话使用 schema3，并保存 `source_start_frame`；MP4 帧的 `source_name` 保留原视频帧号，精确时序模式还保留原始 PTS。会话内的 `sequence` 和 `timestamp_ms` 仍从 0 开始，便于独立回放；跨窗口拼接必须使用源帧号，精确模式可进一步使用 PTS，不应把两个窗口各自的零点当成同一时刻。`start_frame=0` 与旧行为和会话身份完全兼容。起点已越过可解码帧时导入失败且不发布输出。
 
+多个精确 PTS 的 MP4 窗口可生成并复验一份覆盖报告：
+
+```bash
+python -m maple_vision recording summarize-windows \
+  --session artifacts/part-1 --session artifacts/part-2 \
+  --output artifacts/window-coverage.json
+python -m maple_vision recording verify-windows artifacts/window-coverage.json \
+  --session artifacts/part-1 --session artifacts/part-2
+```
+
+汇总会重新完整校验每个会话并按源帧起点排序。所有窗口必须绑定同一 MP4 哈希、来源说明、尺寸、PTS 时基和流编号；首段必须从 0 开始，中间不能缺帧或重叠，非末段必须因帧上限截断，末段必须未截断且到达解码器停止。报告保存每段会话 ID、源帧范围、首尾 PTS 与 RGB 哈希。解码器停止不能独立证明 MP4 容器无损，也不表示所有游戏现象已逐帧标注。
+
 默认导入按恒定帧率估算毫秒时间，报告标记 `timing_accuracy=nominal_fps_only`。对可变帧率 MP4，安装精确时序扩展并显式选用原视频时钟。
 
 ```bash
