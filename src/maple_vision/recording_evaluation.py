@@ -423,6 +423,8 @@ def measure_strike(
     feedback: str,
     feedback_frames: Sequence[int] = (),
     movement_frame: int | None = None,
+    weapon_speed_grade: int | None = None,
+    speed_effects: Sequence[str] = (),
 ) -> dict[str, Any]:
     """Measure a reviewer-selected cast window in the recording's native pixel space."""
     if output is not None and output.resolve().is_relative_to(recording.resolve()):
@@ -441,6 +443,8 @@ def measure_strike(
         feedback=feedback,
         feedback_frames=feedback_frames,
         movement_frame=movement_frame,
+        weapon_speed_grade=weapon_speed_grade,
+        speed_effects=speed_effects,
     )
     if output is not None:
         _write(output, report)
@@ -462,6 +466,8 @@ def _measure_strike_window(
     feedback: str,
     feedback_frames: Sequence[int] = (),
     movement_frame: int | None = None,
+    weapon_speed_grade: int | None = None,
+    speed_effects: Sequence[str] = (),
 ) -> dict[str, Any]:
     if (
         type(start) is not int
@@ -473,6 +479,20 @@ def _measure_strike_window(
         raise ValueError("invalid skill level or facing")
     if feedback not in ("damage_visible", "miss_text_visible", "no_feedback"):
         raise ValueError("invalid feedback category")
+    if weapon_speed_grade is not None and (
+        type(weapon_speed_grade) is not int or not 2 <= weapon_speed_grade <= 9
+    ):
+        raise ValueError("weapon speed grade must be an integer from 2 through 9")
+    if not isinstance(speed_effects, (list, tuple)) or len(speed_effects) > 8:
+        raise ValueError("invalid reviewed speed effect sequence")
+    reviewed_effects = [_text(effect, "speed effect") for effect in speed_effects]
+    if (
+        any(effect != effect.strip() for effect in reviewed_effects)
+        or len(set(reviewed_effects)) != len(reviewed_effects)
+        or (reviewed_effects and weapon_speed_grade is None)
+    ):
+        raise ValueError("invalid reviewed speed effect sequence")
+    reviewed_effects.sort()
     if (
         not isinstance(feedback_frames, (list, tuple))
         or len(feedback_frames) > 16
@@ -553,6 +573,12 @@ def _measure_strike_window(
             "after_last_feedback_ms": movement["timestamp_ms"]
             - case.manifest["frames"][feedback_frames[-1]]["timestamp_ms"],
         }
+    if weapon_speed_grade is not None:
+        report["schema_version"] = 4
+        report["attack_context"] = {
+            "weapon_speed_grade": weapon_speed_grade,
+            "speed_effects": reviewed_effects,
+        }
     return report
 
 
@@ -584,6 +610,8 @@ def _verify_strike_source(case: Case, raw: dict[str, Any]) -> None:
         feedback=raw["reviewed_feedback"],
         movement_frame=raw.get("reviewed_movement", {}).get("sequence"),
         feedback_frames=[frame["sequence"] for frame in raw.get("feedback_frames", [])],
+        weapon_speed_grade=raw.get("attack_context", {}).get("weapon_speed_grade"),
+        speed_effects=raw.get("attack_context", {}).get("speed_effects", []),
     )
     if canonical_json(raw) != canonical_json(measured):
         raise ValueError("strike report differs from recording or reviewed labels")
@@ -617,9 +645,16 @@ def _strike_report(path: Path) -> tuple[dict[str, Any], str]:
         required.add("feedback_frames")
         if raw["schema_version"] == 3:
             required.add("reviewed_movement")
+    if isinstance(raw, dict) and raw.get("schema_version") == 4:
+        required.add("attack_context")
+        if "feedback_frames" in raw:
+            required.add("feedback_frames")
+        if "reviewed_movement" in raw:
+            required.add("feedback_frames")
+            required.add("reviewed_movement")
     if not isinstance(raw, dict) or set(raw) != required:
         raise ValueError("invalid strike report schema")
-    if raw["schema_version"] not in (1, 2, 3) or raw["kind"] != "reviewed_strike_window":
+    if raw["schema_version"] not in (1, 2, 3, 4) or raw["kind"] != "reviewed_strike_window":
         raise ValueError("unsupported strike report")
     if raw["domain"] not in ("authored_fixture", "game_recording"):
         raise ValueError("invalid strike report domain")
@@ -663,7 +698,7 @@ def _strike_report(path: Path) -> tuple[dict[str, Any], str]:
             raise ValueError("invalid strike frame timing")
         if not isinstance(frame["rgb_sha256"], str) or len(frame["rgb_sha256"]) != 64:
             raise ValueError("invalid strike frame hash")
-    if raw["schema_version"] in (2, 3):
+    if "feedback_frames" in raw:
         frames = raw["feedback_frames"]
         if (
             not isinstance(frames, list)
@@ -703,7 +738,7 @@ def _strike_report(path: Path) -> tuple[dict[str, Any], str]:
             ):
                 raise ValueError("invalid strike feedback gap")
             previous_sequence, previous_ms = sequence, timestamp
-    if raw["schema_version"] == 3:
+    if "reviewed_movement" in raw:
         movement = raw["reviewed_movement"]
         final = raw["feedback_frames"][-1]
         if (
@@ -720,6 +755,26 @@ def _strike_report(path: Path) -> tuple[dict[str, Any], str]:
             or len(movement["rgb_sha256"]) != 64
         ):
             raise ValueError("invalid reviewed movement frame")
+    if raw["schema_version"] == 4:
+        context = raw["attack_context"]
+        if (
+            not isinstance(context, dict)
+            or set(context) != {"weapon_speed_grade", "speed_effects"}
+            or type(context["weapon_speed_grade"]) is not int
+            or not 2 <= context["weapon_speed_grade"] <= 9
+            or not isinstance(context["speed_effects"], list)
+            or len(context["speed_effects"]) > 8
+            or any(
+                not isinstance(effect, str)
+                or not effect.strip()
+                or effect != effect.strip()
+                or len(effect) > 128
+                or any(ord(character) < 32 for character in effect)
+                for effect in context["speed_effects"]
+            )
+            or context["speed_effects"] != sorted(set(context["speed_effects"]))
+        ):
+            raise ValueError("invalid reviewed attack context")
     return raw, hashlib.sha256(contents).hexdigest()
 
 
@@ -747,12 +802,15 @@ def summarize_strikes(
             for window in windows:
                 _verify_strike_source(case, window)
     identity = tuple(documents[0][key] for key in ("domain", "skill_id", "level", "weapon"))
+    attack_context = documents[0].get("attack_context")
     frame_size = documents[0]["source_frame_size"]
     if any(
         tuple(document[key] for key in ("domain", "skill_id", "level", "weapon")) != identity
         for document in documents
     ):
         raise ValueError("strike reports must describe the same domain, skill, level and weapon")
+    if any(document.get("attack_context") != attack_context for document in documents):
+        raise ValueError("strike reports need the same reviewed attack context")
     if any(document["source_frame_size"] != frame_size for document in documents):
         raise ValueError("strike reports need the same source frame size")
     timebase = documents[0]["timebase"]
@@ -789,9 +847,9 @@ def summarize_strikes(
         feedback: metrics([item for item in documents if item["reviewed_feedback"] == feedback])
         for feedback in ("damage_visible", "miss_text_visible", "no_feedback")
     }
-    sequenced = [item for item in documents if item["schema_version"] >= 2]
+    sequenced = [item for item in documents if "feedback_frames" in item]
     report = {
-        "schema_version": 2 if sequenced else 1,
+        "schema_version": 4 if attack_context is not None else (2 if sequenced else 1),
         "kind": "reviewed_strike_summary",
         "domain": identity[0],
         "skill_id": identity[1],
@@ -826,6 +884,8 @@ def summarize_strikes(
         ],
         "source_reports_sha256": [digest for _, digest in snapshots],
     }
+    if attack_context is not None:
+        report["attack_context"] = attack_context
     if sources is not None:
         report["source_fields_verified"] = len(documents)
         ordered = sorted(
@@ -883,7 +943,8 @@ def summarize_strikes(
         if "reviewed_movement" in item
     ]
     if delays:
-        report["schema_version"] = 3
+        if attack_context is None:
+            report["schema_version"] = 3
         report["observed_movement_after_feedback_ms"] = {
             "observations": len(delays),
             "min": min(delays),

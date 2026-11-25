@@ -214,6 +214,18 @@ def _parser() -> argparse.ArgumentParser:
     strike.add_argument(
         "--movement-frame", type=int, help="reviewed first visible movement after final feedback"
     )
+    strike.add_argument(
+        "--weapon-speed-grade",
+        type=int,
+        choices=range(2, 10),
+        help="reviewed weapon speed grade (2 fastest through 9 slowest)",
+    )
+    strike.add_argument(
+        "--speed-effect",
+        action="append",
+        default=[],
+        help="reviewed attack-speed effect; repeat for each active effect",
+    )
     verify_strike_command = recording_commands.add_parser("verify-strike")
     for name in ("path", "labels", "report"):
         verify_strike_command.add_argument(name, type=Path)
@@ -676,6 +688,8 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
             feedback=args.feedback,
             feedback_frames=args.feedback_frame,
             movement_frame=args.movement_frame,
+            weapon_speed_grade=args.weapon_speed_grade,
+            speed_effects=args.speed_effect,
         )
     if args.command == "recording" and args.operation == "verify-strike":
         from .recording_evaluation import verify_strike
