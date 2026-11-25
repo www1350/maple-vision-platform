@@ -25,3 +25,7 @@ setuptools==84.2.1
 sortedcontainers==2.4.0
 typing_extensions==4.16.0
 wheel==0.48.0
+
+# Local web workbench and its ASGI test client.
+-r requirements-workbench.txt
+httpx==0.28.1

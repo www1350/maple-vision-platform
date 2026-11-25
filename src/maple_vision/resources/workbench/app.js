@@ -1,0 +1,220 @@
+"use strict";
+const el = (id) => document.getElementById(id);
+const text = (id, value) => { el(id).textContent = value; };
+const show = (id, visible) => el(id).classList.toggle("hidden", !visible);
+const pretty = (value) => JSON.stringify(value, null, 2);
+const names = {
+  assassin:"标飞", dragon_knight:"龙骑士", cleric:"牧师", archer:"弓箭手",
+  bandit:"刀飞", blood_knight:"血骑士（合成）", builtin:"内置两图", pixel:"像素基线",
+  "three-map-fixture":"外部三图", "lifecycle-model":"已验收的混合模型",
+  queued:"排队中", running:"运行中", finished:"已执行", cancelled:"已取消",
+  interrupted:"已中断", error:"出错", completed:"目标完成", stopped:"已停止",
+  failed:"目标失败", verified:"校验完成", run:"视觉闭环", replay:"动作重放",
+  reinfer:"感知重推理", export_bundle:"导出分层包", verify_bundle:"验证分层包"
+};
+const label = (key) => names[key] || key;
+let catalog = null, jobs = [], selected = "", detail = null, evidence = "summary";
+let traceOffset = 0, activeView = "runs", sim = null, simEvidence = "observation";
+let playTimer = null, selectionRevision = 0, refreshing = false, simBusy = false;
+
+async function api(path, body) {
+  const options = body === undefined ? {} : {
+    method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)
+  };
+  const response = await fetch("/api/" + path, options);
+  if (!response.ok) {
+    let msg = response.statusText;
+    try { const data = await response.json(); msg = typeof data.detail === "string" ? data.detail : pretty(data.detail); }
+    catch { /* A transport rejection can have an empty body. */ }
+    throw new Error(msg || String(response.status));
+  }
+  return response.json();
+}
+function fail(error) { text("global-error", error.message || String(error)); show("global-error", true); }
+function bind(id, type, handler) {
+  el(id).addEventListener(type, (event) => {
+    event.preventDefault();
+    show("global-error", false);
+    Promise.resolve().then(() => handler(event)).catch(fail);
+  });
+}
+function options(id, items) {
+  const select = el(id), previous = select.value;
+  select.replaceChildren(...items.map(([key, name]) => new Option(name, key)));
+  if (items.some(([key]) => key === previous)) select.value = previous;
+}
+function displayContent() {
+  const groups = [
+    ["职业", Object.entries(catalog.classes).map(([key, value]) =>
+      [key, [value.version, ...value.skills].join(" · ")])],
+    ["地图", Object.entries(catalog.maps).map(([key, value]) => [key, value.join(" → ")])],
+    ["感知方式", catalog.models.map(key => [key, key])]
+  ];
+  const cards = el("content-cards"); cards.replaceChildren();
+  for (const [title, entries] of groups) {
+    const card = document.createElement("section"); card.className = "panel content-group";
+    const header = document.createElement("h2"); header.textContent = title; card.append(header);
+    for (const [key, info] of entries) {
+      const item = document.createElement("div"); item.className = "content-item";
+      const strong = document.createElement("strong"); strong.textContent = label(key);
+      const small = document.createElement("small"); small.textContent = info;
+      item.append(strong, small); card.append(item);
+    }
+    cards.append(card);
+  }
+  for (const id of ["class-select", "sim-class"]) options(id, Object.keys(catalog.classes).map(k=>[k,label(k)]));
+  for (const id of ["map-select", "sim-map"]) options(id, Object.keys(catalog.maps).map(k=>[k,label(k)]));
+  options("model-select", catalog.models.map(k=>[k,label(k)]));
+  text("bootstrap-json", pretty(catalog));
+}
+function chooseView(view) {
+  if (!["runs","simulator","content"].includes(view)) view = "runs";
+  activeView = view; stopPlay();
+  document.querySelectorAll(".view").forEach(e=>e.classList.toggle("hidden", e.id !== "view-"+view));
+  document.querySelectorAll("[data-view]").forEach(e=>e.classList.toggle("active", e.dataset.view===view));
+  text("view-label", {runs:"任务与回放", simulator:"单步模拟器", content:"内容与模型"}[view]);
+}
+function setupForm() {
+  const kind = el("run-kind").value, run = kind === "run";
+  show("run-config-fields",run); show("run-source-fields",!run);
+  const inputKind = kind === "verify_bundle" ? "export_bundle" : "run";
+  const available = jobs.filter(j=>j.state==="finished" && j.kind===inputKind);
+  options("source-select", available.map(j=>[j.id,label(j.kind)+" · "+j.id.slice(0,8)]));
+  el("submit-run").disabled = !catalog || (!run && !available.length);
+}
+function drawJobs() {
+  text("run-count",jobs.length); show("runs-empty",!jobs.length); show("run-table",!!jobs.length);
+  const list=el("run-list"); list.replaceChildren();
+  for (const job of jobs) {
+    const row=document.createElement("tr");
+    for (const value of [label(job.kind), label(job.outcome||job.state),
+                         new Date(job.created).toLocaleString("zh-CN")]) {
+      const cell=document.createElement("td"); cell.textContent=value; row.append(cell);
+    }
+    const cell=document.createElement("td"), button=document.createElement("button");
+    button.className="button subtle"; button.textContent="查看 "+job.id.slice(0,6);
+    button.addEventListener("click",()=>chooseJob(job.id).catch(fail));
+    cell.append(button); row.append(cell); list.append(row);
+  }
+  setupForm();
+}
+async function refresh() {
+  if (refreshing) return;
+  refreshing=true;
+  try {
+    if (!catalog) { catalog=await api("content"); displayContent(); }
+    jobs=await api("jobs"); drawJobs();
+    text("connection-label","本机已连接"); text("server-version","Maple Vision · 离线工作台");
+    el("connection-dot").className="status-dot";
+    if (selected && (!detail || ["queued","running"].includes(detail.state))) await loadJob();
+  } catch(error) {
+    text("connection-label","连接失败"); el("connection-dot").className="status-dot bad"; throw error;
+  } finally { refreshing=false; }
+}
+async function chooseJob(id) {
+  selected=id; detail=null; selectionRevision++; traceOffset=0; evidence="summary"; stopPlay();
+  el("frame-range").value=0; await loadJob();
+}
+async function loadJob() {
+  const id=selected, version=selectionRevision;
+  const data=await api("jobs/"+id);
+  if (id!==selected || version!==selectionRevision) return;
+  detail=data; show("run-detail",true); text("detail-status",label(data.outcome || data.state));
+  text("detail-heading",label(data.kind)+" · "+id.slice(0,8)); show("cancel-job",data.state==="queued");
+  const result=data.result || {}, box=el("result-metrics"); box.replaceChildren();
+  for (const [name,val] of [["结果",label(data.outcome||data.state)],["动作数",result.steps??"—"],["可看帧数",data.frames.length]]) {
+    const item=document.createElement("div"); item.className="metric";
+    const dt=document.createElement("dt"),dd=document.createElement("dd"); dt.textContent=name; dd.textContent=val;
+    item.append(dt,dd); box.append(item);
+  }
+  el("frame-range").max=Math.max(0,data.frames.length-1);
+  drawFrame(); await drawEvidence();
+}
+function stopPlay(){ clearInterval(playTimer); playTimer=null; text("frame-play","▷"); }
+function drawFrame() {
+  const range=el("frame-range"), frame=detail?.frames[Number(range.value)];
+  show("replay-frame",!!frame); show("frame-empty",!frame);
+  for (const id of ["frame-prev","frame-play","frame-range","frame-next"]) el(id).disabled=!frame;
+  text("frame-caption",frame==="final"?"终帧":(frame?"第 "+Number(frame)+" 帧":""));
+  if (frame) el("replay-frame").src="/api/jobs/"+selected+"/frames/"+frame;
+}
+function moveFrame(step) {
+  const range=el("frame-range"); range.value=Math.max(0,Math.min(+range.max,+range.value+step)); drawFrame();
+}
+async function drawEvidence() {
+  const id=selected, tab=evidence, offset=traceOffset;
+  document.querySelectorAll("[data-evidence]").forEach(b=>{
+    const active=b.dataset.evidence===tab; b.classList.toggle("active",active); b.setAttribute("aria-selected",active);
+  });
+  show("trace-controls",tab==="trace");
+  if (!detail) return;
+  if (tab==="trace") {
+    const rows=await api("jobs/"+id+"/trace?offset="+offset);
+    if (id!==selected || evidence!==tab || traceOffset!==offset) return;
+    text("evidence-json",pretty(rows)); text("trace-page",rows.length?(offset+1)+"–"+(offset+rows.length):"没有更多记录");
+    el("trace-prev").disabled=!offset; el("trace-next").disabled=rows.length<4;
+  } else {
+    text("evidence-json",pretty(tab==="config"?detail.config:(detail.result || {state:detail.state,error:detail.error})));
+  }
+}
+function drawSim(data) {
+  sim=data; sessionStorage.setItem("maple-session",data.id);
+  show("sim-controls",true); show("sim-frame",true); show("sim-empty",false);
+  el("sim-frame").src="data:image/png;base64,"+data.image;
+  text("sim-clock",data.timestamp_ms+" ms · 第 "+data.sequence+" 帧");
+  text("sim-json",pretty(data[simEvidence]));
+  show("sim-outcome",!!data.receipt);
+  if (data.receipt) text("sim-outcome",(data.receipt.accepted?"已接受":"未接受")+" · "+data.receipt.reason);
+}
+async function simOperation(operation) {
+  if (simBusy || !sim) return;
+  simBusy=true;
+  try {
+    const request={operation,revision:sim.revision};
+    if(operation==="step") {
+      const kind=el("sim-action").value;
+      request.action={kind,
+        direction:["move","climb","jump","jump_attack","attack","cast"].includes(kind)?+el("sim-direction").value:0,
+        skill:kind==="cast" ? el("sim-skill").value : "basic",
+        target:["interact","portal"].includes(kind)?el("sim-target").value:""};
+    }
+    drawSim(await api("sessions/"+sim.id,request));
+  } catch(error) { drawSim(await api("sessions/"+sim.id)); throw error; }
+  finally { simBusy=false; }
+}
+document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{location.hash=b.dataset.view;});
+window.addEventListener("hashchange",()=>chooseView(location.hash.slice(1)));
+document.querySelectorAll("[data-evidence]").forEach(b=>b.onclick=()=>{evidence=b.dataset.evidence;drawEvidence().catch(fail);});
+document.querySelectorAll("[data-sim-evidence]").forEach(b=>b.onclick=()=>{
+  simEvidence=b.dataset.simEvidence;
+  document.querySelectorAll("[data-sim-evidence]").forEach(node=>{
+    const active=node===b; node.classList.toggle("active",active); node.setAttribute("aria-selected",active);
+  });
+  if (sim) text("sim-json",pretty(sim[simEvidence]));
+});
+bind("refresh","click",refresh); bind("run-kind","change",setupForm);
+bind("run-form","submit",async()=>{
+  const kind=el("run-kind").value, body={kind};
+  if(kind==="run") Object.assign(body,{job:el("class-select").value,map_id:el("map-select").value,
+    model:el("model-select").value,seed:+el("seed").value,max_steps:+el("max-steps").value,fault:el("fault-select").value});
+  else body.source=el("source-select").value;
+  el("submit-run").disabled=true;
+  try { const created=await api("jobs",body); await chooseJob(created.id); await refresh(); }
+  finally { setupForm(); }
+});
+bind("cancel-job","click",async()=>{ await api("jobs/"+selected+"/cancel",{}); await loadJob(); await refresh(); });
+bind("frame-range","input",drawFrame); bind("frame-prev","click",()=>moveFrame(-1)); bind("frame-next","click",()=>moveFrame(1));
+bind("frame-play","click",()=>{
+  if(playTimer) return stopPlay();
+  const range=el("frame-range"); if (+range.value===+range.max) range.value=0;
+  drawFrame(); text("frame-play","Ⅱ");
+  playTimer=setInterval(()=>{ if(+range.value>=+range.max) stopPlay(); else moveFrame(1); },200);
+});
+bind("trace-next","click",async()=>{traceOffset+=4; await drawEvidence();});
+bind("trace-prev","click",async()=>{traceOffset=Math.max(0,traceOffset-4); await drawEvidence();});
+bind("sim-form","submit",async()=>drawSim(await api("sessions",{job:el("sim-class").value,map_id:el("sim-map").value,seed:+el("sim-seed").value})));
+for(const op of ["step","save","reset","restore"]) bind("sim-"+op,"click",()=>simOperation(op));
+chooseView(location.hash.slice(1)); refresh().catch(fail);
+const saved=sessionStorage.getItem("maple-session");
+if(saved) api("sessions/"+saved).then(drawSim).catch(()=>sessionStorage.removeItem("maple-session"));
+setInterval(()=>{ if (activeView==="runs" && !document.hidden) refresh().catch(fail); },2000);

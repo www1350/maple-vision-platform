@@ -1,8 +1,17 @@
-# Maple Vision Platform v0.6.0
+# Maple Vision Platform v0.7.0
 
 一个可在本机运行、训练和验证的**离线视觉研究平台与独立模拟器**。它包含本地知识目录、素材登记、合成数据集、YOLO 训练与 ONNX 推理、多职业/多地图任务，以及可重放的验证证据。
 
-**当前 v0.6 增加领域表、动画内容、外部职业编译与分层回放报告。** 弓手、刀飞和血骑样例由同一任务运行时加载；素材、地图和规则完整随运行保存，独立复验不依赖原文件。运行只使用本机计算，默认不调用 LLM。[执行方案](docs/V0_6_PLAN.md) · [可执行合同](engineering/v06-contract.yaml) · [职业包](docs/CLASS_PACKAGES.md) · [动画](docs/ANIMATION_ASSETS.md) · [领域数据库](docs/CATALOG_DOMAINS.md) · [分层报告](docs/FAILURE_BUNDLES.md)
+**本机工作台支持创建视觉闭环任务、查看故障回放和逐步操作独立模拟器。** 在仓库根目录用 Python 3.12 启动，打开 [本机工作台](http://127.0.0.1:8765)。
+
+```bash
+python -m pip install -e ".[workbench]"
+python -m maple_vision workbench --workspace artifacts/workbench --examples examples
+```
+
+工作台列出实际加载的职业和地图。安装 inference 扩展且提供已验收的模型文件时，还可选择 ONNX 感知。地图图工具可以独立验证分支路线、跳跃和梯子路径。[工作台与导航](docs/WORKBENCH_NAVIGATION.md)
+
+**v0.6 增加领域表、动画内容、外部职业编译与分层回放报告。** 弓手、刀飞和血骑样例由同一任务运行时加载；素材、地图和规则完整随运行保存，独立复验不依赖原文件。运行只使用本机计算，默认不调用 LLM。[执行方案](docs/V0_6_PLAN.md) · [可执行合同](engineering/v06-contract.yaml) · [职业包](docs/CLASS_PACKAGES.md) · [动画](docs/ANIMATION_ASSETS.md) · [领域数据库](docs/CATALOG_DOMAINS.md) · [分层报告](docs/FAILURE_BUNDLES.md)
 
 ```bash
 python -m maple_vision lab run --class-pack examples/classes/bandit.json --output artifacts/bandit
