@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from maple_vision.cli import main
 from maple_vision.failure_bundle import export_failure_bundle, verify_failure_bundle
 from maple_vision.input_bindings import InputBindingProfile, KeyBinding
 from maple_vision.lab import RunConfig, run_episode, verify_perception, verify_run
@@ -132,3 +133,47 @@ def test_replay_recomputes_dispatch_instead_of_trusting_rehashed_trace(tmp_path)
     (changed / "manifest.json").write_text(json.dumps(manifest))
     with pytest.raises(ValueError, match="input dispatch disagrees"):
         verify_run(changed)
+
+
+def test_cli_loads_the_same_bounded_profile_and_rejects_invalid_files(tmp_path, capsys):
+    configured = profile(("A", "模拟范围攻击"))
+    bindings = tmp_path / "role-keys.json"
+    bindings.write_text(json.dumps(configured.manifest()))
+    output = tmp_path / "cli-run"
+    args = [
+        "lab",
+        "run",
+        "--output",
+        str(output),
+        "--job",
+        "dragon_knight",
+        "--map-pack",
+        str(EXAMPLES / "maps/dead-forest-drill.json"),
+        "--mission-program",
+        str(EXAMPLES / "missions/dead-forest-hunt.json"),
+        "--runtime",
+        "structured",
+        "--input-bindings",
+        str(bindings),
+    ]
+    assert main(args) == 0
+    capsys.readouterr()
+    summary = json.loads((output / "summary.json").read_text())
+    assert summary["status"] == "completed"
+    assert summary["input_profile"] == configured.manifest()
+    assert verify_run(output)["verified"]
+
+    invalid = tmp_path / "invalid.json"
+    invalid.write_text("{}")
+    invalid_output = tmp_path / "invalid-run"
+    invalid_args = [*args]
+    invalid_args[invalid_args.index(str(output))] = str(invalid_output)
+    invalid_args[invalid_args.index(str(bindings))] = str(invalid)
+    assert main(invalid_args) == 2 and not invalid_output.exists()
+    assert "invalid input binding profile fields" in capsys.readouterr().err
+
+    oversized = tmp_path / "oversized.json"
+    oversized.write_bytes(b" " * (64 * 1024 + 1))
+    invalid_args[invalid_args.index(str(invalid))] = str(oversized)
+    assert main(invalid_args) == 2 and not invalid_output.exists()
+    assert "exceeds byte budget" in capsys.readouterr().err

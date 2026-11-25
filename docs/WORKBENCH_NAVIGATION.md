@@ -50,3 +50,11 @@ python scripts/verify_workbench_browser.py --browser /path/to/chrome
 完整任务也可以在「角色键位配置」填写同一个区服与角色名。浏览器把当时已确认的表作为版本化输入交给离线任务；`input-bindings.json`、summary 与逐步 `execution.input_dispatch` 共同保存配置、解析键、技能和接受/拒绝原因。受支持的普通攻击、龙骑士模拟范围攻击或外部能力包 `cast` 没有绑定时，该步只推进模拟时间，不产生攻击效果，独立目标检查不能把它算作完成。`lab replay` 会从配置重新解析每一步，`lab reinfer` 还会重新执行感知和任务；只修改并重新哈希 trace 不能伪造另一枚键。没有选择角色配置的旧任务保持原行为。
 
 此链只证明“确认键位 → 离线模拟技能”的执行与证据。移动、跳跃、拾取、传送和交互仍是模拟器动作；它不会读取、聚焦或向官方客户端发送任何输入，也不能证明真实键位截图、技能距离或国服机制已经校准。
+
+同一个 profile manifest 也可直接进入可复现的 CLI 运行：
+
+```bash
+python -m maple_vision lab run --output artifacts/keyed-forest --job dragon_knight --map-pack examples/maps/dead-forest-drill.json --mission-program examples/missions/dead-forest-hunt.json --runtime structured --input-bindings role-keys.json
+```
+
+`role-keys.json` 使用运行包 `input-bindings.json` 的相同 schema。CLI 只接受不超过 64 KiB 的本地普通 UTF-8 JSON 文件，不跟随符号链接；工作台与 CLI 随后走同一个不可变解析器和验证链。

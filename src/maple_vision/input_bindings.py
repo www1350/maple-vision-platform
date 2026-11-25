@@ -7,12 +7,28 @@ action is gated here; movement and other simulator actions remain explicit.
 
 import unicodedata
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
+from .catalog import strict_json
 from .class_package import ClassPackage
 from .sim_types import SimAction
 
 MAX_INPUT_BINDINGS_BYTES = 64 * 1024
+
+
+def load_input_profile(path: Path) -> "InputBindingProfile":
+    """Load one bounded local JSON profile without following a symlink."""
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("input binding profile must be a regular nonsymlink file")
+    with path.open("rb") as stream:
+        raw = stream.read(MAX_INPUT_BINDINGS_BYTES + 1)
+    if len(raw) > MAX_INPUT_BINDINGS_BYTES:
+        raise ValueError("input binding profile exceeds byte budget")
+    try:
+        return InputBindingProfile.from_manifest(strict_json(raw.decode("utf-8")))
+    except UnicodeError as exc:
+        raise ValueError("input binding profile must be UTF-8 JSON") from exc
 
 
 def normalize_key(value: str) -> str:
