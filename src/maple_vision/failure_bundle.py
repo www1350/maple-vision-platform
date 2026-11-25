@@ -15,8 +15,8 @@ import os
 import re
 import shutil
 import stat
-from collections.abc import Iterator
-from contextlib import ExitStack, contextmanager
+from collections.abc import Generator, Iterator
+from contextlib import ExitStack, closing, contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 from tempfile import TemporaryDirectory, mkdtemp
@@ -227,7 +227,7 @@ def _output(output: Path, source: Path) -> Iterator[Path]:
         shutil.rmtree(stage, ignore_errors=True)
 
 
-def _lines(path: Path) -> Iterator[dict[str, Any]]:
+def _lines(path: Path) -> Generator[dict[str, Any]]:
     with path.open("rb") as stream:
         count = 0
         while line := stream.readline(MAX_LINE_BYTES + 1):
@@ -478,8 +478,8 @@ def _project(source: _Source, output: Path) -> list[dict[str, Any]]:
     frames = _Frames(source.summary["config"]["fault"])
     writer = _Writer(output)
     captures: list[dict[str, Any]] = []
-    rows = iter(_lines(source.root / "trace.jsonl"))
     with ExitStack() as stack:
+        rows = stack.enter_context(closing(_lines(source.root / "trace.jsonl")))
         streams = {
             name: stack.enter_context((output / name).open("xb"))
             for name in _FRAME_LAYERS + _ACTION_LAYERS

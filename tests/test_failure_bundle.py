@@ -387,6 +387,15 @@ def test_partial_write_is_removed_and_does_not_change_source(tmp_path, base_bund
     source = base_bundles[1][0]
     before = hashes(source)
     original = failure._Writer.line
+    original_lines = failure._lines
+    streams = []
+
+    def track_generator(path):
+        rows = original_lines(path)
+        streams.append(rows)
+        return rows
+
+    monkeypatch.setattr(failure, "_lines", track_generator)
 
     def fail_after_initial_frame(self, stream, row):
         if str(stream.name).endswith("ground_truth.jsonl") and row["frame_index"] == 1:
@@ -396,6 +405,7 @@ def test_partial_write_is_removed_and_does_not_change_source(tmp_path, base_bund
     monkeypatch.setattr(failure._Writer, "line", fail_after_initial_frame)
     with pytest.raises(OSError, match="disk failure"):
         export_failure_bundle(source, tmp_path / "output")
+    assert streams and all(rows.gi_frame is None for rows in streams)
     assert not list(tmp_path.iterdir())
     assert hashes(source) == before
 
