@@ -302,6 +302,16 @@ function storedKeyProfile(profile) {
   if (!bindings.length) throw new Error("该角色没有已确认的键位。");
   return {schema_version:1,profile_id:profile,bindings};
 }
+bind("keys-export", "click", async () => {
+  const profile = storedKeyProfile(el("keys-character").value.trim());
+  const validated = await api("input-profile", profile);
+  const url = URL.createObjectURL(new Blob([pretty(validated) + "\n"], {type:"application/json"}));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "input-bindings.json";
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
 function clearKeyImage() {
   const image = el("keys-image");
   if (image.hasAttribute("src")) URL.revokeObjectURL(image.src);

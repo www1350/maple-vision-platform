@@ -11,6 +11,7 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from .input_bindings import InputBindingProfile
 from .lab import FAULTS
 from .sim_types import SimAction
 from .workbench import Conflict, Workbench
@@ -186,6 +187,10 @@ def create_app(root: Path, examples: Path | None = None) -> FastAPI:
             "scope": graph.provenance.scope,
             "route": path.to_dict() if path is not None else None,
         }
+
+    @api.post("/api/input-profile")
+    def input_profile(profile: InputProfileInput) -> dict[str, Any]:
+        return InputBindingProfile.from_manifest(profile.model_dump()).manifest()
 
     @api.get("/api/jobs")
     def jobs() -> list[dict[str, Any]]:

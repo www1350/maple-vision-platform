@@ -297,3 +297,17 @@ def test_task_run_binds_confirmed_profile_and_exposes_dispatch_evidence(tmp_path
         assert all("input_dispatch" in row["execution"] for row in rows)
         reinfer = wait(http, submit(http, {"kind": "reinfer", "source": identity}))
         assert reinfer["outcome"] == "verified"
+
+
+def test_input_profile_export_uses_execution_validation(tmp_path):
+    profile = {
+        "schema_version": 1,
+        "profile_id": "fixture",
+        "bindings": [{"key": "Ctrl", "skill": "basic"}],
+    }
+    with client(tmp_path) as http:
+        reply = http.post("/api/input-profile", json=profile)
+        assert reply.status_code == 200 and reply.json() == profile
+        profile["bindings"].append({"key": "Control", "skill": "area"})
+        assert http.post("/api/input-profile", json=profile).status_code == 422
+        assert http.get("/api/jobs").json() == []
