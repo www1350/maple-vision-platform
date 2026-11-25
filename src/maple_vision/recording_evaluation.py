@@ -354,3 +354,52 @@ def benchmark_recordings(
     }
     _write(output, report)
     return report
+
+
+def audit_route(recording: Path, labels: Path, graph_path: Path, output: Path) -> dict[str, Any]:
+    """Compare reviewed map changes between adjacent captured frames with a static graph."""
+    from .navigation_graph import load_world_graph
+
+    if output.resolve().is_relative_to(recording.resolve()):
+        raise ValueError("write the audit outside the captured recording")
+    case = _case(recording, labels, MAX_FRAMES)
+    graph = load_world_graph(graph_path)
+    frames = case.manifest["frames"]
+    edges = {(p.source, p.target) for p in graph.portals}
+    changes: list[dict[str, Any]] = []
+    previous = case.annotations[0][0]
+    outside_graph = set()
+    for index, (current, _, _) in enumerate(case.annotations):
+        if current not in graph.nodes:
+            outside_graph.add(current)
+        if current != previous:
+            changes.append(
+                {
+                    "source": previous,
+                    "target": current,
+                    "before_sequence": frames[index - 1]["sequence"],
+                    "after_sequence": frames[index]["sequence"],
+                    "before_ms": frames[index - 1]["timestamp_ms"],
+                    "after_ms": frames[index]["timestamp_ms"],
+                    "listed_direct_edge": (previous, current) in edges,
+                }
+            )
+        previous = current
+    report = {
+        "kind": "reviewed_map_transition_audit",
+        "schema_version": 1,
+        "session_id": case.manifest["session_id"],
+        "domain": case.domain,
+        "reviewer": case.reviewer,
+        "label_sha256": case.label_sha256,
+        "graph_sha256": graph.content_sha256,
+        "timebase": case.manifest["timebase"],
+        "truncated": case.manifest["truncated"],
+        "frames": len(frames),
+        "observed_changes": len(changes),
+        "listed_direct_changes": sum(change["listed_direct_edge"] for change in changes),
+        "map_ids_outside_graph": sorted(outside_graph),
+        "changes": changes,
+    }
+    _write(output, report)
+    return report
