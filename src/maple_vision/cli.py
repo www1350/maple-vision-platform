@@ -211,6 +211,9 @@ def _parser() -> argparse.ArgumentParser:
         default=[],
         help="reviewed frame containing a distinct feedback event; repeat in time order",
     )
+    strike.add_argument(
+        "--movement-frame", type=int, help="reviewed first visible movement after final feedback"
+    )
     verify_strike_command = recording_commands.add_parser("verify-strike")
     for name in ("path", "labels", "report"):
         verify_strike_command.add_argument(name, type=Path)
@@ -672,6 +675,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
             facing=args.facing,
             feedback=args.feedback,
             feedback_frames=args.feedback_frame,
+            movement_frame=args.movement_frame,
         )
     if args.command == "recording" and args.operation == "verify-strike":
         from .recording_evaluation import verify_strike
