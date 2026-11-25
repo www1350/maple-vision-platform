@@ -600,7 +600,10 @@ class Simulator:
                 targets.append(monster)
         targets.sort(key=lambda monster: (abs(monster.x - p.x), monster.id))
         for monster in targets[: skill.max_targets]:
-            self._damage_monster(monster, damage, "attack_hit", events)
+            for _ in range(skill.hit_count):
+                if not monster.hp:
+                    break
+                self._damage_monster(monster, damage, "attack_hit", events)
             rule = self._effect_rules.get(skill.id)
             if monster.hp and rule is not None:
                 key = (monster.id, rule.kind)

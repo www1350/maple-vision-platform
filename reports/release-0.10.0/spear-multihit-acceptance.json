@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "scope": "synthetic_fixture",
+  "created_at": "2026-11-25T09:52:55Z",
+  "source_state": "working_tree_before_commit",
+  "class_package": {
+    "path": "examples/classes/spear_fighter.json",
+    "class_id": "spear_fighter",
+    "compiler_version": 3,
+    "content_sha256": "a94f5b965b11d802c8b9a76b9e7d5414ac234b394fe91d0d4d326cfac2a4d273",
+    "domain": "self_authored_synthetic_not_cms_calibration"
+  },
+  "command": "PYTHONPATH=src python -m maple_vision lab run --class-pack examples/classes/spear_fighter.json --job spear_fighter --seed 17 --record-stride 1 --output RUN",
+  "result": {
+    "status": "completed",
+    "reason": "visual_mission_conditions_met",
+    "steps": 286,
+    "simulated_seconds": 14.3,
+    "maps_visited": [
+      "cavern",
+      "meadow"
+    ],
+    "actions": {
+      "cast": 6,
+      "idle": 12,
+      "interact": 2,
+      "loot": 6,
+      "move": 259,
+      "portal": 1
+    },
+    "events": {
+      "attack": 6,
+      "attack_hit": 18,
+      "cast": 6,
+      "dialogue": 2,
+      "loot": 6,
+      "map_changed": 1,
+      "monster_defeated": 6,
+      "skill:triple_thrust": 6
+    },
+    "independent_goal_check": true,
+    "drops_collected": 6,
+    "alive": true,
+    "final_state_sha256": "37799b940073ab97e318a567322cfa0762df372644456ea9812aac96fc9a57e4"
+  },
+  "bundle_hashes": {
+    "summary.json": "e920e45a6db38764de13ccdd19f3f34b324710dfefc4dbde6e40821b1d4eafda",
+    "trace.jsonl": "d415aa37ecf7e35a7db75d121d2fd06f06b1d9b3824580adad6d1e37dbfd61a7",
+    "class-package.json": "aa1bb1ac1edf45d5248a857a2e3c1405f5b376c1404b3a4f878b0ea4f5d27d7d",
+    "manifest.json": "95fb013ff7c611386fb80577a7984b10e243c4c55a9c560363c28a8c934829e0"
+  },
+  "verification": {
+    "action_replay": {
+      "verified": true,
+      "steps_replayed": 286,
+      "files_checked": 294,
+      "independent_goal_check": true,
+      "runtime_identity_matches": true
+    },
+    "reinference": {
+      "verified": true,
+      "action_replay_verified": true,
+      "perception_reproduced": true,
+      "policy_reproduced": true,
+      "structured_runtime_reproduced": true,
+      "trace_steps_compared": 286,
+      "frames_reinferred": 287,
+      "files_unchanged": true
+    }
+  },
+  "limits": [
+    "This run uses the self-authored synthetic pixel fixture and no official client input.",
+    "All three hits are resolved atomically in one simulator step; inter-hit animation timing is not calibrated.",
+    "Damage, range, cooldown and MP cost are synthetic values and do not claim CMS Spear Crusher accuracy.",
+    "The transient raw bundle is represented by deterministic commands, tests and hashes rather than committed frame duplication."
+  ]
+}

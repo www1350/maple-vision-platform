@@ -246,7 +246,7 @@ def test_real_pixels_select_hp_area_and_heal_programs_and_keep_damage_unconfirme
             assert [monster.hp for monster in outcome.snapshot.monsters] == [70, 70]
 
 
-@pytest.mark.parametrize("name", ["archer", "bandit", "blood_knight"])
+@pytest.mark.parametrize("name", ["archer", "bandit", "blood_knight", "spear_fighter"])
 @pytest.mark.parametrize("external_maps", [False, True], ids=["two_maps", "three_maps"])
 def test_all_external_packages_complete_real_visual_missions_with_shared_runtime(
     name, external_maps, monkeypatch
@@ -274,7 +274,7 @@ def test_all_external_packages_complete_real_visual_missions_with_shared_runtime
         assert result["events"]["skill:slash"] == result["events"]["skill:finisher"] == 3 * count
 
 
-@pytest.mark.parametrize("name", ["archer", "bandit", "blood_knight"])
+@pytest.mark.parametrize("name", ["archer", "bandit", "blood_knight", "spear_fighter"])
 def test_frozen_inputs_fail_boundedly_with_unknown_cast_effects(name):
     result = run_episode(
         config=CapabilityRunConfig(seed=7, job=name, max_steps=180, fault="freeze_input"),
