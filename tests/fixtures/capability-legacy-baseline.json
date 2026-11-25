@@ -1,0 +1,665 @@
+{
+  "schema_version": 1,
+  "baseline_revision": "9aaba7c55ed999eb7288e4cc22b47d0692bb3548",
+  "baseline_simulation_sha256": "16592d8a24488c72b666d76ffc757b2b596f1eba9a3d17517c94e83ebd765bb4",
+  "actions": [
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "buff",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "jump_attack",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "attack",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "attack",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "attack",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "attack",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "attack",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "attack",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "attack",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "attack",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "attack",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "attack",
+      "direction": 1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "idle",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "loot",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "potion_hp",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "potion_mp",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": -1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": -1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": -1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": -1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": -1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": -1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": -1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": -1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": -1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "move",
+      "direction": -1,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "interact",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    },
+    {
+      "kind": "portal",
+      "direction": 0,
+      "skill": "basic",
+      "target": ""
+    }
+  ],
+  "variants": {
+    "assassin": {
+      "trajectory_sha256": "12eb5ddca0d2ae8d0d7bd0d40cbb551cf0d25c3b4543b26ea3a7726cb360638d",
+      "frames_sha256": "d9388dfeefabd50adeb97a075a37e51110223b889f86717eec8ada41641ca662"
+    },
+    "dragon_knight": {
+      "trajectory_sha256": "6daacd03540fa8f3f32b97e0394938aaf99bf4608299b81e0dbb933cb63bc793",
+      "frames_sha256": "4909cf370a17cf36e67fdc3c0ec6c01a7377aaa8775557c0a0d6a5c6ed51724f"
+    },
+    "cleric": {
+      "trajectory_sha256": "88df9a970f8ebe6802f6c5fd816e4411365fa470d5531076f3a6938494df3e15",
+      "frames_sha256": "d502879877b8b2e585711908ed844a491ff8e68bfb44b9ba972a31cbf89399c4"
+    },
+    "profile": {
+      "trajectory_sha256": "c762f98b54195ca6030bae9e5e8f21e3917088e681124fffe73611f7cdabdfe6",
+      "frames_sha256": "bf4db00985487ab88463f6fde9947d441e80279bc96efeff3391ac3055d4629a"
+    },
+    "maps": {
+      "trajectory_sha256": "7e96b1b074171b32173a122730175ea921afb60c6e9c33adce51e0dab0d41afe",
+      "frames_sha256": "b47f0195aaf636fc00b647b112f6c64d04d1bcaf39da6999459b7b2b09e2cca5"
+    }
+  }
+}

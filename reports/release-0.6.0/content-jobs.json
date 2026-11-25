@@ -1,0 +1,3280 @@
+[
+  {
+    "action_replay": {
+      "files_checked": 20,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true,
+      "scope": "deterministic_simulator",
+      "steps_replayed": 281,
+      "verified": true
+    },
+    "name": "builtin/archer",
+    "reinfer": {
+      "action_replay_verified": true,
+      "belief_frames_recomputed": 282,
+      "decision_comparison": "exact; includes guard, action, reason, task and terminal state",
+      "files_unchanged": true,
+      "frames_reinferred": 282,
+      "independent_goal_check": true,
+      "model_hash_verified": false,
+      "observation_tolerances": {
+        "absolute": 1e-06,
+        "relative": 1e-06
+      },
+      "perception_reproduced": true,
+      "perception_settings": {
+        "implementation": "maple_vision.vision.PixelPerception",
+        "inference_options": null,
+        "loaded_model_sha256": null,
+        "model_manifest": null,
+        "pipeline": "pixel-fixture",
+        "verifiable_model_binding": true
+      },
+      "policy_reproduced": true,
+      "recorded_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "recorded_status": "completed",
+      "runtime_identity_matches": true,
+      "runtime_settings": {
+        "schema_version": 1,
+        "settings": {
+          "engine": "structured-v1",
+          "schema_version": 1,
+          "state": {
+            "ambiguity_margin": 0.15,
+            "field_ttl_ms": 1000,
+            "max_age_ms": 250,
+            "max_detections": 128,
+            "max_match_distance": 48.0,
+            "max_tracks": 128,
+            "min_confidence": 0.5,
+            "schema_version": 1,
+            "track_ttl_ms": 500
+          },
+          "tasks": {
+            "clear_confirmations": 4,
+            "effect_timeout_ms": 500,
+            "history_limit": 128,
+            "intent_ttl_ms": 250,
+            "max_attack_attempts": 12,
+            "max_denied_actions": 6,
+            "max_observation_age_ms": 250,
+            "max_recoveries": 2,
+            "max_task_steps": 1000,
+            "max_unknown_steps": 12,
+            "minimum_detection_confidence": 0.5,
+            "plan_timeout_ms": 2000,
+            "schema_version": 1,
+            "stuck_steps": 8
+          }
+        },
+        "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture_perception_and_policy_reexecution",
+      "structured_runtime_reproduced": true,
+      "terminal_decision_compared": true,
+      "terminal_guard_compared": true,
+      "terminal_observation_compared": true,
+      "terminal_runtime_compared": true,
+      "trace_steps_compared": 281,
+      "verification_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "verified": true
+    },
+    "run": {
+      "actions": {
+        "cast": 18,
+        "idle": 62,
+        "interact": 2,
+        "jump": 2,
+        "loot": 6,
+        "move": 190,
+        "portal": 1
+      },
+      "alive": true,
+      "animation": {
+        "content": {
+          "bindings": {
+            "player": "acceptance.player"
+          },
+          "pack": {
+            "clips": [
+              {
+                "action_state": "idle",
+                "class_id": "player",
+                "clip_id": "acceptance.player",
+                "entity_id": "acceptance.player",
+                "frames": [
+                  {
+                    "anchor": [
+                      7,
+                      22
+                    ],
+                    "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                    "duration_ms": 30
+                  },
+                  {
+                    "anchor": [
+                      7,
+                      22
+                    ],
+                    "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                    "duration_ms": 70
+                  }
+                ],
+                "game_version": "fixture-v1",
+                "playback": "loop"
+              }
+            ],
+            "kind": "animation-pack",
+            "pack_sha256": "d1b47c03098e6b18f816cf0ef1b995b4eb956780aeadbe299a042accb5e965b4",
+            "schema_version": 1,
+            "scope": "synthetic_fixture",
+            "sources": {
+              "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e": {
+                "asset": {
+                  "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                  "entity_id": "acceptance.player",
+                  "game_version": "fixture-v1",
+                  "height": 22,
+                  "license": "CC0-1.0",
+                  "media_type": "image/png",
+                  "permission": "self_authored",
+                  "relative_path": "objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+                  "sha256": "4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a",
+                  "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+                  "width": 14
+                },
+                "rgba_sha256": "ffb82568719ba05ea4a1aa60b1801fcfe982a5839d69e0f905c54bed462a1688",
+                "source_file": "animation_objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+                "visible_bbox": [
+                  0,
+                  0,
+                  14,
+                  22
+                ]
+              },
+              "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343": {
+                "asset": {
+                  "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                  "entity_id": "acceptance.player",
+                  "game_version": "fixture-v1",
+                  "height": 22,
+                  "license": "CC0-1.0",
+                  "media_type": "image/png",
+                  "permission": "self_authored",
+                  "relative_path": "objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+                  "sha256": "f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb",
+                  "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+                  "width": 14
+                },
+                "rgba_sha256": "8654273991a28cdce94ec8b22ad191ba22b5c60a4e12a0fc1823e27a3c0e184e",
+                "source_file": "animation_objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+                "visible_bbox": [
+                  0,
+                  0,
+                  14,
+                  22
+                ]
+              }
+            }
+          }
+        },
+        "content_sha256": "5c4bbed87da69164dec159861560e9012e45ddb69921eff68c82fa2afb19243c",
+        "schema_version": 1
+      },
+      "class_package": {
+        "compiler_version": 1,
+        "content": {
+          "bindings": {
+            "airborne": "leap_shot",
+            "area": null,
+            "buff": "focus",
+            "combat": "aimed_shot",
+            "heal": null
+          },
+          "class_id": "archer",
+          "id": "synthetic-archer",
+          "license": "CC0-1.0",
+          "permission": "self_authored",
+          "programs": [
+            {
+              "id": "aimed_shot",
+              "steps": [
+                {
+                  "direction": "target",
+                  "op": "cast",
+                  "skill": "arrow_shot"
+                }
+              ]
+            },
+            {
+              "id": "focus",
+              "steps": [
+                {
+                  "direction": 0,
+                  "op": "cast",
+                  "skill": "focus"
+                }
+              ]
+            },
+            {
+              "id": "leap_shot",
+              "steps": [
+                {
+                  "direction": 0,
+                  "op": "jump"
+                },
+                {
+                  "duration_ms": 50,
+                  "op": "wait"
+                },
+                {
+                  "direction": "target",
+                  "op": "cast",
+                  "skill": "air_arrow"
+                }
+              ]
+            }
+          ],
+          "resources": {
+            "initial_ammo": 250,
+            "jump_speed": 280,
+            "max_hp": 110,
+            "max_mp": 70,
+            "walk_speed": 90
+          },
+          "schema_version": 1,
+          "scope": "synthetic_fixture",
+          "skills": [
+            {
+              "cooldown_group": "weapon",
+              "id": "air_arrow",
+              "kind": "damage",
+              "levels": [
+                {
+                  "ammo_cost": 1,
+                  "cooldown_ms": 250,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 1,
+                  "max_targets": 1,
+                  "mp_cost": 2,
+                  "power": 18,
+                  "range_px": 112,
+                  "vertical_range_px": 48
+                }
+              ],
+              "posture": "air",
+              "selected_level": 1,
+              "shape": "directional"
+            },
+            {
+              "cooldown_group": "weapon",
+              "id": "arrow_shot",
+              "kind": "damage",
+              "levels": [
+                {
+                  "ammo_cost": 1,
+                  "cooldown_ms": 250,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 1,
+                  "max_targets": 1,
+                  "mp_cost": 1,
+                  "power": 16,
+                  "range_px": 108,
+                  "vertical_range_px": 38
+                },
+                {
+                  "ammo_cost": 1,
+                  "cooldown_ms": 250,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 2,
+                  "max_targets": 1,
+                  "mp_cost": 2,
+                  "power": 22,
+                  "range_px": 116,
+                  "vertical_range_px": 38
+                }
+              ],
+              "posture": "ground",
+              "selected_level": 2,
+              "shape": "directional"
+            },
+            {
+              "cooldown_group": "focus",
+              "id": "focus",
+              "kind": "buff",
+              "levels": [
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 500,
+                  "duration_ms": 3000,
+                  "hp_cost": 0,
+                  "level": 1,
+                  "max_targets": 0,
+                  "mp_cost": 4,
+                  "power": 5,
+                  "range_px": 0,
+                  "vertical_range_px": 0
+                }
+              ],
+              "posture": "any",
+              "selected_level": 1,
+              "shape": "self"
+            }
+          ],
+          "source_uri": "urn:maple-vision:self-authored:archer:1",
+          "version": "1.0.0"
+        },
+        "content_sha256": "b1854737beb550eff4b0ef5d1139f99c9e2e3c8768c318b0d04f107edb11be53",
+        "schema_version": 1
+      },
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "archer",
+        "max_steps": 1500,
+        "record_stride": 32,
+        "seed": 0
+      },
+      "detector": "pixel-fixture",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "buff": 4,
+        "buff_expired:focus": 3,
+        "cast": 16,
+        "dialogue": 2,
+        "jump": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6,
+        "skill:air_arrow": 2,
+        "skill:arrow_shot": 10,
+        "skill:focus": 4
+      },
+      "final_coins": 20,
+      "final_state_sha256": "6118d88d8be63af60b9b1ddd3d5161e4523c8850aa8c7cbaf3fea020c28abd4d",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": null,
+      "output": "/workspace/scratch/3968a72df173/v06-acceptance-final/builtin/archer",
+      "paused_steps": 0,
+      "perception_evidence": {
+        "full_terminal_evidence_archive": "content-acceptance.json.gz",
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.vision.PixelPerception",
+          "inference_options": null,
+          "loaded_model_sha256": null,
+          "model_manifest": null,
+          "pipeline": "pixel-fixture",
+          "verifiable_model_binding": true
+        }
+      },
+      "python": "3.12.14",
+      "reason": "visual_mission_conditions_met",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_evidence": {
+        "full_terminal_evidence_archive": "content-acceptance.json.gz",
+        "schema_version": 1,
+        "settings": {
+          "schema_version": 1,
+          "settings": {
+            "engine": "structured-v1",
+            "schema_version": 1,
+            "state": {
+              "ambiguity_margin": 0.15,
+              "field_ttl_ms": 1000,
+              "max_age_ms": 250,
+              "max_detections": 128,
+              "max_match_distance": 48.0,
+              "max_tracks": 128,
+              "min_confidence": 0.5,
+              "schema_version": 1,
+              "track_ttl_ms": 500
+            },
+            "tasks": {
+              "clear_confirmations": 4,
+              "effect_timeout_ms": 500,
+              "history_limit": 128,
+              "intent_ttl_ms": 250,
+              "max_attack_attempts": 12,
+              "max_denied_actions": 6,
+              "max_observation_age_ms": 250,
+              "max_recoveries": 2,
+              "max_task_steps": 1000,
+              "max_unknown_steps": 12,
+              "minimum_detection_confidence": 0.5,
+              "plan_timeout_ms": 2000,
+              "schema_version": 1,
+              "stuck_steps": 8
+            }
+          },
+          "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+        }
+      },
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "schema_version": 2,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 14.05,
+      "status": "completed",
+      "steps": 281,
+      "visual_effects": {
+        "not_applicable": 62,
+        "observed": 195,
+        "unknown": 24
+      },
+      "wall_seconds": 1.095392
+    }
+  },
+  {
+    "action_replay": {
+      "files_checked": 20,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true,
+      "scope": "deterministic_simulator",
+      "steps_replayed": 281,
+      "verified": true
+    },
+    "name": "builtin/bandit",
+    "reinfer": {
+      "action_replay_verified": true,
+      "belief_frames_recomputed": 282,
+      "decision_comparison": "exact; includes guard, action, reason, task and terminal state",
+      "files_unchanged": true,
+      "frames_reinferred": 282,
+      "independent_goal_check": true,
+      "model_hash_verified": false,
+      "observation_tolerances": {
+        "absolute": 1e-06,
+        "relative": 1e-06
+      },
+      "perception_reproduced": true,
+      "perception_settings": {
+        "implementation": "maple_vision.vision.PixelPerception",
+        "inference_options": null,
+        "loaded_model_sha256": null,
+        "model_manifest": null,
+        "pipeline": "pixel-fixture",
+        "verifiable_model_binding": true
+      },
+      "policy_reproduced": true,
+      "recorded_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "recorded_status": "completed",
+      "runtime_identity_matches": true,
+      "runtime_settings": {
+        "schema_version": 1,
+        "settings": {
+          "engine": "structured-v1",
+          "schema_version": 1,
+          "state": {
+            "ambiguity_margin": 0.15,
+            "field_ttl_ms": 1000,
+            "max_age_ms": 250,
+            "max_detections": 128,
+            "max_match_distance": 48.0,
+            "max_tracks": 128,
+            "min_confidence": 0.5,
+            "schema_version": 1,
+            "track_ttl_ms": 500
+          },
+          "tasks": {
+            "clear_confirmations": 4,
+            "effect_timeout_ms": 500,
+            "history_limit": 128,
+            "intent_ttl_ms": 250,
+            "max_attack_attempts": 12,
+            "max_denied_actions": 6,
+            "max_observation_age_ms": 250,
+            "max_recoveries": 2,
+            "max_task_steps": 1000,
+            "max_unknown_steps": 12,
+            "minimum_detection_confidence": 0.5,
+            "plan_timeout_ms": 2000,
+            "schema_version": 1,
+            "stuck_steps": 8
+          }
+        },
+        "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture_perception_and_policy_reexecution",
+      "structured_runtime_reproduced": true,
+      "terminal_decision_compared": true,
+      "terminal_guard_compared": true,
+      "terminal_observation_compared": true,
+      "terminal_runtime_compared": true,
+      "trace_steps_compared": 281,
+      "verification_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "verified": true
+    },
+    "run": {
+      "actions": {
+        "cast": 12,
+        "idle": 24,
+        "interact": 2,
+        "loot": 6,
+        "move": 236,
+        "portal": 1
+      },
+      "alive": true,
+      "animation": {
+        "content": {
+          "bindings": {
+            "player": "acceptance.player"
+          },
+          "pack": {
+            "clips": [
+              {
+                "action_state": "idle",
+                "class_id": "player",
+                "clip_id": "acceptance.player",
+                "entity_id": "acceptance.player",
+                "frames": [
+                  {
+                    "anchor": [
+                      7,
+                      22
+                    ],
+                    "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                    "duration_ms": 30
+                  },
+                  {
+                    "anchor": [
+                      7,
+                      22
+                    ],
+                    "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                    "duration_ms": 70
+                  }
+                ],
+                "game_version": "fixture-v1",
+                "playback": "loop"
+              }
+            ],
+            "kind": "animation-pack",
+            "pack_sha256": "d1b47c03098e6b18f816cf0ef1b995b4eb956780aeadbe299a042accb5e965b4",
+            "schema_version": 1,
+            "scope": "synthetic_fixture",
+            "sources": {
+              "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e": {
+                "asset": {
+                  "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                  "entity_id": "acceptance.player",
+                  "game_version": "fixture-v1",
+                  "height": 22,
+                  "license": "CC0-1.0",
+                  "media_type": "image/png",
+                  "permission": "self_authored",
+                  "relative_path": "objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+                  "sha256": "4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a",
+                  "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+                  "width": 14
+                },
+                "rgba_sha256": "ffb82568719ba05ea4a1aa60b1801fcfe982a5839d69e0f905c54bed462a1688",
+                "source_file": "animation_objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+                "visible_bbox": [
+                  0,
+                  0,
+                  14,
+                  22
+                ]
+              },
+              "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343": {
+                "asset": {
+                  "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                  "entity_id": "acceptance.player",
+                  "game_version": "fixture-v1",
+                  "height": 22,
+                  "license": "CC0-1.0",
+                  "media_type": "image/png",
+                  "permission": "self_authored",
+                  "relative_path": "objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+                  "sha256": "f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb",
+                  "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+                  "width": 14
+                },
+                "rgba_sha256": "8654273991a28cdce94ec8b22ad191ba22b5c60a4e12a0fc1823e27a3c0e184e",
+                "source_file": "animation_objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+                "visible_bbox": [
+                  0,
+                  0,
+                  14,
+                  22
+                ]
+              }
+            }
+          }
+        },
+        "content_sha256": "5c4bbed87da69164dec159861560e9012e45ddb69921eff68c82fa2afb19243c",
+        "schema_version": 1
+      },
+      "class_package": {
+        "compiler_version": 1,
+        "content": {
+          "bindings": {
+            "airborne": null,
+            "area": null,
+            "buff": null,
+            "combat": "dagger_combo",
+            "heal": null
+          },
+          "class_id": "bandit",
+          "id": "synthetic-bandit",
+          "license": "CC0-1.0",
+          "permission": "self_authored",
+          "programs": [
+            {
+              "id": "dagger_combo",
+              "steps": [
+                {
+                  "direction": "target",
+                  "op": "cast",
+                  "skill": "slash"
+                },
+                {
+                  "duration_ms": 150,
+                  "op": "wait"
+                },
+                {
+                  "direction": "target",
+                  "op": "cast",
+                  "skill": "finisher"
+                }
+              ]
+            }
+          ],
+          "resources": {
+            "initial_ammo": 0,
+            "jump_speed": 280,
+            "max_hp": 120,
+            "max_mp": 70,
+            "walk_speed": 85
+          },
+          "schema_version": 1,
+          "scope": "synthetic_fixture",
+          "skills": [
+            {
+              "cooldown_group": "weapon",
+              "id": "finisher",
+              "kind": "damage",
+              "levels": [
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 300,
+                  "duration_ms": 0,
+                  "hp_cost": 3,
+                  "level": 1,
+                  "max_targets": 1,
+                  "mp_cost": 2,
+                  "power": 20,
+                  "range_px": 42,
+                  "vertical_range_px": 38
+                }
+              ],
+              "posture": "ground",
+              "selected_level": 1,
+              "shape": "directional"
+            },
+            {
+              "cooldown_group": "weapon",
+              "id": "slash",
+              "kind": "damage",
+              "levels": [
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 150,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 1,
+                  "max_targets": 1,
+                  "mp_cost": 1,
+                  "power": 12,
+                  "range_px": 40,
+                  "vertical_range_px": 38
+                },
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 150,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 2,
+                  "max_targets": 1,
+                  "mp_cost": 2,
+                  "power": 18,
+                  "range_px": 42,
+                  "vertical_range_px": 38
+                }
+              ],
+              "posture": "ground",
+              "selected_level": 2,
+              "shape": "directional"
+            }
+          ],
+          "source_uri": "urn:maple-vision:self-authored:bandit:1",
+          "version": "1.0.0"
+        },
+        "content_sha256": "4745663d89b2022a491db5d822947be8fc0cc02b822544c77ea949f7ae590da3",
+        "schema_version": 1
+      },
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "bandit",
+        "max_steps": 1500,
+        "record_stride": 32,
+        "seed": 0
+      },
+      "detector": "pixel-fixture",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "cast": 12,
+        "dialogue": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6,
+        "skill:finisher": 6,
+        "skill:slash": 6
+      },
+      "final_coins": 20,
+      "final_state_sha256": "12713e4658eedfcf29446e1e047135c978da9e535e25ff539a66bf043e1c3479",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": null,
+      "output": "/workspace/scratch/3968a72df173/v06-acceptance-final/builtin/bandit",
+      "paused_steps": 0,
+      "perception_evidence": {
+        "full_terminal_evidence_archive": "content-acceptance.json.gz",
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.vision.PixelPerception",
+          "inference_options": null,
+          "loaded_model_sha256": null,
+          "model_manifest": null,
+          "pipeline": "pixel-fixture",
+          "verifiable_model_binding": true
+        }
+      },
+      "python": "3.12.14",
+      "reason": "visual_mission_conditions_met",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_evidence": {
+        "full_terminal_evidence_archive": "content-acceptance.json.gz",
+        "schema_version": 1,
+        "settings": {
+          "schema_version": 1,
+          "settings": {
+            "engine": "structured-v1",
+            "schema_version": 1,
+            "state": {
+              "ambiguity_margin": 0.15,
+              "field_ttl_ms": 1000,
+              "max_age_ms": 250,
+              "max_detections": 128,
+              "max_match_distance": 48.0,
+              "max_tracks": 128,
+              "min_confidence": 0.5,
+              "schema_version": 1,
+              "track_ttl_ms": 500
+            },
+            "tasks": {
+              "clear_confirmations": 4,
+              "effect_timeout_ms": 500,
+              "history_limit": 128,
+              "intent_ttl_ms": 250,
+              "max_attack_attempts": 12,
+              "max_denied_actions": 6,
+              "max_observation_age_ms": 250,
+              "max_recoveries": 2,
+              "max_task_steps": 1000,
+              "max_unknown_steps": 12,
+              "minimum_detection_confidence": 0.5,
+              "plan_timeout_ms": 2000,
+              "schema_version": 1,
+              "stuck_steps": 8
+            }
+          },
+          "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+        }
+      },
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "schema_version": 2,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 14.05,
+      "status": "completed",
+      "steps": 281,
+      "visual_effects": {
+        "not_applicable": 24,
+        "observed": 239,
+        "unknown": 18
+      },
+      "wall_seconds": 0.929622
+    }
+  },
+  {
+    "action_replay": {
+      "files_checked": 21,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true,
+      "scope": "deterministic_simulator",
+      "steps_replayed": 316,
+      "verified": true
+    },
+    "name": "builtin/blood_knight",
+    "reinfer": {
+      "action_replay_verified": true,
+      "belief_frames_recomputed": 317,
+      "decision_comparison": "exact; includes guard, action, reason, task and terminal state",
+      "files_unchanged": true,
+      "frames_reinferred": 317,
+      "independent_goal_check": true,
+      "model_hash_verified": false,
+      "observation_tolerances": {
+        "absolute": 1e-06,
+        "relative": 1e-06
+      },
+      "perception_reproduced": true,
+      "perception_settings": {
+        "implementation": "maple_vision.vision.PixelPerception",
+        "inference_options": null,
+        "loaded_model_sha256": null,
+        "model_manifest": null,
+        "pipeline": "pixel-fixture",
+        "verifiable_model_binding": true
+      },
+      "policy_reproduced": true,
+      "recorded_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "recorded_status": "completed",
+      "runtime_identity_matches": true,
+      "runtime_settings": {
+        "schema_version": 1,
+        "settings": {
+          "engine": "structured-v1",
+          "schema_version": 1,
+          "state": {
+            "ambiguity_margin": 0.15,
+            "field_ttl_ms": 1000,
+            "max_age_ms": 250,
+            "max_detections": 128,
+            "max_match_distance": 48.0,
+            "max_tracks": 128,
+            "min_confidence": 0.5,
+            "schema_version": 1,
+            "track_ttl_ms": 500
+          },
+          "tasks": {
+            "clear_confirmations": 4,
+            "effect_timeout_ms": 500,
+            "history_limit": 128,
+            "intent_ttl_ms": 250,
+            "max_attack_attempts": 12,
+            "max_denied_actions": 6,
+            "max_observation_age_ms": 250,
+            "max_recoveries": 2,
+            "max_task_steps": 1000,
+            "max_unknown_steps": 12,
+            "minimum_detection_confidence": 0.5,
+            "plan_timeout_ms": 2000,
+            "schema_version": 1,
+            "stuck_steps": 8
+          }
+        },
+        "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture_perception_and_policy_reexecution",
+      "structured_runtime_reproduced": true,
+      "terminal_decision_compared": true,
+      "terminal_guard_compared": true,
+      "terminal_observation_compared": true,
+      "terminal_runtime_compared": true,
+      "trace_steps_compared": 316,
+      "verification_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "verified": true
+    },
+    "run": {
+      "actions": {
+        "cast": 12,
+        "idle": 42,
+        "interact": 2,
+        "loot": 6,
+        "move": 253,
+        "portal": 1
+      },
+      "alive": true,
+      "animation": {
+        "content": {
+          "bindings": {
+            "player": "acceptance.player"
+          },
+          "pack": {
+            "clips": [
+              {
+                "action_state": "idle",
+                "class_id": "player",
+                "clip_id": "acceptance.player",
+                "entity_id": "acceptance.player",
+                "frames": [
+                  {
+                    "anchor": [
+                      7,
+                      22
+                    ],
+                    "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                    "duration_ms": 30
+                  },
+                  {
+                    "anchor": [
+                      7,
+                      22
+                    ],
+                    "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                    "duration_ms": 70
+                  }
+                ],
+                "game_version": "fixture-v1",
+                "playback": "loop"
+              }
+            ],
+            "kind": "animation-pack",
+            "pack_sha256": "d1b47c03098e6b18f816cf0ef1b995b4eb956780aeadbe299a042accb5e965b4",
+            "schema_version": 1,
+            "scope": "synthetic_fixture",
+            "sources": {
+              "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e": {
+                "asset": {
+                  "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                  "entity_id": "acceptance.player",
+                  "game_version": "fixture-v1",
+                  "height": 22,
+                  "license": "CC0-1.0",
+                  "media_type": "image/png",
+                  "permission": "self_authored",
+                  "relative_path": "objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+                  "sha256": "4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a",
+                  "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+                  "width": 14
+                },
+                "rgba_sha256": "ffb82568719ba05ea4a1aa60b1801fcfe982a5839d69e0f905c54bed462a1688",
+                "source_file": "animation_objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+                "visible_bbox": [
+                  0,
+                  0,
+                  14,
+                  22
+                ]
+              },
+              "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343": {
+                "asset": {
+                  "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                  "entity_id": "acceptance.player",
+                  "game_version": "fixture-v1",
+                  "height": 22,
+                  "license": "CC0-1.0",
+                  "media_type": "image/png",
+                  "permission": "self_authored",
+                  "relative_path": "objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+                  "sha256": "f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb",
+                  "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+                  "width": 14
+                },
+                "rgba_sha256": "8654273991a28cdce94ec8b22ad191ba22b5c60a4e12a0fc1823e27a3c0e184e",
+                "source_file": "animation_objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+                "visible_bbox": [
+                  0,
+                  0,
+                  14,
+                  22
+                ]
+              }
+            }
+          }
+        },
+        "content_sha256": "5c4bbed87da69164dec159861560e9012e45ddb69921eff68c82fa2afb19243c",
+        "schema_version": 1
+      },
+      "class_package": {
+        "compiler_version": 1,
+        "content": {
+          "bindings": {
+            "airborne": null,
+            "area": "blood_wave",
+            "buff": null,
+            "combat": "heavy_strike",
+            "heal": "recover"
+          },
+          "class_id": "blood_knight",
+          "id": "synthetic-blood_knight",
+          "license": "CC0-1.0",
+          "permission": "self_authored",
+          "programs": [
+            {
+              "id": "blood_wave",
+              "steps": [
+                {
+                  "direction": "target",
+                  "op": "cast",
+                  "skill": "blood_wave"
+                }
+              ]
+            },
+            {
+              "id": "heavy_strike",
+              "steps": [
+                {
+                  "direction": "target",
+                  "op": "cast",
+                  "skill": "heavy_strike"
+                }
+              ]
+            },
+            {
+              "id": "recover",
+              "steps": [
+                {
+                  "direction": 0,
+                  "op": "cast",
+                  "skill": "recover"
+                }
+              ]
+            }
+          ],
+          "resources": {
+            "initial_ammo": 0,
+            "jump_speed": 280,
+            "max_hp": 160,
+            "max_mp": 60,
+            "walk_speed": 80
+          },
+          "schema_version": 1,
+          "scope": "synthetic_fixture",
+          "skills": [
+            {
+              "cooldown_group": "weapon",
+              "id": "blood_wave",
+              "kind": "damage",
+              "levels": [
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 300,
+                  "duration_ms": 0,
+                  "hp_cost": 12,
+                  "level": 1,
+                  "max_targets": 3,
+                  "mp_cost": 0,
+                  "power": 30,
+                  "range_px": 72,
+                  "vertical_range_px": 38
+                }
+              ],
+              "posture": "ground",
+              "selected_level": 1,
+              "shape": "radial"
+            },
+            {
+              "cooldown_group": "weapon",
+              "id": "heavy_strike",
+              "kind": "damage",
+              "levels": [
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 300,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 1,
+                  "max_targets": 1,
+                  "mp_cost": 0,
+                  "power": 24,
+                  "range_px": 46,
+                  "vertical_range_px": 38
+                }
+              ],
+              "posture": "ground",
+              "selected_level": 1,
+              "shape": "directional"
+            },
+            {
+              "cooldown_group": "recover",
+              "id": "recover",
+              "kind": "heal",
+              "levels": [
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 500,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 1,
+                  "max_targets": 0,
+                  "mp_cost": 8,
+                  "power": 35,
+                  "range_px": 0,
+                  "vertical_range_px": 0
+                }
+              ],
+              "posture": "ground",
+              "selected_level": 1,
+              "shape": "self"
+            }
+          ],
+          "source_uri": "urn:maple-vision:self-authored:blood_knight:1",
+          "version": "1.0.0"
+        },
+        "content_sha256": "b094b3b9e70fbc5d69833edd2c0db315230d2fd024552b916ab20444acd090cd",
+        "schema_version": 1
+      },
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "blood_knight",
+        "max_steps": 1500,
+        "record_stride": 32,
+        "seed": 0
+      },
+      "detector": "pixel-fixture",
+      "dialogue_maps": [
+        "cavern",
+        "meadow"
+      ],
+      "drops_collected": 6,
+      "events": {
+        "attack": 12,
+        "attack_hit": 12,
+        "cast": 12,
+        "dialogue": 2,
+        "loot": 6,
+        "map_changed": 1,
+        "monster_defeated": 6,
+        "skill:heavy_strike": 12
+      },
+      "final_coins": 20,
+      "final_state_sha256": "80a7bc8dca95d716372ba5970ebb23b42348ace18f10bb23ba767b9b52909e48",
+      "independent_goal_check": true,
+      "maps_visited": [
+        "cavern",
+        "meadow"
+      ],
+      "model_manifest": null,
+      "output": "/workspace/scratch/3968a72df173/v06-acceptance-final/builtin/blood_knight",
+      "paused_steps": 0,
+      "perception_evidence": {
+        "full_terminal_evidence_archive": "content-acceptance.json.gz",
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.vision.PixelPerception",
+          "inference_options": null,
+          "loaded_model_sha256": null,
+          "model_manifest": null,
+          "pipeline": "pixel-fixture",
+          "verifiable_model_binding": true
+        }
+      },
+      "python": "3.12.14",
+      "reason": "visual_mission_conditions_met",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_evidence": {
+        "full_terminal_evidence_archive": "content-acceptance.json.gz",
+        "schema_version": 1,
+        "settings": {
+          "schema_version": 1,
+          "settings": {
+            "engine": "structured-v1",
+            "schema_version": 1,
+            "state": {
+              "ambiguity_margin": 0.15,
+              "field_ttl_ms": 1000,
+              "max_age_ms": 250,
+              "max_detections": 128,
+              "max_match_distance": 48.0,
+              "max_tracks": 128,
+              "min_confidence": 0.5,
+              "schema_version": 1,
+              "track_ttl_ms": 500
+            },
+            "tasks": {
+              "clear_confirmations": 4,
+              "effect_timeout_ms": 500,
+              "history_limit": 128,
+              "intent_ttl_ms": 250,
+              "max_attack_attempts": 12,
+              "max_denied_actions": 6,
+              "max_observation_age_ms": 250,
+              "max_recoveries": 2,
+              "max_task_steps": 1000,
+              "max_unknown_steps": 12,
+              "minimum_detection_confidence": 0.5,
+              "plan_timeout_ms": 2000,
+              "schema_version": 1,
+              "stuck_steps": 8
+            }
+          },
+          "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+        }
+      },
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "schema_version": 2,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 15.8,
+      "status": "completed",
+      "steps": 316,
+      "visual_effects": {
+        "not_applicable": 42,
+        "observed": 256,
+        "unknown": 18
+      },
+      "wall_seconds": 1.155676
+    }
+  },
+  {
+    "action_replay": {
+      "files_checked": 29,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true,
+      "scope": "deterministic_simulator",
+      "steps_replayed": 519,
+      "verified": true
+    },
+    "name": "external/archer",
+    "reinfer": {
+      "action_replay_verified": true,
+      "belief_frames_recomputed": 520,
+      "decision_comparison": "exact; includes guard, action, reason, task and terminal state",
+      "files_unchanged": true,
+      "frames_reinferred": 520,
+      "independent_goal_check": true,
+      "model_hash_verified": false,
+      "observation_tolerances": {
+        "absolute": 1e-06,
+        "relative": 1e-06
+      },
+      "perception_reproduced": true,
+      "perception_settings": {
+        "implementation": "maple_vision.vision.PixelPerception",
+        "inference_options": null,
+        "loaded_model_sha256": null,
+        "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+        "model_manifest": null,
+        "pipeline": "pixel-fixture",
+        "verifiable_model_binding": true
+      },
+      "policy_reproduced": true,
+      "recorded_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "recorded_status": "completed",
+      "runtime_identity_matches": true,
+      "runtime_settings": {
+        "schema_version": 1,
+        "settings": {
+          "engine": "structured-v1",
+          "schema_version": 1,
+          "state": {
+            "ambiguity_margin": 0.15,
+            "field_ttl_ms": 1000,
+            "max_age_ms": 250,
+            "max_detections": 128,
+            "max_match_distance": 48.0,
+            "max_tracks": 128,
+            "min_confidence": 0.5,
+            "schema_version": 1,
+            "track_ttl_ms": 500
+          },
+          "tasks": {
+            "clear_confirmations": 4,
+            "effect_timeout_ms": 500,
+            "history_limit": 128,
+            "intent_ttl_ms": 250,
+            "max_attack_attempts": 12,
+            "max_denied_actions": 6,
+            "max_observation_age_ms": 250,
+            "max_recoveries": 2,
+            "max_task_steps": 1000,
+            "max_unknown_steps": 12,
+            "minimum_detection_confidence": 0.5,
+            "plan_timeout_ms": 2000,
+            "schema_version": 1,
+            "stuck_steps": 8
+          }
+        },
+        "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture_perception_and_policy_reexecution",
+      "structured_runtime_reproduced": true,
+      "terminal_decision_compared": true,
+      "terminal_guard_compared": true,
+      "terminal_observation_compared": true,
+      "terminal_runtime_compared": true,
+      "trace_steps_compared": 519,
+      "verification_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "verified": true
+    },
+    "run": {
+      "actions": {
+        "cast": 26,
+        "idle": 93,
+        "interact": 3,
+        "jump": 3,
+        "loot": 9,
+        "move": 382,
+        "portal": 2,
+        "potion_mp": 1
+      },
+      "alive": true,
+      "animation": {
+        "content": {
+          "bindings": {
+            "player": "acceptance.player"
+          },
+          "pack": {
+            "clips": [
+              {
+                "action_state": "idle",
+                "class_id": "player",
+                "clip_id": "acceptance.player",
+                "entity_id": "acceptance.player",
+                "frames": [
+                  {
+                    "anchor": [
+                      7,
+                      22
+                    ],
+                    "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                    "duration_ms": 30
+                  },
+                  {
+                    "anchor": [
+                      7,
+                      22
+                    ],
+                    "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                    "duration_ms": 70
+                  }
+                ],
+                "game_version": "fixture-v1",
+                "playback": "loop"
+              }
+            ],
+            "kind": "animation-pack",
+            "pack_sha256": "d1b47c03098e6b18f816cf0ef1b995b4eb956780aeadbe299a042accb5e965b4",
+            "schema_version": 1,
+            "scope": "synthetic_fixture",
+            "sources": {
+              "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e": {
+                "asset": {
+                  "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                  "entity_id": "acceptance.player",
+                  "game_version": "fixture-v1",
+                  "height": 22,
+                  "license": "CC0-1.0",
+                  "media_type": "image/png",
+                  "permission": "self_authored",
+                  "relative_path": "objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+                  "sha256": "4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a",
+                  "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+                  "width": 14
+                },
+                "rgba_sha256": "ffb82568719ba05ea4a1aa60b1801fcfe982a5839d69e0f905c54bed462a1688",
+                "source_file": "animation_objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+                "visible_bbox": [
+                  0,
+                  0,
+                  14,
+                  22
+                ]
+              },
+              "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343": {
+                "asset": {
+                  "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                  "entity_id": "acceptance.player",
+                  "game_version": "fixture-v1",
+                  "height": 22,
+                  "license": "CC0-1.0",
+                  "media_type": "image/png",
+                  "permission": "self_authored",
+                  "relative_path": "objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+                  "sha256": "f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb",
+                  "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+                  "width": 14
+                },
+                "rgba_sha256": "8654273991a28cdce94ec8b22ad191ba22b5c60a4e12a0fc1823e27a3c0e184e",
+                "source_file": "animation_objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+                "visible_bbox": [
+                  0,
+                  0,
+                  14,
+                  22
+                ]
+              }
+            }
+          }
+        },
+        "content_sha256": "5c4bbed87da69164dec159861560e9012e45ddb69921eff68c82fa2afb19243c",
+        "schema_version": 1
+      },
+      "class_package": {
+        "compiler_version": 1,
+        "content": {
+          "bindings": {
+            "airborne": "leap_shot",
+            "area": null,
+            "buff": "focus",
+            "combat": "aimed_shot",
+            "heal": null
+          },
+          "class_id": "archer",
+          "id": "synthetic-archer",
+          "license": "CC0-1.0",
+          "permission": "self_authored",
+          "programs": [
+            {
+              "id": "aimed_shot",
+              "steps": [
+                {
+                  "direction": "target",
+                  "op": "cast",
+                  "skill": "arrow_shot"
+                }
+              ]
+            },
+            {
+              "id": "focus",
+              "steps": [
+                {
+                  "direction": 0,
+                  "op": "cast",
+                  "skill": "focus"
+                }
+              ]
+            },
+            {
+              "id": "leap_shot",
+              "steps": [
+                {
+                  "direction": 0,
+                  "op": "jump"
+                },
+                {
+                  "duration_ms": 50,
+                  "op": "wait"
+                },
+                {
+                  "direction": "target",
+                  "op": "cast",
+                  "skill": "air_arrow"
+                }
+              ]
+            }
+          ],
+          "resources": {
+            "initial_ammo": 250,
+            "jump_speed": 280,
+            "max_hp": 110,
+            "max_mp": 70,
+            "walk_speed": 90
+          },
+          "schema_version": 1,
+          "scope": "synthetic_fixture",
+          "skills": [
+            {
+              "cooldown_group": "weapon",
+              "id": "air_arrow",
+              "kind": "damage",
+              "levels": [
+                {
+                  "ammo_cost": 1,
+                  "cooldown_ms": 250,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 1,
+                  "max_targets": 1,
+                  "mp_cost": 2,
+                  "power": 18,
+                  "range_px": 112,
+                  "vertical_range_px": 48
+                }
+              ],
+              "posture": "air",
+              "selected_level": 1,
+              "shape": "directional"
+            },
+            {
+              "cooldown_group": "weapon",
+              "id": "arrow_shot",
+              "kind": "damage",
+              "levels": [
+                {
+                  "ammo_cost": 1,
+                  "cooldown_ms": 250,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 1,
+                  "max_targets": 1,
+                  "mp_cost": 1,
+                  "power": 16,
+                  "range_px": 108,
+                  "vertical_range_px": 38
+                },
+                {
+                  "ammo_cost": 1,
+                  "cooldown_ms": 250,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 2,
+                  "max_targets": 1,
+                  "mp_cost": 2,
+                  "power": 22,
+                  "range_px": 116,
+                  "vertical_range_px": 38
+                }
+              ],
+              "posture": "ground",
+              "selected_level": 2,
+              "shape": "directional"
+            },
+            {
+              "cooldown_group": "focus",
+              "id": "focus",
+              "kind": "buff",
+              "levels": [
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 500,
+                  "duration_ms": 3000,
+                  "hp_cost": 0,
+                  "level": 1,
+                  "max_targets": 0,
+                  "mp_cost": 4,
+                  "power": 5,
+                  "range_px": 0,
+                  "vertical_range_px": 0
+                }
+              ],
+              "posture": "any",
+              "selected_level": 1,
+              "shape": "self"
+            }
+          ],
+          "source_uri": "urn:maple-vision:self-authored:archer:1",
+          "version": "1.0.0"
+        },
+        "content_sha256": "b1854737beb550eff4b0ef5d1139f99c9e2e3c8768c318b0d04f107edb11be53",
+        "schema_version": 1
+      },
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "archer",
+        "max_steps": 1500,
+        "record_stride": 32,
+        "seed": 0
+      },
+      "detector": "pixel-fixture",
+      "dialogue_maps": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "drops_collected": 9,
+      "events": {
+        "attack": 18,
+        "attack_hit": 18,
+        "buff": 5,
+        "buff_expired:focus": 5,
+        "cast": 23,
+        "dialogue": 3,
+        "jump": 3,
+        "loot": 9,
+        "map_changed": 2,
+        "monster_defeated": 9,
+        "potion_mp": 1,
+        "skill:air_arrow": 3,
+        "skill:arrow_shot": 15,
+        "skill:focus": 5
+      },
+      "final_coins": 29,
+      "final_state_sha256": "f498c5748da1634beaf8fd8ea12afc949fe8f92647e41622e39bc3c6544a9dc4",
+      "independent_goal_check": true,
+      "map_pack": {
+        "content": {
+          "ground": 168,
+          "height": 192,
+          "id": "three-map-fixture",
+          "license": "CC0-1.0",
+          "maps": [
+            {
+              "id": "grove",
+              "ladders": [
+                {
+                  "h": 44,
+                  "w": 10,
+                  "x": 94,
+                  "y": 124
+                }
+              ],
+              "marker": [
+                41,
+                157,
+                131
+              ],
+              "monster_x": [
+                130,
+                210,
+                258
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "grove_guide",
+                  "w": 14,
+                  "x": 42,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 68,
+                  "x2": 132,
+                  "y": 124
+                },
+                {
+                  "x1": 184,
+                  "x2": 246,
+                  "y": 100
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "quarry",
+                  "h": 36,
+                  "id": "to_quarry",
+                  "w": 20,
+                  "x": 292,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 24,
+              "theme": "meadow"
+            },
+            {
+              "id": "quarry",
+              "ladders": [
+                {
+                  "h": 50,
+                  "w": 10,
+                  "x": 110,
+                  "y": 118
+                }
+              ],
+              "marker": [
+                151,
+                93,
+                171
+              ],
+              "monster_x": [
+                74,
+                150,
+                224
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "quarry_keeper",
+                  "w": 14,
+                  "x": 278,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 78,
+                  "x2": 148,
+                  "y": 118
+                },
+                {
+                  "x1": 208,
+                  "x2": 276,
+                  "y": 94
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "ruins",
+                  "h": 36,
+                  "id": "to_ruins",
+                  "w": 20,
+                  "x": 8,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 268,
+              "theme": "cavern"
+            },
+            {
+              "id": "ruins",
+              "ladders": [
+                {
+                  "h": 48,
+                  "w": 10,
+                  "x": 114,
+                  "y": 120
+                }
+              ],
+              "marker": [
+                199,
+                143,
+                77
+              ],
+              "monster_x": [
+                120,
+                196,
+                258
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "ruins_keeper",
+                  "w": 14,
+                  "x": 40,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 82,
+                  "x2": 154,
+                  "y": 120
+                },
+                {
+                  "x1": 204,
+                  "x2": 268,
+                  "y": 96
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "grove",
+                  "h": 36,
+                  "id": "to_grove",
+                  "w": 20,
+                  "x": 292,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 24,
+              "theme": "cavern"
+            }
+          ],
+          "permission": "self_authored",
+          "route": [
+            "grove",
+            "quarry",
+            "ruins"
+          ],
+          "schema_version": 1,
+          "scope": "synthetic_fixture",
+          "source_uri": "urn:maple-vision:self-authored:three-map-fixture",
+          "version": "1.0.0",
+          "width": 320
+        },
+        "content_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+        "schema_version": 1
+      },
+      "maps_visited": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "model_manifest": null,
+      "output": "/workspace/scratch/3968a72df173/v06-acceptance-final/external/archer",
+      "paused_steps": 0,
+      "perception_evidence": {
+        "full_terminal_evidence_archive": "content-acceptance.json.gz",
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.vision.PixelPerception",
+          "inference_options": null,
+          "loaded_model_sha256": null,
+          "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+          "model_manifest": null,
+          "pipeline": "pixel-fixture",
+          "verifiable_model_binding": true
+        }
+      },
+      "python": "3.12.14",
+      "reason": "visual_mission_conditions_met",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_evidence": {
+        "full_terminal_evidence_archive": "content-acceptance.json.gz",
+        "schema_version": 1,
+        "settings": {
+          "schema_version": 1,
+          "settings": {
+            "engine": "structured-v1",
+            "schema_version": 1,
+            "state": {
+              "ambiguity_margin": 0.15,
+              "field_ttl_ms": 1000,
+              "max_age_ms": 250,
+              "max_detections": 128,
+              "max_match_distance": 48.0,
+              "max_tracks": 128,
+              "min_confidence": 0.5,
+              "schema_version": 1,
+              "track_ttl_ms": 500
+            },
+            "tasks": {
+              "clear_confirmations": 4,
+              "effect_timeout_ms": 500,
+              "history_limit": 128,
+              "intent_ttl_ms": 250,
+              "max_attack_attempts": 12,
+              "max_denied_actions": 6,
+              "max_observation_age_ms": 250,
+              "max_recoveries": 2,
+              "max_task_steps": 1000,
+              "max_unknown_steps": 12,
+              "minimum_detection_confidence": 0.5,
+              "plan_timeout_ms": 2000,
+              "schema_version": 1,
+              "stuck_steps": 8
+            }
+          },
+          "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+        }
+      },
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "schema_version": 2,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 25.95,
+      "status": "completed",
+      "steps": 519,
+      "visual_effects": {
+        "not_applicable": 93,
+        "observed": 391,
+        "unknown": 35
+      },
+      "wall_seconds": 1.948018
+    }
+  },
+  {
+    "action_replay": {
+      "files_checked": 26,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true,
+      "scope": "deterministic_simulator",
+      "steps_replayed": 436,
+      "verified": true
+    },
+    "name": "external/bandit",
+    "reinfer": {
+      "action_replay_verified": true,
+      "belief_frames_recomputed": 437,
+      "decision_comparison": "exact; includes guard, action, reason, task and terminal state",
+      "files_unchanged": true,
+      "frames_reinferred": 437,
+      "independent_goal_check": true,
+      "model_hash_verified": false,
+      "observation_tolerances": {
+        "absolute": 1e-06,
+        "relative": 1e-06
+      },
+      "perception_reproduced": true,
+      "perception_settings": {
+        "implementation": "maple_vision.vision.PixelPerception",
+        "inference_options": null,
+        "loaded_model_sha256": null,
+        "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+        "model_manifest": null,
+        "pipeline": "pixel-fixture",
+        "verifiable_model_binding": true
+      },
+      "policy_reproduced": true,
+      "recorded_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "recorded_status": "completed",
+      "runtime_identity_matches": true,
+      "runtime_settings": {
+        "schema_version": 1,
+        "settings": {
+          "engine": "structured-v1",
+          "schema_version": 1,
+          "state": {
+            "ambiguity_margin": 0.15,
+            "field_ttl_ms": 1000,
+            "max_age_ms": 250,
+            "max_detections": 128,
+            "max_match_distance": 48.0,
+            "max_tracks": 128,
+            "min_confidence": 0.5,
+            "schema_version": 1,
+            "track_ttl_ms": 500
+          },
+          "tasks": {
+            "clear_confirmations": 4,
+            "effect_timeout_ms": 500,
+            "history_limit": 128,
+            "intent_ttl_ms": 250,
+            "max_attack_attempts": 12,
+            "max_denied_actions": 6,
+            "max_observation_age_ms": 250,
+            "max_recoveries": 2,
+            "max_task_steps": 1000,
+            "max_unknown_steps": 12,
+            "minimum_detection_confidence": 0.5,
+            "plan_timeout_ms": 2000,
+            "schema_version": 1,
+            "stuck_steps": 8
+          }
+        },
+        "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture_perception_and_policy_reexecution",
+      "structured_runtime_reproduced": true,
+      "terminal_decision_compared": true,
+      "terminal_guard_compared": true,
+      "terminal_observation_compared": true,
+      "terminal_runtime_compared": true,
+      "trace_steps_compared": 436,
+      "verification_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "verified": true
+    },
+    "run": {
+      "actions": {
+        "cast": 18,
+        "idle": 36,
+        "interact": 3,
+        "loot": 9,
+        "move": 368,
+        "portal": 2
+      },
+      "alive": true,
+      "animation": {
+        "content": {
+          "bindings": {
+            "player": "acceptance.player"
+          },
+          "pack": {
+            "clips": [
+              {
+                "action_state": "idle",
+                "class_id": "player",
+                "clip_id": "acceptance.player",
+                "entity_id": "acceptance.player",
+                "frames": [
+                  {
+                    "anchor": [
+                      7,
+                      22
+                    ],
+                    "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                    "duration_ms": 30
+                  },
+                  {
+                    "anchor": [
+                      7,
+                      22
+                    ],
+                    "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                    "duration_ms": 70
+                  }
+                ],
+                "game_version": "fixture-v1",
+                "playback": "loop"
+              }
+            ],
+            "kind": "animation-pack",
+            "pack_sha256": "d1b47c03098e6b18f816cf0ef1b995b4eb956780aeadbe299a042accb5e965b4",
+            "schema_version": 1,
+            "scope": "synthetic_fixture",
+            "sources": {
+              "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e": {
+                "asset": {
+                  "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                  "entity_id": "acceptance.player",
+                  "game_version": "fixture-v1",
+                  "height": 22,
+                  "license": "CC0-1.0",
+                  "media_type": "image/png",
+                  "permission": "self_authored",
+                  "relative_path": "objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+                  "sha256": "4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a",
+                  "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+                  "width": 14
+                },
+                "rgba_sha256": "ffb82568719ba05ea4a1aa60b1801fcfe982a5839d69e0f905c54bed462a1688",
+                "source_file": "animation_objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+                "visible_bbox": [
+                  0,
+                  0,
+                  14,
+                  22
+                ]
+              },
+              "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343": {
+                "asset": {
+                  "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                  "entity_id": "acceptance.player",
+                  "game_version": "fixture-v1",
+                  "height": 22,
+                  "license": "CC0-1.0",
+                  "media_type": "image/png",
+                  "permission": "self_authored",
+                  "relative_path": "objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+                  "sha256": "f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb",
+                  "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+                  "width": 14
+                },
+                "rgba_sha256": "8654273991a28cdce94ec8b22ad191ba22b5c60a4e12a0fc1823e27a3c0e184e",
+                "source_file": "animation_objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+                "visible_bbox": [
+                  0,
+                  0,
+                  14,
+                  22
+                ]
+              }
+            }
+          }
+        },
+        "content_sha256": "5c4bbed87da69164dec159861560e9012e45ddb69921eff68c82fa2afb19243c",
+        "schema_version": 1
+      },
+      "class_package": {
+        "compiler_version": 1,
+        "content": {
+          "bindings": {
+            "airborne": null,
+            "area": null,
+            "buff": null,
+            "combat": "dagger_combo",
+            "heal": null
+          },
+          "class_id": "bandit",
+          "id": "synthetic-bandit",
+          "license": "CC0-1.0",
+          "permission": "self_authored",
+          "programs": [
+            {
+              "id": "dagger_combo",
+              "steps": [
+                {
+                  "direction": "target",
+                  "op": "cast",
+                  "skill": "slash"
+                },
+                {
+                  "duration_ms": 150,
+                  "op": "wait"
+                },
+                {
+                  "direction": "target",
+                  "op": "cast",
+                  "skill": "finisher"
+                }
+              ]
+            }
+          ],
+          "resources": {
+            "initial_ammo": 0,
+            "jump_speed": 280,
+            "max_hp": 120,
+            "max_mp": 70,
+            "walk_speed": 85
+          },
+          "schema_version": 1,
+          "scope": "synthetic_fixture",
+          "skills": [
+            {
+              "cooldown_group": "weapon",
+              "id": "finisher",
+              "kind": "damage",
+              "levels": [
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 300,
+                  "duration_ms": 0,
+                  "hp_cost": 3,
+                  "level": 1,
+                  "max_targets": 1,
+                  "mp_cost": 2,
+                  "power": 20,
+                  "range_px": 42,
+                  "vertical_range_px": 38
+                }
+              ],
+              "posture": "ground",
+              "selected_level": 1,
+              "shape": "directional"
+            },
+            {
+              "cooldown_group": "weapon",
+              "id": "slash",
+              "kind": "damage",
+              "levels": [
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 150,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 1,
+                  "max_targets": 1,
+                  "mp_cost": 1,
+                  "power": 12,
+                  "range_px": 40,
+                  "vertical_range_px": 38
+                },
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 150,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 2,
+                  "max_targets": 1,
+                  "mp_cost": 2,
+                  "power": 18,
+                  "range_px": 42,
+                  "vertical_range_px": 38
+                }
+              ],
+              "posture": "ground",
+              "selected_level": 2,
+              "shape": "directional"
+            }
+          ],
+          "source_uri": "urn:maple-vision:self-authored:bandit:1",
+          "version": "1.0.0"
+        },
+        "content_sha256": "4745663d89b2022a491db5d822947be8fc0cc02b822544c77ea949f7ae590da3",
+        "schema_version": 1
+      },
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "bandit",
+        "max_steps": 1500,
+        "record_stride": 32,
+        "seed": 0
+      },
+      "detector": "pixel-fixture",
+      "dialogue_maps": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "drops_collected": 9,
+      "events": {
+        "attack": 18,
+        "attack_hit": 18,
+        "cast": 18,
+        "dialogue": 3,
+        "loot": 9,
+        "map_changed": 2,
+        "monster_defeated": 9,
+        "skill:finisher": 9,
+        "skill:slash": 9
+      },
+      "final_coins": 29,
+      "final_state_sha256": "a5d2cadd0b5640ca3cd118f14fa4035789ed3e8f9d23c94c766ed82bd819f36b",
+      "independent_goal_check": true,
+      "map_pack": {
+        "content": {
+          "ground": 168,
+          "height": 192,
+          "id": "three-map-fixture",
+          "license": "CC0-1.0",
+          "maps": [
+            {
+              "id": "grove",
+              "ladders": [
+                {
+                  "h": 44,
+                  "w": 10,
+                  "x": 94,
+                  "y": 124
+                }
+              ],
+              "marker": [
+                41,
+                157,
+                131
+              ],
+              "monster_x": [
+                130,
+                210,
+                258
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "grove_guide",
+                  "w": 14,
+                  "x": 42,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 68,
+                  "x2": 132,
+                  "y": 124
+                },
+                {
+                  "x1": 184,
+                  "x2": 246,
+                  "y": 100
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "quarry",
+                  "h": 36,
+                  "id": "to_quarry",
+                  "w": 20,
+                  "x": 292,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 24,
+              "theme": "meadow"
+            },
+            {
+              "id": "quarry",
+              "ladders": [
+                {
+                  "h": 50,
+                  "w": 10,
+                  "x": 110,
+                  "y": 118
+                }
+              ],
+              "marker": [
+                151,
+                93,
+                171
+              ],
+              "monster_x": [
+                74,
+                150,
+                224
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "quarry_keeper",
+                  "w": 14,
+                  "x": 278,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 78,
+                  "x2": 148,
+                  "y": 118
+                },
+                {
+                  "x1": 208,
+                  "x2": 276,
+                  "y": 94
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "ruins",
+                  "h": 36,
+                  "id": "to_ruins",
+                  "w": 20,
+                  "x": 8,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 268,
+              "theme": "cavern"
+            },
+            {
+              "id": "ruins",
+              "ladders": [
+                {
+                  "h": 48,
+                  "w": 10,
+                  "x": 114,
+                  "y": 120
+                }
+              ],
+              "marker": [
+                199,
+                143,
+                77
+              ],
+              "monster_x": [
+                120,
+                196,
+                258
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "ruins_keeper",
+                  "w": 14,
+                  "x": 40,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 82,
+                  "x2": 154,
+                  "y": 120
+                },
+                {
+                  "x1": 204,
+                  "x2": 268,
+                  "y": 96
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "grove",
+                  "h": 36,
+                  "id": "to_grove",
+                  "w": 20,
+                  "x": 292,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 24,
+              "theme": "cavern"
+            }
+          ],
+          "permission": "self_authored",
+          "route": [
+            "grove",
+            "quarry",
+            "ruins"
+          ],
+          "schema_version": 1,
+          "scope": "synthetic_fixture",
+          "source_uri": "urn:maple-vision:self-authored:three-map-fixture",
+          "version": "1.0.0",
+          "width": 320
+        },
+        "content_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+        "schema_version": 1
+      },
+      "maps_visited": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "model_manifest": null,
+      "output": "/workspace/scratch/3968a72df173/v06-acceptance-final/external/bandit",
+      "paused_steps": 0,
+      "perception_evidence": {
+        "full_terminal_evidence_archive": "content-acceptance.json.gz",
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.vision.PixelPerception",
+          "inference_options": null,
+          "loaded_model_sha256": null,
+          "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+          "model_manifest": null,
+          "pipeline": "pixel-fixture",
+          "verifiable_model_binding": true
+        }
+      },
+      "python": "3.12.14",
+      "reason": "visual_mission_conditions_met",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_evidence": {
+        "full_terminal_evidence_archive": "content-acceptance.json.gz",
+        "schema_version": 1,
+        "settings": {
+          "schema_version": 1,
+          "settings": {
+            "engine": "structured-v1",
+            "schema_version": 1,
+            "state": {
+              "ambiguity_margin": 0.15,
+              "field_ttl_ms": 1000,
+              "max_age_ms": 250,
+              "max_detections": 128,
+              "max_match_distance": 48.0,
+              "max_tracks": 128,
+              "min_confidence": 0.5,
+              "schema_version": 1,
+              "track_ttl_ms": 500
+            },
+            "tasks": {
+              "clear_confirmations": 4,
+              "effect_timeout_ms": 500,
+              "history_limit": 128,
+              "intent_ttl_ms": 250,
+              "max_attack_attempts": 12,
+              "max_denied_actions": 6,
+              "max_observation_age_ms": 250,
+              "max_recoveries": 2,
+              "max_task_steps": 1000,
+              "max_unknown_steps": 12,
+              "minimum_detection_confidence": 0.5,
+              "plan_timeout_ms": 2000,
+              "schema_version": 1,
+              "stuck_steps": 8
+            }
+          },
+          "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+        }
+      },
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "schema_version": 2,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 21.8,
+      "status": "completed",
+      "steps": 436,
+      "visual_effects": {
+        "not_applicable": 36,
+        "observed": 373,
+        "unknown": 27
+      },
+      "wall_seconds": 1.655556
+    }
+  },
+  {
+    "action_replay": {
+      "files_checked": 28,
+      "independent_goal_check": true,
+      "perception_reproduced": false,
+      "runtime_identity_matches": true,
+      "scope": "deterministic_simulator",
+      "steps_replayed": 497,
+      "verified": true
+    },
+    "name": "external/blood_knight",
+    "reinfer": {
+      "action_replay_verified": true,
+      "belief_frames_recomputed": 498,
+      "decision_comparison": "exact; includes guard, action, reason, task and terminal state",
+      "files_unchanged": true,
+      "frames_reinferred": 498,
+      "independent_goal_check": true,
+      "model_hash_verified": false,
+      "observation_tolerances": {
+        "absolute": 1e-06,
+        "relative": 1e-06
+      },
+      "perception_reproduced": true,
+      "perception_settings": {
+        "implementation": "maple_vision.vision.PixelPerception",
+        "inference_options": null,
+        "loaded_model_sha256": null,
+        "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+        "model_manifest": null,
+        "pipeline": "pixel-fixture",
+        "verifiable_model_binding": true
+      },
+      "policy_reproduced": true,
+      "recorded_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "recorded_status": "completed",
+      "runtime_identity_matches": true,
+      "runtime_settings": {
+        "schema_version": 1,
+        "settings": {
+          "engine": "structured-v1",
+          "schema_version": 1,
+          "state": {
+            "ambiguity_margin": 0.15,
+            "field_ttl_ms": 1000,
+            "max_age_ms": 250,
+            "max_detections": 128,
+            "max_match_distance": 48.0,
+            "max_tracks": 128,
+            "min_confidence": 0.5,
+            "schema_version": 1,
+            "track_ttl_ms": 500
+          },
+          "tasks": {
+            "clear_confirmations": 4,
+            "effect_timeout_ms": 500,
+            "history_limit": 128,
+            "intent_ttl_ms": 250,
+            "max_attack_attempts": 12,
+            "max_denied_actions": 6,
+            "max_observation_age_ms": 250,
+            "max_recoveries": 2,
+            "max_task_steps": 1000,
+            "max_unknown_steps": 12,
+            "minimum_detection_confidence": 0.5,
+            "plan_timeout_ms": 2000,
+            "schema_version": 1,
+            "stuck_steps": 8
+          }
+        },
+        "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+      },
+      "schema_version": 1,
+      "scope": "synthetic_fixture_perception_and_policy_reexecution",
+      "structured_runtime_reproduced": true,
+      "terminal_decision_compared": true,
+      "terminal_guard_compared": true,
+      "terminal_observation_compared": true,
+      "terminal_runtime_compared": true,
+      "trace_steps_compared": 497,
+      "verification_runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "verified": true
+    },
+    "run": {
+      "actions": {
+        "cast": 18,
+        "idle": 63,
+        "interact": 3,
+        "loot": 9,
+        "move": 402,
+        "portal": 2
+      },
+      "alive": true,
+      "animation": {
+        "content": {
+          "bindings": {
+            "player": "acceptance.player"
+          },
+          "pack": {
+            "clips": [
+              {
+                "action_state": "idle",
+                "class_id": "player",
+                "clip_id": "acceptance.player",
+                "entity_id": "acceptance.player",
+                "frames": [
+                  {
+                    "anchor": [
+                      7,
+                      22
+                    ],
+                    "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                    "duration_ms": 30
+                  },
+                  {
+                    "anchor": [
+                      7,
+                      22
+                    ],
+                    "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                    "duration_ms": 70
+                  }
+                ],
+                "game_version": "fixture-v1",
+                "playback": "loop"
+              }
+            ],
+            "kind": "animation-pack",
+            "pack_sha256": "d1b47c03098e6b18f816cf0ef1b995b4eb956780aeadbe299a042accb5e965b4",
+            "schema_version": 1,
+            "scope": "synthetic_fixture",
+            "sources": {
+              "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e": {
+                "asset": {
+                  "asset_id": "2027e0f26d9a4d069d34fdb844842943a3dc457c0c19fea8a4023d9a719ca31e",
+                  "entity_id": "acceptance.player",
+                  "game_version": "fixture-v1",
+                  "height": 22,
+                  "license": "CC0-1.0",
+                  "media_type": "image/png",
+                  "permission": "self_authored",
+                  "relative_path": "objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+                  "sha256": "4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a",
+                  "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+                  "width": 14
+                },
+                "rgba_sha256": "ffb82568719ba05ea4a1aa60b1801fcfe982a5839d69e0f905c54bed462a1688",
+                "source_file": "animation_objects/4014b2cc201a4958d7c79605218e67958d4736da4289fcc0087a27ffa702269a.png",
+                "visible_bbox": [
+                  0,
+                  0,
+                  14,
+                  22
+                ]
+              },
+              "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343": {
+                "asset": {
+                  "asset_id": "6a0c2b834491076f4845d0b454b7305f090dac9290ee1dccd195ea4cf78a3343",
+                  "entity_id": "acceptance.player",
+                  "game_version": "fixture-v1",
+                  "height": 22,
+                  "license": "CC0-1.0",
+                  "media_type": "image/png",
+                  "permission": "self_authored",
+                  "relative_path": "objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+                  "sha256": "f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb",
+                  "source_uri": "urn:maple-vision:content-acceptance:self-authored",
+                  "width": 14
+                },
+                "rgba_sha256": "8654273991a28cdce94ec8b22ad191ba22b5c60a4e12a0fc1823e27a3c0e184e",
+                "source_file": "animation_objects/f9c8df4264d63ca0158756162bc6496773127a340ddff493a094fab054fa9ceb.png",
+                "visible_bbox": [
+                  0,
+                  0,
+                  14,
+                  22
+                ]
+              }
+            }
+          }
+        },
+        "content_sha256": "5c4bbed87da69164dec159861560e9012e45ddb69921eff68c82fa2afb19243c",
+        "schema_version": 1
+      },
+      "class_package": {
+        "compiler_version": 1,
+        "content": {
+          "bindings": {
+            "airborne": null,
+            "area": "blood_wave",
+            "buff": null,
+            "combat": "heavy_strike",
+            "heal": "recover"
+          },
+          "class_id": "blood_knight",
+          "id": "synthetic-blood_knight",
+          "license": "CC0-1.0",
+          "permission": "self_authored",
+          "programs": [
+            {
+              "id": "blood_wave",
+              "steps": [
+                {
+                  "direction": "target",
+                  "op": "cast",
+                  "skill": "blood_wave"
+                }
+              ]
+            },
+            {
+              "id": "heavy_strike",
+              "steps": [
+                {
+                  "direction": "target",
+                  "op": "cast",
+                  "skill": "heavy_strike"
+                }
+              ]
+            },
+            {
+              "id": "recover",
+              "steps": [
+                {
+                  "direction": 0,
+                  "op": "cast",
+                  "skill": "recover"
+                }
+              ]
+            }
+          ],
+          "resources": {
+            "initial_ammo": 0,
+            "jump_speed": 280,
+            "max_hp": 160,
+            "max_mp": 60,
+            "walk_speed": 80
+          },
+          "schema_version": 1,
+          "scope": "synthetic_fixture",
+          "skills": [
+            {
+              "cooldown_group": "weapon",
+              "id": "blood_wave",
+              "kind": "damage",
+              "levels": [
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 300,
+                  "duration_ms": 0,
+                  "hp_cost": 12,
+                  "level": 1,
+                  "max_targets": 3,
+                  "mp_cost": 0,
+                  "power": 30,
+                  "range_px": 72,
+                  "vertical_range_px": 38
+                }
+              ],
+              "posture": "ground",
+              "selected_level": 1,
+              "shape": "radial"
+            },
+            {
+              "cooldown_group": "weapon",
+              "id": "heavy_strike",
+              "kind": "damage",
+              "levels": [
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 300,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 1,
+                  "max_targets": 1,
+                  "mp_cost": 0,
+                  "power": 24,
+                  "range_px": 46,
+                  "vertical_range_px": 38
+                }
+              ],
+              "posture": "ground",
+              "selected_level": 1,
+              "shape": "directional"
+            },
+            {
+              "cooldown_group": "recover",
+              "id": "recover",
+              "kind": "heal",
+              "levels": [
+                {
+                  "ammo_cost": 0,
+                  "cooldown_ms": 500,
+                  "duration_ms": 0,
+                  "hp_cost": 0,
+                  "level": 1,
+                  "max_targets": 0,
+                  "mp_cost": 8,
+                  "power": 35,
+                  "range_px": 0,
+                  "vertical_range_px": 0
+                }
+              ],
+              "posture": "ground",
+              "selected_level": 1,
+              "shape": "self"
+            }
+          ],
+          "source_uri": "urn:maple-vision:self-authored:blood_knight:1",
+          "version": "1.0.0"
+        },
+        "content_sha256": "b094b3b9e70fbc5d69833edd2c0db315230d2fd024552b916ab20444acd090cd",
+        "schema_version": 1
+      },
+      "class_profile": null,
+      "config": {
+        "fault": "none",
+        "job": "blood_knight",
+        "max_steps": 1500,
+        "record_stride": 32,
+        "seed": 0
+      },
+      "detector": "pixel-fixture",
+      "dialogue_maps": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "drops_collected": 9,
+      "events": {
+        "attack": 18,
+        "attack_hit": 18,
+        "cast": 18,
+        "dialogue": 3,
+        "loot": 9,
+        "map_changed": 2,
+        "monster_defeated": 9,
+        "skill:heavy_strike": 18
+      },
+      "final_coins": 29,
+      "final_state_sha256": "cd5eb43439030fbbc030b723da7f64845de8f223c585da45473fef76ba43d195",
+      "independent_goal_check": true,
+      "map_pack": {
+        "content": {
+          "ground": 168,
+          "height": 192,
+          "id": "three-map-fixture",
+          "license": "CC0-1.0",
+          "maps": [
+            {
+              "id": "grove",
+              "ladders": [
+                {
+                  "h": 44,
+                  "w": 10,
+                  "x": 94,
+                  "y": 124
+                }
+              ],
+              "marker": [
+                41,
+                157,
+                131
+              ],
+              "monster_x": [
+                130,
+                210,
+                258
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "grove_guide",
+                  "w": 14,
+                  "x": 42,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 68,
+                  "x2": 132,
+                  "y": 124
+                },
+                {
+                  "x1": 184,
+                  "x2": 246,
+                  "y": 100
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "quarry",
+                  "h": 36,
+                  "id": "to_quarry",
+                  "w": 20,
+                  "x": 292,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 24,
+              "theme": "meadow"
+            },
+            {
+              "id": "quarry",
+              "ladders": [
+                {
+                  "h": 50,
+                  "w": 10,
+                  "x": 110,
+                  "y": 118
+                }
+              ],
+              "marker": [
+                151,
+                93,
+                171
+              ],
+              "monster_x": [
+                74,
+                150,
+                224
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "quarry_keeper",
+                  "w": 14,
+                  "x": 278,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 78,
+                  "x2": 148,
+                  "y": 118
+                },
+                {
+                  "x1": 208,
+                  "x2": 276,
+                  "y": 94
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "ruins",
+                  "h": 36,
+                  "id": "to_ruins",
+                  "w": 20,
+                  "x": 8,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 268,
+              "theme": "cavern"
+            },
+            {
+              "id": "ruins",
+              "ladders": [
+                {
+                  "h": 48,
+                  "w": 10,
+                  "x": 114,
+                  "y": 120
+                }
+              ],
+              "marker": [
+                199,
+                143,
+                77
+              ],
+              "monster_x": [
+                120,
+                196,
+                258
+              ],
+              "npcs": [
+                {
+                  "h": 24,
+                  "id": "ruins_keeper",
+                  "w": 14,
+                  "x": 40,
+                  "y": 144
+                }
+              ],
+              "platforms": [
+                {
+                  "x1": 0,
+                  "x2": 320,
+                  "y": 168
+                },
+                {
+                  "x1": 82,
+                  "x2": 154,
+                  "y": 120
+                },
+                {
+                  "x1": 204,
+                  "x2": 268,
+                  "y": 96
+                }
+              ],
+              "portals": [
+                {
+                  "destination": "grove",
+                  "h": 36,
+                  "id": "to_grove",
+                  "w": 20,
+                  "x": 292,
+                  "y": 132
+                }
+              ],
+              "spawn_x": 24,
+              "theme": "cavern"
+            }
+          ],
+          "permission": "self_authored",
+          "route": [
+            "grove",
+            "quarry",
+            "ruins"
+          ],
+          "schema_version": 1,
+          "scope": "synthetic_fixture",
+          "source_uri": "urn:maple-vision:self-authored:three-map-fixture",
+          "version": "1.0.0",
+          "width": 320
+        },
+        "content_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+        "schema_version": 1
+      },
+      "maps_visited": [
+        "grove",
+        "quarry",
+        "ruins"
+      ],
+      "model_manifest": null,
+      "output": "/workspace/scratch/3968a72df173/v06-acceptance-final/external/blood_knight",
+      "paused_steps": 0,
+      "perception_evidence": {
+        "full_terminal_evidence_archive": "content-acceptance.json.gz",
+        "schema_version": 1,
+        "settings": {
+          "implementation": "maple_vision.vision.PixelPerception",
+          "inference_options": null,
+          "loaded_model_sha256": null,
+          "map_pack_sha256": "e4bed8c565452dc79d29f51d2a78564546be3070168a882fa2b8215b1152e2b9",
+          "model_manifest": null,
+          "pipeline": "pixel-fixture",
+          "verifiable_model_binding": true
+        }
+      },
+      "python": "3.12.14",
+      "reason": "visual_mission_conditions_met",
+      "recoveries": 0,
+      "ruleset": "synthetic-fixture-v1",
+      "runtime_evidence": {
+        "full_terminal_evidence_archive": "content-acceptance.json.gz",
+        "schema_version": 1,
+        "settings": {
+          "schema_version": 1,
+          "settings": {
+            "engine": "structured-v1",
+            "schema_version": 1,
+            "state": {
+              "ambiguity_margin": 0.15,
+              "field_ttl_ms": 1000,
+              "max_age_ms": 250,
+              "max_detections": 128,
+              "max_match_distance": 48.0,
+              "max_tracks": 128,
+              "min_confidence": 0.5,
+              "schema_version": 1,
+              "track_ttl_ms": 500
+            },
+            "tasks": {
+              "clear_confirmations": 4,
+              "effect_timeout_ms": 500,
+              "history_limit": 128,
+              "intent_ttl_ms": 250,
+              "max_attack_attempts": 12,
+              "max_denied_actions": 6,
+              "max_observation_age_ms": 250,
+              "max_recoveries": 2,
+              "max_task_steps": 1000,
+              "max_unknown_steps": 12,
+              "minimum_detection_confidence": 0.5,
+              "plan_timeout_ms": 2000,
+              "schema_version": 1,
+              "stuck_steps": 8
+            }
+          },
+          "settings_sha256": "87814d57ec74cd1449c082f2696364af6b1e70ac50d8c2b53e3c707df16b3b63"
+        }
+      },
+      "runtime_identity": {
+        "packages": {
+          "Pillow": "13.0.0",
+          "maple-vision-platform": "0.6.0",
+          "numpy": "2.5.5",
+          "onnxruntime": "1.32.0"
+        },
+        "python": "3.12.14",
+        "source_sha256": "35806b9798e7ba18666dac4689a911772dc2e57b68933f5a1caafc5d73e82115"
+      },
+      "schema_version": 2,
+      "scope": "synthetic_fixture",
+      "simulated_seconds": 24.85,
+      "status": "completed",
+      "steps": 497,
+      "visual_effects": {
+        "not_applicable": 63,
+        "observed": 407,
+        "unknown": 27
+      },
+      "wall_seconds": 1.873794
+    }
+  }
+]

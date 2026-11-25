@@ -1,0 +1,250 @@
+FFFFFF                                                                   [100%]
+=================================== FAILURES ===================================
+_ test_static_capability_identity_is_checked_even_by_action_replay[step-state] _
+
+short_class_run = (PosixPath('/tmp/pytest-of-agent/pytest-57/test_static_capability_identit0/run'), {'actions': {'cast': 2, 'idle': 3, '...ion_ms=0)))), bindings=ProgramBindings(combat='aimed_shot', area=None, airborne='leap_shot', heal=None, buff='focus')))
+location = 'step-state'
+
+    @pytest.mark.parametrize("location", [
+        "step-state", "step-decision", "step-last-decision", "terminal-state",
+        "terminal-interruption", "terminal-last-decision",
+    ])
+    def test_static_capability_identity_is_checked_even_by_action_replay(short_class_run, location):
+        output, _, _ = short_class_run
+        terminal = location.startswith("terminal")
+        name = "summary.json" if terminal else "trace.jsonl"
+        if terminal:
+            document = json.loads((output / name).read_text())
+            data = document["runtime_evidence"]["terminal"]
+        else:
+            rows = [json.loads(line) for line in (output / name).read_text().splitlines()]
+            data = rows[0]["runtime"]
+        if location.endswith("-state"):
+            target = data["state"]
+        elif location.endswith("-last-decision"):
+            target = data["state"]["last_decision"]["evidence"]
+        else:
+            target = data["interruption" if terminal else "decision"]["evidence"]
+        target["capabilities"]["package_sha256"] = "0" * 64
+        if terminal:
+            _rewrite(output, name, document)
+        else:
+            path = output / name
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows), "utf-8")
+            manifest_path = output / "manifest.json"
+            manifest = json.loads(manifest_path.read_text())
+            manifest["files"][name] = hashlib.sha256(path.read_bytes()).hexdigest()
+            manifest_path.write_text(json.dumps(manifest), "utf-8")
+>       with pytest.raises(ValueError, match="capability identity"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_content_cli.py:122: Failed
+_ test_static_capability_identity_is_checked_even_by_action_replay[step-decision] _
+
+short_class_run = (PosixPath('/tmp/pytest-of-agent/pytest-57/test_static_capability_identit1/run'), {'actions': {'cast': 2, 'idle': 3, '...ion_ms=0)))), bindings=ProgramBindings(combat='aimed_shot', area=None, airborne='leap_shot', heal=None, buff='focus')))
+location = 'step-decision'
+
+    @pytest.mark.parametrize("location", [
+        "step-state", "step-decision", "step-last-decision", "terminal-state",
+        "terminal-interruption", "terminal-last-decision",
+    ])
+    def test_static_capability_identity_is_checked_even_by_action_replay(short_class_run, location):
+        output, _, _ = short_class_run
+        terminal = location.startswith("terminal")
+        name = "summary.json" if terminal else "trace.jsonl"
+        if terminal:
+            document = json.loads((output / name).read_text())
+            data = document["runtime_evidence"]["terminal"]
+        else:
+            rows = [json.loads(line) for line in (output / name).read_text().splitlines()]
+            data = rows[0]["runtime"]
+        if location.endswith("-state"):
+            target = data["state"]
+        elif location.endswith("-last-decision"):
+            target = data["state"]["last_decision"]["evidence"]
+        else:
+            target = data["interruption" if terminal else "decision"]["evidence"]
+        target["capabilities"]["package_sha256"] = "0" * 64
+        if terminal:
+            _rewrite(output, name, document)
+        else:
+            path = output / name
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows), "utf-8")
+            manifest_path = output / "manifest.json"
+            manifest = json.loads(manifest_path.read_text())
+            manifest["files"][name] = hashlib.sha256(path.read_bytes()).hexdigest()
+            manifest_path.write_text(json.dumps(manifest), "utf-8")
+>       with pytest.raises(ValueError, match="capability identity"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_content_cli.py:122: Failed
+_ test_static_capability_identity_is_checked_even_by_action_replay[step-last-decision] _
+
+short_class_run = (PosixPath('/tmp/pytest-of-agent/pytest-57/test_static_capability_identit2/run'), {'actions': {'cast': 2, 'idle': 3, '...ion_ms=0)))), bindings=ProgramBindings(combat='aimed_shot', area=None, airborne='leap_shot', heal=None, buff='focus')))
+location = 'step-last-decision'
+
+    @pytest.mark.parametrize("location", [
+        "step-state", "step-decision", "step-last-decision", "terminal-state",
+        "terminal-interruption", "terminal-last-decision",
+    ])
+    def test_static_capability_identity_is_checked_even_by_action_replay(short_class_run, location):
+        output, _, _ = short_class_run
+        terminal = location.startswith("terminal")
+        name = "summary.json" if terminal else "trace.jsonl"
+        if terminal:
+            document = json.loads((output / name).read_text())
+            data = document["runtime_evidence"]["terminal"]
+        else:
+            rows = [json.loads(line) for line in (output / name).read_text().splitlines()]
+            data = rows[0]["runtime"]
+        if location.endswith("-state"):
+            target = data["state"]
+        elif location.endswith("-last-decision"):
+            target = data["state"]["last_decision"]["evidence"]
+        else:
+            target = data["interruption" if terminal else "decision"]["evidence"]
+        target["capabilities"]["package_sha256"] = "0" * 64
+        if terminal:
+            _rewrite(output, name, document)
+        else:
+            path = output / name
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows), "utf-8")
+            manifest_path = output / "manifest.json"
+            manifest = json.loads(manifest_path.read_text())
+            manifest["files"][name] = hashlib.sha256(path.read_bytes()).hexdigest()
+            manifest_path.write_text(json.dumps(manifest), "utf-8")
+>       with pytest.raises(ValueError, match="capability identity"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_content_cli.py:122: Failed
+_ test_static_capability_identity_is_checked_even_by_action_replay[terminal-state] _
+
+short_class_run = (PosixPath('/tmp/pytest-of-agent/pytest-57/test_static_capability_identit3/run'), {'actions': {'cast': 2, 'idle': 3, '...ion_ms=0)))), bindings=ProgramBindings(combat='aimed_shot', area=None, airborne='leap_shot', heal=None, buff='focus')))
+location = 'terminal-state'
+
+    @pytest.mark.parametrize("location", [
+        "step-state", "step-decision", "step-last-decision", "terminal-state",
+        "terminal-interruption", "terminal-last-decision",
+    ])
+    def test_static_capability_identity_is_checked_even_by_action_replay(short_class_run, location):
+        output, _, _ = short_class_run
+        terminal = location.startswith("terminal")
+        name = "summary.json" if terminal else "trace.jsonl"
+        if terminal:
+            document = json.loads((output / name).read_text())
+            data = document["runtime_evidence"]["terminal"]
+        else:
+            rows = [json.loads(line) for line in (output / name).read_text().splitlines()]
+            data = rows[0]["runtime"]
+        if location.endswith("-state"):
+            target = data["state"]
+        elif location.endswith("-last-decision"):
+            target = data["state"]["last_decision"]["evidence"]
+        else:
+            target = data["interruption" if terminal else "decision"]["evidence"]
+        target["capabilities"]["package_sha256"] = "0" * 64
+        if terminal:
+            _rewrite(output, name, document)
+        else:
+            path = output / name
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows), "utf-8")
+            manifest_path = output / "manifest.json"
+            manifest = json.loads(manifest_path.read_text())
+            manifest["files"][name] = hashlib.sha256(path.read_bytes()).hexdigest()
+            manifest_path.write_text(json.dumps(manifest), "utf-8")
+>       with pytest.raises(ValueError, match="capability identity"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_content_cli.py:122: Failed
+_ test_static_capability_identity_is_checked_even_by_action_replay[terminal-interruption] _
+
+short_class_run = (PosixPath('/tmp/pytest-of-agent/pytest-57/test_static_capability_identit4/run'), {'actions': {'cast': 2, 'idle': 3, '...ion_ms=0)))), bindings=ProgramBindings(combat='aimed_shot', area=None, airborne='leap_shot', heal=None, buff='focus')))
+location = 'terminal-interruption'
+
+    @pytest.mark.parametrize("location", [
+        "step-state", "step-decision", "step-last-decision", "terminal-state",
+        "terminal-interruption", "terminal-last-decision",
+    ])
+    def test_static_capability_identity_is_checked_even_by_action_replay(short_class_run, location):
+        output, _, _ = short_class_run
+        terminal = location.startswith("terminal")
+        name = "summary.json" if terminal else "trace.jsonl"
+        if terminal:
+            document = json.loads((output / name).read_text())
+            data = document["runtime_evidence"]["terminal"]
+        else:
+            rows = [json.loads(line) for line in (output / name).read_text().splitlines()]
+            data = rows[0]["runtime"]
+        if location.endswith("-state"):
+            target = data["state"]
+        elif location.endswith("-last-decision"):
+            target = data["state"]["last_decision"]["evidence"]
+        else:
+            target = data["interruption" if terminal else "decision"]["evidence"]
+        target["capabilities"]["package_sha256"] = "0" * 64
+        if terminal:
+            _rewrite(output, name, document)
+        else:
+            path = output / name
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows), "utf-8")
+            manifest_path = output / "manifest.json"
+            manifest = json.loads(manifest_path.read_text())
+            manifest["files"][name] = hashlib.sha256(path.read_bytes()).hexdigest()
+            manifest_path.write_text(json.dumps(manifest), "utf-8")
+>       with pytest.raises(ValueError, match="capability identity"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_content_cli.py:122: Failed
+_ test_static_capability_identity_is_checked_even_by_action_replay[terminal-last-decision] _
+
+short_class_run = (PosixPath('/tmp/pytest-of-agent/pytest-57/test_static_capability_identit5/run'), {'actions': {'cast': 2, 'idle': 3, '...ion_ms=0)))), bindings=ProgramBindings(combat='aimed_shot', area=None, airborne='leap_shot', heal=None, buff='focus')))
+location = 'terminal-last-decision'
+
+    @pytest.mark.parametrize("location", [
+        "step-state", "step-decision", "step-last-decision", "terminal-state",
+        "terminal-interruption", "terminal-last-decision",
+    ])
+    def test_static_capability_identity_is_checked_even_by_action_replay(short_class_run, location):
+        output, _, _ = short_class_run
+        terminal = location.startswith("terminal")
+        name = "summary.json" if terminal else "trace.jsonl"
+        if terminal:
+            document = json.loads((output / name).read_text())
+            data = document["runtime_evidence"]["terminal"]
+        else:
+            rows = [json.loads(line) for line in (output / name).read_text().splitlines()]
+            data = rows[0]["runtime"]
+        if location.endswith("-state"):
+            target = data["state"]
+        elif location.endswith("-last-decision"):
+            target = data["state"]["last_decision"]["evidence"]
+        else:
+            target = data["interruption" if terminal else "decision"]["evidence"]
+        target["capabilities"]["package_sha256"] = "0" * 64
+        if terminal:
+            _rewrite(output, name, document)
+        else:
+            path = output / name
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows), "utf-8")
+            manifest_path = output / "manifest.json"
+            manifest = json.loads(manifest_path.read_text())
+            manifest["files"][name] = hashlib.sha256(path.read_bytes()).hexdigest()
+            manifest_path.write_text(json.dumps(manifest), "utf-8")
+>       with pytest.raises(ValueError, match="capability identity"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_content_cli.py:122: Failed
+=========================== short test summary info ============================
+FAILED tests/test_content_cli.py::test_static_capability_identity_is_checked_even_by_action_replay[step-state]
+FAILED tests/test_content_cli.py::test_static_capability_identity_is_checked_even_by_action_replay[step-decision]
+FAILED tests/test_content_cli.py::test_static_capability_identity_is_checked_even_by_action_replay[step-last-decision]
+FAILED tests/test_content_cli.py::test_static_capability_identity_is_checked_even_by_action_replay[terminal-state]
+FAILED tests/test_content_cli.py::test_static_capability_identity_is_checked_even_by_action_replay[terminal-interruption]
+FAILED tests/test_content_cli.py::test_static_capability_identity_is_checked_even_by_action_replay[terminal-last-decision]
+6 failed, 14 deselected in 0.81s

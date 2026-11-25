@@ -1,6 +1,18 @@
-# Maple Vision Platform v0.5.0
+# Maple Vision Platform v0.6.0
 
 一个可在本机运行、训练和验证的**离线视觉研究平台与独立模拟器**。它包含本地知识目录、素材登记、合成数据集、YOLO 训练与 ONNX 推理、多职业/多地图任务，以及可重放的验证证据。
+
+**当前 v0.6 增加领域表、动画内容、外部职业编译与分层回放报告。** 弓手、刀飞和血骑样例由同一任务运行时加载；素材、地图和规则完整随运行保存，独立复验不依赖原文件。运行只使用本机计算，默认不调用 LLM。[执行方案](docs/V0_6_PLAN.md) · [可执行合同](engineering/v06-contract.yaml) · [职业包](docs/CLASS_PACKAGES.md) · [动画](docs/ANIMATION_ASSETS.md) · [领域数据库](docs/CATALOG_DOMAINS.md) · [分层报告](docs/FAILURE_BUNDLES.md)
+
+```bash
+python -m maple_vision lab run --class-pack examples/classes/bandit.json --output artifacts/bandit
+python -m maple_vision lab reinfer artifacts/bandit
+python -m maple_vision lab export-bundle artifacts/bandit artifacts/bandit-replay
+python -m maple_vision lab verify-bundle artifacts/bandit-replay --reinfer
+python scripts/verify_content_platform.py --output artifacts/content-acceptance
+```
+
+`--class-pack` 自动选用 structured 任务链。实际技能规则为自写的合成测试规则；当前不支持完整控制、召唤或持续伤害技能。动画数据使用 schema4，旧数据格式保持兼容。分层报告中的 MP4 是可选展示，权威像素来自逐步重放和全帧 PNG。本地完整 **1582 项通过、0 跳过**，6 条实际跨图任务、两组 13 场景、108 帧动画数据与干净安装均通过。短时实际 60.64 秒、29 轮；完整 24 小时仍开放。[v0.6 实际验收](docs/RELEASE_0_6_ACCEPTANCE.md) 保存明细，准确 head 的远端检查与合并由 PR 记录。
 
 **原始整体方案：[Maple Vision Platform v8.0 — 最终工程实施总纲](MASTER_SPEC.md)**。这是用户指定的[共享方案](https://chatgpt.com/s/t_6b05d66c4fac81918da3094a5f80f7dc)的完整 22 章 Markdown 正文，逐字保留；图表和交互原型的[完整源文本](docs/source-plan/shared-plan-v8.source.txt)及[来源与校验值](docs/source-plan/shared-plan-v8.metadata.json)一并归档。GitHub 不执行这些交互组件，产品原型不代表管理界面已经实现。
 
@@ -29,7 +41,7 @@ python scripts/verify_structured_runtime.py --output artifacts/structured-accept
 
 schema2 运行包完整保存状态与任务配置。`reinfer` 从证据恢复模式，并重建包含终止帧的全部 N+1 次状态更新及任务决定。最后一条验收命令还需要 inference 依赖及仓库内已准入的 v0.2 ONNX；只做工程集成回归，不训练或推广新模型。详见 [状态估计](docs/STATE_ESTIMATION.md)、[任务运行时](docs/TASK_RUNTIME.md)、[本轮合同](engineering/v05-contract.yaml)与[验收记录](docs/RELEASE_0_5_ACCEPTANCE.md)。
 
-最终源码本地 **1187 项通过、0 跳过**，9条实际任务及两组各13个预期场景通过；全部逐帧复验，隔离安装通过。短时请求60秒实际62.29秒、28轮，完整24小时仍开放。快照隔离缺陷、修复前记录及修复后的完整重测均保留；准确head CI和合并由本次PR记录。
+v0.5 最终源码本地 **1187 项通过、0 跳过**，9条实际任务及两组各13个预期场景通过；全部逐帧复验，隔离安装通过。短时请求60秒实际62.29秒、28轮，完整24小时仍开放。快照隔离缺陷、修复前记录及修复后的完整重测均保留；[PR #7](https://github.com/www1350/maple-vision-platform/pull/7) 已通过准确 head 的全部 CI 并合并。这些成绩属于 v0.5；v0.6 另行验收。
 
 ## 先跑一个完整任务
 

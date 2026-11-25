@@ -12,8 +12,16 @@ import re
 from collections import deque
 from dataclasses import asdict, dataclass, fields, replace
 from enum import StrEnum
+from math import ceil
 from typing import Any
 
+from .class_package import (
+    CapabilityClassSpec,
+    CompiledCapabilities,
+    CompiledProgram,
+    CompiledSkill,
+    compile_class_package,
+)
 from .contracts import Detection, Status, confidence_value
 from .sim_types import CLASS_SPECS, ClassSpec, SimAction
 from .state_estimation import BeliefState
@@ -37,6 +45,7 @@ _LOCKS = {
     "loot": ("interaction",),
     "interact": ("interaction",),
     "portal": ("interaction", "movement"),
+    "cast": ("combat", "resource", "skill"),
 }
 
 
@@ -586,6 +595,8 @@ def verify_action_effect(
     after: VisualObservation | None,
     now_ms: int,
     timeout_ms: int,
+    *,
+    capability_kind: str | None = None,
 ) -> EffectVerification | None:
     """Return a visible operational effect, uncertainty, or an elapsed timeout.
 
@@ -609,6 +620,10 @@ def verify_action_effect(
         raise ValueError("effect input identity mismatch")
     _integer(now_ms, "now_ms")
     _integer(timeout_ms, "timeout_ms", 1, 60_000)
+    if capability_kind is not None and (
+        not isinstance(capability_kind, str) or capability_kind not in {"damage", "heal", "buff"}
+    ):
+        raise ValueError("invalid capability effect kind")
     if receipt.timestamp_ms < intent.created_at_ms or now_ms < receipt.timestamp_ms:
         raise ValueError("effect input clock mismatch")
 
@@ -649,7 +664,7 @@ def verify_action_effect(
             )
         if kind == "interact" and not before.dialogue_visible and after.dialogue_visible:
             return result(EffectStatus.SUCCESS, "observed_dialogue_open")
-        if kind in {"potion_hp", "heal"} and (
+        if (kind in {"potion_hp", "heal"} or (kind == "cast" and capability_kind == "heal")) and (
             before.hp_ratio is not None
             and after.hp_ratio is not None
             and after.hp_ratio > before.hp_ratio
@@ -675,7 +690,7 @@ def verify_action_effect(
                     EffectStatus.SUCCESS if kind == "jump" else EffectStatus.LIKELY_SUCCESS,
                     "observed_jump" if kind == "jump" else "jump_observed_attack_unverified",
                 )
-        if kind in {"attack", "loot", "buff", "idle"}:
+        if kind in {"attack", "loot", "buff", "idle", "cast"}:
             return result(EffectStatus.UNKNOWN, "effect_not_observable_from_fixture_state")
     if now_ms >= receipt.timestamp_ms + timeout_ms:
         return result(EffectStatus.TIMEOUT, "effect_deadline_elapsed")
@@ -758,6 +773,117 @@ def _grounded(
     )
 
 
+class _CapabilityAttempts:
+    """Local attempts and conservative visual resource bounds, never inventory truth."""
+
+    def __init__(self, capabilities: CompiledCapabilities) -> None:
+        self.capabilities = capabilities
+        self.ready = {group: 0 for group in capabilities.cooldown_groups}
+        self.attempts: dict[str, dict[str, Any]] = {}
+        self.buff_attempt_until: dict[str, int] = {}
+        self.hp = self.mp = 0
+        self.ammo_upper_budget = capabilities.package.resources.initial_ammo
+        self._measured_hp = self._measured_mp = 0
+        self._capture_ms = -1
+        self._spent_hp = self._spent_mp = 0
+        self._last_resource_attempt_ms = -1
+
+    def observe(self, observation: VisualObservation) -> None:
+        assert observation.hp_ratio is not None and observation.mp_ratio is not None
+        spec = self.capabilities.class_spec
+        # Fixture HUD is rounded to a 100-pixel bar. Half a pixel is an
+        # uncertainty interval, not a fractional unit available to spend.
+        hp = max(0, ceil((observation.hp_ratio - 0.005) * spec.max_hp - 1e-9))
+        mp = max(0, ceil((observation.mp_ratio - 0.005) * spec.max_mp - 1e-9))
+        if observation.timestamp_ms > self._capture_ms:
+            self._measured_hp, self._measured_mp = hp, mp
+        else:
+            self._measured_hp = min(self._measured_hp, hp)
+            self._measured_mp = min(self._measured_mp, mp)
+        self._capture_ms = observation.timestamp_ms
+        if observation.timestamp_ms > self._last_resource_attempt_ms:
+            self._spent_hp = self._spent_mp = 0
+        self._refresh_bounds()
+
+    def _refresh_bounds(self) -> None:
+        self.hp = max(0, self._measured_hp - self._spent_hp)
+        self.mp = max(0, self._measured_mp - self._spent_mp)
+
+    def program_reason(self, program: CompiledProgram, now_ms: int, grounded: bool) -> str | None:
+        if program.posture == "ground" and not grounded:
+            return "capability_requires_ground"
+        if program.posture == "air" and grounded:
+            return "capability_requires_air"
+        if any(now_ms < self.ready[group] for group, _ in program.cooldown_ready_offsets):
+            return "capability_cooldown"
+        if self.hp <= program.hp_cost:
+            return "capability_hp_budget"
+        if self.mp < program.mp_cost:
+            return "capability_mp_budget"
+        if self.ammo_upper_budget < program.ammo_cost:
+            return "capability_ammo_budget"
+        if any(now_ms < self.buff_attempt_until.get(skill, 0) for skill in program.skill_ids):
+            return "capability_buff_attempt_window"
+        return None
+
+    def skill_reason(self, skill: CompiledSkill, now_ms: int, grounded: bool) -> str | None:
+        if now_ms < self.ready[skill.cooldown_group]:
+            return "capability_cooldown"
+        if skill.posture == "ground" and not grounded:
+            return "capability_requires_ground"
+        if skill.posture == "air" and grounded:
+            return "capability_requires_air"
+        if self.hp <= skill.hp_cost:
+            return "capability_hp_budget"
+        if self.mp < skill.mp_cost:
+            return "capability_mp_budget"
+        if self.ammo_upper_budget < skill.ammo_cost:
+            return "capability_ammo_budget"
+        return None
+
+    def attempted(self, skill: CompiledSkill, receipt: ExecutionReceipt) -> None:
+        # A receipt exists only after registered dispatch. Delayed receipt time
+        # yields a later, conservative readiness estimate; static program offsets
+        # are never used as evidence that an unexecuted step spent resources.
+        self.ready[skill.cooldown_group] = max(
+            self.ready[skill.cooldown_group], receipt.timestamp_ms + skill.cooldown_ms
+        )
+        self._last_resource_attempt_ms = receipt.timestamp_ms
+        self._spent_hp += skill.hp_cost
+        self._spent_mp += skill.mp_cost
+        self.ammo_upper_budget = max(0, self.ammo_upper_budget - skill.ammo_cost)
+        self._refresh_bounds()
+        previous = self.attempts.get(skill.id)
+        self.attempts[skill.id] = {
+            "count": 1 if previous is None else previous["count"] + 1,
+            "timestamp_ms": receipt.timestamp_ms,
+            "accepted": receipt.accepted,
+            "reason": receipt.reason,
+        }
+        if skill.kind == "buff":
+            self.buff_attempt_until[skill.id] = receipt.timestamp_ms + skill.duration_ms
+
+    def to_dict(self) -> dict[str, Any]:
+        return _document(
+            {
+                "class_id": self.capabilities.class_id,
+                "package_sha256": self.capabilities.package_sha256,
+                "cooldown_ready_ms": self.ready,
+                "skill_attempts": self.attempts,
+                "buff_attempt_until_ms": self.buff_attempt_until,
+                "resource_estimate": {
+                    "hp_lower_bound": self.hp,
+                    "mp_lower_bound": self.mp,
+                    "ammo_upper_budget": self.ammo_upper_budget,
+                    "observation_timestamp_ms": self._capture_ms,
+                    "last_resource_attempt_ms": self._last_resource_attempt_ms,
+                    "unobserved_hp_spend": self._spent_hp,
+                    "unobserved_mp_spend": self._spent_mp,
+                },
+            }
+        )
+
+
 class ActionPlanner:
     """Turn a selected visible task goal into a bounded immutable action plan."""
 
@@ -767,20 +893,27 @@ class ActionPlanner:
         self.config = config
         self.last_reason = "idle"
         self.descent_direction = 0
+        self.last_program_id: str | None = None
 
     def plan(
         self,
         candidate: TaskCandidate,
         observation: VisualObservation,
         *,
-        spec: ClassSpec,
+        spec: ClassSpec | CapabilityClassSpec,
         context: _PlanningContext,
         generation: int,
         plan_id: str,
         now_ms: int,
+        capabilities: CompiledCapabilities | None = None,
+        capability_state: _CapabilityAttempts | None = None,
     ) -> ActionPlan:
-        if not isinstance(candidate, TaskCandidate) or not isinstance(spec, ClassSpec):
+        if not isinstance(candidate, TaskCandidate) or not isinstance(
+            spec, (ClassSpec, CapabilityClassSpec)
+        ):
             raise ValueError("invalid planner inputs")
+        if capabilities is not None and capability_state is None:
+            raise ValueError("capability planner requires attempt state")
         if not isinstance(observation, VisualObservation) or observation.map_id is None:
             raise ValueError("planner requires a current map observation")
         players = [item for item in observation.detections if item.class_id == "player"]
@@ -790,23 +923,76 @@ class ActionPlanner:
         px, py = _center(player)
         target = candidate.target
         self.descent_direction = context.descent_direction
+        self.last_program_id = None
         steps: tuple[ActionStep, ...]
 
         def single(action: SimAction, reason: str) -> tuple[ActionStep, ...]:
             self.last_reason = reason
             return (ActionStep(action),)
 
+        def compiled(program: CompiledProgram, direction: int) -> tuple[ActionStep, ...]:
+            self.last_program_id = program.id
+            self.last_reason = f"capability_program:{program.id}"
+            return tuple(
+                ActionStep(step.action, step.not_before_ms)
+                for step in program.instantiate(direction)
+            )
+
+        grounded = _grounded(observation, player, self.config.minimum_detection_confidence)
+        program: CompiledProgram | None = None
+        if capabilities is not None and capability_state is not None:
+            if candidate.kind == "survival" and candidate.reason == "heal":
+                program = capabilities.program_for("heal")
+            elif candidate.kind == "buff":
+                program = capabilities.program_for("buff")
+            elif candidate.kind == "combat":
+                program = capabilities.program_for("combat")
+                airborne, area = (
+                    capabilities.program_for("airborne"),
+                    capabilities.program_for("area"),
+                )
+                if (
+                    airborne is not None
+                    and not context.jumped_map
+                    and capability_state.program_reason(airborne, now_ms, grounded) is None
+                ):
+                    program = airborne
+                if (
+                    area is not None
+                    and capability_state.program_reason(area, now_ms, grounded) is None
+                ):
+                    nearby = sum(
+                        item.class_id == "monster"
+                        and item.confidence >= self.config.minimum_detection_confidence
+                        and abs(_center(item)[0] - px) <= area.range_px
+                        and abs(_center(item)[1] - py) <= 38
+                        for item in observation.detections
+                    )
+                    if nearby >= 2:
+                        program = area
+
         if candidate.kind == "survival":
-            kind = {"heal": "heal", "hp": "potion_hp", "mp": "potion_mp"}[candidate.reason]
-            steps = single(SimAction(kind), f"restore_{candidate.reason}")
+            if program is not None:
+                steps = compiled(program, context.facing)
+            else:
+                kind = {"heal": "heal", "hp": "potion_hp", "mp": "potion_mp"}[candidate.reason]
+                steps = single(SimAction(kind), f"restore_{candidate.reason}")
         elif candidate.kind == "recovery":
             steps = single(SimAction("jump", context.recovery_direction), "bounded_stuck_recovery")
         elif candidate.kind == "buff":
-            steps = single(SimAction("buff"), "maintain_fixture_buff")
+            steps = (
+                compiled(program, context.facing)
+                if program is not None
+                else single(SimAction("buff"), "maintain_fixture_buff")
+            )
         elif candidate.kind == "combat" and target is not None:
             tx, ty = _center(target)
             direction = 1 if tx >= px else -1
-            reach = 65 if spec.id == "dragon_knight" else spec.attack_range * 0.9
+            reach = (
+                program.range_px * 0.9
+                if program is not None
+                else (65 if spec.id == "dragon_knight" else spec.attack_range * 0.9)
+            )
             if context.descent_direction and player.bbox[3] < target.bbox[3] - 2:
                 steps = single(
                     SimAction("move", context.descent_direction), "finish_platform_descent"
@@ -840,6 +1026,14 @@ class ActionPlanner:
             elif abs(tx - px) > reach:
                 self.descent_direction = 0
                 steps = single(SimAction("move", direction), "approach_visible_monster")
+            elif program is not None and capability_state is not None:
+                self.descent_direction = 0
+                unavailable = capability_state.program_reason(program, now_ms, grounded)
+                steps = (
+                    single(SimAction(), unavailable)
+                    if unavailable
+                    else compiled(program, direction)
+                )
             elif now_ms - context.last_attack_ms < spec.attack_cooldown_ms:
                 self.descent_direction = 0
                 steps = single(SimAction(), "attack_cooldown")
@@ -911,9 +1105,24 @@ class TaskRuntime:
         *,
         class_spec: ClassSpec | None = None,
         config: TaskRuntimeConfig | None = None,
+        capabilities: CompiledCapabilities | None = None,
     ) -> None:
-        if not isinstance(job, str) or job not in CLASS_SPECS:
+        if capabilities is not None and (
+            type(capabilities) is not CompiledCapabilities
+            or json.dumps(
+                compile_class_package(capabilities.package).to_dict(),
+                sort_keys=True,
+                allow_nan=False,
+            )
+            != json.dumps(capabilities.to_dict(), sort_keys=True, allow_nan=False)
+        ):
+            raise ValueError("invalid or altered compiled capabilities")
+        if not isinstance(job, str) or (
+            job not in CLASS_SPECS if capabilities is None else job != capabilities.class_id
+        ):
             raise ValueError("unknown task runtime fixture job")
+        if capabilities is not None and class_spec is not None:
+            raise ValueError("capabilities and legacy class profile are mutually exclusive")
         if not isinstance(maps, tuple) or not 1 <= len(maps) <= 8:
             raise ValueError("task route must contain 1..8 map IDs")
         for map_id in maps:
@@ -924,10 +1133,21 @@ class TaskRuntime:
             not isinstance(class_spec, ClassSpec) or class_spec.id != job
         ):
             raise ValueError("task runtime class profile disagrees with job")
-        self.spec = CLASS_SPECS[job] if class_spec is None else class_spec
+        self.capabilities = capabilities
+        self.spec: ClassSpec | CapabilityClassSpec = (
+            capabilities.class_spec
+            if capabilities is not None
+            else (CLASS_SPECS[job] if class_spec is None else class_spec)
+        )
         self.config = TaskRuntimeConfig() if config is None else config
         if not isinstance(self.config, TaskRuntimeConfig):
             raise ValueError("invalid task runtime config")
+        if capabilities is not None and any(
+            program.duration_ms >= self.config.plan_timeout_ms
+            for program in capabilities.program_entries
+        ):
+            raise ValueError("capability program exceeds configured plan time budget")
+        self._capability_state = None if capabilities is None else _CapabilityAttempts(capabilities)
         self.maps = maps
         self.phase, self.state, self.reason = "fight", "running", "created"
         self.map_index = 0
@@ -997,6 +1217,8 @@ class TaskRuntime:
             if self._last_receipt is None
             else self._last_receipt.to_dict(),
         }
+        if self._capability_state is not None:
+            evidence["capabilities"] = self._capability_state.to_dict()
         result = RuntimeDecision(
             SimAction() if intent is None else intent.action,
             intent,
@@ -1087,6 +1309,11 @@ class TaskRuntime:
                 observation,
                 now_ms,
                 self.config.effect_timeout_ms,
+                capability_kind=(
+                    self.capabilities.skills[pending.intent.action.skill].kind
+                    if self.capabilities is not None and pending.intent.action.kind == "cast"
+                    else None
+                ),
             )
             if verification is None:
                 retained.append(pending)
@@ -1128,7 +1355,28 @@ class TaskRuntime:
 
         hp, mp = observation.hp_ratio, observation.mp_ratio
         assert hp is not None and mp is not None
-        if hp < 0.5 and self.spec.heal_amount and mp > 0.2 and now_ms - self._last_skill_ms >= 500:
+        if self.capabilities is not None and self._capability_state is not None:
+            attempts = self._capability_state
+            grounded = _grounded(observation, player, self.config.minimum_detection_confidence)
+            combat = self.capabilities.program_for("combat")
+            healing = self.capabilities.program_for("heal")
+            assert combat is not None
+            need_hp = hp < 0.4 or attempts.hp <= combat.hp_cost
+            need_mp = (self.spec.max_mp > 0 and mp < 0.25) or attempts.mp < combat.mp_cost
+            if (
+                (hp < 0.5 or need_hp)
+                and healing is not None
+                and attempts.program_reason(healing, now_ms, grounded) is None
+            ):
+                add("survival", 1000, "heal")
+            elif now_ms - self._last_potion_ms >= 500:
+                if need_hp:
+                    add("survival", 1000, "hp")
+                elif need_mp:
+                    add("survival", 1000, "mp")
+        elif (
+            hp < 0.5 and self.spec.heal_amount and mp > 0.2 and now_ms - self._last_skill_ms >= 500
+        ):
             add("survival", 1000, "heal")
         elif now_ms - self._last_potion_ms >= 500:
             if hp < 0.4:
@@ -1143,7 +1391,21 @@ class TaskRuntime:
             if d.class_id == "monster" and d.confidence >= self.config.minimum_detection_confidence
         )
         if self.phase == "fight" and monsters:
-            if now_ms - self._buff_ms >= 5000 and now_ms - self._last_skill_ms >= 500 and mp > 0.3:
+            if self.capabilities is not None and self._capability_state is not None:
+                buff = self.capabilities.program_for("buff")
+                if (
+                    buff is not None
+                    and self._capability_state.program_reason(
+                        buff,
+                        now_ms,
+                        _grounded(observation, player, self.config.minimum_detection_confidence),
+                    )
+                    is None
+                ):
+                    add("buff", 500, "capability_buff_attempt_window_elapsed")
+            elif (
+                now_ms - self._buff_ms >= 5000 and now_ms - self._last_skill_ms >= 500 and mp > 0.3
+            ):
                 add("buff", 500, "buff_expired_by_local_attempt_clock")
             add(
                 "combat",
@@ -1175,6 +1437,39 @@ class TaskRuntime:
                 )
         add("idle", 0, "confirming_scene_or_waiting_for_target")
         return tuple(candidates)
+
+    def _capability_step_reason(
+        self, action: SimAction, observation: VisualObservation, now_ms: int
+    ) -> str | None:
+        assert self.capabilities is not None and self._capability_state is not None
+        skill = self.capabilities.skills.get(action.skill)
+        if skill is None:
+            return "capability_skill_unregistered"
+        player = next(item for item in observation.detections if item.class_id == "player")
+        unavailable = self._capability_state.skill_reason(
+            skill,
+            now_ms,
+            _grounded(observation, player, self.config.minimum_detection_confidence),
+        )
+        if unavailable is not None:
+            return unavailable
+        if skill.kind == "damage":
+            px, py = _center(player)
+            direction = action.direction or self._facing
+            targets = (
+                target
+                for target in observation.detections
+                if target.class_id == "monster"
+                and target.confidence >= self.config.minimum_detection_confidence
+            )
+            if not any(
+                abs(_center(target)[0] - px) <= skill.range_px - 1
+                and abs(_center(target)[1] - py) <= skill.vertical_range_px - 1
+                and (skill.shape == "radial" or (_center(target)[0] - px) * direction >= 0)
+                for target in targets
+            ):
+                return "capability_target_context_changed"
+        return None
 
     def _activate(self, candidate: TaskCandidate, now_ms: int) -> None:
         if self._active_task_id != candidate.task_id:
@@ -1249,6 +1544,8 @@ class TaskRuntime:
             self._empty_frames, self._descent_direction = 0, 0
             self._event("perception_context_changed", now_ms)
         self._last_source_id, self._last_belief_epoch = observation.source_id, belief.epoch
+        if self._capability_state is not None:
+            self._capability_state.observe(observation)
         self._evaluate_effects(observation, now_ms)
         if observation.hp_ratio == 0:
             return self._finish("stopped", "player_dead", now_ms)
@@ -1311,7 +1608,24 @@ class TaskRuntime:
         active_plan = self.scheduler.plan
         if active_plan is not None:
             next_action = active_plan.steps[self.scheduler.step_index].action
-            if next_action.kind in {"jump", "jump_attack"} and not _grounded(
+            if self.capabilities is not None and now_ms >= active_plan.deadline_ms:
+                self.scheduler.cancel("plan_timeout", now_ms)
+                self._event("plan_cancelled", now_ms, reason="plan_timeout")
+            elif (
+                self.capabilities is not None
+                and next_action.kind == "cast"
+                and now_ms
+                >= active_plan.created_at_ms
+                + active_plan.steps[self.scheduler.step_index].not_before_ms
+            ):
+                unavailable = self._capability_step_reason(next_action, observation, now_ms)
+                if unavailable == "capability_cooldown":
+                    self._last_action = SimAction()
+                    return self._decision(unavailable, candidates=candidates, selected=selected)
+                if unavailable is not None:
+                    self.scheduler.cancel(unavailable, now_ms)
+                    self._event("plan_cancelled", now_ms, reason=unavailable)
+            elif next_action.kind in {"jump", "jump_attack"} and not _grounded(
                 observation, players[0], self.config.minimum_detection_confidence
             ):
                 self.scheduler.cancel("compound_precondition_changed", now_ms)
@@ -1336,6 +1650,8 @@ class TaskRuntime:
                 generation=self.scheduler.generation,
                 plan_id=f"plan-{self._plan_counter}",
                 now_ms=now_ms,
+                capabilities=self.capabilities,
+                capability_state=self._capability_state,
             )
             self._descent_direction = self.planner.descent_direction
             self.scheduler.start(plan, now_ms)
@@ -1373,6 +1689,20 @@ class TaskRuntime:
         intent = self.scheduler.complete(receipt)
         if before.sequence != intent.source_sequence:
             raise ValueError("runtime receipt source identity mismatch")
+        if self.capabilities is not None and self._capability_state is not None:
+            if intent.action.kind == "cast":
+                skill = self.capabilities.skills[intent.action.skill]
+                self._capability_state.attempted(skill, receipt)
+                if skill.kind == "damage":
+                    self._last_attack_ms = timestamp_ms
+                    self._attack_attempts += 1
+            airborne = self.capabilities.program_for("airborne")
+            if (
+                intent.action.kind == "jump"
+                and airborne is not None
+                and self.planner.last_program_id == airborne.id
+            ):
+                self._jumped_maps.add(intent.source_map)
         self._last_now_ms = max(self._last_now_ms, timestamp_ms)
         self._issued_before = None
         self._last_receipt = receipt
@@ -1396,7 +1726,7 @@ class TaskRuntime:
         return receipt
 
     def snapshot(self) -> dict[str, Any]:
-        return {
+        result = {
             "schema_version": 1,
             "state": self.state,
             "phase": self.phase,
@@ -1424,3 +1754,6 @@ class TaskRuntime:
                 "plans_created": self._plan_counter,
             },
         }
+        if self._capability_state is not None:
+            result["capabilities"] = self._capability_state.to_dict()
+        return result

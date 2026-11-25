@@ -1,0 +1,17 @@
+Obtaining file:///workspace/scratch/3968a72df173/maple-content-worktree
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: maple-vision-platform
+  Building editable for maple-vision-platform (pyproject.toml): started
+  Building editable for maple-vision-platform (pyproject.toml): finished with status 'done'
+  Created wheel for maple-vision-platform: filename=maple_vision_platform-0.6.0-0.editable-py3-none-any.whl size=11111 sha256=340132f908f9fcbfbdc4de3406acf704314313b106392e47199a3fedb3afe36e
+  Stored in directory: /tmp/pip-ephem-wheel-cache-1imnk3w0/wheels/72/1d/49/2a2707f77f3ebd20cfe4f6b9985fa75da0e0d2a9e8471f243c
+Successfully built maple-vision-platform
+Installing collected packages: maple-vision-platform
+  Attempting uninstall: maple-vision-platform
+    Found existing installation: maple-vision-platform 0.5.0
+    Uninstalling maple-vision-platform-0.5.0:
+      Successfully uninstalled maple-vision-platform-0.5.0
+Successfully installed maple-vision-platform-0.6.0

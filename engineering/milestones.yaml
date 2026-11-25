@@ -1,20 +1,37 @@
-schema_version: 6
+schema_version: 7
 milestones:
   P0: []
-  P1: [P0]
-  P2: [P0]
-  P3: [P1, P2]
-  P4: [P3]
-  P5: [P0, P3]
-  P6: [P4]
-  P7: [P5, P6]
-  P8: [P1, P5]
-  P9: [P7, P8]
-  P10: [P9]
-  P11: [P10]
-  P12: [P11]
-  P13: [P12]
-
+  P1:
+  - P0
+  P2:
+  - P0
+  P3:
+  - P1
+  - P2
+  P4:
+  - P3
+  P5:
+  - P0
+  - P3
+  P6:
+  - P4
+  P7:
+  - P5
+  - P6
+  P8:
+  - P1
+  - P5
+  P9:
+  - P7
+  - P8
+  P10:
+  - P9
+  P11:
+  - P10
+  P12:
+  - P11
+  P13:
+  - P12
 contracts:
   P0: engineering/p0-contract.yaml
   platform_v0_1: engineering/platform-contract.yaml
@@ -22,32 +39,41 @@ contracts:
   platform_v0_3: engineering/v03-contract.yaml
   platform_v0_4: engineering/v04-contract.yaml
   platform_v0_5: engineering/v05-contract.yaml
-
+  platform_v0_6: engineering/v06-contract.yaml
 delivery:
   active_milestone: P13
-  active_increment_phases: [P7, P9, P10, P11, P13]
-  scope: temporal_visual_beliefs_and_structured_simulator_task_runtime
-  release_version: "0.5.0"
+  active_increment_phases:
+  - P1
+  - P2
+  - P3
+  - P4
+  - P8
+  - P9
+  - P11
+  - P12
+  - P13
+  scope: portable_offline_content_and_compiled_multiclass_runtime
+  release_version: 0.6.0
   release_status: local_final_source_accepted_exact_head_ci_recorded_in_pr
-  result_source: docs/RELEASE_0_5_ACCEPTANCE.md
-  execution_plan: docs/V0_5_PLAN.md
-  evidence_archive: reports/release-0.5.0
-  local_evidence: reports/release-0.5.0/local-verification.json
+  result_source: docs/RELEASE_0_6_ACCEPTANCE.md
+  execution_plan: docs/V0_6_PLAN.md
+  evidence_archive: reports/release-0.6.0
+  local_evidence: reports/release-0.6.0/local-verification.json
   criteria_timing: engineering_contract_before_formal_acceptance_not_model_preregistration
-  base_commit: 87de967ad036c60ef4eacd86a4d44ef17ec9a2c8
+  base_commit: 24f73dbf832c81b1bcee71093e60e7cd030b533c
   final_archive_head_must_pass_before_merge: true
-  pending_gates: [exact_head_ci]
-  pending_gates_scope: v05_only_prior_releases_are_closed
+  pending_gates:
+  - exact_head_ci
+  pending_gates_scope: v06_only_prior_releases_closed
   p0_result_source: docs/P0_ACCEPTANCE.md
   p0_contract_is_historical: true
-  user_authorization_date: "2026-11-25"
+  user_authorization_date: '2026-11-25'
   continue_beyond_p0: true
   full_v8_spec_acceptance: false
   phase_status_meaning: implementation_is_separate_from_fixture_and_real_domain_acceptance
-
 historical_releases:
   v0_4:
-    release_version: "0.4.0"
+    release_version: 0.4.0
     release_status: accepted_bounded_external_maps
     result_source: docs/RELEASE_0_4_ACCEPTANCE.md
     local_evidence: reports/release-0.4.0/local-verification.json
@@ -59,7 +85,7 @@ historical_releases:
     merge_commit: 320989e0bf4b906cb4d7ed7e6cf8eef33bcd5473
     pending_gates: []
   v0_3:
-    release_version: "0.3.0"
+    release_version: 0.3.0
     release_status: accepted_offline_tools_candidate_rejected
     result_source: docs/RELEASE_0_3_ACCEPTANCE.md
     execution_plan: docs/V0_3_PLAN.md
@@ -77,7 +103,7 @@ historical_releases:
     additional_candidate_budget: 0
     full_v8_spec_acceptance: false
   v0_1:
-    release_version: "0.1"
+    release_version: '0.1'
     release_status: accepted_offline_fixture_implementation
     result_source: docs/RELEASE_ACCEPTANCE.md
     local_evidence: reports/release-0.1.0/local-verification.json
@@ -87,7 +113,7 @@ historical_releases:
     scope: offline_synthetic_fixture_platform
     full_v8_spec_acceptance: false
   v0_2:
-    release_version: "0.2.0"
+    release_version: 0.2.0
     release_status: accepted_offline_fixture_implementation
     result_source: docs/RELEASE_0_2_ACCEPTANCE.md
     execution_plan: docs/V0_2_PLAN.md
@@ -110,26 +136,36 @@ historical_releases:
     actual_failure_episode_retained_once: passed_local_review_and_regression
     scope: offline_synthetic_fixture_platform
     full_v8_spec_acceptance: false
-
+  v0_5:
+    release_version: 0.5.0
+    release_status: accepted_structured_runtime
+    result_source: docs/RELEASE_0_5_ACCEPTANCE.md
+    local_evidence: reports/release-0.5.0/local-verification.json
+    final_archive_head: 6552aeb7faccddd476f7a0c1c6f54e08cbd75919
+    final_tree: 59b1e3b9bb0f13aa7b4da5177d3def948b0ba27c
+    final_head_run: https://github.com/www1350/maple-vision-platform/actions/runs/45470178721
+    final_head_checks: https://github.com/www1350/maple-vision-platform/pull/7
+    final_head_ci: passed
+    merge_commit: 24f73dbf832c81b1bcee71093e60e7cd030b533c
+    pending_gates: []
 current_verification:
-  local_full_tree: passed_after_windows_id_fix_1011_zero_failures_errors_or_skips_112_65_seconds
-  local_evidence: reports/release-0.4.0/local-verification.json
-  remote_ubuntu_windows_and_native: passed_fixed_exact_commit_initial_windows_failure_retained
-  remote_evidence: reports/release-0.4.0/remote-ci.json
-  initial_remote_failure: reports/release-0.4.0/remote-ci-initial.json
-  windows_fix: six_short_pytest_ids_original_payloads_assertions_and_production_sources_unchanged
-  clean_wheel_installation: passed_26_144_seconds
-  external_map_acceptance: passed_three_jobs_13_scenarios_486_frames_and_short_soak
-  wheel_sha256: c141bd6efe6dff7dbb2642f397d6b3a0d73917cad830e8f5cbf07fb2117d140f
-  actual_short_soak_seconds: 61.050688
-  short_soak_episodes: 53
-  mypy_source_files_passed: 31
-  selected_model_changed: false
-  learned_model_on_external_maps: not_evaluated
-  unseen_map_generalization: not_evaluated
+  status: passed_final_local
   real_domain_acceptance: false
   wall_clock_24h_soak: not_completed
-
+  new_model_training: false
+  new_model_promotion: false
+  local_full_tree: 1582_passed_zero_failures_errors_skips_151_75_seconds
+  local_evidence: reports/release-0.6.0/local-verification.json
+  clean_wheel_installation: passed_34_696_seconds
+  wheel_sha256: 5d38c72a6e2aba167fc3f6c03baf18c7982eeb0098fc07b5d88952499c69fdc7
+  mypy_source_files_passed: 41
+  external_class_missions: 6
+  expected_outcome_suites:
+  - 13
+  - 13
+  animation_dataset_frames: 108
+  actual_short_soak_seconds: 60.641942
+  short_soak_episodes: 29
 historical_v03_verification:
   local_full_tree: passed_post_runtime_fix_834_zero_failures_errors_or_skips_110_65_seconds
   historical_before_runtime_fix_evidence: reports/release-0.3.0/local-verification-before-runtime-fix.json
@@ -168,10 +204,16 @@ historical_v03_verification:
   current_candidate_validation:
     evidence: reports/release-0.3.0/terrain-model-validation.json
     gates_evidence: reports/release-0.3.0/validation-gates.json
-    threshold_checks: {passed: 13, failed: 1, total: 14}
+    threshold_checks:
+      passed: 13
+      failed: 1
+      total: 14
     platform_recall: 0.8194444444444444
     platform_recall_required: 0.98
-    full_width_floor: {tp: 192, ground_truth: 192, recall: 1.0}
+    full_width_floor:
+      tp: 192
+      ground_truth: 192
+      recall: 1.0
     macro_ap50: 0.9646245103193939
     micro_precision: 0.9993150684931507
     micro_recall: 0.9298916507329509
@@ -192,7 +234,6 @@ historical_v03_verification:
   ladder_driven_navigation: not_implemented
   wall_clock_24h_soak: not_completed
   historical_results_do_not_cover_current_changes: true
-
 phase_status:
   P0:
     implementation: accepted_foundation
@@ -203,18 +244,28 @@ phase_status:
     historical_v0_1_fixture_verification: passed_local_and_remote_ubuntu_windows
     v0_2_verification: passed_local_review_and_remote_ubuntu_windows
     real_domain_gate: blocked_external_verified_data
-    remaining_engineering: [network_source_adapters, continuous_source_scheduling, remaining_catalog_rule_types]
+    remaining_engineering:
+    - network_source_adapters
+    - continuous_source_scheduling
+    - verified_real_data
+    v0_6_implementation: normalized_domain_projection_and_verified_readonly_queries
   P2:
     implementation: local_registry_and_optional_static_sprite_packs
     historical_v0_1_fixture_verification: passed_local_and_remote_ubuntu_windows
     real_domain_gate: blocked_authorized_assets
-    remaining_engineering: [animation_pipeline, anchor_metadata_and_editor]
+    remaining_engineering:
+    - animation_state_transitions
+    - real_assets_and_editor
+    v0_6_implementation: sqlite_asset_index_and_portable_animation_frames_duration_anchors
   P3:
     implementation: builtin_and_bounded_external_maps_with_optional_registered_sprites
     historical_v0_1_fixture_verification: passed_local_and_remote_ubuntu_windows
     real_domain_gate: blocked_verified_map_reference
     v0_4_implementation: strict_immutable_pack_and_fixed_viewport_geometry
-    remaining_engineering: [larger_worlds_branching_portals_reachability, map_editor, animation]
+    remaining_engineering:
+    - larger_worlds_branching_portals_reachability
+    - map_editor
+    v0_6_implementation: native_animation_scene_alpha_labels_and_portable_content
   P4:
     implementation: legacy_v1_lifecycle_v2_and_embedded_external_map_v3_datasets
     historical_v0_1_fixture_verification: integrity_and_declared_coverage_tests_passed_local
@@ -223,12 +274,16 @@ phase_status:
     v0_3_holdout_limit: four_new_sessions_on_same_maps_not_unseen_map_acceptance
     v0_4_implementation: route_driven_six_phase_dataset_and_map_groups
     real_domain_gate: blocked_independent_real_recordings_and_labels
-    remaining_engineering: [unseen_map_holdout, broader_occlusion_and_real_domain_coverage]
+    remaining_engineering:
+    - unseen_map_holdout
+    - broader_occlusion_and_real_domain_coverage
+    v0_6_implementation: animation_schema4_replay_and_private_training_copies
   P5:
     implementation: deterministic_builtin_and_external_map_simulator
     historical_v0_1_fixture_verification: mechanics_and_restore_tests_passed_local
     real_domain_gate: unverified_official_mechanics
-    remaining_engineering: [broader_mechanics_and_calibration]
+    remaining_engineering:
+    - broader_mechanics_and_calibration
   P6:
     implementation: cpu_training_onnx_inference_aggregate_and_lifecycle_grouped_benchmarks
     historical_v0_1_fixture_verification: synthetic_tools_holdout_and_hybrid_missions_passed_local_no_general_model_promotion
@@ -239,29 +294,43 @@ phase_status:
     v0_3_failure_policy: preserve_failure_no_adaptive_candidate_or_test_peek
     pure_yolo_terrain_acceptance: false
     real_domain_gate: blocked_real_evaluation_corpus
-    remaining_engineering: [future_visual_research_requires_new_contract, model_family_comparison, two_stage_comparison]
+    remaining_engineering:
+    - future_visual_research_requires_new_contract
+    - model_family_comparison
+    - two_stage_comparison
   P7:
     implementation: pixel_or_onnx_objects_fixture_hud_and_local_tesseract_adapter
     historical_v0_1_fixture_verification: fixture_pixels_onnx_and_native_ocr_tests_passed_local
     v0_3_implementation: explicit_model_source_for_all_seven_objects_fixture_hud_context_preserved
     v0_3_verification: local_pipeline_contract_and_remote_ci_passed_candidate_quality_rejected
     real_domain_gate: no_real_hud_or_ocr_acceptance
-    remaining_engineering: [real_game_ui_ocr_calibration, tracking, belief_state_fusion]
+    remaining_engineering:
+    - real_game_ui_ocr_calibration
+    - richer_multisensor_fusion
+    v0_6_implementation: temporal_tracking_and_field_provenance_belief_state
   P8:
     implementation: three_supported_classes_with_verified_catalog_profile_injection
     historical_v0_1_fixture_verification: multiclass_mechanics_and_profile_injection_passed_local
     real_domain_gate: no_verified_official_skill_data
-    remaining_engineering: [external_class_packages, full_class_catalog]
+    remaining_engineering:
+    - damage_over_time_control_summons
+    - full_verified_class_catalog
+    v0_6_implementation: external_class_compiler_skill_registry_and_finite_programs
   P9:
     implementation: ordered_map_route_mission_dynamic_oracle_and_embedded_content_replay
     historical_v0_1_fixture_verification: mission_and_embedded_replay_tests_passed_local
     real_domain_gate: not_applicable_to_official_client_execution
-    remaining_engineering: [generic_task_dsl, configurable_task_graph]
+    remaining_engineering:
+    - generic_task_dsl
+    - configurable_task_graph
+    - navigation_inventory_chat
+    v0_6_implementation: structured_task_arbitration_plans_intents_receipts_and_compiled_programs
   P10:
     implementation: bounded_supervisor_and_recovery
     historical_v0_1_fixture_verification: four_expected_fault_outcomes_passed_local
     real_domain_gate: no_real_observation_fault_corpus
-    remaining_engineering: [broader_fault_catalog]
+    remaining_engineering:
+    - broader_fault_catalog
   P11:
     implementation: action_replay_actual_perception_policy_reinference_and_local_recording_observation
     historical_v0_1_fixture_verification: passed_local_review_and_remote_native_adapters
@@ -269,14 +338,21 @@ phase_status:
     v0_3_implementation: persist_and_verify_explicit_terrain_source_with_model_identity
     v0_3_verification: current_mode_local_regression_passed_candidate_reinference_not_executed_after_val_failure
     real_domain_gate: no_real_golden_recordings
-    remaining_engineering: [realtime_recording_capture, independent_real_golden_corpus]
+    remaining_engineering:
+    - realtime_recording_capture
+    - independent_real_golden_corpus
+    - replay_workbench
+    v0_6_implementation: portable_layered_failure_bundles_and_actual_reinference
   P12:
     implementation: three_classes_builtin_and_external_map_matrix
     historical_v0_1_fixture_verification: nine_normal_matrix_missions_passed_local
     v0_2_verification: selected_model_13_expected_scenario_outcomes_passed_local
     v0_3_verification: candidate_promotion_scenarios_not_executed_after_val_failure
     real_domain_gate: blocked_additional_verified_content
-    remaining_engineering: [third_party_content_plugins, management_ui]
+    remaining_engineering:
+    - broader_content_plugins
+    - management_ui
+    v0_6_implementation: three_builtin_and_three_external_class_examples
   P13:
     implementation: packaging_cli_ci_model_aware_wall_soak_and_bounded_process_resources
     historical_v0_1_fixture_verification: passed_local_and_remote_installation_plus_local_60_second_smoke
@@ -285,4 +361,23 @@ phase_status:
     v0_3_verification: runtime_fix_full834_native155_rebuilt_wheel_and_exact_commit_ci_passed_candidate_soak_not_executed
     real_domain_gate: not_accepted
     wall_clock_24h_soak: not_completed
-    remaining_engineering: [full_24_hour_wall_clock_endurance]
+    remaining_engineering:
+    - full_24_hour_wall_clock_endurance
+historical_v04_verification:
+  local_full_tree: passed_after_windows_id_fix_1011_zero_failures_errors_or_skips_112_65_seconds
+  local_evidence: reports/release-0.4.0/local-verification.json
+  remote_ubuntu_windows_and_native: passed_fixed_exact_commit_initial_windows_failure_retained
+  remote_evidence: reports/release-0.4.0/remote-ci.json
+  initial_remote_failure: reports/release-0.4.0/remote-ci-initial.json
+  windows_fix: six_short_pytest_ids_original_payloads_assertions_and_production_sources_unchanged
+  clean_wheel_installation: passed_26_144_seconds
+  external_map_acceptance: passed_three_jobs_13_scenarios_486_frames_and_short_soak
+  wheel_sha256: c141bd6efe6dff7dbb2642f397d6b3a0d73917cad830e8f5cbf07fb2117d140f
+  actual_short_soak_seconds: 61.050688
+  short_soak_episodes: 53
+  mypy_source_files_passed: 31
+  selected_model_changed: false
+  learned_model_on_external_maps: not_evaluated
+  unseen_map_generalization: not_evaluated
+  real_domain_acceptance: false
+  wall_clock_24h_soak: not_completed

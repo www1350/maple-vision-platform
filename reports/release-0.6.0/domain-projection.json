@@ -1,0 +1,61 @@
+{
+  "files": {
+    "domain.sqlite": "cd4eb26e1d2adddd611cd1f7bc65f11eccb386e104008cc0ed1048cd3e5bf98a",
+    "source/knowledge.sqlite": "99f7a9cf2538f2a2bb475a914e13cfa7874d573a9d805e09b1a8be18c73ba9ed",
+    "source/manifest.json": "62dfcd1f441e2f3ee7fb8861eab6d28d786b628103d6903207178f2ff391a870"
+  },
+  "kind": "domain-catalog-snapshot",
+  "schema_version": 1,
+  "snapshot_id": "56ccc60923cbbe75dd67b3b4deb92023f86366eb84582c33e1ec40f0f09ec361",
+  "summary": {
+    "all_source_records_mapped": true,
+    "asset_bytes_verified": false,
+    "evidence_artifacts_verified": false,
+    "issue_counts": {},
+    "mapped_source_records": 14,
+    "mapping_status": "complete_for_declared_source",
+    "projected_entities": 14,
+    "real_game_accuracy": "not_established",
+    "row_counts": {
+      "advancements": 1,
+      "asset_index": 1,
+      "classes": 2,
+      "consumables": 1,
+      "entity_sources": 14,
+      "equipment": 1,
+      "game_versions": 1,
+      "items": 4,
+      "knowledge_snapshots": 1,
+      "map_connections": 2,
+      "map_platforms": 2,
+      "map_portals": 2,
+      "maps": 2,
+      "mechanics_rules": 1,
+      "monster_drops": 1,
+      "monsters": 1,
+      "npcs": 1,
+      "projection_issues": 0,
+      "quest_requirements": 5,
+      "quests": 2,
+      "skill_effects": 2,
+      "skill_levels": 2,
+      "skills": 1,
+      "source_records": 14,
+      "validation_evidence": 1
+    },
+    "runtime_rules_compiled": false,
+    "scope_versions": [
+      [
+        "synthetic_fixture",
+        "fixture-v1"
+      ]
+    ],
+    "source_confidence_available": false,
+    "source_entity_versions": 14,
+    "source_record_denominator": "v2_catalog_records; legacy_rows_archived_only",
+    "source_records": 14,
+    "unmapped_entity_versions": 0,
+    "unmapped_source_records": 0,
+    "verification_scope": "source_declarations_and_structural_projection_only"
+  }
+}

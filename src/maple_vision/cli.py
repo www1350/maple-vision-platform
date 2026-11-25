@@ -64,6 +64,17 @@ def _parser() -> argparse.ArgumentParser:
             subparser.add_argument("--allow-unverified", action="store_true")
         elif operation == "snapshot":
             subparser.add_argument("output", type=Path)
+    for operation in ("project-domains", "verify-domains", "query-domain"):
+        subparser = knowledge_commands.add_parser(operation)
+        subparser.add_argument("path", type=Path)
+        if operation == "project-domains":
+            subparser.add_argument("output", type=Path)
+        elif operation == "query-domain":
+            subparser.add_argument("table")
+            subparser.add_argument("game_version")
+            subparser.add_argument("--scope", required=True)
+            subparser.add_argument("--entity-id")
+            subparser.add_argument("--limit", type=int, default=1000)
     assets = commands.add_parser("assets", help="authorized local asset registry")
     asset_commands = assets.add_subparsers(dest="operation", required=True)
     for operation in ("import", "list", "verify"):
@@ -75,10 +86,40 @@ def _parser() -> argparse.ArgumentParser:
                 subparser.add_argument(f"--{flag}", required=True)
         elif operation == "verify":
             subparser.add_argument("asset_id")
+    for operation in ("index", "index-check", "index-query"):
+        subparser = asset_commands.add_parser(operation)
+        subparser.add_argument("registry", type=Path)
+        subparser.add_argument("database", type=Path)
+        if operation == "index":
+            subparser.add_argument("asset_ids", nargs="+")
+        elif operation == "index-query":
+            subparser.add_argument("entity_id")
+            subparser.add_argument("game_version")
+            subparser.add_argument("--after-asset-id")
+            subparser.add_argument("--limit", type=int, default=256)
+    animations = commands.add_parser("animations", help="versioned local animation content")
+    animation_commands = animations.add_subparsers(dest="operation", required=True)
+    for operation in ("build", "check", "scene", "sample"):
+        subparser = animation_commands.add_parser(operation)
+        subparser.add_argument("path", type=Path)
+        if operation in {"build", "scene"}:
+            subparser.add_argument("mapping", type=Path)
+            subparser.add_argument("output", type=Path)
+        if operation == "sample":
+            subparser.add_argument("--clip", required=True)
+            subparser.add_argument("--elapsed-ms", type=int, default=0)
+            subparser.add_argument("--output", type=Path, required=True)
+            subparser.add_argument("--size", type=int, nargs=2, default=(96, 96))
+            subparser.add_argument("--position", type=int, nargs=2, default=(48, 64))
+            subparser.add_argument("--flip-x", action="store_true")
     maps = commands.add_parser("maps", help="validate a bounded offline synthetic map pack")
     map_commands = maps.add_subparsers(dest="operation", required=True)
     map_check = map_commands.add_parser("check")
     map_check.add_argument("path", type=Path)
+    classes = commands.add_parser("classes", help="validate and compile local class packages")
+    class_commands = classes.add_subparsers(dest="operation", required=True)
+    class_check = class_commands.add_parser("check")
+    class_check.add_argument("path", type=Path)
     dataset = commands.add_parser(
         "dataset", help="generate or verify session-split fixture datasets"
     )
@@ -96,6 +137,7 @@ def _parser() -> argparse.ArgumentParser:
             subparser.add_argument("--asset-registry", type=Path)
             subparser.add_argument("--sprite-map", type=Path)
             subparser.add_argument("--map-pack", type=Path)
+            subparser.add_argument("--animation-scene", type=Path)
     vision = commands.add_parser("vision", help="observe local images or benchmark a dataset")
     vision_commands = vision.add_subparsers(dest="operation", required=True)
     for operation in ("observe", "benchmark"):
@@ -180,7 +222,8 @@ def _parser() -> argparse.ArgumentParser:
     lab_commands = lab.add_subparsers(dest="operation", required=True)
     run = lab_commands.add_parser("run")
     run.add_argument("--output", type=Path, required=True)
-    run.add_argument("--job", choices=("assassin", "dragon_knight", "cleric"), default="assassin")
+    run.add_argument("--job", help="builtin class, or the exact class ID in --class-pack")
+    run.add_argument("--class-pack", type=Path)
     run.add_argument("--seed", type=int, default=0)
     run.add_argument("--max-steps", type=int, default=1000)
     run.add_argument("--record-stride", type=int, default=4)
@@ -204,25 +247,39 @@ def _parser() -> argparse.ArgumentParser:
         "reinfer", help="re-run every recorded perception and policy decision with matching inputs"
     )
     reinfer.add_argument("path", type=Path)
+    export_bundle = lab_commands.add_parser(
+        "export-bundle", help="capture a self-contained layered replay or failure bundle"
+    )
+    export_bundle.add_argument("path", type=Path)
+    export_bundle.add_argument("output", type=Path)
+    export_bundle.add_argument("--video", action="store_true")
+    verify_bundle = lab_commands.add_parser(
+        "verify-bundle", help="replay and independently reproject every recorded evidence layer"
+    )
+    verify_bundle.add_argument("path", type=Path)
+    for bundle_command in (export_bundle, verify_bundle):
+        bundle_command.add_argument("--reinfer", action="store_true")
     soak = lab_commands.add_parser("soak")
     soak.add_argument("--output", type=Path, required=True)
     soak.add_argument("--seconds", type=int, default=60)
     soak.add_argument("--resource-interval", type=float, default=1.0)
     soak.add_argument("--max-resource-samples", type=int, default=1024)
-    for model_command in (suite, soak, reinfer):
+    for model_command in (suite, soak, reinfer, export_bundle, verify_bundle):
         model_command.add_argument("--model", type=Path)
         model_command.add_argument("--manifest", type=Path)
-    for model_command in (run, suite, soak, reinfer):
+    for class_command in (suite, soak):
+        class_command.add_argument("--class-pack", type=Path, action="append")
+    for model_command in (run, suite, soak, reinfer, export_bundle, verify_bundle):
         model_command.add_argument(
             "--terrain-source", choices=("fixture", "model"), default="fixture"
         )
     for map_command in (run, suite, soak):
         map_command.add_argument("--map-pack", type=Path)
+        map_command.add_argument("--animation-scene", type=Path)
         map_command.add_argument(
             "--runtime",
             choices=("legacy", "structured"),
-            default="legacy",
-            help="choose the existing policy or the versioned state/task runtime",
+            help="default: structured with --class-pack, otherwise legacy",
         )
     chat = commands.add_parser(
         "chat-draft", help="prepare a local human-reviewed reply; sends nothing"
@@ -272,6 +329,27 @@ def _database(command: str, path: Path) -> dict[str, str | int]:
 
 def _extended(args: argparse.Namespace) -> dict[str, Any]:
     if args.command == "knowledge":
+        if args.operation in {"project-domains", "verify-domains", "query-domain"}:
+            from .catalog_domains import (
+                build_domain_snapshot,
+                query_domain,
+                verify_domain_snapshot,
+            )
+
+            if args.operation == "project-domains":
+                return build_domain_snapshot(args.path, args.output)
+            if args.operation == "verify-domains":
+                return {"verified": True, **verify_domain_snapshot(args.path)}
+            return {
+                "records": query_domain(
+                    args.path,
+                    args.table,
+                    args.game_version,
+                    scope=args.scope,
+                    entity_id=args.entity_id,
+                    limit=args.limit,
+                )
+            }
         if args.operation in {"plan-sync", "apply-sync"}:
             from .knowledge_sync import apply_sync, plan_sync
 
@@ -310,6 +388,24 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
             return create_snapshot(args.path, args.output)
         return {"verified": True, **verify_snapshot(args.path)}
     if args.command == "assets":
+        if args.operation in {"index", "index-check", "index-query"}:
+            from .asset_index import index_assets, query_assets, verify_asset_index
+
+            if args.operation == "index":
+                return asdict(index_assets(args.database, args.registry, tuple(args.asset_ids)))
+            indexed = (
+                verify_asset_index(args.database, args.registry)
+                if args.operation == "index-check"
+                else query_assets(
+                    args.database,
+                    args.registry,
+                    entity_id=args.entity_id,
+                    game_version=args.game_version,
+                    after_asset_id=args.after_asset_id,
+                    limit=args.limit,
+                )
+            )
+            return {"verified": True, "assets": [asdict(entry) for entry in indexed]}
         from .asset_registry import import_asset, list_assets, verify_asset
 
         if args.operation == "import":
@@ -327,6 +423,75 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         if args.operation == "verify":
             return asdict(verify_asset(args.registry, args.asset_id))
         return {"assets": [asdict(item) for item in list_assets(args.registry)]}
+    if args.command == "animations":
+        from .animation_pack import (
+            AnimationPlacement,
+            compose_animation,
+            export_animation_pack,
+            load_animation_pack,
+            verify_animation_pack,
+        )
+        from .scene_animation import (
+            bind_scene_animation,
+            export_scene_animation,
+            load_scene_animation,
+        )
+
+        if args.operation == "build":
+            return export_animation_pack(load_animation_pack(args.path, args.mapping), args.output)
+        scene = (
+            load_scene_animation(args.path)
+            if (args.path / "scene-animation.json").exists()
+            else None
+        )
+        animation_pack = scene.pack if scene is not None else verify_animation_pack(args.path)
+        if args.operation == "scene":
+            from .catalog import strict_json
+
+            if args.mapping.is_symlink() or not args.mapping.is_file():
+                raise ValueError("invalid scene binding file")
+            with args.mapping.open("rb") as stream:
+                binding_bytes = stream.read(4097)
+            if len(binding_bytes) > 4096:
+                raise ValueError("scene binding file exceeds 4KiB")
+            bindings = strict_json(binding_bytes.decode("utf-8"))
+            return export_scene_animation(
+                bind_scene_animation(animation_pack, bindings), args.output
+            )
+        if args.operation == "sample":
+            rendered = compose_animation(
+                animation_pack,
+                (
+                    AnimationPlacement(
+                        args.clip,
+                        args.elapsed_ms,
+                        tuple(args.position),
+                        flip_x=args.flip_x,
+                    ),
+                ),
+                size=tuple(args.size),
+            )
+            rendered.save_png(args.output)
+            return {
+                "output": str(args.output),
+                "placements": [asdict(p) for p in rendered.placements],
+            }
+        return {
+            "verified": True,
+            "animation_pack": animation_pack.manifest(),
+            "scene": None if scene is None else scene.manifest(),
+        }
+    if args.command == "classes":
+        from .class_package import compile_class_package, load_class_package
+
+        class_content = load_class_package(args.path)
+        compiled = compile_class_package(class_content)
+        return {
+            "verified": True,
+            "validation_scope": "synthetic_package_structure_and_compilation; mission_not_run",
+            "class_package": class_content.manifest(),
+            "capabilities": compiled.to_dict(),
+        }
     if args.command == "maps":
         from .map_pack import load_map_pack
 
@@ -342,6 +507,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
 
         if args.operation == "create":
             from .map_pack import load_map_pack
+            from .scene_animation import load_scene_animation
             from .sprite_pack import load_sprite_pack
 
             if bool(args.asset_registry) != bool(args.sprite_map):
@@ -361,6 +527,9 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 sprite_pack=sprites,
                 profile=args.profile,
                 map_pack=load_map_pack(args.map_pack) if args.map_pack else None,
+                animation=load_scene_animation(args.animation_scene)
+                if args.animation_scene
+                else None,
             )
         return validate_dataset(args.path)
     if args.command == "recording" and args.operation != "observe":
@@ -421,6 +590,21 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         if requested_terrain_source == "model" and detector is None:
             raise ValueError("--terrain-source model requires --model and --manifest")
         terrain_source = validate_terrain_source(requested_terrain_source, detector)
+        if args.command == "lab" and args.operation in {"export-bundle", "verify-bundle"}:
+            from .failure_bundle import export_failure_bundle, verify_failure_bundle
+
+            if args.operation == "export-bundle":
+                return export_failure_bundle(
+                    args.path,
+                    args.output,
+                    include_video=args.video,
+                    reinfer=args.reinfer,
+                    detector=detector,
+                    terrain_source=terrain_source,
+                )
+            return verify_failure_bundle(
+                args.path, reinfer=args.reinfer, detector=detector, terrain_source=terrain_source
+            )
         if args.command == "recording":
             from .recordings import observe_recording
 
@@ -465,14 +649,39 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 else HybridPerception(detector, terrain_source=terrain_source, map_markers=markers)
             )
             return asdict(perception.observe(ImageFrame.from_file(args.path)))
-        from .lab import RunConfig, run_episode, run_soak, run_suite, verify_run
+        from .class_package import load_class_package
+        from .lab import (
+            CapabilityRunConfig,
+            RunConfig,
+            run_episode,
+            run_soak,
+            run_suite,
+            verify_run,
+        )
         from .map_pack import load_map_pack
         from .runtime_pipeline import RuntimeConfig as StructuredRuntimeConfig
 
         pack = load_map_pack(args.map_pack) if getattr(args, "map_pack", None) else None
-        runtime = (
-            StructuredRuntimeConfig()
-            if getattr(args, "runtime", "legacy") == "structured"
+        package_paths = getattr(args, "class_pack", None)
+        class_packages = (
+            None
+            if package_paths is None
+            else tuple(
+                load_class_package(path)
+                for path in ([package_paths] if isinstance(package_paths, Path) else package_paths)
+            )
+        )
+        selected_runtime = getattr(args, "runtime", None)
+        if selected_runtime is None:
+            selected_runtime = "structured" if class_packages is not None else "legacy"
+        if class_packages is not None and selected_runtime != "structured":
+            raise ValueError("--class-pack requires --runtime structured")
+        runtime = StructuredRuntimeConfig() if selected_runtime == "structured" else None
+        from .scene_animation import load_scene_animation
+
+        animation = (
+            load_scene_animation(args.animation_scene)
+            if getattr(args, "animation_scene", None)
             else None
         )
 
@@ -487,21 +696,28 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 if args.asset_registry
                 else None
             )
-
+            class_package = None if class_packages is None else class_packages[0]
+            job = args.job or ("assassin" if class_package is None else class_package.class_id)
+            if class_package is not None and args.knowledge_db is not None:
+                raise ValueError("--class-pack and legacy --knowledge-db cannot be combined")
             profile = (
-                load_class_profile(args.knowledge_db, args.job, args.game_version)
+                load_class_profile(args.knowledge_db, job, args.game_version)
                 if args.knowledge_db
                 else None
             )
             return run_episode(
                 args.output,
-                RunConfig(args.seed, args.job, args.max_steps, args.fault, args.record_stride),
+                (RunConfig if class_package is None else CapabilityRunConfig)(
+                    args.seed, job, args.max_steps, args.fault, args.record_stride
+                ),
                 detector,
                 class_profile=profile,
                 sprite_pack=sprites,
                 terrain_source=terrain_source,
                 map_pack=pack,
                 runtime=runtime,
+                animation=animation,
+                class_package=class_package,
             )
         if args.operation == "suite":
             return run_suite(
@@ -511,6 +727,8 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 terrain_source=terrain_source,
                 map_pack=pack,
                 runtime=runtime,
+                animation=animation,
+                class_packages=class_packages,
             )
         if args.operation == "soak":
             return run_soak(
@@ -522,6 +740,8 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 terrain_source=terrain_source,
                 map_pack=pack,
                 runtime=runtime,
+                animation=animation,
+                class_packages=class_packages,
             )
         if args.operation == "reinfer":
             from .lab import verify_perception

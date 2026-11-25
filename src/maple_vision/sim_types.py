@@ -1,5 +1,6 @@
 """Public, immutable independent-simulator fixtures (not official game rules)."""
 
+import re
 from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Final
@@ -70,6 +71,7 @@ ACTION_KINDS: Final = frozenset(
         "interact",
         "portal",
         "climb",
+        "cast",
     }
 )
 
@@ -88,15 +90,28 @@ class SimAction:
             raise ValueError("direction must be -1, 0 or 1")
         if self.kind in {"move", "climb"} and self.direction == 0:
             raise ValueError("move/climb requires a direction")
-        if not isinstance(self.skill, str) or self.skill not in {"basic", "area"}:
+        if self.kind == "cast":
+            if (
+                not isinstance(self.skill, str)
+                or re.fullmatch(r"[a-z][a-z0-9_-]{0,39}", self.skill) is None
+            ):
+                raise ValueError("cast requires a bounded capability skill ID")
+        elif not isinstance(self.skill, str) or self.skill not in {"basic", "area"}:
             raise ValueError("unknown skill")
-        if self.skill != "basic" and self.kind not in {"attack", "jump_attack"}:
+        if self.skill != "basic" and self.kind not in {"attack", "jump_attack", "cast"}:
             raise ValueError("a skill is only valid on an attack")
         if not isinstance(self.target, str) or len(self.target) > 80:
             raise ValueError("target must be a short string")
         if self.target and self.kind not in {"interact", "portal"}:
             raise ValueError("target is only valid on portal/interact")
-        if self.direction and self.kind not in {"move", "climb", "jump", "jump_attack", "attack"}:
+        if self.direction and self.kind not in {
+            "move",
+            "climb",
+            "jump",
+            "jump_attack",
+            "attack",
+            "cast",
+        }:
             raise ValueError("direction is not valid on this action")
 
 

@@ -1,0 +1,415 @@
+{
+  "schema_version": 1,
+  "records": [
+    {
+      "kind": "classes",
+      "entity_id": "beginner",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test beginner",
+        "tier": 0,
+        "advancements": [
+          {
+            "to_class_id": "thrower",
+            "required_level": 10
+          }
+        ]
+      }
+    },
+    {
+      "kind": "classes",
+      "entity_id": "thrower",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test thrower",
+        "tier": 1,
+        "advancements": []
+      }
+    },
+    {
+      "kind": "skills",
+      "entity_id": "throw",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test throw",
+        "class_id": "thrower",
+        "max_level": 2,
+        "levels": [
+          {
+            "level": 1,
+            "hp_cost": 0,
+            "mp_cost": 1,
+            "ammo_item_id": "star",
+            "ammo_cost": 1,
+            "cooldown_ms": 200,
+            "cast_ms": null,
+            "effects": [
+              {
+                "effect_id": "hit",
+                "kind": "damage",
+                "target": "enemy",
+                "magnitude": 10,
+                "duration_ms": 0,
+                "stat": "hp"
+              }
+            ]
+          },
+          {
+            "level": 2,
+            "hp_cost": 0,
+            "mp_cost": 2,
+            "ammo_item_id": "star",
+            "ammo_cost": 1,
+            "cooldown_ms": 200,
+            "cast_ms": null,
+            "effects": [
+              {
+                "effect_id": "hit",
+                "kind": "damage",
+                "target": "enemy",
+                "magnitude": 20,
+                "duration_ms": 0,
+                "stat": "hp"
+              }
+            ]
+          }
+        ],
+        "assets": [
+          {
+            "asset_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "role": "icon"
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "test-design",
+            "method": "authored_fixture",
+            "artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "source_uri": "urn:fixture:design",
+            "declared_status": "PROVISIONAL"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "items",
+      "entity_id": "star",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test star",
+        "category": "ammunition",
+        "stack_limit": 100,
+        "equipment": null,
+        "consumable": null
+      }
+    },
+    {
+      "kind": "items",
+      "entity_id": "potion",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test potion",
+        "category": "consumable",
+        "stack_limit": 20,
+        "equipment": null,
+        "consumable": {
+          "hp_restore": 30,
+          "mp_restore": null,
+          "duration_ms": 0
+        }
+      }
+    },
+    {
+      "kind": "items",
+      "entity_id": "dagger",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test dagger",
+        "category": "equipment",
+        "stack_limit": 1,
+        "equipment": {
+          "slot": "weapon",
+          "required_level": 10,
+          "required_class_id": "thrower",
+          "attack": 6,
+          "defense": 0
+        },
+        "consumable": null
+      }
+    },
+    {
+      "kind": "items",
+      "entity_id": "coin",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test coin",
+        "category": "currency",
+        "stack_limit": 999,
+        "equipment": null,
+        "consumable": null
+      }
+    },
+    {
+      "kind": "monsters",
+      "entity_id": "blob",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test blob",
+        "level": 3,
+        "max_hp": 20,
+        "max_mp": null,
+        "experience": 7,
+        "drops": [
+          {
+            "item_id": "coin",
+            "probability": 0.25,
+            "quantity_min": 1,
+            "quantity_max": 3
+          }
+        ]
+      }
+    },
+    {
+      "kind": "maps",
+      "entity_id": "field",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test field",
+        "width": 640,
+        "height": 320,
+        "connections": [
+          {
+            "connection_id": "to-cave",
+            "destination_map_id": "cave",
+            "travel_kind": "portal"
+          }
+        ],
+        "platforms": [
+          {
+            "platform_id": "floor",
+            "x1": 0,
+            "x2": 640,
+            "y": 300
+          }
+        ],
+        "portals": [
+          {
+            "portal_id": "exit",
+            "destination_map_id": "cave",
+            "destination_portal_id": "back",
+            "x": 600,
+            "y": 290
+          }
+        ]
+      }
+    },
+    {
+      "kind": "maps",
+      "entity_id": "cave",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test cave",
+        "width": 320,
+        "height": 192,
+        "connections": [
+          {
+            "connection_id": "to-field",
+            "destination_map_id": "field",
+            "travel_kind": "portal"
+          }
+        ],
+        "platforms": [
+          {
+            "platform_id": "floor",
+            "x1": 0,
+            "x2": 320,
+            "y": 168
+          }
+        ],
+        "portals": [
+          {
+            "portal_id": "back",
+            "destination_map_id": "field",
+            "destination_portal_id": "exit",
+            "x": 10,
+            "y": 160
+          }
+        ]
+      }
+    },
+    {
+      "kind": "npcs",
+      "entity_id": "guide",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test guide",
+        "map_id": "field",
+        "x": 40,
+        "y": 280
+      }
+    },
+    {
+      "kind": "quests",
+      "entity_id": "intro",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test intro",
+        "npc_id": "guide",
+        "min_level": 1,
+        "requirements": []
+      }
+    },
+    {
+      "kind": "quests",
+      "entity_id": "collect",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test collection",
+        "npc_id": "guide",
+        "min_level": 10,
+        "requirements": [
+          {
+            "requirement_id": "previous",
+            "kind": "quest",
+            "target_id": "intro",
+            "quantity": 1
+          },
+          {
+            "requirement_id": "coins",
+            "kind": "item",
+            "target_id": "coin",
+            "quantity": 3
+          },
+          {
+            "requirement_id": "defeat",
+            "kind": "monster",
+            "target_id": "blob",
+            "quantity": 2
+          },
+          {
+            "requirement_id": "job",
+            "kind": "class",
+            "target_id": "thrower",
+            "quantity": 1
+          },
+          {
+            "requirement_id": "level",
+            "kind": "level",
+            "target_id": null,
+            "quantity": 10
+          }
+        ]
+      }
+    },
+    {
+      "kind": "mechanics",
+      "entity_id": "gravity",
+      "game_version": "fixture-v1",
+      "source_uri": "urn:self-authored:domain-catalog-tests",
+      "collected_at": "2026-11-24T00:00:00Z",
+      "permission": "self_authored",
+      "license": "CC0-1.0; synthetic test data, not official game rules",
+      "verification_status": "VERIFIED",
+      "scope": "synthetic_fixture",
+      "payload": {
+        "domain_schema_version": 1,
+        "name": "Test gravity",
+        "rule_type": "physics",
+        "unit": "px/s^2",
+        "numeric_value": 650,
+        "text_value": null
+      }
+    }
+  ]
+}

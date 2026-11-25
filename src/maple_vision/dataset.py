@@ -15,6 +15,7 @@ from PIL import Image
 from .catalog import strict_json
 from .map_pack import MapPack
 from .scene import CLASS_NAMES, RenderedSample, SceneRenderer
+from .scene_animation import SceneAnimation, load_scene_animation
 from .sim_types import SimAction, SimSnapshot
 from .simulation import GROUND, MAP_IDS, Simulator
 from .sprite_pack import SpritePack, verify_dataset_sprite_pack
@@ -22,6 +23,7 @@ from .sprite_pack import SpritePack, verify_dataset_sprite_pack
 DATASET_VERSION = 1
 LIFECYCLE_DATASET_VERSION = 2
 MAP_DATASET_VERSION = 3
+ANIMATION_DATASET_VERSION = 4
 LIFECYCLE_PHASES = ("spawn", "combat", "loot", "cleared", "dialogue", "transition")
 LIFECYCLE_TAGS = (
     "left_edge",
@@ -70,6 +72,7 @@ def generate_dataset(
     sprite_pack: SpritePack | None = None,
     profile: str = "legacy",
     map_pack: MapPack | None = None,
+    animation: SceneAnimation | None = None,
 ) -> dict[str, object]:
     """Generate portable PNG/YOLO labels without sharing sessions between splits.
 
@@ -86,6 +89,8 @@ def generate_dataset(
         raise ValueError("map_pack must be a verified MapPack")
     if map_pack is not None and profile != "lifecycle":
         raise ValueError("external map packs require the lifecycle dataset profile")
+    if animation is not None and (type(animation) is not SceneAnimation or profile != "lifecycle"):
+        raise ValueError("scene animations require the lifecycle dataset profile")
     minimum_frames = 6 * len(map_pack.map_ids) if map_pack is not None else 12
     if profile == "lifecycle" and frames_per_session < minimum_frames:
         raise ValueError(f"lifecycle requires at least {minimum_frames} frames per session")
@@ -103,7 +108,13 @@ def generate_dataset(
             manifest = _generate(staging, sessions, frames_per_session, seed, sprite_pack)
         else:
             manifest = _generate_lifecycle(
-                staging, sessions, frames_per_session, seed, sprite_pack, map_pack=map_pack
+                staging,
+                sessions,
+                frames_per_session,
+                seed,
+                sprite_pack,
+                map_pack=map_pack,
+                animation=animation,
             )
         _json(staging / "manifest.json", manifest)
         summary = validate_dataset(staging)
@@ -540,6 +551,7 @@ def _generate_lifecycle(
     sprite_pack: SpritePack | None,
     *,
     map_pack: MapPack | None = None,
+    animation: SceneAnimation | None = None,
 ) -> dict[str, object]:
     map_ids = map_pack.map_ids if map_pack is not None else MAP_IDS
     assignment = _lifecycle_splits(sessions, seed)
@@ -578,7 +590,9 @@ def _generate_lifecycle(
                 "trajectory": {"step_ms": 50, "actions": [asdict(action) for action in actions]},
             }
         )
-        renderer = SceneRenderer(style_seed=style_seed, sprite_pack=sprite_pack, map_pack=map_pack)
+        renderer = SceneRenderer(
+            style_seed=style_seed, sprite_pack=sprite_pack, map_pack=map_pack, animation=animation
+        )
         for frame_index, sequence in enumerate(selected):
             sample = renderer.render_sample(snapshots[sequence])
             stem = f"{session_id}_{frame_index:05d}"
@@ -608,12 +622,18 @@ def _generate_lifecycle(
             )
     _json(staging / "data.yaml", _data_config())
     manifest: dict[str, object] = {
-        "schema_version": MAP_DATASET_VERSION
+        "schema_version": ANIMATION_DATASET_VERSION
+        if animation is not None
+        else MAP_DATASET_VERSION
         if map_pack is not None
         else LIFECYCLE_DATASET_VERSION,
         "origin": "synthetic-fixture-v1",
         "profile": "lifecycle",
-        "generator_version": "lifecycle-map-pack-v1" if map_pack is not None else "lifecycle-v1",
+        "generator_version": "lifecycle-animation-v1"
+        if animation is not None
+        else "lifecycle-map-pack-v1"
+        if map_pack is not None
+        else "lifecycle-v1",
         "seed": seed,
         "frames_per_session": frames_per_session,
         "classes": list(CLASS_NAMES),
@@ -629,6 +649,10 @@ def _generate_lifecycle(
     }
     if map_pack is not None:
         manifest["map_pack"] = map_pack.manifest()
+    if animation is not None:
+        animation.write_sources(staging)
+        manifest["animation"] = animation.manifest()
+        manifest["animation_origin"] = "synthetic_geometry_with_versioned_animation"
     if sprite_pack is not None:
         sprite_pack.write_sources(staging)
         manifest["visual_origin"] = "synthetic_geometry_with_authorized_assets"
@@ -660,10 +684,17 @@ def _validate_lifecycle(
     sprite_pack: SpritePack | None,
     *,
     map_pack: MapPack | None = None,
+    animation: SceneAnimation | None = None,
 ) -> dict[str, Any]:
     """Replay each bounded session once, independently of the scenario planner."""
     map_ids = map_pack.map_ids if map_pack is not None else MAP_IDS
-    generator_version = "lifecycle-map-pack-v1" if map_pack is not None else "lifecycle-v1"
+    generator_version = (
+        "lifecycle-animation-v1"
+        if animation is not None
+        else "lifecycle-map-pack-v1"
+        if map_pack is not None
+        else "lifecycle-v1"
+    )
     fields = {
         "schema_version",
         "origin",
@@ -683,6 +714,8 @@ def _validate_lifecycle(
         fields.update(("sprite_pack", "visual_origin"))
     if map_pack is not None:
         fields.add("map_pack")
+    if animation is not None:
+        fields.update(("animation", "animation_origin"))
     if set(manifest) != fields or (manifest.get("profile"), manifest.get("generator_version")) != (
         "lifecycle",
         generator_version,
@@ -758,7 +791,10 @@ def _validate_lifecycle(
             session["seed"], session["job"], session["map_id"], step_ms=50, map_pack=map_pack
         )
         renderer = SceneRenderer(
-            style_seed=session["style_seed"], sprite_pack=sprite_pack, map_pack=map_pack
+            style_seed=session["style_seed"],
+            sprite_pack=sprite_pack,
+            map_pack=map_pack,
+            animation=animation,
         )
         first_entries: dict[str, int] = {}
         phases: dict[str, set[str]] = {map_id: set() for map_id in map_ids}
@@ -845,19 +881,30 @@ def validate_dataset(output: str | Path) -> dict[str, object]:
         not isinstance(manifest, dict)
         or type(manifest.get("schema_version")) is not int
         or manifest["schema_version"]
-        not in (DATASET_VERSION, LIFECYCLE_DATASET_VERSION, MAP_DATASET_VERSION)
+        not in (
+            DATASET_VERSION,
+            LIFECYCLE_DATASET_VERSION,
+            MAP_DATASET_VERSION,
+            ANIMATION_DATASET_VERSION,
+        )
     ):
         raise ValueError("unsupported dataset manifest")
     version = manifest["schema_version"]
     map_pack = None
     map_metadata: dict[str, object] = {}
-    if version == MAP_DATASET_VERSION:
+    if version == MAP_DATASET_VERSION or (
+        version == ANIMATION_DATASET_VERSION and "map_pack" in manifest
+    ):
         map_pack = MapPack.from_manifest(manifest.get("map_pack"))
         map_metadata = {"map_pack": map_pack.manifest()}
     elif "map_pack" in manifest:
         raise ValueError("external map packs require dataset schema version 3")
     map_ids = map_pack.map_ids if map_pack is not None else MAP_IDS
-    lifecycle = version in (LIFECYCLE_DATASET_VERSION, MAP_DATASET_VERSION)
+    lifecycle = version in (
+        LIFECYCLE_DATASET_VERSION,
+        MAP_DATASET_VERSION,
+        ANIMATION_DATASET_VERSION,
+    )
     if manifest.get("origin") != "synthetic-fixture-v1" or manifest.get("split_unit") != "session":
         raise ValueError("unsupported dataset provenance or split unit")
     if manifest.get("classes") != list(CLASS_NAMES):
@@ -878,6 +925,27 @@ def validate_dataset(output: str | Path) -> dict[str, object]:
         }
     elif (root / "sprite_objects").exists():
         raise ValueError("dataset has unmanifested sprite sources")
+    animation = None
+    animation_metadata: dict[str, object] = {}
+    if version == ANIMATION_DATASET_VERSION:
+        if manifest.get("animation_origin") != "synthetic_geometry_with_versioned_animation":
+            raise ValueError("dataset animation origin is missing or unsupported")
+        animation = load_scene_animation(root)
+        if _canonical(animation.manifest()) != _canonical(manifest.get("animation")):
+            raise ValueError("dataset animation metadata disagrees with sidecar")
+        animation_metadata = {
+            "animation": animation.manifest(),
+            "animation_origin": manifest["animation_origin"],
+        }
+    elif (
+        "animation" in manifest
+        or "animation_origin" in manifest
+        or (root / "scene-animation.json").exists()
+        or (root / "scene-animation.json").is_symlink()
+        or (root / "animation_objects").exists()
+        or (root / "animation_objects").is_symlink()
+    ):
+        raise ValueError("animations require dataset schema version 4")
     sessions = manifest.get("sessions")
     samples = manifest.get("samples")
     if (
@@ -1001,10 +1069,13 @@ def validate_dataset(output: str | Path) -> dict[str, object]:
     if actual_paths != used_paths:
         raise ValueError("dataset contains unlisted image or label files")
     lifecycle_metadata = (
-        _validate_lifecycle(root, manifest, sprite_pack, map_pack=map_pack) if lifecycle else {}
+        _validate_lifecycle(root, manifest, sprite_pack, map_pack=map_pack, animation=animation)
+        if lifecycle
+        else {}
     )
     return {
         **sprite_metadata,
+        **animation_metadata,
         **map_metadata,
         **lifecycle_metadata,
         "schema_version": version,
