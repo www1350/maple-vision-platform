@@ -270,6 +270,12 @@ def _parser() -> argparse.ArgumentParser:
     verify_events_command = recording_commands.add_parser("verify-events")
     for name in ("path", "report"):
         verify_events_command.add_argument(name, type=Path)
+    window_summary = recording_commands.add_parser("summarize-windows")
+    window_summary.add_argument("--session", type=Path, action="append", required=True)
+    window_summary.add_argument("--output", type=Path, required=True)
+    window_verify = recording_commands.add_parser("verify-windows")
+    window_verify.add_argument("report", type=Path)
+    window_verify.add_argument("--session", type=Path, action="append", required=True)
     score = recording_commands.add_parser("benchmark")
     score.add_argument(
         "--case",
@@ -751,6 +757,14 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         from .recording_evaluation import verify_events
 
         return verify_events(args.path, args.report)
+    if args.command == "recording" and args.operation == "summarize-windows":
+        from .recording_evaluation import summarize_recording_windows
+
+        return summarize_recording_windows(args.session, args.output)
+    if args.command == "recording" and args.operation == "verify-windows":
+        from .recording_evaluation import verify_recording_windows
+
+        return verify_recording_windows(args.session, args.report)
     if args.command == "recording" and args.operation == "audit-route":
         from .recording_evaluation import audit_route
 

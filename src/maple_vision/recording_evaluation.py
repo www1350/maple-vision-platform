@@ -36,6 +36,8 @@ MAX_LABEL_BYTES = 16 * 1024 * 1024
 MAX_STRIKE_REPORT_BYTES = 1024 * 1024
 MAX_EVENT_REPORT_BYTES = 4 * 1024 * 1024
 MAX_REVIEWED_EVENTS = 256
+MAX_WINDOW_REPORT_BYTES = 4 * 1024 * 1024
+MAX_RECORDING_WINDOWS = 256
 REVIEWED_EVENT_KINDS = frozenset(
     {
         "attack_motion_visible",
@@ -246,6 +248,123 @@ def verify_events(recording: Path, report: Path) -> dict[str, Any]:
         "scope": "source_frame_identity_and_reviewed_visible_intervals",
         "session_id": measured["source"]["session_id"],
         "events": len(measured["events"]),
+    }
+
+
+def _recording_window_document(recordings: Sequence[Path]) -> dict[str, Any]:
+    if (
+        not isinstance(recordings, (list, tuple))
+        or not 2 <= len(recordings) <= MAX_RECORDING_WINDOWS
+    ):
+        raise ValueError("supply 2..256 recording windows")
+    manifests = [_validated_manifest(Path(recording)) for recording in recordings]
+    if any(
+        manifest["source_kind"] != "mp4"
+        or manifest["source_hash_basis"] != "mp4_file"
+        or manifest["timebase"] != "video_presentation_ticks"
+        for manifest in manifests
+    ):
+        raise ValueError("window coverage requires source-PTS MP4 sessions")
+    shared_fields = (
+        "source_sha256",
+        "source_name",
+        "source_uri",
+        "permission",
+        "license",
+        "timebase",
+        "video_clock",
+        "width",
+        "height",
+    )
+    reference = manifests[0]
+    if any(
+        any(manifest[field] != reference[field] for field in shared_fields)
+        for manifest in manifests[1:]
+    ):
+        raise ValueError("recording windows have inconsistent source identity or provenance")
+    ordered = sorted(manifests, key=lambda manifest: manifest.get("source_start_frame", 0))
+    if len({manifest["session_id"] for manifest in ordered}) != len(ordered):
+        raise ValueError("recording window sessions must be distinct")
+    rows = []
+    previous_end = -1
+    previous_pts: int | None = None
+    for index, manifest in enumerate(ordered):
+        start = manifest.get("source_start_frame", 0)
+        end = start + manifest["frame_count"] - 1
+        if type(start) is not int or start != previous_end + 1:
+            raise ValueError("recording windows must start at zero and be contiguous")
+        if index < len(ordered) - 1:
+            if not manifest["truncated"] or manifest["completion_reason"] != "frame_limit":
+                raise ValueError("every non-final recording window must end at its frame limit")
+        elif manifest["truncated"] or manifest["completion_reason"] != "decoder_stopped":
+            raise ValueError("the final recording window must reach the decoder stop")
+        first, last = manifest["frames"][0], manifest["frames"][-1]
+        first_pts, last_pts = first["pts"], last["pts"]
+        if previous_pts is not None and first_pts <= previous_pts:
+            raise ValueError("presentation timestamps must increase across recording windows")
+        rows.append(
+            {
+                "session_id": manifest["session_id"],
+                "schema_version": manifest["schema_version"],
+                "source_start_frame": start,
+                "source_end_frame": end,
+                "frame_count": manifest["frame_count"],
+                "truncated": manifest["truncated"],
+                "completion_reason": manifest["completion_reason"],
+                "first": {
+                    "source_name": first["source_name"],
+                    "pts": first_pts,
+                    "rgb_sha256": first["rgb_sha256"],
+                },
+                "last": {
+                    "source_name": last["source_name"],
+                    "pts": last_pts,
+                    "rgb_sha256": last["rgb_sha256"],
+                },
+            }
+        )
+        previous_end = end
+        previous_pts = last_pts
+    document = {
+        "schema_version": 1,
+        "kind": "recording_window_coverage",
+        "source": {field: reference[field] for field in shared_fields},
+        "windows": rows,
+        "window_count": len(rows),
+        "decoded_frame_count": previous_end + 1,
+        "decoded_source_range": [0, previous_end],
+        "contiguous": True,
+        "decoder_stop_reached": True,
+        "limitations": [
+            "decoder stop does not independently prove that the MP4 container is undamaged",
+            "coverage verifies decoded frame identity and timing, not exhaustive gameplay labels",
+            "visible events do not identify skills, actors, targets, keyboard input, or causality",
+        ],
+    }
+    document["coverage_sha256"] = hashlib.sha256(canonical_json(document).encode()).hexdigest()
+    return document
+
+
+def summarize_recording_windows(recordings: Sequence[Path], output: Path | None) -> dict[str, Any]:
+    """Bind a contiguous, bounded MP4 import chain into one source coverage report."""
+    report = _recording_window_document(recordings)
+    if output is not None:
+        _write(output, report)
+    return report
+
+
+def verify_recording_windows(recordings: Sequence[Path], report: Path) -> dict[str, object]:
+    raw = strict_json(
+        read_regular(report, MAX_WINDOW_REPORT_BYTES, "recording window report").decode()
+    )
+    measured = _recording_window_document(recordings)
+    if not isinstance(raw, dict) or canonical_json(raw) != canonical_json(measured):
+        raise ValueError("recording window report differs from its source sessions")
+    return {
+        "verified": True,
+        "coverage_sha256": measured["coverage_sha256"],
+        "windows": measured["window_count"],
+        "decoded_frames": measured["decoded_frame_count"],
     }
 
 

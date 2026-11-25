@@ -368,6 +368,105 @@ def test_windowed_visible_event_report_names_its_source_frame_range(tmp_path):
     assert main(["recording", "verify-events", str(recording), str(output)]) == 0
 
 
+def test_contiguous_recording_windows_are_source_bound_and_reverified(tmp_path):
+    from fractions import Fraction
+
+    av = pytest.importorskip("av")
+    source = tmp_path / "windows.mp4"
+    clock = Fraction(1, 1000)
+    with av.open(str(source), "w", format="mp4") as writer:
+        stream = writer.add_stream("mpeg4", rate=25)
+        stream.width, stream.height = 64, 48
+        stream.pix_fmt = "yuv420p"
+        stream.codec_context.time_base = clock
+        for pts, shade in [(100, 20), (140, 60), (220, 100), (360, 140)]:
+            frame = av.VideoFrame.from_image(Image.new("RGB", (64, 48), (shade,) * 3))
+            frame.pts, frame.time_base = pts, clock
+            for packet in stream.encode(frame):
+                writer.mux(packet)
+        for packet in stream.encode():
+            writer.mux(packet)
+
+    def window(path, start):
+        import_recording(
+            source,
+            path,
+            source_uri="urn:self:window-source",
+            permission="self_authored",
+            license="CC0",
+            presentation_time=True,
+            start_frame=start,
+            max_frames=2,
+        )
+
+    first, final = tmp_path / "first", tmp_path / "final"
+    window(first, 0)
+    window(final, 2)
+    report = tmp_path / "coverage.json"
+    summary = [
+        "recording",
+        "summarize-windows",
+        "--session",
+        str(final),
+        "--session",
+        str(first),
+        "--output",
+        str(report),
+    ]
+    assert main(summary) == 0
+    data = json.loads(report.read_bytes())
+    assert data["decoded_source_range"] == [0, 3]
+    assert data["decoded_frame_count"] == 4
+    assert [window["source_start_frame"] for window in data["windows"]] == [0, 2]
+    verify = [
+        "recording",
+        "verify-windows",
+        str(report),
+        "--session",
+        str(first),
+        "--session",
+        str(final),
+    ]
+    assert main(verify) == 0
+
+    forged = json.loads(report.read_bytes())
+    forged["decoded_frame_count"] = 5
+    forged_report = tmp_path / "forged-coverage.json"
+    forged_report.write_text(json.dumps(forged))
+    forged_verify = verify.copy()
+    forged_verify[2] = str(forged_report)
+    assert main(forged_verify) == 2
+
+    gap = tmp_path / "gap"
+    import_recording(
+        source,
+        gap,
+        source_uri="urn:self:window-source",
+        permission="self_authored",
+        license="CC0",
+        presentation_time=True,
+        start_frame=3,
+        max_frames=2,
+    )
+    gap_report = tmp_path / "gap.json"
+    assert (
+        main(
+            [
+                "recording",
+                "summarize-windows",
+                "--session",
+                str(first),
+                "--session",
+                str(gap),
+                "--output",
+                str(gap_report),
+            ]
+        )
+        == 2
+    )
+    assert not gap_report.exists()
+
+
 def test_measure_reviewed_strike_preserves_distinct_feedback_frame_timing(tmp_path):
     session, labels = case(tmp_path, "forest")
     data = json.loads(labels.read_text())
