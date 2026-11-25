@@ -22,3 +22,11 @@ python -m maple_vision recording measure-strike SESSION LABELS REPORT --start 15
 ```
 
 报告将录像会话、标注摘要、首尾帧哈希、时间基准和观察者绑定在一起。距离按起始帧原图像素计算，前向中心差为负表示目标在身后；纵向中心差向下为正。观察区间从可见动作起算，不含物理按键至画面响应的延迟。伤害数字的归属需要人工核对。出现 MISS 可能是命中率判定，无反馈也可能源于遮挡，单次样本无法给出射程边界。
+
+多条报告可在同一领域、技能等级、武器和原图尺寸下汇总：
+
+```bash
+python -m maple_vision recording summarize-strikes --report HIT-1.json --report HIT-2.json --report MISS.json --output SUMMARY.json
+```
+
+汇总分别报告可见伤害、MISS 和无反馈样本的原图距离与观察时间分布，并按左右朝向拆分。最远可见伤害只记为“已观察到的命中距离下界”。MISS 可能来自命中率，无反馈可能来自遮挡或归因错误，因此报告不会生成射程上界，也不会宣布已完成射程校准。重复录像区间、不同技能等级、武器或画面尺寸会被拒绝。

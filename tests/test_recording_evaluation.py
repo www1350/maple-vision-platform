@@ -268,3 +268,87 @@ def test_measure_reviewed_strike(tmp_path):
     data["frames"][1]["map_id"] = "changed"
     labels.write_text(json.dumps(data))
     assert main(args) == 2 and not output.exists()
+
+
+def test_summarize_reviewed_strikes_without_inventing_range(tmp_path):
+    reports = []
+    for index, (feedback, forward, window, facing) in enumerate(
+        [
+            ("damage_visible", 45, 100, "right"),
+            ("damage_visible", 62, 120, "left"),
+            ("miss_text_visible", 70, 80, "right"),
+            ("no_feedback", 90, 150, "right"),
+        ]
+    ):
+        path = tmp_path / f"strike-{index}.json"
+        document = {
+            "schema_version": 1,
+            "kind": "reviewed_strike_window",
+            "session_id": f"session-{index}",
+            "domain": "game_recording",
+            "labels_sha256": "a" * 64,
+            "label_reviewer": "labeler",
+            "strike_reviewer": "reviewer",
+            "skill_id": "1311001",
+            "level": 30,
+            "weapon": "spear",
+            "facing": facing,
+            "map_id": "dead_forest_1",
+            "reviewed_feedback": feedback,
+            "timebase": "source_pts",
+            "start": {"sequence": index * 2, "timestamp_ms": 0, "rgb_sha256": f"{index + 1:064x}"},
+            "end": {
+                "sequence": index * 2 + 1,
+                "timestamp_ms": window,
+                "rgb_sha256": f"{index + 20:064x}",
+            },
+            "window_ms": window,
+            "source_frame_size": [1920, 1080],
+            "start_geometry": {
+                "player_index": 0,
+                "monster_index": 1,
+                "player_bbox": [10, 10, 20, 30],
+                "monster_bbox": [30, 10, 40, 30],
+                "player_occluded": False,
+                "monster_occluded": False,
+                "forward_center_delta_px": forward,
+                "vertical_center_delta_px": 0,
+                "horizontal_edge_gap_px": 10,
+            },
+        }
+        path.write_text(json.dumps(document))
+        reports.append(path)
+    output = tmp_path / "summary.json"
+    args = ["recording", "summarize-strikes"]
+    for report in reports:
+        args.extend(("--report", str(report)))
+    args.extend(("--output", str(output)))
+    assert main(args) == 0
+    summary = json.loads(output.read_text())
+    assert summary["observations"] == 4 and summary["sessions"] == 4
+    assert summary["observed_damage_distance_lower_bound_px"] == 62
+    assert summary["range_upper_bound_px"] is None and not summary["calibrated_range"]
+    assert summary["by_feedback"]["damage_visible"]["window_ms"] == {
+        "min": 100,
+        "median": 110.0,
+        "max": 120,
+    }
+    duplicate = tmp_path / "duplicate.json"
+    duplicate.write_bytes(reports[0].read_bytes())
+    output.unlink()
+    assert (
+        main(
+            [
+                "recording",
+                "summarize-strikes",
+                "--report",
+                str(reports[0]),
+                "--report",
+                str(duplicate),
+                "--output",
+                str(output),
+            ]
+        )
+        == 2
+    )
+    assert not output.exists()
