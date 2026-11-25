@@ -186,6 +186,24 @@ def _parser() -> argparse.ArgumentParser:
     recording_import.add_argument("--license", required=True)
     recording_import.add_argument("--fps", type=float)
     recording_import.add_argument("--max-frames", type=int, default=300)
+    label_command = recording_commands.add_parser("label-template")
+    label_command.add_argument("path", type=Path)
+    label_command.add_argument("output", type=Path)
+    score = recording_commands.add_parser("benchmark")
+    score.add_argument(
+        "--case",
+        dest="cases",
+        nargs=2,
+        type=Path,
+        action="append",
+        required=True,
+        metavar=("RECORDING", "LABELS"),
+    )
+    score.add_argument("--development-dataset", type=Path, action="append", default=[])
+    score.add_argument("--output", type=Path, required=True)
+    score.add_argument("--confidence", type=float, default=0.25)
+    score.add_argument("--model", type=Path)
+    score.add_argument("--manifest", type=Path)
     recording_check = recording_commands.add_parser("check")
     recording_check.add_argument("path", type=Path)
     recording_observe = recording_commands.add_parser("observe")
@@ -588,7 +606,11 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 else None,
             )
         return validate_dataset(args.path)
-    if args.command == "recording" and args.operation != "observe":
+    if args.command == "recording" and args.operation == "label-template":
+        from .recording_evaluation import create_label_template
+
+        return create_label_template(args.path, args.output)
+    if args.command == "recording" and args.operation not in {"observe", "benchmark"}:
         from .recordings import import_recording, validate_recording
 
         if args.operation == "import":
@@ -641,7 +663,12 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         if getattr(args, "model", None) or getattr(args, "manifest", None):
             if not args.model or not args.manifest:
                 raise ValueError("--model and --manifest must be supplied together")
-            detector = OnnxDetector(args.model, args.manifest)
+            if args.command == "recording" and args.operation == "benchmark":
+                detector = OnnxDetector(
+                    args.model, args.manifest, confidence_threshold=args.confidence
+                )
+            else:
+                detector = OnnxDetector(args.model, args.manifest)
         requested_terrain_source = getattr(args, "terrain_source", "fixture")
         if requested_terrain_source == "model" and detector is None:
             raise ValueError("--terrain-source model requires --model and --manifest")
@@ -660,6 +687,16 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 )
             return verify_failure_bundle(
                 args.path, reinfer=args.reinfer, detector=detector, terrain_source=terrain_source
+            )
+        if args.command == "recording" and args.operation == "benchmark":
+            from .recording_evaluation import benchmark_recordings
+
+            return benchmark_recordings(
+                args.cases,
+                args.output,
+                detector,
+                confidence=args.confidence,
+                development_datasets=args.development_dataset,
             )
         if args.command == "recording":
             from .recordings import observe_recording

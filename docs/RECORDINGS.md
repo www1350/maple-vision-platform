@@ -139,3 +139,25 @@ python -m pytest -q tests/test_recordings.py tests/test_ocr.py
 ```
 
 未安装可选 MP4 解码器或 Tesseract 的环境会明确跳过相应真实引擎 smoke；纯接口和边界测试继续运行。跳过不是引擎准确率通过。
+
+## 逐帧标注与评测
+
+先用上面的导入命令建立录像会话，再生成与原始画面绑定的空白标注表。保留输入录像，只在单独的 JSON 文件中编辑标注。
+
+```bash
+python -m maple_vision recording label-template artifacts/recording-session artifacts/session-labels.json
+```
+
+填写顶层的 `reviewer` 和 `domain`。自写样例填 `authored_fixture`，有使用许可的游戏实录填 `game_recording`。每帧保留 `sequence` 和 `rgb_sha256`，填写 `map_id` 与 `objects`。类别清单为 player、monster、loot、portal、npc、platform、ladder。以下是一个物体的标注，下标为原始画面的像素坐标，右、下边界不含在框内。确认没有目标的帧填空数组，尚未审过的帧保留 null 会阻止出分。
+
+```json
+{"class_id":"monster","bbox":[60,50,70,60],"occluded":true}
+```
+
+```bash
+python -m maple_vision recording benchmark --case artifacts/recording-session artifacts/session-labels.json --output artifacts/recording-score.json --model examples/lifecycle-model/model.onnx --manifest examples/lifecycle-model/manifest.json
+```
+
+可以重复传入 `--case` 汇总同一来源类型的不同会话。可重复指定 `--development-dataset DATASET`，逐张检查该数据集 train/val 与录像的解码 RGB 是否完全相同，重编码为 PNG 仍能查出。近似画面、其它训练集以及同地图的泄漏需要另外核对。报告记录指定数据集的摘要和实际检查帧数。输出文件采用独占创建，一个路径只能承载一次结果。
+
+每个会话和地图分别报告 IoU 0.50 下的 TP、FP、FN 及逐类指标。汇总 AP 使用固定分数阈值后的 101 点精度包络，按有真值的类别求均值，IoU 从 0.50 至 0.95，间隔 0.05。默认分数阈值是 0.25。遮挡对象由标注人逐个声明，小目标为原画面积小于 32×32 像素的目标。分母为零时召回值为 null。耗时覆盖本次检测器逐帧调用，包括首次调用。报告仅评估固定画面上的目标检测。真实国服识别率仍需要独立标注的实录。
