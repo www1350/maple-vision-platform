@@ -121,7 +121,8 @@ def create_app(root: Path, examples: Path | None = None) -> FastAPI:
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Cache-Control"] = "no-store"
         response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'"
+            "default-src 'self'; img-src 'self' data: blob:; "
+            "frame-ancestors 'none'; base-uri 'none'"
         )
         return response
 

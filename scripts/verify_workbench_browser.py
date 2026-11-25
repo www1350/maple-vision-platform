@@ -1,6 +1,7 @@
 """Exercise the installed workbench through Chromium against its real HTTP server."""
 
 import argparse
+import io
 import json
 import shutil
 import socket
@@ -11,6 +12,7 @@ import time
 from pathlib import Path
 from urllib.request import urlopen
 
+from PIL import Image
 from playwright.sync_api import expect, sync_playwright
 
 
@@ -85,6 +87,12 @@ def verify(url: str, executable: str) -> dict[str, object]:
         expect(page.locator("#route-steps li").last).to_contain_text("青蘑菇树林")
         page.click('[data-view="keys"]')
         page.fill("#keys-character", "示例区 / 一号")
+        screenshot = io.BytesIO()
+        Image.new("RGB", (32, 16), "navy").save(screenshot, format="PNG")
+        page.locator("#keys-image-file").set_input_files(
+            {"name": "fixture.png", "mimeType": "image/png", "buffer": screenshot.getvalue()}
+        )
+        expect(page.locator("#keys-image")).to_have_js_property("naturalWidth", 32)
         page.fill("#keys-list", "示例技能 = Ctrl")
         page.locator("#keys-form button").click()
         expect(page.locator("#keys-status")).to_contain_text("保存 1 项")
@@ -92,6 +100,8 @@ def verify(url: str, executable: str) -> dict[str, object]:
         page.locator("#keys-form button").click()
         expect(page.locator("#keys-status")).to_contain_text("出现了两次")
         page.fill("#keys-character", "示例区 / 二号")
+        expect(page.locator("#keys-image")).to_be_hidden()
+        assert page.locator("#keys-image").get_attribute("src") is None
         expect(page.locator("#keys-list")).to_have_value("")
         page.fill("#keys-character", "示例区 / 一号")
         expect(page.locator("#keys-list")).to_have_value("示例技能 = Ctrl")
@@ -142,6 +152,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
             "evidence_operations": ["replay", "reinfer", "export_bundle", "verify_bundle"],
             "single_step_restore_after_reload": True,
             "keyed_two_map_task": "completed_and_evidenced",
+            "local_key_image_preview_and_clear": True,
             "mobile_width": 390,
             "horizontal_overflow": overflow,
             "page_errors": errors,
