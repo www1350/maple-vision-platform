@@ -204,6 +204,13 @@ def _parser() -> argparse.ArgumentParser:
     strike.add_argument(
         "--feedback", choices=("damage_visible", "miss_text_visible", "no_feedback"), required=True
     )
+    strike.add_argument(
+        "--feedback-frame",
+        type=int,
+        action="append",
+        default=[],
+        help="reviewed frame containing a distinct feedback event; repeat in time order",
+    )
     strike_summary = recording_commands.add_parser("summarize-strikes")
     strike_summary.add_argument("--report", type=Path, action="append", required=True)
     strike_summary.add_argument("--output", type=Path, required=True)
@@ -653,6 +660,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
             reviewer=args.reviewer,
             facing=args.facing,
             feedback=args.feedback,
+            feedback_frames=args.feedback_frame,
         )
     if args.command == "recording" and args.operation == "summarize-strikes":
         from .recording_evaluation import summarize_strikes

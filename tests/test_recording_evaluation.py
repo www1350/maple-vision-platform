@@ -270,6 +270,56 @@ def test_measure_reviewed_strike(tmp_path):
     assert main(args) == 2 and not output.exists()
 
 
+def test_measure_reviewed_strike_preserves_distinct_feedback_frame_timing(tmp_path):
+    session, labels = case(tmp_path, "forest")
+    data = json.loads(labels.read_text())
+    data["frames"][0]["objects"].append(
+        {"class_id": "player", "bbox": [90, 45, 100, 60], "occluded": False}
+    )
+    labels.write_text(json.dumps(data))
+    output = tmp_path / "sequence.json"
+    args = [
+        "recording",
+        "measure-strike",
+        str(session),
+        str(labels),
+        str(output),
+        "--start",
+        "0",
+        "--end",
+        "1",
+        "--skill-id",
+        "example",
+        "--level",
+        "1",
+        "--weapon",
+        "fixture",
+        "--reviewer",
+        "tester",
+        "--facing",
+        "left",
+        "--feedback",
+        "damage_visible",
+        "--feedback-frame",
+        "0",
+        "--feedback-frame",
+        "1",
+        "--player-index",
+        "1",
+        "--monster-index",
+        "0",
+    ]
+    assert main(args) == 0
+    report = json.loads(output.read_text())
+    assert report["schema_version"] == 2
+    assert [frame["offset_ms"] for frame in report["feedback_frames"]] == [0, 83]
+    assert [frame["gap_ms"] for frame in report["feedback_frames"]] == [None, 83]
+    output.unlink()
+    invalid = args.copy()
+    invalid[invalid.index("damage_visible")] = "no_feedback"
+    assert main(invalid) == 2 and not output.exists()
+
+
 def test_summarize_reviewed_strikes_without_inventing_range(tmp_path):
     reports = []
     for index, (feedback, forward, window, facing) in enumerate(
@@ -325,6 +375,7 @@ def test_summarize_reviewed_strikes_without_inventing_range(tmp_path):
     args.extend(("--output", str(output)))
     assert main(args) == 0
     summary = json.loads(output.read_text())
+    assert summary["schema_version"] == 1 and "feedback_sequences" not in summary
     assert summary["observations"] == 4 and summary["sessions"] == 4
     assert summary["observed_damage_distance_lower_bound_px"] == 62
     assert summary["range_upper_bound_px"] is None and not summary["calibrated_range"]
@@ -352,3 +403,79 @@ def test_summarize_reviewed_strikes_without_inventing_range(tmp_path):
         == 2
     )
     assert not output.exists()
+
+
+def test_summarize_feedback_sequences_without_claiming_hit_timing_calibration(tmp_path):
+    reports = []
+    for index, offsets in enumerate(([40, 80, 130], [50, 100, 150])):
+        frames = []
+        for frame_index, offset in enumerate(offsets):
+            frames.append(
+                {
+                    "sequence": index * 10 + frame_index + 1,
+                    "timestamp_ms": offset,
+                    "rgb_sha256": f"{index * 10 + frame_index + 30:064x}",
+                    "offset_ms": offset,
+                    "gap_ms": None if frame_index == 0 else offset - offsets[frame_index - 1],
+                }
+            )
+        document = {
+            "schema_version": 2,
+            "kind": "reviewed_strike_window",
+            "session_id": f"session-{index}",
+            "domain": "game_recording",
+            "labels_sha256": "a" * 64,
+            "label_reviewer": "labeler",
+            "strike_reviewer": "reviewer",
+            "skill_id": "1311001",
+            "level": 30,
+            "weapon": "spear",
+            "facing": "right",
+            "map_id": "dead_forest_1",
+            "reviewed_feedback": "damage_visible",
+            "timebase": "source_pts",
+            "start": {"sequence": index * 10, "timestamp_ms": 0, "rgb_sha256": f"{index + 1:064x}"},
+            "end": {
+                "sequence": index * 10 + 4,
+                "timestamp_ms": 180,
+                "rgb_sha256": f"{index + 20:064x}",
+            },
+            "window_ms": 180,
+            "source_frame_size": [1920, 1080],
+            "start_geometry": {
+                "player_index": 0,
+                "monster_index": 1,
+                "player_bbox": [10, 10, 20, 30],
+                "monster_bbox": [30, 10, 40, 30],
+                "player_occluded": False,
+                "monster_occluded": False,
+                "forward_center_delta_px": 45 + index,
+                "vertical_center_delta_px": 0,
+                "horizontal_edge_gap_px": 10,
+            },
+            "feedback_frames": frames,
+        }
+        path = tmp_path / f"sequence-{index}.json"
+        path.write_text(json.dumps(document))
+        reports.append(path)
+    output = tmp_path / "summary.json"
+    args = ["recording", "summarize-strikes"]
+    for report in reports:
+        args.extend(("--report", str(report)))
+    args.extend(("--output", str(output)))
+    assert main(args) == 0
+    summary = json.loads(output.read_text())
+    assert summary["schema_version"] == 2
+    assert summary["feedback_sequences"] == {
+        "observations": 2,
+        "event_count_distribution": {"3": 2},
+        "first_feedback_offset_ms": {"min": 40, "median": 45.0, "max": 50},
+        "inter_feedback_gap_ms": {"observations": 4, "min": 40, "median": 50.0, "max": 50},
+        "calibrated_timing": False,
+    }
+    assert not summary["calibrated_range"]
+    output.unlink()
+    forged = json.loads(reports[0].read_text())
+    forged["feedback_frames"][1]["gap_ms"] = 999
+    reports[0].write_text(json.dumps(forged))
+    assert main(args) == 2 and not output.exists()
