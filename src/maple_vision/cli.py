@@ -215,7 +215,15 @@ def _parser() -> argparse.ArgumentParser:
     for name in ("path", "labels", "report"):
         verify_strike_command.add_argument(name, type=Path)
     strike_summary = recording_commands.add_parser("summarize-strikes")
-    strike_summary.add_argument("--report", type=Path, action="append", required=True)
+    strike_inputs = strike_summary.add_mutually_exclusive_group(required=True)
+    strike_inputs.add_argument("--report", type=Path, action="append")
+    strike_inputs.add_argument(
+        "--verified-case",
+        type=Path,
+        nargs=3,
+        action="append",
+        metavar=("RECORDING", "LABELS", "REPORT"),
+    )
     strike_summary.add_argument("--output", type=Path, required=True)
     score = recording_commands.add_parser("benchmark")
     score.add_argument(
@@ -672,6 +680,12 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
     if args.command == "recording" and args.operation == "summarize-strikes":
         from .recording_evaluation import summarize_strikes
 
+        if args.verified_case:
+            return summarize_strikes(
+                [report for _, _, report in args.verified_case],
+                args.output,
+                sources=[(recording, labels) for recording, labels, _ in args.verified_case],
+            )
         return summarize_strikes(args.report, args.output)
     if args.command == "recording" and args.operation == "audit-route":
         from .recording_evaluation import audit_route

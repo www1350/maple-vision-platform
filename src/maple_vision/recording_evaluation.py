@@ -510,7 +510,17 @@ def measure_strike(
 
 def verify_strike(recording: Path, labels: Path, report_path: Path) -> dict[str, Any]:
     """Recompute source-derived fields while retaining the reviewer's selections."""
-    raw = _strike_report(report_path)
+    raw, _ = _strike_report(report_path)
+    _verify_strike_source(recording, labels, raw)
+    return {
+        "source_fields_verified": True,
+        "session_id": raw["session_id"],
+        "domain": raw["domain"],
+        "labels_sha256": raw["labels_sha256"],
+    }
+
+
+def _verify_strike_source(recording: Path, labels: Path, raw: dict[str, Any]) -> None:
     geometry = raw["start_geometry"]
     measured = measure_strike(
         recording,
@@ -530,16 +540,11 @@ def verify_strike(recording: Path, labels: Path, report_path: Path) -> dict[str,
     )
     if canonical_json(raw) != canonical_json(measured):
         raise ValueError("strike report differs from recording or reviewed labels")
-    return {
-        "source_fields_verified": True,
-        "session_id": measured["session_id"],
-        "domain": measured["domain"],
-        "labels_sha256": measured["labels_sha256"],
-    }
 
 
-def _strike_report(path: Path) -> dict[str, Any]:
-    raw = strict_json(read_regular(path, MAX_STRIKE_REPORT_BYTES, "strike report").decode())
+def _strike_report(path: Path) -> tuple[dict[str, Any], str]:
+    contents = read_regular(path, MAX_STRIKE_REPORT_BYTES, "strike report")
+    raw = strict_json(contents.decode())
     required = {
         "schema_version",
         "kind",
@@ -649,14 +654,27 @@ def _strike_report(path: Path) -> dict[str, Any]:
             ):
                 raise ValueError("invalid strike feedback gap")
             previous_sequence, previous_ms = sequence, timestamp
-    return raw
+    return raw, hashlib.sha256(contents).hexdigest()
 
 
-def summarize_strikes(reports: Sequence[Path], output: Path) -> dict[str, Any]:
+def summarize_strikes(
+    reports: Sequence[Path],
+    output: Path,
+    *,
+    sources: Sequence[tuple[Path, Path]] | None = None,
+) -> dict[str, Any]:
     """Aggregate reviewed observations without promoting them into a calibrated range."""
     if not reports or len(reports) > 10_000:
         raise ValueError("supply 1..10000 strike reports")
-    documents = [_strike_report(Path(path)) for path in reports]
+    if sources is not None and len(sources) != len(reports):
+        raise ValueError("each verified strike report needs its recording and labels")
+    if sources and any(output.resolve().is_relative_to(path.resolve()) for path, _ in sources):
+        raise ValueError("write evidence outside the recording")
+    snapshots = [_strike_report(Path(path)) for path in reports]
+    documents = [document for document, _ in snapshots]
+    if sources is not None:
+        for document, (recording, labels) in zip(documents, sources, strict=True):
+            _verify_strike_source(recording, labels, document)
     identity = tuple(documents[0][key] for key in ("domain", "skill_id", "level", "weapon"))
     frame_size = documents[0]["source_frame_size"]
     if any(
@@ -732,13 +750,10 @@ def summarize_strikes(reports: Sequence[Path], output: Path) -> dict[str, Any]:
             "no feedback can result from occlusion, timing or attribution error",
             "distances are native pixels for one fixed source frame size",
         ],
-        "source_reports_sha256": [
-            hashlib.sha256(
-                read_regular(Path(path), MAX_STRIKE_REPORT_BYTES, "strike report")
-            ).hexdigest()
-            for path in reports
-        ],
+        "source_reports_sha256": [digest for _, digest in snapshots],
     }
+    if sources is not None:
+        report["source_fields_verified"] = len(documents)
     if sequenced:
         counts = [len(item["feedback_frames"]) for item in sequenced]
         first_offsets = [item["feedback_frames"][0]["offset_ms"] for item in sequenced]

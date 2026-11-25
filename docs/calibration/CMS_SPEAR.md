@@ -34,4 +34,10 @@ python -m maple_vision recording summarize-strikes --report HIT-1.json --report 
 
 汇总分别报告可见伤害、MISS 和无反馈样本的原图距离与观察时间分布，并按左右朝向拆分。含反馈序列时另列可见事件数分布、首次反馈偏移和相邻反馈间隔，但固定保持 `calibrated_timing=false`：可见反馈不保证与真实伤害段一一对应。最远可见伤害只记为“已观察到的命中距离下界”。MISS 可能来自命中率，无反馈可能来自遮挡或归因错误，因此报告不会生成射程上界，也不会宣布已完成射程校准。重复录像区间、不同技能等级、武器或画面尺寸会被拒绝。
 
-Run `verify-strike` for each window against its own recording and frozen labels before aggregation. It recomputes source identity, timestamps and geometry for the selected frames. Skill identity, level, facing and visible feedback attribution remain reviewer judgments.
+需要保留逐份复核结果时，直接用原录像、冻结标注和报告三元组生成汇总：
+
+```bash
+python -m maple_vision recording summarize-strikes --verified-case SESSION_A LABELS_A.json HIT-1.json --verified-case SESSION_B LABELS_B.json MISS.json --output VERIFIED.json
+```
+
+每个窗口的来源字段都通过重算后，汇总才会发布，`source_fields_verified` 记录通过复核的窗口数。报告摘要取自参与统计的同一份字节。技能、朝向和伤害归属仍由复核人判断。
