@@ -622,3 +622,145 @@ def test_source_verified_intervals_pair_only_ordered_onsets_in_one_session(tmp_p
             "second_report_sha256": hashlib.sha256(cases[1][2].read_bytes()).hexdigest(),
         }
     ]
+
+
+def test_reviewed_attack_speed_context_is_bound_and_cannot_be_mixed(tmp_path):
+    recording, labels = case(tmp_path, "speed-context")
+    data = json.loads(labels.read_text())
+    for frame in data["frames"]:
+        frame["objects"] = [
+            {"class_id": "player", "bbox": [10, 10, 20, 30], "occluded": False},
+            {"class_id": "monster", "bbox": [30, 10, 40, 30], "occluded": False},
+        ]
+    labels.write_text(json.dumps(data))
+    contextual = tmp_path / "contextual.json"
+    base = [
+        "recording",
+        "measure-strike",
+        str(recording),
+        str(labels),
+        str(contextual),
+        "--start",
+        "0",
+        "--end",
+        "0",
+        "--player-index",
+        "0",
+        "--monster-index",
+        "1",
+        "--level",
+        "30",
+        "--skill-id",
+        "1311001",
+        "--weapon",
+        "spear",
+        "--reviewer",
+        "tester",
+        "--facing",
+        "right",
+        "--feedback",
+        "no_feedback",
+    ]
+    assert (
+        main(
+            base
+            + [
+                "--weapon-speed-grade",
+                "6",
+                "--speed-effect",
+                "weapon_booster",
+                "--speed-effect",
+                "party_aura",
+            ]
+        )
+        == 0
+    )
+    report = json.loads(contextual.read_bytes())
+    assert report["schema_version"] == 4
+    assert report["attack_context"] == {
+        "weapon_speed_grade": 6,
+        "speed_effects": ["party_aura", "weapon_booster"],
+    }
+    assert main(["recording", "verify-strike", str(recording), str(labels), str(contextual)]) == 0
+    combined = tmp_path / "context-with-feedback.json"
+    combined_args = base.copy()
+    combined_args[combined_args.index(str(contextual))] = str(combined)
+    combined_args[combined_args.index("0", combined_args.index("--end"))] = "1"
+    combined_args[combined_args.index("no_feedback")] = "damage_visible"
+    assert (
+        main(
+            combined_args
+            + [
+                "--feedback-frame",
+                "0",
+                "--movement-frame",
+                "1",
+                "--weapon-speed-grade",
+                "6",
+            ]
+        )
+        == 0
+    )
+    combined_report = json.loads(combined.read_bytes())
+    assert combined_report["schema_version"] == 4
+    assert combined_report["feedback_frames"][0]["sequence"] == 0
+    assert combined_report["reviewed_movement"]["sequence"] == 1
+    assert main(["recording", "verify-strike", str(recording), str(labels), str(combined)]) == 0
+    summary = tmp_path / "summary.json"
+    verified = [
+        "recording",
+        "summarize-strikes",
+        "--verified-case",
+        str(recording),
+        str(labels),
+        str(contextual),
+        "--output",
+        str(summary),
+    ]
+    assert main(verified) == 0
+    assert json.loads(summary.read_bytes())["attack_context"] == report["attack_context"]
+
+    summary.unlink()
+    plain = tmp_path / "plain.json"
+    plain_args = base.copy()
+    plain_args[plain_args.index(str(contextual))] = str(plain)
+    plain_args[plain_args.index("0", plain_args.index("--start"))] = "1"
+    plain_args[plain_args.index("0", plain_args.index("--end"))] = "1"
+    assert main(plain_args) == 0
+    mixed = [
+        "recording",
+        "summarize-strikes",
+        "--report",
+        str(contextual),
+        "--report",
+        str(plain),
+        "--output",
+        str(summary),
+    ]
+    assert main(mixed) == 2 and not summary.exists()
+
+    forged = json.loads(contextual.read_bytes())
+    forged["attack_context"]["speed_effects"] = [" weapon_booster"]
+    forged_path = tmp_path / "forged-context.json"
+    forged_path.write_text(json.dumps(forged))
+    forged_summary = mixed.copy()
+    forged_summary[forged_summary.index(str(contextual))] = str(forged_path)
+    assert main(forged_summary) == 2 and not summary.exists()
+
+    invalid = base.copy()
+    invalid[invalid.index(str(contextual))] = str(tmp_path / "invalid.json")
+    assert main(invalid + ["--speed-effect", "weapon_booster"]) == 2
+    assert (
+        main(
+            invalid
+            + [
+                "--weapon-speed-grade",
+                "6",
+                "--speed-effect",
+                "weapon_booster",
+                "--speed-effect",
+                "weapon_booster",
+            ]
+        )
+        == 2
+    )
