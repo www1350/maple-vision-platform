@@ -95,12 +95,12 @@ def test_unbound_skill_is_denied_as_idle_and_cannot_complete_mission(tmp_path):
         and not row["execution"]["input_dispatch"]["accepted"]
     ]
     assert denied
-    assert {row["execution"]["input_dispatch"]["reason"] for row in denied} == {
-        "unbound_skill"
-    }
-    assert all(row["execution"]["applied_action"] == {
-        "kind": "idle", "direction": 0, "skill": "basic", "target": ""
-    } for row in denied)
+    assert {row["execution"]["input_dispatch"]["reason"] for row in denied} == {"unbound_skill"}
+    assert all(
+        row["execution"]["applied_action"]
+        == {"kind": "idle", "direction": 0, "skill": "basic", "target": ""}
+        for row in denied
+    )
     assert verify_run(output)["verified"]
     assert verify_perception(output)["recorded_status"] == "failed"
 

@@ -953,9 +953,7 @@ def verify_run(output: Path) -> dict[str, Any]:
                 input_action, expected_input_dispatch = input_profile.dispatch(
                     authorized, config.job, class_package
                 )
-                if canonical(execution.get("input_dispatch")) != canonical(
-                    expected_input_dispatch
-                ):
+                if canonical(execution.get("input_dispatch")) != canonical(expected_input_dispatch):
                     raise ValueError("recorded input dispatch disagrees with bound profile")
                 if expected_input_dispatch is not None:
                     input_dispatch_reasons[expected_input_dispatch["reason"]] += 1

@@ -28,9 +28,7 @@ def _normalize_skill(value: str) -> str:
     return unicodedata.normalize("NFKC", value).strip().casefold()
 
 
-def action_for_skill(
-    job: str, class_package: ClassPackage | None, skill: str
-) -> SimAction | None:
+def action_for_skill(job: str, class_package: ClassPackage | None, skill: str) -> SimAction | None:
     """Resolve a configured label to a supported offline simulator action."""
     normalized = _normalize_skill(skill)
     if class_package is not None:
@@ -63,9 +61,7 @@ def _required_skill(
                 {_normalize_skill("area"), _normalize_skill("模拟范围攻击")}
             )
         if action.skill == "basic":
-            return "普通攻击", frozenset(
-                {_normalize_skill("basic"), _normalize_skill("普通攻击")}
-            )
+            return "普通攻击", frozenset({_normalize_skill("basic"), _normalize_skill("普通攻击")})
     return None
 
 

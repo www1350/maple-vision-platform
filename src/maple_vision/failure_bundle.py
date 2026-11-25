@@ -584,9 +584,7 @@ def _project(source: _Source, output: Path) -> list[dict[str, Any]]:
             execution_fields = {"applied_action", "accepted", "reason", "events"}
             if source.summary.get("input_profile") is not None:
                 execution_fields.add("input_dispatch")
-            execution = _object(
-                row["execution"], execution_fields, "execution"
-            )
+            execution = _object(row["execution"], execution_fields, "execution")
             if type(execution["accepted"]) is not bool:
                 raise ValueError("execution accepted must be a boolean")
             applied = SimAction(**execution["applied_action"])
