@@ -5,7 +5,7 @@ const show = (id, visible) => el(id).classList.toggle("hidden", !visible);
 const pretty = (value) => JSON.stringify(value, null, 2);
 const names = {
   assassin:"标飞", dragon_knight:"龙骑士", cleric:"牧师", archer:"弓箭手",
-  bandit:"刀飞", blood_knight:"血骑士（合成）", builtin:"内置两图", pixel:"像素基线",
+  fire_poison:"火毒（合成）", ice_lightning:"冰雷（合成）", bandit:"刀飞", blood_knight:"血骑士（合成）", builtin:"内置两图", pixel:"像素基线",
   "three-map-fixture":"外部三图", "lifecycle-model":"已验收的混合模型",
   queued:"排队中", running:"运行中", finished:"已执行", cancelled:"已取消",
   interrupted:"已中断", error:"出错", completed:"目标完成", stopped:"已停止",

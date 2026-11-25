@@ -222,6 +222,13 @@ class Simulator:
             {} if capabilities is None else {group: 0 for group in capabilities.cooldown_groups}
         )
         self._capability_buffs: dict[str, int] = {}
+        self._effect_rules = (
+            {}
+            if class_package is None
+            else {rule.skill: rule for rule in class_package.timed_effects}
+        )
+        # Each target may carry one active application per effect kind.
+        self._target_effects: dict[tuple[str, str], tuple[str, int]] = {}
         spec = self.class_spec
         ammo = (
             (200 if spec.ammo_cost else 0)
@@ -362,6 +369,8 @@ class Simulator:
             self._physics()
             self._contact_damage(events)
         self._sequence += 1
+        if self._target_effects:
+            self._advance_effects(events)
         if p.buff_until_ms and self.timestamp_ms >= p.buff_until_ms:
             p.buff_until_ms = 0
             events.append("buff_expired")
@@ -482,6 +491,7 @@ class Simulator:
                     and p.grounded
                     and vertical_overlap
                 ):
+                    self._target_effects.clear()
                     self._map_id = portal.destination
                     p.x = (
                         (35.0 if portal.destination == "cavern" else 270.0)
@@ -590,16 +600,45 @@ class Simulator:
                 targets.append(monster)
         targets.sort(key=lambda monster: (abs(monster.x - p.x), monster.id))
         for monster in targets[: skill.max_targets]:
-            monster.hp = max(0, monster.hp - damage)
-            events.append("attack_hit")
-            if monster.hp == 0:
-                self._next_drop_id += 1
-                self._maps[self._map_id].drops.append(
-                    _Drop(
-                        f"drop-{self._next_drop_id}", monster.x + 5, 160, "coin", 1 + self._roll(5)
-                    )
-                )
-                events.append("monster_defeated")
+            self._damage_monster(monster, damage, "attack_hit", events)
+            rule = self._effect_rules.get(skill.id)
+            if monster.hp and rule is not None:
+                key = (monster.id, rule.kind)
+                if key not in self._target_effects:
+                    self._target_effects[key] = (rule.skill, self.timestamp_ms)
+                    events.append(rule.kind + "_applied")
+
+    def _damage_monster(
+        self, monster: _Monster, damage: int, event: str, events: list[str]
+    ) -> None:
+        monster.hp = max(0, monster.hp - damage)
+        events.append(event)
+        if not monster.hp:
+            self._next_drop_id += 1
+            self._maps[self._map_id].drops.append(
+                _Drop(f"drop-{self._next_drop_id}", monster.x + 5, 160, "coin", 1 + self._roll(5))
+            )
+            events.append("monster_defeated")
+            self._target_effects.pop((monster.id, "periodic_damage"), None)
+            self._target_effects.pop((monster.id, "disable_contact"), None)
+
+    def _advance_effects(self, events: list[str]) -> None:
+        now = self.timestamp_ms
+        monsters = {m.id: m for m in self._maps[self._map_id].monsters}
+        for key in sorted(self._target_effects):
+            active = self._target_effects.get(key)
+            if active is None:
+                continue  # A tick from the same target already defeated it.
+            skill, start = active
+            rule = self._effect_rules[skill]
+            age = now - start
+            if rule.kind == "periodic_damage":
+                before = max(0, age - self.step_ms) // rule.interval_ms
+                after = min(age, rule.duration_ms) // rule.interval_ms
+                if after > before:
+                    self._damage_monster(monsters[key[0]], rule.tick_damage, "periodic_hit", events)
+            if age >= rule.duration_ms and self._target_effects.pop(key, None) is not None:
+                events.append(rule.kind + "_expired")
 
     def _attack_error(self, skill: str) -> str | None:
         p = self._player
@@ -632,16 +671,7 @@ class Simulator:
                     targets.append(monster)
         targets.sort(key=lambda m: abs(m.x - p.x))
         for monster in targets[: 3 if skill == "area" else 1]:
-            monster.hp = max(0, monster.hp - damage)
-            events.append("attack_hit")
-            if monster.hp == 0:
-                self._next_drop_id += 1
-                self._maps[self._map_id].drops.append(
-                    _Drop(
-                        f"drop-{self._next_drop_id}", monster.x + 5, 160, "coin", 1 + self._roll(5)
-                    )
-                )
-                events.append("monster_defeated")
+            self._damage_monster(monster, damage, "attack_hit", events)
 
     def _potion(self, kind: str, events: list[str]) -> tuple[bool, str]:
         p = self._player
@@ -700,6 +730,8 @@ class Simulator:
         if self.timestamp_ms < p.invulnerable_until_ms:
             return
         for monster in self._maps[self._map_id].monsters:
+            if (monster.id, "disable_contact") in self._target_effects:
+                continue
             if monster.hp and _overlap(p.x, p.y, PLAYER_W, PLAYER_H, monster.x, 152, 18, 16):
                 p.hp = max(0, p.hp - 9)
                 p.invulnerable_until_ms = self.timestamp_ms + 500
@@ -714,7 +746,7 @@ class Simulator:
         """Independent JSON state copy, including RNG and embedded external maps."""
         result: dict[str, Any] = {
             "schema_version": (
-                4
+                (5 if self._effect_rules else 4)
                 if self._class_package is not None
                 else (
                     3
@@ -750,6 +782,11 @@ class Simulator:
                 "cooldowns": dict(sorted(self._capability_ready.items())),
                 "buffs": dict(sorted(self._capability_buffs.items())),
             }
+        if self._effect_rules:
+            result["target_effects"] = [
+                {"target": target, "skill": skill, "applied_ms": start}
+                for (target, _), (skill, start) in sorted(self._target_effects.items())
+            ]
         return result
 
     @classmethod
@@ -758,7 +795,7 @@ class Simulator:
         if (
             not isinstance(state, dict)
             or type(state.get("schema_version")) is not int
-            or state["schema_version"] not in (SIM_VERSION, 2, 3, 4)
+            or state["schema_version"] not in (SIM_VERSION, 2, 3, 4, 5)
         ):
             raise ValueError("unsupported simulator schema")
         expected_fields = {
@@ -781,9 +818,11 @@ class Simulator:
             state["schema_version"] == 3 and "class_profile" in state
         ):
             expected_fields.add("class_profile")
-        if state["schema_version"] == 3 or (state["schema_version"] == 4 and "map_pack" in state):
+        if state["schema_version"] == 3 or (state["schema_version"] >= 4 and "map_pack" in state):
             expected_fields.add("map_pack")
-        if state["schema_version"] == 4:
+        if state["schema_version"] == 5:
+            expected_fields.add("target_effects")
+        if state["schema_version"] >= 4:
             expected_fields.update({"class_package", "capability_state"})
         root = _mapping(state, expected_fields, "save")
         if root["ruleset"] != RULESET:
@@ -797,9 +836,11 @@ class Simulator:
         map_pack = MapPack.from_manifest(root["map_pack"]) if "map_pack" in root else None
         class_package = (
             ClassPackage.from_manifest(root["class_package"])
-            if root["schema_version"] == 4
+            if root["schema_version"] >= 4
             else None
         )
+        if (root["schema_version"] == 5) != bool(class_package and class_package.timed_effects):
+            raise ValueError("save schema disagrees with timed-effect rules")
         sim = cls(
             root["seed"],
             root["job"],
@@ -905,8 +946,12 @@ class Simulator:
                     )
                 )
             sim._maps[map_id] = _MapState(monsters, drops)
+        if sim._effect_rules:
+            sim._restore_effects(root["target_effects"])
         raw_events = root["events"]
-        if not isinstance(raw_events, list) or len(raw_events) > 100:
+        if not isinstance(raw_events, list) or len(raw_events) > (
+            512 if sim._effect_rules else 100
+        ):
             raise ValueError("events must be a bounded list")
         sim._events = tuple(_text(event, "event") for event in raw_events)
         dialogue = root["dialogue"]
@@ -915,6 +960,29 @@ class Simulator:
         sim._dialogue = dialogue
         sim._validate_spatial_state()
         return sim
+
+    def _restore_effects(self, value: object) -> None:
+        living = {m.id for m in self._maps[self._map_id].monsters if m.hp > 0}
+        if not isinstance(value, list) or len(value) > len(living) * 2:
+            raise ValueError("invalid target effect count")
+        for item in value:
+            row = _mapping(item, {"target", "skill", "applied_ms"}, "target effect")
+            target, skill = (
+                _text(row["target"], "effect target"),
+                _text(row["skill"], "effect skill"),
+            )
+            rule = self._effect_rules.get(skill)
+            if rule is None or target not in living or (target, rule.kind) in self._target_effects:
+                raise ValueError("unknown or duplicate active target effect")
+            start = _integer(
+                row["applied_ms"],
+                "application time",
+                max(0, self.timestamp_ms - rule.duration_ms + 1),
+                self.timestamp_ms - self.step_ms,
+            )
+            if start % self.step_ms:
+                raise ValueError("application time must be on the simulation clock")
+            self._target_effects[(target, rule.kind)] = (skill, start)
 
     def _restore_capability_state(self, value: object) -> None:
         capabilities = self._capabilities

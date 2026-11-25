@@ -262,3 +262,18 @@ official game behavior, or control a game client. Consumers still select an
 explicit game version and verification policy through the existing catalog
 API. A future network source adapter must preserve this captured-byte,
 provenance, version, and atomic-apply contract.
+
+## 从获准的 HTTPS 导出生成离线审查计划
+
+`knowledge fetch-plan` 读取操作者明确指定的 JSON 导出地址。上游须提供当前 catalog 导出合同。命令保存原始字节、来源端点、采集时间、许可声明、请求 URL 摘要和条目版本。URL 查询值不写入回执。命令支持固定预期 SHA-256，响应超过 16 MiB、跳转、未授权响应、结构错误或摘要不符都会终止。计划只读数据库基线。随后的 `apply-sync` 完全离线，重建差异并在事务内应用；重试保留幂等语义。
+
+下面的可复现实验取自本仓库固定提交，数据为 14 条自写测试记录。
+
+```bash
+python -m pip install -e ".[sync]"
+python -m maple_vision knowledge init artifacts/catalog.sqlite
+python -m maple_vision knowledge fetch-plan artifacts/catalog.sqlite https://raw.githubusercontent.com/www1350/maple-vision-platform/91af7960c5ece68341718539e1784de5412c1106/fixtures/knowledge-domain-demo.json artifacts/fetch-plan.json --permission self_authored --license CC0-1.0 --sha256 902401e0d96daadb59b8e194a88896a35d31b1a890b19a02e8116d3269f61237
+python -m maple_vision knowledge apply-sync artifacts/catalog.sqlite artifacts/fetch-plan.json
+```
+
+本例实测新增 14 条记录。小册子当前国服数据仍需要站方许可与格式映射。此接口不会把来源声明提升为真实游戏机制的核实证据。

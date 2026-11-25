@@ -19,7 +19,7 @@ from .catalog import canonical_json, strict_json, validate_provenance
 from .sim_types import SimAction
 
 MAX_CLASS_PACKAGE_BYTES = 64 * 1024
-CAPABILITY_COMPILER_VERSION = 1
+CAPABILITY_COMPILER_VERSION = 2
 _ID = re.compile(r"[a-z][a-z0-9_-]{0,39}\Z")
 _VERSION = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+\Z")
 _SHA = re.compile(r"[0-9a-f]{64}\Z")
@@ -276,6 +276,30 @@ class ProgramBindings:
 
 
 @dataclass(frozen=True)
+class TimedEffect:
+    skill: str
+    kind: str
+    duration_ms: int
+    interval_ms: int
+    tick_damage: int
+
+    def __post_init__(self) -> None:
+        _identifier(self.skill, "effect skill")
+        _choice(self.kind, {"periodic_damage", "disable_contact"}, "timed effect")
+        _integer(self.duration_ms, "effect duration", 100, 60000)
+        if self.kind == "periodic_damage":
+            _integer(self.interval_ms, "tick interval", 100, self.duration_ms)
+            _integer(self.tick_damage, "tick damage", 1, 100000)
+        else:
+            _integer(self.interval_ms, "control tick interval", 0, 0)
+            _integer(self.tick_damage, "control tick damage", 0, 0)
+
+    @classmethod
+    def from_dict(cls, value: object) -> TimedEffect:
+        return cls(**_object(value, {field.name for field in fields(cls)}, "timed effect"))
+
+
+@dataclass(frozen=True)
 class ClassPackage:
     id: str
     version: str
@@ -287,6 +311,7 @@ class ClassPackage:
     skills: tuple[SkillDefinition, ...]
     programs: tuple[ActionProgram, ...]
     bindings: ProgramBindings
+    timed_effects: tuple[TimedEffect, ...] = ()
 
     def __post_init__(self) -> None:
         _identifier(self.id, "class package ID")
@@ -319,6 +344,14 @@ class ClassPackage:
                     or (skill.kind == "heal" and level.power > self.resources.max_hp)
                 ):
                     raise ValueError("skill level exceeds class resources or cannot preserve 1HP")
+        _entries(self.timed_effects, TimedEffect, "timed effects", 0, 16)
+        damage_skills = {skill.id for skill in self.skills if skill.kind == "damage"}
+        attached = {effect.skill for effect in self.timed_effects}
+        if len(attached) != len(self.timed_effects) or not attached <= damage_skills:
+            raise ValueError("each timed effect needs a unique registered damage skill")
+        object.__setattr__(
+            self, "timed_effects", tuple(sorted(self.timed_effects, key=lambda s: s.skill))
+        )
         try:
             size = len(canonical_json(self.to_dict()).encode("utf-8"))
         except (UnicodeError, RecursionError) as exc:
@@ -330,7 +363,12 @@ class ClassPackage:
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "schema_version": 1,
+            "schema_version": self.compiler_version,
+            **(
+                {"timed_effects": [asdict(effect) for effect in self.timed_effects]}
+                if self.timed_effects
+                else {}
+            ),
             "id": self.id,
             "version": self.version,
             "scope": "synthetic_fixture",
@@ -348,10 +386,14 @@ class ClassPackage:
     def content_sha256(self) -> str:
         return hashlib.sha256(canonical_json(self.to_dict()).encode("utf-8")).hexdigest()
 
+    @property
+    def compiler_version(self) -> int:
+        return CAPABILITY_COMPILER_VERSION if self.timed_effects else 1
+
     def manifest(self) -> dict[str, object]:
         return {
             "schema_version": 1,
-            "compiler_version": CAPABILITY_COMPILER_VERSION,
+            "compiler_version": self.compiler_version,
             "content": self.to_dict(),
             "content_sha256": self.content_sha256,
         }
@@ -359,8 +401,18 @@ class ClassPackage:
     @classmethod
     def from_dict(cls, value: object) -> ClassPackage:
         names = {field.name for field in fields(cls)} | {"schema_version", "scope"}
+        if not isinstance(value, dict):
+            raise ValueError("invalid class package")
+        version = _integer(value.get("schema_version"), "class package schema", 1, 2)
+        if version == 1:
+            names.remove("timed_effects")
         raw = dict(_object(value, names, "class package"))
-        _integer(raw.pop("schema_version"), "class package schema", 1, 1)
+        raw.pop("schema_version")
+        if version == 2:
+            raw["timed_effects"] = tuple(
+                TimedEffect.from_dict(row)
+                for row in _array(raw["timed_effects"], "timed effects", 1, 16)
+            )
         if raw.pop("scope") != "synthetic_fixture":
             raise ValueError("class package scope must be synthetic_fixture")
         raw["resources"] = ClassResources.from_dict(raw["resources"])
@@ -388,6 +440,8 @@ class ClassPackage:
         if not isinstance(digest, str) or not _SHA.fullmatch(digest):
             raise ValueError("invalid class package SHA256")
         package = cls.from_dict(raw["content"])
+        if raw["compiler_version"] != package.compiler_version:
+            raise ValueError("compiler version disagrees with content schema")
         if package.content_sha256 != digest:
             raise ValueError("class package SHA256 mismatch")
         return package
@@ -516,7 +570,7 @@ class CompiledCapabilities:
     def to_dict(self) -> dict[str, object]:
         return {
             "schema_version": 1,
-            "compiler_version": CAPABILITY_COMPILER_VERSION,
+            "compiler_version": self.package.compiler_version,
             "class_id": self.class_id,
             "package_sha256": self.package_sha256,
             "class_spec": asdict(self.class_spec),
