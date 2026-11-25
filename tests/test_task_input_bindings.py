@@ -7,10 +7,17 @@ from pathlib import Path
 
 import pytest
 
+from maple_vision.class_package import load_class_package
 from maple_vision.cli import main
 from maple_vision.failure_bundle import export_failure_bundle, verify_failure_bundle
 from maple_vision.input_bindings import InputBindingProfile, KeyBinding
-from maple_vision.lab import RunConfig, run_episode, verify_perception, verify_run
+from maple_vision.lab import (
+    CapabilityRunConfig,
+    RunConfig,
+    run_episode,
+    verify_perception,
+    verify_run,
+)
 from maple_vision.map_pack import load_map_pack
 from maple_vision.mission_program import load_mission_program
 from maple_vision.runtime_pipeline import RuntimeConfig
@@ -72,6 +79,50 @@ def test_bound_dragon_knight_skill_completes_two_maps_and_reinfers(tmp_path):
     bundle = tmp_path / "bundle"
     export_failure_bundle(output, bundle)
     assert verify_failure_bundle(bundle)["action_replay"]["verified"]
+
+
+def test_bound_external_multi_hit_skill_completes_two_maps_and_reinfers(tmp_path):
+    pack = load_map_pack(EXAMPLES / "maps/dead-forest-drill.json")
+    mission = load_mission_program(EXAMPLES / "missions/dead-forest-hunt.json")
+    package = load_class_package(EXAMPLES / "classes/spear_fighter.json")
+    configured = InputBindingProfile.from_manifest(
+        json.loads((EXAMPLES / "input-bindings/spear-fighter.json").read_text())
+    )
+    assert configured.action_for_key("s", package.class_id, package) == (
+        "triple_thrust",
+        SimAction("cast", skill="triple_thrust"),
+    )
+    output = tmp_path / "bound-multi-hit"
+    report = run_episode(
+        output,
+        CapabilityRunConfig(seed=17, job=package.class_id),
+        map_pack=pack,
+        class_package=package,
+        runtime=RuntimeConfig(mission=mission),
+        input_profile=configured,
+    )
+    assert report["status"] == "completed" and report["independent_goal_check"]
+    assert report["maps_visited"] == ["drill_forest_1", "drill_forest_2"]
+    assert report["events"]["cast"] == 2
+    assert report["events"]["attack_hit"] == 6
+    assert report["events"]["monster_defeated"] == 2
+    assert report["input_dispatch_summary"] == {
+        "scope": "offline_simulated_skill_dispatch",
+        "attempts": 2,
+        "accepted": 2,
+        "denied": 0,
+        "reasons": {"bound_skill": 2},
+    }
+    rows = [json.loads(line) for line in (output / "trace.jsonl").read_text().splitlines()]
+    dispatches = [
+        row["execution"]["input_dispatch"]
+        for row in rows
+        if row["execution"]["input_dispatch"] is not None
+    ]
+    assert {item["key"] for item in dispatches} == {"S"}
+    assert {item["action_skill"] for item in dispatches} == {"triple_thrust"}
+    assert verify_run(output)["verified"]
+    assert verify_perception(output)["frames_reinferred"] == report["steps"] + 1
 
 
 def test_unbound_skill_is_denied_as_idle_and_cannot_complete_mission(tmp_path):

@@ -58,3 +58,5 @@ python -m maple_vision lab run --output artifacts/keyed-forest --job dragon_knig
 ```
 
 `role-keys.json` 使用运行包 `input-bindings.json` 的相同 schema。CLI 只接受不超过 64 KiB 的本地普通 UTF-8 JSON 文件，不跟随符号链接；工作台与 CLI 随后走同一个不可变解析器和验证链。
+
+外部职业也走同一链。`examples/input-bindings/spear-fighter.json` 将合成键 `S` 绑定到合成技能 `triple_thrust`；固定 seed 17 在死亡之林两图各施放一次，每次 3 段，共 2 次绑定接受、6 个伤害事件和 2 次击杀。102 步 action replay 与 103 帧完整 reinfer 均通过，摘要及文件哈希见 `reports/release-0.10.0/keyed-spear-two-map-acceptance.json`。该 fixture 不代表用户真实键位，也不代表国服枪连击参数已校准。
