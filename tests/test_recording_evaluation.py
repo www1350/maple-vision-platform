@@ -827,6 +827,140 @@ def test_source_verified_intervals_pair_only_ordered_onsets_in_one_session(tmp_p
     ]
 
 
+def test_source_verified_strike_readiness_uses_explicit_collection_contract(tmp_path):
+    recording, labels = case(tmp_path, "readiness")
+    label_data = json.loads(labels.read_bytes())
+    for frame in label_data["frames"]:
+        frame["objects"] = [
+            {"class_id": "player", "bbox": [10, 10, 20, 30], "occluded": False},
+            {"class_id": "monster", "bbox": [30, 10, 40, 30], "occluded": False},
+        ]
+    labels.write_text(json.dumps(label_data))
+    profile = tmp_path / "layout.json"
+    profile.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "profile_id": "reviewed-layout",
+                "bindings": [{"key": "S", "skill": "triple_thrust"}],
+            }
+        )
+    )
+    cases = []
+    for index, facing in enumerate(("left", "right")):
+        report = tmp_path / f"strike-{index}.json"
+        assert (
+            main(
+                [
+                    "recording",
+                    "measure-strike",
+                    str(recording),
+                    str(labels),
+                    str(report),
+                    "--start",
+                    str(index),
+                    "--end",
+                    str(index),
+                    "--player-index",
+                    "0",
+                    "--monster-index",
+                    "1",
+                    "--skill-id",
+                    "1311001",
+                    "--level",
+                    "30",
+                    "--weapon",
+                    "spear",
+                    "--reviewer",
+                    "tester",
+                    "--facing",
+                    facing,
+                    "--feedback",
+                    "damage_visible",
+                    "--feedback-frame",
+                    str(index),
+                    "--weapon-speed-grade",
+                    "6",
+                    "--speed-effect",
+                    "weapon_booster",
+                    "--input-profile",
+                    str(profile),
+                    "--input-key",
+                    "S",
+                ]
+            )
+            == 0
+        )
+        cases.append(report)
+
+    def requirement(path, *, nondamage=0, movement=False):
+        path.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "kind": "strike_readiness_requirements",
+                    "domain": "authored_fixture",
+                    "skill_id": "1311001",
+                    "level": 30,
+                    "weapon": "spear",
+                    "required_feedback_events_per_damage": 1,
+                    "minimum_damage_windows": 2,
+                    "minimum_nondamage_windows": nondamage,
+                    "required_facings": ["left", "right"],
+                    "require_single_session": True,
+                    "require_attack_context": True,
+                    "require_input_binding": True,
+                    "require_reviewed_movement_after_damage": movement,
+                }
+            )
+        )
+
+    requirements = tmp_path / "requirements.json"
+    requirement(requirements)
+    output = tmp_path / "readiness-report.json"
+    args = [
+        "recording",
+        "assess-strike-readiness",
+        str(requirements),
+        "--output",
+        str(output),
+    ]
+    for report in cases:
+        args.extend(["--verified-case", str(recording), str(labels), str(report)])
+    assert main(args) == 0
+    readiness = json.loads(output.read_bytes())
+    assert readiness["source_fields_verified"] == 2
+    assert readiness["ready_for_manual_parameter_review"]
+    assert not readiness["calibrated_range"] and not readiness["calibrated_timing"]
+    assert readiness["feedback_categories"] == {
+        "damage_visible": 2,
+        "miss_text_visible": 0,
+        "no_feedback": 0,
+    }
+    assert all(gate["passed"] for gate in readiness["gates"])
+
+    blocked_requirements = tmp_path / "blocked-requirements.json"
+    requirement(blocked_requirements, nondamage=1, movement=True)
+    blocked_output = tmp_path / "blocked.json"
+    blocked_args = args.copy()
+    blocked_args[2] = str(blocked_requirements)
+    blocked_args[blocked_args.index(str(output))] = str(blocked_output)
+    assert main(blocked_args) == 0
+    blocked = json.loads(blocked_output.read_bytes())
+    gates = {gate["name"]: gate for gate in blocked["gates"]}
+    assert not blocked["ready_for_manual_parameter_review"]
+    assert not gates["nondamage_windows"]["passed"]
+    assert not gates["reviewed_movement_after_damage"]["passed"]
+
+    tampered = json.loads(cases[0].read_bytes())
+    tampered["start_geometry"]["forward_center_delta_px"] = 999
+    cases[0].write_text(json.dumps(tampered))
+    rejected = tmp_path / "rejected.json"
+    rejected_args = args.copy()
+    rejected_args[rejected_args.index(str(output))] = str(rejected)
+    assert main(rejected_args) == 2 and not rejected.exists()
+
+
 def test_reviewed_attack_speed_context_is_bound_and_cannot_be_mixed(tmp_path):
     recording, labels = case(tmp_path, "speed-context")
     data = json.loads(labels.read_text())

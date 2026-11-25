@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "strike_readiness_requirements",
+  "domain": "game_recording",
+  "skill_id": "1311001",
+  "level": 30,
+  "weapon": "spear",
+  "required_feedback_events_per_damage": 3,
+  "minimum_damage_windows": 2,
+  "minimum_nondamage_windows": 1,
+  "required_facings": ["left", "right"],
+  "require_single_session": true,
+  "require_attack_context": true,
+  "require_input_binding": true,
+  "require_reviewed_movement_after_damage": true
+}
