@@ -146,16 +146,19 @@ class InputBindingProfile:
             "bindings": [item.to_dict() for item in self.bindings],
         }
 
-    def action_for_key(
-        self, key: str, job: str, class_package: ClassPackage | None
-    ) -> tuple[str | None, SimAction | None]:
+    def binding_for_key(self, key: str) -> KeyBinding | None:
+        """Return the configured entry for one normalized key without dispatching it."""
         normalized = normalize_key(key)
         if not normalized:
             raise ValueError("key name must not be blank")
-        matching = [item for item in self.bindings if normalize_key(item.key) == normalized]
-        if not matching:
+        return next((item for item in self.bindings if normalize_key(item.key) == normalized), None)
+
+    def action_for_key(
+        self, key: str, job: str, class_package: ClassPackage | None
+    ) -> tuple[str | None, SimAction | None]:
+        item = self.binding_for_key(key)
+        if item is None:
             return None, None
-        item = matching[0]
         return item.skill, action_for_skill(job, class_package, item.skill)
 
     def dispatch(
