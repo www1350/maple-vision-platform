@@ -7,7 +7,7 @@ const names = {
   assassin:"标飞", dragon_knight:"龙骑士", cleric:"牧师", archer:"弓箭手",
   fire_poison:"火毒（合成）", ice_lightning:"冰雷（合成）", bandit:"刀飞", blood_knight:"血骑士（合成）", builtin:"内置两图", pixel:"像素基线",
   "three-map-fixture":"外部三图", "lifecycle-model":"已验收的混合模型",
-  standard:"逐图战斗、拾取、对话", "talk-then-clear":"先对话再清场", "three-map-visits":"三图访问",
+  "branch-grove":"林地岔路", "grove-shortcut":"直达遗迹", standard:"逐图战斗、拾取、对话", "talk-then-clear":"先对话再清场", "three-map-visits":"三图访问",
   queued:"排队中", running:"运行中", finished:"已执行", cancelled:"已取消",
   interrupted:"已中断", error:"出错", completed:"目标完成", stopped:"已停止",
   failed:"目标失败", verified:"校验完成", run:"视觉闭环", replay:"动作重放",
@@ -70,10 +70,8 @@ function displayContent() {
   text("bootstrap-json", pretty(catalog));
 }
 function displayMissions() {
-  const route = catalog.maps[el("map-select").value];
-  const compatible = Object.entries(catalog.missions).filter(([,program]) =>
-    program === null || program.stages.every((stage, i) => route[i] === stage.map_id));
-  options("mission-select", compatible.map(([id]) => [id, label(id)]));
+  const ids = catalog.mission_options[el("map-select").value];
+  options("mission-select", ids.map(id => [id, label(id)]));
 }
 bind("map-select", "change", displayMissions);
 function chooseView(view) {

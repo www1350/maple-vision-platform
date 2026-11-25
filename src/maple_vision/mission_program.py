@@ -8,6 +8,7 @@ from typing import Any
 
 from .catalog import canonical_json, strict_json
 from .local_files import read_regular
+from .map_pack import MapPack
 
 PHASES = ("fight", "collect", "talk")
 
@@ -55,6 +56,16 @@ class MissionProgram:
     @property
     def maps(self) -> tuple[str, ...]:
         return tuple(stage.map_id for stage in self.stages)
+
+    def bind_map_pack(self, pack: MapPack | None) -> None:
+        if pack is None or all(len(m.portals) == 1 for m in pack.maps):
+            self.bind_route(("meadow", "cavern") if pack is None else pack.map_ids)
+            return
+        if self.maps[0] != pack.entry_map:
+            raise ValueError("mission must start at the map pack entry")
+        for source, target in zip(self.maps, self.maps[1:]):
+            if not any(p.destination == target for p in pack.get(source).portals):
+                raise ValueError("mission maps must be connected by a directed portal")
 
     def bind_route(self, route: tuple[str, ...]) -> None:
         if self.maps != route[: len(self.stages)]:

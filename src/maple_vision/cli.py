@@ -321,6 +321,7 @@ def _parser() -> argparse.ArgumentParser:
     bench.add_argument("--port", type=int, default=8765)
     world = map_commands.add_parser("route", help="plan a weighted route between maps")
     world.add_argument("path", type=Path)
+    world.add_argument("--map-pack", action="store_true")
     world.add_argument("source")
     world.add_argument("target")
     platform = map_commands.add_parser("platform-route", help="search a fixed-step movement graph")
@@ -371,9 +372,14 @@ def _database(command: str, path: Path) -> dict[str, str | int]:
 
 def _extended(args: argparse.Namespace) -> dict[str, Any]:
     if args.command == "maps" and args.operation == "route":
-        from .navigation_graph import load_world_graph
+        from .map_pack import load_map_pack
+        from .navigation_graph import WorldMapGraph, load_world_graph
 
-        world = load_world_graph(args.path)
+        world = (
+            WorldMapGraph.from_map_pack(load_map_pack(args.path))
+            if args.map_pack
+            else load_world_graph(args.path)
+        )
         route = world.shortest_path(args.source, args.target)
         return {
             "found": route is not None,
@@ -774,7 +780,11 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         selected_runtime = getattr(args, "runtime", None)
         if selected_runtime is None:
             selected_runtime = (
-                "structured" if class_packages is not None or mission is not None else "legacy"
+                "structured"
+                if class_packages is not None
+                or mission is not None
+                or (pack and any(len(m.portals) > 1 for m in pack.maps))
+                else "legacy"
             )
         if class_packages is not None and selected_runtime != "structured":
             raise ValueError("--class-pack requires --runtime structured")
