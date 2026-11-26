@@ -334,6 +334,8 @@ async function loadRecording() {
     item.append(dt,dd); metrics.append(item);
   }
   const range=el("recording-range"); range.max=Math.max(0,data.frames.length-1); range.value=0;
+  const seek=el("recording-source-frame");
+  seek.min=start; seek.max=end; seek.value=start;
   drawRecordingFrame();
 }
 function drawRecordingFrame() {
@@ -472,6 +474,16 @@ bind("frame-play","click",()=>{
 });
 bind("recording-select","change",async()=>{selectedRecording=el("recording-select").value; await loadRecording();});
 bind("recording-range","input",drawRecordingFrame);
+bind("recording-seek","submit",()=>{
+  if (!recordingDetail) return;
+  const source=el("recording-source-frame").valueAsNumber;
+  const start=recordingDetail.viewer_kind==="coverage"
+    ? recordingDetail.decoded_source_range[0]
+    : (recordingDetail.source_start_frame || 0);
+  const index=source-start;
+  if (!Number.isSafeInteger(index) || !recordingDetail.frames[index]) return;
+  stopRecordingPlay(); el("recording-range").value=index; drawRecordingFrame();
+});
 bind("recording-prev","click",()=>moveRecordingFrame(-1));
 bind("recording-next","click",()=>moveRecordingFrame(1));
 bind("recording-event-prev","click",()=>moveRecordingEvent(-1));
