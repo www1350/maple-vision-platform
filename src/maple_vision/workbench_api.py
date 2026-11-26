@@ -75,11 +75,40 @@ class InputSourceImageInput(StrictModel):
         return self
 
 
-class InputProfileConfirmationInput(StrictModel):
+KeyGridKey = Annotated[str, Field(pattern=r"^[ASDFGHJKL]$")]
+
+
+class KeyGridAnchorInput(StrictModel):
+    key: Literal["A", "L"]
+    x: Annotated[int | float, Field(ge=0, le=8192)]
+    y: Annotated[int | float, Field(ge=0, le=8192)]
+
+
+class KeyGridReviewInput(StrictModel):
     schema_version: Literal[1]
+    row: Literal["ASDFGHJKL"]
+    anchors: Annotated[list[KeyGridAnchorInput], Field(min_length=2, max_length=2)]
+    algorithm_candidate_keys: Annotated[list[KeyGridKey], Field(max_length=9)]
+    confirmed_content_keys: Annotated[list[KeyGridKey], Field(max_length=9)]
+    user_reviewed: Literal[True]
+
+    @model_validator(mode="after")
+    def check_order(self) -> Self:
+        if [item.key for item in self.anchors] != ["A", "L"]:
+            raise ValueError("key-grid anchors must be ordered A then L")
+        order = "ASDFGHJKL"
+        for keys in (self.algorithm_candidate_keys, self.confirmed_content_keys):
+            if keys != [key for key in order if key in keys]:
+                raise ValueError("key-grid candidates must be unique and in row order")
+        return self
+
+
+class InputProfileConfirmationInput(StrictModel):
+    schema_version: Literal[1, 2]
     profile: InputProfileInput
     comparison_source: Literal["browser_selected_image_digest", "live_window_manual_comparison"]
     source_image: InputSourceImageInput | None
+    key_grid_review: KeyGridReviewInput | None = None
     user_confirmed: Literal[True]
     automatic_skill_recognition: Literal[False]
 
@@ -88,6 +117,10 @@ class InputProfileConfirmationInput(StrictModel):
         selected = self.comparison_source == "browser_selected_image_digest"
         if selected != (self.source_image is not None):
             raise ValueError("comparison source and selected-image metadata disagree")
+        if (self.schema_version == 2) != (self.key_grid_review is not None):
+            raise ValueError("confirmation schema and key-grid review disagree")
+        if self.key_grid_review is not None and not selected:
+            raise ValueError("key-grid review requires a selected source image")
         return self
 
 
@@ -584,7 +617,8 @@ def create_app(
     def input_profile_confirmation(config: InputProfileConfirmationInput) -> dict[str, Any]:
         profile = InputBindingProfile.from_manifest(config.profile.model_dump())
         image = None if config.source_image is None else config.source_image.model_dump()
-        return confirm_input_profile(profile, config.comparison_source, image)
+        review = None if config.key_grid_review is None else config.key_grid_review.model_dump()
+        return confirm_input_profile(profile, config.comparison_source, image, review)
 
     @api.get("/api/jobs")
     def jobs() -> list[dict[str, Any]]:

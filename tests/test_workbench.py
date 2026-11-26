@@ -624,6 +624,26 @@ def test_input_profile_confirmation_validates_manual_source_and_image_digest(tmp
         assert receipt["source_image"]["image_bytes_uploaded"] is False
         assert receipt["recognition"]["automatic_skill_recognition"] is False
         assert len(receipt["receipt_sha256"]) == 64
+        review = {
+            "schema_version": 1,
+            "row": "ASDFGHJKL",
+            "anchors": [
+                {"key": "A", "x": 641, "y": 430},
+                {"key": "L", "x": 831, "y": 430},
+            ],
+            "algorithm_candidate_keys": ["A", "S", "D", "G"],
+            "confirmed_content_keys": ["A", "S", "D", "F"],
+            "user_reviewed": True,
+        }
+        reviewed_reply = http.post(
+            "/api/input-profile/confirmation",
+            json={**request, "schema_version": 2, "key_grid_review": review},
+        )
+        assert reviewed_reply.status_code == 200
+        reviewed = reviewed_reply.json()
+        assert reviewed["schema_version"] == 2
+        assert reviewed["key_grid_review"]["player_review"]["added_keys"] == ["F"]
+        assert reviewed["key_grid_review"]["player_review"]["removed_keys"] == ["G"]
 
         live = {
             **request,
@@ -649,6 +669,8 @@ def test_input_profile_confirmation_validates_manual_source_and_image_digest(tmp
         assert http.post("/api/input-profile/confirmation", json=mismatched).status_code == 422
         claimed = {**request, "automatic_skill_recognition": True}
         assert http.post("/api/input-profile/confirmation", json=claimed).status_code == 422
+        missing_review = {**request, "schema_version": 2}
+        assert http.post("/api/input-profile/confirmation", json=missing_review).status_code == 422
         huge = {
             **request,
             "source_image": {**request["source_image"], "width": 8192, "height": 8192},
