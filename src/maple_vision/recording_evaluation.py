@@ -7,10 +7,11 @@ import time
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
+from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from .catalog import canonical_json, strict_json
 from .contracts import Detection
@@ -25,7 +26,7 @@ from .evaluation import (
 )
 from .input_bindings import InputBindingProfile, normalize_key
 from .local_files import publish_new, read_regular
-from .recordings import _load_frame, _validated_manifest
+from .recordings import _load_frame, _new_output, _validated_manifest
 from .scene import CLASS_NAMES
 from .vision import Detector, PixelPerception
 
@@ -39,6 +40,8 @@ MAX_EVENT_REPORT_BYTES = 4 * 1024 * 1024
 MAX_REVIEWED_EVENTS = 256
 MAX_WINDOW_REPORT_BYTES = 4 * 1024 * 1024
 MAX_RECORDING_WINDOWS = 256
+MAX_REVIEWED_REPLAY_FRAMES = 512
+MAX_REVIEWED_REPLAY_BYTES = 64 * 1024 * 1024
 REVIEWED_EVENT_KINDS = frozenset(
     {
         "attack_motion_visible",
@@ -50,6 +53,15 @@ REVIEWED_EVENT_KINDS = frozenset(
         "camera_motion_visible",
     }
 )
+REVIEWED_EVENT_LABELS = {
+    "attack_motion_visible": "ATTACK MOTION",
+    "projectile_visible": "PROJECTILE",
+    "damage_feedback_visible": "DAMAGE FEEDBACK",
+    "airborne_visible": "AIRBORNE",
+    "rope_contact_visible": "ROPE CONTACT",
+    "layer_change_visible": "LAYER CHANGE",
+    "camera_motion_visible": "CAMERA MOTION",
+}
 
 
 @dataclass(frozen=True)
@@ -400,6 +412,214 @@ def verify_recording_windows(recordings: Sequence[Path], report: Path) -> dict[s
     return _verify_recording_window_report(
         [_validated_manifest(Path(recording)) for recording in recordings], report
     )
+
+
+def render_reviewed_event_replay(
+    cases: Sequence[tuple[Path, Path]],
+    coverage_report: Path,
+    output: Path,
+    *,
+    stride: int = 3,
+    context_frames: int = 6,
+    max_width: int = 720,
+) -> dict[str, object]:
+    """Render a bounded GIF from source-verified, reviewer-selected event intervals."""
+    if not isinstance(cases, (list, tuple)) or not 2 <= len(cases) <= MAX_RECORDING_WINDOWS:
+        raise ValueError("supply 2..256 recording windows and reviewed event reports")
+    if type(stride) is not int or not 1 <= stride <= 30:
+        raise ValueError("replay stride must be 1..30")
+    if type(context_frames) is not int or not 0 <= context_frames <= 60:
+        raise ValueError("replay context must be 0..60 frames")
+    if type(max_width) is not int or not 160 <= max_width <= 1920:
+        raise ValueError("replay width must be 160..1920 pixels")
+
+    sessions = [Path(recording) for recording, _ in cases]
+    reports = [Path(report) for _, report in cases]
+    destination = Path(output).absolute()
+    protected = sessions + reports + [Path(coverage_report)]
+    if any(destination.resolve().is_relative_to(path.resolve()) for path in protected):
+        raise ValueError("write replay outside its recording and evidence inputs")
+
+    manifests = [_validated_manifest(session) for session in sessions]
+    coverage = _recording_window_report(Path(coverage_report))
+    measured_coverage = _recording_window_document_from_manifests(manifests)
+    if canonical_json(coverage) != canonical_json(measured_coverage):
+        raise ValueError("recording coverage report differs from its source sessions")
+
+    manifest_by_session = {manifest["session_id"]: manifest for manifest in manifests}
+    if len(manifest_by_session) != len(manifests):
+        raise ValueError("recording windows must be distinct")
+    path_by_session = {
+        manifest["session_id"]: session
+        for manifest, session in zip(manifests, sessions, strict=True)
+    }
+    events: list[dict[str, Any]] = []
+    seen_sessions: set[str] = set()
+    for report_path in reports:
+        raw = _event_report(report_path)
+        session_id = raw["source"].get("session_id")
+        if not isinstance(session_id, str) or session_id not in manifest_by_session:
+            raise ValueError("reviewed event report references an unregistered recording window")
+        if session_id in seen_sessions:
+            raise ValueError("supply one reviewed event report per recording window")
+        seen_sessions.add(session_id)
+        manifest = manifest_by_session[session_id]
+        _verify_event_report(manifest, report_path)
+        offset = manifest.get("source_start_frame", 0)
+        for event in raw["events"]:
+            events.append(
+                {
+                    "kind": event["kind"],
+                    "reviewer": raw["reviewer"],
+                    "start_source_sequence": offset + event["start"]["sequence"],
+                    "end_source_sequence": offset + event["end"]["sequence"],
+                    "start_rgb_sha256": event["start"]["rgb_sha256"],
+                    "end_rgb_sha256": event["end"]["rgb_sha256"],
+                }
+            )
+    if seen_sessions != set(manifest_by_session):
+        raise ValueError("each recording window needs one reviewed event report")
+    if not events:
+        raise ValueError("reviewed replay needs at least one visible event")
+    events.sort(
+        key=lambda event: (
+            event["start_source_sequence"],
+            event["end_source_sequence"],
+            event["kind"],
+        )
+    )
+
+    frame_by_source: dict[int, tuple[Path, dict[str, Any]]] = {}
+    for manifest in manifests:
+        offset = manifest.get("source_start_frame", 0)
+        session = path_by_session[manifest["session_id"]]
+        for item in manifest["frames"]:
+            frame_by_source[offset + item["sequence"]] = (session, item)
+    expected_sources = set(range(coverage["decoded_frame_count"]))
+    if set(frame_by_source) != expected_sources:
+        raise ValueError("recording windows do not provide the declared contiguous source range")
+
+    selected: set[int] = set()
+    maximum = coverage["decoded_frame_count"] - 1
+    for event in events:
+        start = max(0, event["start_source_sequence"] - context_frames)
+        end = min(maximum, event["end_source_sequence"] + context_frames)
+        selected.update(range(start, end + 1, stride))
+        selected.update(
+            {
+                start,
+                event["start_source_sequence"],
+                event["end_source_sequence"],
+                end,
+            }
+        )
+    sources = sorted(selected)
+    if not 1 <= len(sources) <= MAX_REVIEWED_REPLAY_FRAMES:
+        raise ValueError("reviewed replay exceeds its 512-frame budget")
+
+    clock = coverage["source"]["video_clock"]
+    timebase = Fraction(clock["numerator"], clock["denominator"])
+    first_pts = frame_by_source[0][1]["pts"]
+    rendered: list[Image.Image] = []
+    replay_rows = []
+    for source_sequence in sources:
+        session, item = frame_by_source[source_sequence]
+        frame = _load_frame(session, item)
+        source_image = Image.frombytes("RGB", (frame.width, frame.height), frame.pixels)
+        width = min(frame.width, max_width)
+        height = round(frame.height * width / frame.width)
+        if (width, height) != source_image.size:
+            source_image = source_image.resize((width, height), Image.Resampling.LANCZOS)
+        active = [
+            event["kind"]
+            for event in events
+            if event["start_source_sequence"] <= source_sequence <= event["end_source_sequence"]
+        ]
+        timestamp_ms = round((item["pts"] - first_pts) * timebase * 1000)
+        canvas = Image.new("RGB", (width, height + 44), (13, 20, 28))
+        canvas.paste(source_image, (0, 44))
+        label = " + ".join(REVIEWED_EVENT_LABELS[kind] for kind in active) or "CONTEXT"
+        ImageDraw.Draw(canvas).text(
+            (10, 7),
+            f"SOURCE FRAME {source_sequence:06d}  |  {timestamp_ms / 1000:07.3f}s  |  {label}",
+            fill=(236, 242, 247),
+        )
+        rendered.append(canvas)
+        replay_rows.append(
+            {
+                "source_sequence": source_sequence,
+                "timestamp_ms": timestamp_ms,
+                "rgb_sha256": item["rgb_sha256"],
+                "active_visible_events": active,
+            }
+        )
+
+    durations = []
+    for current, following in zip(replay_rows, replay_rows[1:], strict=False):
+        gap = following["timestamp_ms"] - current["timestamp_ms"]
+        durations.append(
+            700
+            if following["source_sequence"] - current["source_sequence"] > stride
+            else max(40, min(300, gap))
+        )
+    durations.append(700)
+
+    with _new_output(destination, sessions[0]) as (stage, _):
+        replay_path = stage / "reviewed-events.gif"
+        rendered[0].save(
+            replay_path,
+            save_all=True,
+            append_images=rendered[1:],
+            duration=durations,
+            loop=0,
+            disposal=2,
+            optimize=False,
+        )
+        replay_size = replay_path.stat().st_size
+        if replay_size > MAX_REVIEWED_REPLAY_BYTES:
+            raise ValueError("reviewed replay exceeds its 64 MiB output budget")
+        evidence = {
+            "schema_version": 1,
+            "kind": "reviewed_visible_event_replay",
+            "scope": "source_verified_reviewer_selected_visible_intervals",
+            "source": {
+                "source_name": coverage["source"]["source_name"],
+                "source_sha256": coverage["source"]["source_sha256"],
+                "coverage_sha256": coverage["coverage_sha256"],
+                "decoded_source_range": coverage["decoded_source_range"],
+                "decoded_frame_count": coverage["decoded_frame_count"],
+            },
+            "render": {
+                "file": replay_path.name,
+                "sha256": hashlib.sha256(replay_path.read_bytes()).hexdigest(),
+                "bytes": replay_size,
+                "frames": len(replay_rows),
+                "stride": stride,
+                "context_frames": context_frames,
+                "max_width": max_width,
+            },
+            "reviewed_visible_events": events,
+            "replay_frames": replay_rows,
+            "limitations": [
+                "the replay contains only reviewed visible-event intervals and bounded context",
+                "gaps between selected intervals are shortened and marked by source frame numbers",
+                "visible events do not identify a skill, actor, target, keyboard input, "
+                "or causality",
+                "this presentation artifact does not add object labels or validate "
+                "counterfactual actions",
+            ],
+        }
+        evidence_text = canonical_json(evidence) + "\n"
+        (stage / "evidence.json").write_text(evidence_text, encoding="utf-8")
+    return {
+        "output": str(destination),
+        "replay": "reviewed-events.gif",
+        "evidence": "evidence.json",
+        "frames": len(replay_rows),
+        "events": len(events),
+        "source_sha256": coverage["source"]["source_sha256"],
+        "coverage_sha256": coverage["coverage_sha256"],
+    }
 
 
 def _case(recording: Path, labels: Path, available_frames: int) -> Case:
