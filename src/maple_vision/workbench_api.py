@@ -13,7 +13,12 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .input_bindings import MAX_INPUT_BINDINGS_BYTES, InputBindingProfile
+from .input_bindings import (
+    MAX_INPUT_BINDINGS_BYTES,
+    MAX_INPUT_SOURCE_IMAGE_BYTES,
+    InputBindingProfile,
+    confirm_input_profile,
+)
 from .lab import FAULTS
 from .recording_evaluation import (
     _event_report,
@@ -54,6 +59,36 @@ class InputProfileInput(StrictModel):
     schema_version: Literal[1]
     profile_id: Annotated[str, Field(min_length=1, max_length=100)]
     bindings: Annotated[list[KeyBindingEntryInput], Field(min_length=1, max_length=128)]
+
+
+class InputSourceImageInput(StrictModel):
+    sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
+    bytes: Annotated[int, Field(ge=1, le=MAX_INPUT_SOURCE_IMAGE_BYTES)]
+    media_type: Literal["image/png", "image/jpeg", "image/webp"]
+    width: Annotated[int, Field(ge=1, le=8192)]
+    height: Annotated[int, Field(ge=1, le=8192)]
+
+    @model_validator(mode="after")
+    def check_pixels(self) -> Self:
+        if self.width * self.height > 32 * 1024 * 1024:
+            raise ValueError("source image exceeds the 32-megapixel limit")
+        return self
+
+
+class InputProfileConfirmationInput(StrictModel):
+    schema_version: Literal[1]
+    profile: InputProfileInput
+    comparison_source: Literal["browser_selected_image_digest", "live_window_manual_comparison"]
+    source_image: InputSourceImageInput | None
+    user_confirmed: Literal[True]
+    automatic_skill_recognition: Literal[False]
+
+    @model_validator(mode="after")
+    def check_source(self) -> Self:
+        selected = self.comparison_source == "browser_selected_image_digest"
+        if selected != (self.source_image is not None):
+            raise ValueError("comparison source and selected-image metadata disagree")
+        return self
 
 
 class RunInput(SceneInput):
@@ -544,6 +579,12 @@ def create_app(
     @api.post("/api/input-profile")
     def input_profile(profile: InputProfileInput) -> dict[str, Any]:
         return InputBindingProfile.from_manifest(profile.model_dump()).manifest()
+
+    @api.post("/api/input-profile/confirmation")
+    def input_profile_confirmation(config: InputProfileConfirmationInput) -> dict[str, Any]:
+        profile = InputBindingProfile.from_manifest(config.profile.model_dump())
+        image = None if config.source_image is None else config.source_image.model_dump()
+        return confirm_input_profile(profile, config.comparison_source, image)
 
     @api.get("/api/jobs")
     def jobs() -> list[dict[str, Any]]:

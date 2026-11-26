@@ -10,7 +10,12 @@ import pytest
 from maple_vision.class_package import load_class_package
 from maple_vision.cli import main
 from maple_vision.failure_bundle import export_failure_bundle, verify_failure_bundle
-from maple_vision.input_bindings import InputBindingProfile, KeyBinding, load_input_profile
+from maple_vision.input_bindings import (
+    InputBindingProfile,
+    KeyBinding,
+    confirm_input_profile,
+    load_input_profile,
+)
 from maple_vision.lab import (
     CapabilityRunConfig,
     RunConfig,
@@ -42,6 +47,41 @@ def test_profile_normalizes_keys_and_resolves_only_supported_simulated_skills():
         profile(("Control", "普通攻击"), ("ctrl", "模拟范围攻击"))
     with pytest.raises(ValueError, match="duplicate normalized skills"):
         profile(("A", "普通攻击"), ("S", " 普通攻击 "))
+
+
+def test_user_confirmation_receipt_keeps_manual_comparison_separate_from_recognition():
+    configured = profile(("J", "lucky_seven"))
+    image = {
+        "sha256": "a" * 64,
+        "bytes": 12345,
+        "media_type": "image/png",
+        "width": 1536,
+        "height": 864,
+    }
+    receipt = confirm_input_profile(configured, "browser_selected_image_digest", image)
+    assert receipt["profile"] == configured.manifest()
+    assert receipt["source_image"] == {
+        **image,
+        "digest_origin": "client_reported_browser_web_crypto",
+        "image_bytes_uploaded": False,
+    }
+    assert receipt["confirmation"] == {"user_confirmed": True}
+    assert receipt["recognition"] == {
+        "method": "manual_visible_comparison",
+        "automatic_skill_recognition": False,
+        "candidates_generated": False,
+    }
+    assert len(receipt["profile_sha256"]) == len(receipt["receipt_sha256"]) == 64
+    with pytest.raises(ValueError, match="exact image metadata"):
+        confirm_input_profile(configured, "browser_selected_image_digest")
+    with pytest.raises(ValueError, match="cannot carry"):
+        confirm_input_profile(configured, "live_window_manual_comparison", image)
+    with pytest.raises(ValueError, match="lowercase"):
+        confirm_input_profile(
+            configured,
+            "browser_selected_image_digest",
+            {**image, "sha256": "A" * 64},
+        )
 
 
 def test_bound_dragon_knight_skill_completes_two_maps_and_reinfers(tmp_path):

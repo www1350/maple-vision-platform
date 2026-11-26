@@ -5,16 +5,19 @@ to an official client.  Only the skill component of a supported simulated
 action is gated here; movement and other simulator actions remain explicit.
 """
 
+import hashlib
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .catalog import strict_json
+from .catalog import canonical_json, strict_json
 from .class_package import ClassPackage
 from .sim_types import SimAction
 
 MAX_INPUT_BINDINGS_BYTES = 64 * 1024
+MAX_INPUT_SOURCE_IMAGE_BYTES = 16 * 1024 * 1024
+_SOURCE_IMAGE_MEDIA_TYPES = frozenset({"image/png", "image/jpeg", "image/webp"})
 
 
 def load_input_profile(path: Path) -> "InputBindingProfile":
@@ -184,3 +187,89 @@ class InputBindingProfile:
             "reason": "bound_skill" if item is not None else "unbound_skill",
         }
         return (action if item is not None else SimAction()), evidence
+
+
+def confirm_input_profile(
+    profile: InputBindingProfile,
+    comparison_source: str,
+    source_image: object = None,
+) -> dict[str, Any]:
+    """Create a deterministic receipt for a user's visible key-layout comparison.
+
+    A browser-selected image contributes metadata and a locally computed digest only.
+    The image bytes remain in the browser and this receipt never upgrades manual
+    comparison into automatic skill recognition.
+    """
+    sources = {"browser_selected_image_digest", "live_window_manual_comparison"}
+    if comparison_source not in sources:
+        raise ValueError("unsupported input binding comparison source")
+    normalized_image = None
+    if comparison_source == "live_window_manual_comparison":
+        if source_image is not None:
+            raise ValueError("live-window comparison cannot carry selected-image metadata")
+    else:
+        if not isinstance(source_image, dict) or set(source_image) != {
+            "sha256",
+            "bytes",
+            "media_type",
+            "width",
+            "height",
+        }:
+            raise ValueError("selected-image comparison requires exact image metadata")
+        digest = source_image["sha256"]
+        size = source_image["bytes"]
+        media_type = source_image["media_type"]
+        width = source_image["width"]
+        height = source_image["height"]
+        if (
+            not isinstance(digest, str)
+            or len(digest) != 64
+            or any(character not in "0123456789abcdef" for character in digest)
+        ):
+            raise ValueError("source image SHA-256 must be lowercase hexadecimal")
+        if type(size) is not int or not 1 <= size <= MAX_INPUT_SOURCE_IMAGE_BYTES:
+            raise ValueError("source image byte count exceeds the 16 MiB limit")
+        if media_type not in _SOURCE_IMAGE_MEDIA_TYPES:
+            raise ValueError("unsupported source image media type")
+        if (
+            type(width) is not int
+            or type(height) is not int
+            or not 1 <= width <= 8192
+            or not 1 <= height <= 8192
+            or width * height > 32 * 1024 * 1024
+        ):
+            raise ValueError("source image dimensions exceed the 32-megapixel limit")
+        normalized_image = {
+            "sha256": digest,
+            "bytes": size,
+            "media_type": media_type,
+            "width": width,
+            "height": height,
+            "digest_origin": "client_reported_browser_web_crypto",
+            "image_bytes_uploaded": False,
+        }
+    manifest = profile.manifest()
+    receipt: dict[str, Any] = {
+        "schema_version": 1,
+        "kind": "user_confirmed_input_binding_profile",
+        "scope": "manual_visible_comparison_only",
+        "profile": manifest,
+        "profile_sha256": hashlib.sha256(canonical_json(manifest).encode()).hexdigest(),
+        "comparison_source": comparison_source,
+        "source_image": normalized_image,
+        "recognition": {
+            "method": "manual_visible_comparison",
+            "automatic_skill_recognition": False,
+            "candidates_generated": False,
+        },
+        "confirmation": {"user_confirmed": True},
+        "limitations": [
+            "the receipt records a user-confirmed binding profile, not automatic skill recognition",
+            "a selected-image digest is client-reported; image bytes are not uploaded or "
+            "server-rehashed",
+            "the receipt does not prove that a key was pressed or that an official "
+            "client accepted input",
+        ],
+    }
+    receipt["receipt_sha256"] = hashlib.sha256(canonical_json(receipt).encode()).hexdigest()
+    return receipt

@@ -487,6 +487,9 @@ setInterval(()=>{ if (activeView==="runs" && !document.hidden) refresh().catch(f
 function keyProfileId() {
   return "maple.keybindings.v1." + el("keys-character").value.trim();
 }
+function keyConfirmationId(profile) {
+  return "maple.keyconfirmation.v1." + profile;
+}
 function storedKeyProfile(profile) {
   const saved = localStorage.getItem("maple.keybindings.v1." + profile);
   if (saved === null) throw new Error("请先在角色键位页确认该角色。");
@@ -499,17 +502,27 @@ function storedKeyProfile(profile) {
   if (!bindings.length) throw new Error("该角色没有已确认的键位。");
   return {schema_version:1,profile_id:profile,bindings};
 }
+function downloadJson(value, name) {
+  const url = URL.createObjectURL(new Blob([pretty(value) + "\n"], {type:"application/json"}));
+  const link = document.createElement("a");
+  link.href = url; link.download = name; link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 bind("keys-export", "click", async () => {
   const profile = storedKeyProfile(el("keys-character").value.trim());
   const validated = await api("input-profile", profile);
-  const url = URL.createObjectURL(new Blob([pretty(validated) + "\n"], {type:"application/json"}));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "input-bindings.json";
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  downloadJson(validated, "input-bindings.json");
 });
+bind("keys-export-confirmation", "click", () => {
+  const profile = el("keys-character").value.trim();
+  const source = localStorage.getItem(keyConfirmationId(profile));
+  if (source === null) { text("keys-status", "请先核对并保存此角色的键位确认凭证。"); return; }
+  try { downloadJson(JSON.parse(source), "input-binding-confirmation.json"); }
+  catch { text("keys-status", "保存的确认凭证无效，请重新核对并保存。"); }
+});
+let keyEditRevision = 0, keyImageRevision = 0, keyImageEvidence = null, keyImageBusy = false;
 function clearKeyImage() {
+  keyImageRevision++; keyImageEvidence = null; keyImageBusy = false;
   const image = el("keys-image");
   if (image.hasAttribute("src")) URL.revokeObjectURL(image.src);
   image.removeAttribute("src");
@@ -520,20 +533,42 @@ bind("keys-character", "input", () => {
   clearKeyImage();
   const saved = localStorage.getItem(keyProfileId());
   el("keys-list").value = saved || "";
-  text("keys-status", saved ? "已载入此角色上次确认的键位，请与游戏设置核对。" : "");
+  const receipt = localStorage.getItem(keyConfirmationId(el("keys-character").value.trim()));
+  text("keys-status", saved ? "已载入此角色上次确认的键位" + (receipt ? "和确认凭证。" : "，请与游戏设置核对。") : "");
 });
 bind("keys-list", "input", () => text("keys-status", "修改尚未保存。"));
-bind("keys-image-file", "change", () => {
+bind("keys-image-file", "change", async () => {
   const file = el("keys-image-file").files[0];
   clearKeyImage();
   if (!file) return;
   if (!["image/png","image/jpeg","image/webp"].includes(file.type)) {
     text("keys-status", "请选择 PNG、JPEG 或 WebP 图片。"); return;
   }
-  el("keys-image").src = URL.createObjectURL(file);
-  show("keys-image", true);
+  if (file.size < 1 || file.size > 16777216) {
+    text("keys-status", "键位截图必须在 16 MiB 以内。"); return;
+  }
+  const revision = keyImageRevision;
+  keyImageBusy = true;
+  const image = el("keys-image");
+  image.src = URL.createObjectURL(file); show("keys-image", true);
+  try {
+    await image.decode();
+    if (revision !== keyImageRevision) return;
+    if (!image.naturalWidth || !image.naturalHeight || image.naturalWidth > 8192 ||
+        image.naturalHeight > 8192 || image.naturalWidth * image.naturalHeight > 33554432) {
+      throw new Error("键位截图尺寸超过 32 百万像素限制。");
+    }
+    const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+    if (revision !== keyImageRevision) return;
+    keyImageEvidence = {
+      sha256:[...new Uint8Array(digest)].map(value => value.toString(16).padStart(2,"0")).join(""),
+      bytes:file.size, media_type:file.type, width:image.naturalWidth, height:image.naturalHeight
+    };
+    text("keys-status", "截图已在浏览器内计算哈希；请人工核对技能和键位后保存。未自动识别技能。");
+  } catch (error) {
+    if (revision === keyImageRevision) { clearKeyImage(); text("keys-status", "截图读取失败：" + error.message); }
+  } finally { if (revision === keyImageRevision) keyImageBusy = false; }
 });
-let keyEditRevision = 0;
 bind("keys-import", "change", async () => {
   const input = el("keys-import");
   const file = input.files[0];
@@ -571,6 +606,7 @@ bind("keys-form", "submit", async () => {
   if (!el("keys-character").value.trim()) {
     text("keys-status", "请填写区服和角色。"); return;
   }
+  if (keyImageBusy) { text("keys-status", "截图仍在计算哈希，请稍后再保存。"); return; }
   const bindings = [];
   const result = [];
   for (const line of lines) {
@@ -582,10 +618,27 @@ bind("keys-form", "submit", async () => {
     bindings.push({key, skill});
     result.push(skill + " = " + key);
   }
-  if (bindings.length) {
-    try {
-      await api("input-profile", {schema_version:1, profile_id:profile, bindings});
-    } catch (error) {
+  if (!bindings.length) {
+    localStorage.setItem(keyProfileId(), "");
+    localStorage.removeItem(keyConfirmationId(profile));
+    text("keys-status", "已解除此角色的全部绑定；空表不生成确认凭证。");
+    return;
+  }
+  try {
+    const inputProfile = {schema_version:1, profile_id:profile, bindings};
+    await api("input-profile", inputProfile);
+    const receipt = await api("input-profile/confirmation", {
+      schema_version:1,
+      profile:inputProfile,
+      comparison_source:keyImageEvidence ? "browser_selected_image_digest" : "live_window_manual_comparison",
+      source_image:keyImageEvidence,
+      user_confirmed:true,
+      automatic_skill_recognition:false
+    });
+    if (revision !== keyEditRevision) return;
+    localStorage.setItem(keyProfileId(), result.join("\n"));
+    localStorage.setItem(keyConfirmationId(profile), JSON.stringify(receipt));
+  } catch (error) {
       if (revision !== keyEditRevision) return;
       const messages = {
         "input profile contains duplicate normalized keys":"同一个键位出现了两次，请核对。",
@@ -593,11 +646,8 @@ bind("keys-form", "submit", async () => {
       };
       text("keys-status", messages[error.message] || "键位未保存：" + error.message);
       return;
-    }
   }
-  if (revision !== keyEditRevision) return;
-  localStorage.setItem(keyProfileId(), result.join("\n"));
-  text("keys-status", "已确认并保存 " + result.length + " 项绑定。");
+  text("keys-status", "已确认并保存 " + result.length + " 项绑定和独立确认凭证；未自动识别技能。");
 });
 
 function keyResult(receipt) {
