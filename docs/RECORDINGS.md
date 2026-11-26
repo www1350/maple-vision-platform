@@ -207,6 +207,25 @@ python -m maple_vision recording verify-events artifacts/pts-session artifacts/v
 
 这些名字只陈述复核者在像素中看到的现象。它们不证明按了哪个键，不把相邻的攻击画面和伤害数字自动连成因果，也不能仅凭攻击或投射物画面识别技能。截断导入报告会明确保留 `truncated=true`，未导入的尾帧不在证据范围内。要测距离、目标框或技能反馈时序，仍需使用完整逐帧物体标注及施放测量入口。
 
+### 建立全片复核队列
+
+已有少量事件区间时，可把连续解码范围按固定帧数切成待复核段。命令会先重验所有窗口、覆盖报告和事件报告，再以全部解码帧为分母；它不会把事件区间以外的画面当成“没有动作”。
+
+```bash
+python -m maple_vision recording build-review-queue \
+  --window artifacts/recording-head artifacts/head-events.json \
+  --window artifacts/recording-tail artifacts/tail-events.json \
+  --coverage artifacts/window-coverage.json \
+  --output artifacts/review-queue.json \
+  --chunk-frames 150
+python -m maple_vision recording verify-review-queue artifacts/review-queue.json \
+  --window artifacts/recording-head artifacts/head-events.json \
+  --window artifacts/recording-tail artifacts/tail-events.json \
+  --coverage artifacts/window-coverage.json
+```
+
+报告保存全片帧数、区间并集帧数、逐类区间/帧数、每段起止源帧和 PTS 时间、相交事件及 `pending_exhaustive_review` 状态。哈希覆盖整个队列，复验会从原窗口和事件报告逐字段重建。队列只固定分母和工作单元；创建队列不等于完成逐帧复核，`completed_segments` 初始为 0。
+
 ### 导出可观看的复核事件回放
 
 持有原录像导入窗口时，可以把已经复验的可见事件导出为 GIF。每个窗口必须配一份由该窗口生成的事件报告，覆盖报告必须证明这些窗口从源帧 0 连续到解码停止。输出采用新目录，不覆盖原录像、导入帧或人工报告。

@@ -40,6 +40,8 @@ MAX_EVENT_REPORT_BYTES = 4 * 1024 * 1024
 MAX_REVIEWED_EVENTS = 256
 MAX_WINDOW_REPORT_BYTES = 4 * 1024 * 1024
 MAX_RECORDING_WINDOWS = 256
+MAX_REVIEW_QUEUE_BYTES = 4 * 1024 * 1024
+MAX_REVIEW_QUEUE_CHUNK_FRAMES = 900
 MAX_REVIEWED_REPLAY_FRAMES = 512
 MAX_REVIEWED_REPLAY_BYTES = 64 * 1024 * 1024
 REVIEWED_EVENT_KINDS = frozenset(
@@ -412,6 +414,223 @@ def verify_recording_windows(recordings: Sequence[Path], report: Path) -> dict[s
     return _verify_recording_window_report(
         [_validated_manifest(Path(recording)) for recording in recordings], report
     )
+
+
+def _recording_review_queue_document(
+    cases: Sequence[tuple[Path, Path]], coverage_report: Path, chunk_frames: int
+) -> dict[str, Any]:
+    if not isinstance(cases, (list, tuple)) or not 2 <= len(cases) <= MAX_RECORDING_WINDOWS:
+        raise ValueError("supply 2..256 recording windows and reviewed event reports")
+    if type(chunk_frames) is not int or not 1 <= chunk_frames <= MAX_REVIEW_QUEUE_CHUNK_FRAMES:
+        raise ValueError("review queue chunk size must be 1..900 frames")
+
+    sessions = [Path(recording) for recording, _ in cases]
+    reports = [Path(report) for _, report in cases]
+    manifests = [_validated_manifest(session) for session in sessions]
+    coverage = _recording_window_report(Path(coverage_report))
+    measured_coverage = _recording_window_document_from_manifests(manifests)
+    if canonical_json(coverage) != canonical_json(measured_coverage):
+        raise ValueError("recording coverage report differs from its source sessions")
+
+    manifest_by_session = {manifest["session_id"]: manifest for manifest in manifests}
+    if len(manifest_by_session) != len(manifests):
+        raise ValueError("recording windows must be distinct")
+    events: list[dict[str, Any]] = []
+    seen_sessions: set[str] = set()
+    for report_path in reports:
+        raw = _event_report(report_path)
+        session_id = raw["source"].get("session_id")
+        if not isinstance(session_id, str) or session_id not in manifest_by_session:
+            raise ValueError("reviewed event report references an unregistered recording window")
+        if session_id in seen_sessions:
+            raise ValueError("supply one reviewed event report per recording window")
+        seen_sessions.add(session_id)
+        manifest = manifest_by_session[session_id]
+        _verify_event_report(manifest, report_path)
+        offset = manifest.get("source_start_frame", 0)
+        for event in raw["events"]:
+            events.append(
+                {
+                    "kind": event["kind"],
+                    "reviewer": raw["reviewer"],
+                    "session_id": session_id,
+                    "start_source_sequence": offset + event["start"]["sequence"],
+                    "end_source_sequence": offset + event["end"]["sequence"],
+                }
+            )
+    if seen_sessions != set(manifest_by_session):
+        raise ValueError("each recording window needs one reviewed event report")
+    if not events:
+        raise ValueError("review queue needs at least one reviewed visible event")
+    events.sort(
+        key=lambda event: (
+            event["start_source_sequence"],
+            event["end_source_sequence"],
+            event["kind"],
+            event["session_id"],
+        )
+    )
+    reviewed_events = [
+        {"event_id": f"E{index:04d}", **event} for index, event in enumerate(events, start=1)
+    ]
+
+    frame_by_source: dict[int, dict[str, Any]] = {}
+    for manifest in manifests:
+        offset = manifest.get("source_start_frame", 0)
+        for item in manifest["frames"]:
+            frame_by_source[offset + item["sequence"]] = item
+    decoded_frames = coverage["decoded_frame_count"]
+    if set(frame_by_source) != set(range(decoded_frames)):
+        raise ValueError("recording windows do not provide the declared contiguous source range")
+
+    clock = coverage["source"]["video_clock"]
+    timebase = Fraction(clock["numerator"], clock["denominator"])
+    first_pts = frame_by_source[0]["pts"]
+
+    def timestamp_ms(source_sequence: int) -> int:
+        return int(round((frame_by_source[source_sequence]["pts"] - first_pts) * timebase * 1000))
+
+    reviewed_sources: set[int] = set()
+    kind_sources: dict[str, set[int]] = {}
+    kind_intervals: Counter[str] = Counter()
+    for event in reviewed_events:
+        sources = set(range(event["start_source_sequence"], event["end_source_sequence"] + 1))
+        reviewed_sources.update(sources)
+        kind_sources.setdefault(event["kind"], set()).update(sources)
+        kind_intervals[event["kind"]] += 1
+
+    segments = []
+    for segment_index, start in enumerate(range(0, decoded_frames, chunk_frames)):
+        end = min(decoded_frames - 1, start + chunk_frames - 1)
+        intersecting = [
+            event
+            for event in reviewed_events
+            if event["start_source_sequence"] <= end and event["end_source_sequence"] >= start
+        ]
+        segments.append(
+            {
+                "segment_index": segment_index,
+                "start_source_sequence": start,
+                "end_source_sequence": end,
+                "start_timestamp_ms": timestamp_ms(start),
+                "end_timestamp_ms": timestamp_ms(end),
+                "frame_count": end - start + 1,
+                "intersecting_event_ids": [event["event_id"] for event in intersecting],
+                "visible_event_kinds": sorted({event["kind"] for event in intersecting}),
+                "sparse_visible_events_present": bool(intersecting),
+                "review_state": "pending_exhaustive_review",
+            }
+        )
+
+    document = {
+        "schema_version": 1,
+        "kind": "recording_review_queue",
+        "source": {
+            "source_name": coverage["source"]["source_name"],
+            "source_sha256": coverage["source"]["source_sha256"],
+            "coverage_sha256": coverage["coverage_sha256"],
+            "decoded_source_range": coverage["decoded_source_range"],
+            "decoded_frame_count": decoded_frames,
+        },
+        "queue_policy": {
+            "chunk_frames": chunk_frames,
+            "denominator": "all_decoded_source_frames",
+            "segment_count": len(segments),
+        },
+        "sparse_review": {
+            "event_report_count": len(reports),
+            "visible_event_interval_count": len(reviewed_events),
+            "frames_inside_any_visible_event_interval": len(reviewed_sources),
+            "decoded_frame_fraction": round(len(reviewed_sources) / decoded_frames, 8),
+            "event_kind_interval_counts": dict(sorted(kind_intervals.items())),
+            "event_kind_frame_counts": {
+                kind: len(sources) for kind, sources in sorted(kind_sources.items())
+            },
+        },
+        "reviewed_visible_events": reviewed_events,
+        "segments": segments,
+        "exhaustive_review": {
+            "status": "not_started",
+            "completed_segments": 0,
+            "total_segments": len(segments),
+            "complete_frame_denominator": False,
+        },
+        "limitations": [
+            "the existing visible-event intervals are sparse reviewer selections, "
+            "not exhaustive labels",
+            "frames outside a reviewed interval are unknown and must not be treated as "
+            "negative examples",
+            "the queue partitions all decoded frames but does not itself review or "
+            "classify any frame",
+            "visible events do not identify a skill, actor, target, keyboard input, or causality",
+        ],
+    }
+    document["review_queue_sha256"] = hashlib.sha256(canonical_json(document).encode()).hexdigest()
+    return document
+
+
+def build_recording_review_queue(
+    cases: Sequence[tuple[Path, Path]],
+    coverage_report: Path,
+    output: Path | None,
+    *,
+    chunk_frames: int = 150,
+) -> dict[str, Any]:
+    """Partition every decoded frame while preserving sparse-review semantics."""
+    if output is not None:
+        destination = Path(output).absolute()
+        protected = [Path(path) for case in cases for path in case] + [Path(coverage_report)]
+        if any(destination.resolve().is_relative_to(path.resolve()) for path in protected):
+            raise ValueError("write review queue outside its recording and evidence inputs")
+    report = _recording_review_queue_document(cases, coverage_report, chunk_frames)
+    if output is not None:
+        _write(output, report)
+    return report
+
+
+def _recording_review_queue_report(report: Path) -> dict[str, Any]:
+    raw = strict_json(read_regular(report, MAX_REVIEW_QUEUE_BYTES, "review queue report").decode())
+    expected = {
+        "schema_version",
+        "kind",
+        "source",
+        "queue_policy",
+        "sparse_review",
+        "reviewed_visible_events",
+        "segments",
+        "exhaustive_review",
+        "limitations",
+        "review_queue_sha256",
+    }
+    if (
+        not isinstance(raw, dict)
+        or set(raw) != expected
+        or raw["schema_version"] != 1
+        or raw["kind"] != "recording_review_queue"
+        or not isinstance(raw["queue_policy"], dict)
+        or type(raw["queue_policy"].get("chunk_frames")) is not int
+    ):
+        raise ValueError("invalid recording review queue")
+    return raw
+
+
+def verify_recording_review_queue(
+    cases: Sequence[tuple[Path, Path]], coverage_report: Path, report: Path
+) -> dict[str, object]:
+    """Rebuild a review queue from immutable windows and sparse event reports."""
+    raw = _recording_review_queue_report(report)
+    measured = _recording_review_queue_document(
+        cases, coverage_report, raw["queue_policy"]["chunk_frames"]
+    )
+    if canonical_json(raw) != canonical_json(measured):
+        raise ValueError("recording review queue differs from its source evidence")
+    return {
+        "verified": True,
+        "review_queue_sha256": measured["review_queue_sha256"],
+        "decoded_frames": measured["source"]["decoded_frame_count"],
+        "segments": measured["queue_policy"]["segment_count"],
+        "completed_segments": measured["exhaustive_review"]["completed_segments"],
+    }
 
 
 def render_reviewed_event_replay(

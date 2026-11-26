@@ -301,6 +301,29 @@ def _parser() -> argparse.ArgumentParser:
     reviewed_replay.add_argument("--stride", type=int, default=3)
     reviewed_replay.add_argument("--context-frames", type=int, default=6)
     reviewed_replay.add_argument("--max-width", type=int, default=720)
+    review_queue = recording_commands.add_parser("build-review-queue")
+    review_queue.add_argument(
+        "--window",
+        nargs=2,
+        type=Path,
+        action="append",
+        required=True,
+        metavar=("SESSION", "EVENT_REPORT"),
+    )
+    review_queue.add_argument("--coverage", type=Path, required=True)
+    review_queue.add_argument("--output", type=Path, required=True)
+    review_queue.add_argument("--chunk-frames", type=int, default=150)
+    verify_review_queue = recording_commands.add_parser("verify-review-queue")
+    verify_review_queue.add_argument("report", type=Path)
+    verify_review_queue.add_argument(
+        "--window",
+        nargs=2,
+        type=Path,
+        action="append",
+        required=True,
+        metavar=("SESSION", "EVENT_REPORT"),
+    )
+    verify_review_queue.add_argument("--coverage", type=Path, required=True)
     score = recording_commands.add_parser("benchmark")
     score.add_argument(
         "--case",
@@ -844,6 +867,19 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
             context_frames=args.context_frames,
             max_width=args.max_width,
         )
+    if args.command == "recording" and args.operation == "build-review-queue":
+        from .recording_evaluation import build_recording_review_queue
+
+        return build_recording_review_queue(
+            args.window,
+            args.coverage,
+            args.output,
+            chunk_frames=args.chunk_frames,
+        )
+    if args.command == "recording" and args.operation == "verify-review-queue":
+        from .recording_evaluation import verify_recording_review_queue
+
+        return verify_recording_review_queue(args.window, args.coverage, args.report)
     if args.command == "recording" and args.operation == "audit-route":
         from .recording_evaluation import audit_route
 
