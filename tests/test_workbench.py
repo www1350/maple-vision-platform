@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import json
 import sqlite3
 import threading
 import time
@@ -532,6 +533,17 @@ def test_task_run_binds_confirmed_profile_and_exposes_dispatch_evidence(tmp_path
     )
     with client(tmp_path) as http:
         assert http.post("/api/input-profile", json=input_profile).json() == input_profile
+        confirmation = http.post(
+            "/api/input-profile/confirmation",
+            json={
+                "schema_version": 1,
+                "profile": input_profile,
+                "comparison_source": "live_window_manual_comparison",
+                "source_image": None,
+                "user_confirmed": True,
+                "automatic_skill_recognition": False,
+            },
+        ).json()
         session = http.post("/api/sessions", json={"job": "dragon_knight"}).json()
         manual = http.post(
             f"/api/sessions/{session['id']}/key-step",
@@ -570,11 +582,15 @@ def test_task_run_binds_confirmed_profile_and_exposes_dispatch_evidence(tmp_path
                 "map_id": "dead-forest-drill",
                 "mission": "dead-forest-hunt",
                 "input_profile": input_profile,
+                "input_confirmation": confirmation,
             },
         )
         run = wait(http, identity)
         assert run["outcome"] == "completed"
         assert run["config"]["input_profile"] == input_profile
+        assert run["config"]["input_confirmation"] == confirmation
+        summary = json.loads((tmp_path / identity / "run/summary.json").read_text())
+        assert summary["input_confirmation"]["receipt_sha256"] == confirmation["receipt_sha256"]
         rows = http.get(f"/api/jobs/{identity}/trace").json()
         assert all("input_dispatch" in row["execution"] for row in rows)
         reinfer = wait(http, submit(http, {"kind": "reinfer", "source": identity}))

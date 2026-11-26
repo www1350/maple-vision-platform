@@ -15,6 +15,7 @@ from maple_vision.input_bindings import (
     KeyBinding,
     confirm_input_profile,
     load_input_profile,
+    verify_input_profile_confirmation,
 )
 from maple_vision.lab import (
     CapabilityRunConfig,
@@ -114,6 +115,11 @@ def test_user_reviewed_key_grid_is_bound_to_selected_image_receipt():
     }
     assert receipt["recognition"]["automatic_skill_recognition"] is False
     assert receipt["recognition"]["skill_candidates_generated"] is False
+    assert verify_input_profile_confirmation(receipt) == (configured, receipt)
+    changed = json.loads(json.dumps(receipt))
+    changed["key_grid_review"]["player_review"]["content_keys"].append("G")
+    with pytest.raises(ValueError, match="modified"):
+        verify_input_profile_confirmation(changed)
     with pytest.raises(ValueError, match="selected source image"):
         confirm_input_profile(configured, "live_window_manual_comparison", None, review)
     with pytest.raises(ValueError, match="row order"):
@@ -129,6 +135,7 @@ def test_bound_dragon_knight_skill_completes_two_maps_and_reinfers(tmp_path):
     pack = load_map_pack(EXAMPLES / "maps/dead-forest-drill.json")
     mission = load_mission_program(EXAMPLES / "missions/dead-forest-hunt.json")
     configured = profile(("A", "模拟范围攻击"))
+    confirmation = confirm_input_profile(configured, "live_window_manual_comparison")
     output = tmp_path / "bound"
     report = run_episode(
         output,
@@ -136,9 +143,12 @@ def test_bound_dragon_knight_skill_completes_two_maps_and_reinfers(tmp_path):
         map_pack=pack,
         runtime=RuntimeConfig(mission=mission),
         input_profile=configured,
+        input_confirmation=confirmation,
     )
     assert report["status"] == "completed" and report["independent_goal_check"]
     assert report["input_profile"] == configured.manifest()
+    assert report["input_confirmation"]["receipt_sha256"] == confirmation["receipt_sha256"]
+    assert json.loads((output / "input-binding-confirmation.json").read_text()) == confirmation
     assert report["input_dispatch_summary"] == {
         "scope": "offline_simulated_skill_dispatch",
         "attempts": 4,

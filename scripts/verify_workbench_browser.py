@@ -286,6 +286,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
         page.click("#submit-run")
         expect(page.locator("#detail-status")).to_have_text("目标完成", timeout=30000)
         expect(page.locator("#evidence-json")).to_contain_text("input_dispatch_summary")
+        expect(page.locator("#evidence-json")).to_contain_text("input_confirmation")
         page.click('[data-view="simulator"]')
         page.select_option("#sim-class", "dragon_knight")
         page.click("#sim-create")
@@ -327,6 +328,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
             "keyed_two_map_task": "completed_and_evidenced",
             "confirmed_profile_export_loaded": True,
             "binding_confirmation_receipt_exported": True,
+            "task_bound_to_confirmation_receipt": True,
             "reviewed_key_grid_receipt_exported": True,
             "local_key_image_preview_and_clear": True,
             "read_only_recording_replay": True,

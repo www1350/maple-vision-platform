@@ -17,6 +17,7 @@ from .class_package import ClassPackage
 from .sim_types import SimAction
 
 MAX_INPUT_BINDINGS_BYTES = 64 * 1024
+MAX_INPUT_CONFIRMATION_BYTES = 128 * 1024
 MAX_INPUT_SOURCE_IMAGE_BYTES = 16 * 1024 * 1024
 _SOURCE_IMAGE_MEDIA_TYPES = frozenset({"image/png", "image/jpeg", "image/webp"})
 _KEY_GRID_ROW = "ASDFGHJKL"
@@ -372,3 +373,52 @@ def confirm_input_profile(
         )
     receipt["receipt_sha256"] = hashlib.sha256(canonical_json(receipt).encode()).hexdigest()
     return receipt
+
+
+def verify_input_profile_confirmation(
+    value: object,
+) -> tuple[InputBindingProfile, dict[str, Any]]:
+    """Verify and normalize a deterministic manual key-layout confirmation receipt."""
+    if not isinstance(value, dict):
+        raise ValueError("input profile confirmation must be an object")
+    try:
+        profile = InputBindingProfile.from_manifest(value["profile"])
+        comparison_source = value["comparison_source"]
+        recorded_image = value["source_image"]
+    except KeyError as exc:
+        raise ValueError("input profile confirmation is incomplete") from exc
+    image = None
+    if recorded_image is not None:
+        if not isinstance(recorded_image, dict):
+            raise ValueError("input profile confirmation source image is invalid")
+        try:
+            image = {
+                key: recorded_image[key]
+                for key in ("sha256", "bytes", "media_type", "width", "height")
+            }
+        except KeyError as exc:
+            raise ValueError("input profile confirmation source image is incomplete") from exc
+    review = None
+    recorded_review = value.get("key_grid_review")
+    if recorded_review is not None:
+        if not isinstance(recorded_review, dict):
+            raise ValueError("input profile confirmation key-grid review is invalid")
+        try:
+            heuristic = recorded_review["heuristic"]
+            player_review = recorded_review["player_review"]
+            if not isinstance(heuristic, dict) or not isinstance(player_review, dict):
+                raise ValueError("input profile confirmation key-grid review is invalid")
+            review = {
+                "schema_version": recorded_review["schema_version"],
+                "row": recorded_review["row"],
+                "anchors": recorded_review["anchors"],
+                "algorithm_candidate_keys": heuristic["candidate_keys"],
+                "confirmed_content_keys": player_review["content_keys"],
+                "user_reviewed": player_review["user_reviewed"],
+            }
+        except KeyError as exc:
+            raise ValueError("input profile confirmation key-grid review is incomplete") from exc
+    expected = confirm_input_profile(profile, comparison_source, image, review)
+    if canonical_json(value) != canonical_json(expected):
+        raise ValueError("input profile confirmation receipt is not canonical or was modified")
+    return profile, expected
