@@ -71,7 +71,7 @@ def test_player_can_export_their_own_trial(tmp_path, monkeypatch):
         with Image.open(path) as replay:
             assert replay.n_frames == 2
         app.confirm_button.invoke()
-        app.route_playback_interval_ms = 50
+        app.route_playback_interval_ms = 20
         app.route_button.invoke()
         routes = list(output.glob("maple-layered-route-*"))
         assert len(routes) == 1
@@ -88,10 +88,17 @@ def test_player_can_export_their_own_trial(tmp_path, monkeypatch):
             "takeover",
         ]
         assert review["playback"]["status"] == "taken_over"
+        assert review["execution"]["status"] == "taken_over"
+        assert review["execution"]["executed_steps"] == 73
+        assert review["execution"]["planned_steps"] == 266
+        assert (routes[0] / "route-execution.jsonl").is_file()
+        assert (routes[0] / "route-execution.json").is_file()
         assert (routes[0] / "route-takeover.gif").is_file()
         assert app.session.state == "paused"
         assert app.route_button.instate(["disabled"])
         assert "请重新确认" in app.feedback_label.cget("text")
-        assert verify_route_playback(routes[0])["status"] == "taken_over"
+        verified = verify_route_playback(routes[0])
+        assert verified["status"] == "taken_over"
+        assert verified["execution"]["cancelled_steps"] == 193
     finally:
         root.destroy()

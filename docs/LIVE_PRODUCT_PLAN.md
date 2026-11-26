@@ -74,6 +74,8 @@ flowchart TD
 
 双图输出现在可在同一窗口按源序号播放。播放中按 Esc、点击画面或失焦会终止后续播放并清空本轮确认状态；重新开始必须再次确认键位。`player-review.json` 只保留接管前已经显示的换层与出手事件，再追加接管源序号；`route-takeover.gif` 与独立复核函数重新核对来源摘要、GIF 哈希、帧数、事件顺序和终止事件。该接管停止的是已完成合成计算的可视回放，不等同于中断真实客户端输入。
 
+在此基础上，窗口不再只播放路线 PNG：完整计划生成后，会从计划绑定的初态创建一个新的自有模拟器，按定时器每次只应用一个已核对动作。每步先重算画面哈希，执行后核对接受状态、事件和状态哈希，再把连续执行前缀刷新到 `route-execution.jsonl`。接管会取消尚未执行的后缀；独立复核仅重放该前缀并核对执行分母。计划仍是预先计算的合成计划，执行目标仍是项目模拟器，不是获准游戏窗口。
+
 [可复验的死亡之林双图账本](https://github.com/www1350/maple-vision-platform/blob/main/docs/THROWING_STAR_TRIAL.md) · [Windows 自有窗口实现和检查](https://github.com/www1350/maple-vision-platform/pull/63)
 
 ## 五、开发顺序与玩家交付物

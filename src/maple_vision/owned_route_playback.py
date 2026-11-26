@@ -106,6 +106,13 @@ def finalize_route_playback(
         raise ValueError("displayed route frames must be a non-empty increasing sequence")
 
     last_sequence = displayed[-1][0]
+    execution = review.get("execution")
+    if execution is not None and (
+        not isinstance(execution, dict)
+        or execution.get("status") != status
+        or execution.get("last_source_sequence") != last_sequence
+    ):
+        raise ValueError("route playback does not match the stepwise execution terminal")
     timeline = [
         {
             "kind": "layer_reached",
@@ -202,7 +209,17 @@ def verify_route_playback(output: Path) -> dict[str, Any]:
         or timeline[-1].get("source_sequence") != playback["last_source_sequence"]
     ):
         raise ValueError("taken-over route is missing its terminal event")
-    return {
+    execution_result = None
+    if "execution" in value:
+        from .owned_route_execution import verify_route_execution
+
+        execution_result = verify_route_execution(output, value)
+        if (
+            execution_result["status"] != playback["status"]
+            or execution_result["last_source_sequence"] != playback["last_source_sequence"]
+        ):
+            raise ValueError("route playback and stepwise execution terminals disagree")
+    result = {
         "verified": True,
         "scope": value["scope"],
         "status": playback["status"],
@@ -211,3 +228,6 @@ def verify_route_playback(output: Path) -> dict[str, Any]:
         "displayed_frames": playback["displayed_frames"],
         "replay_sha256": playback["replay_sha256"],
     }
+    if execution_result is not None:
+        result["execution"] = execution_result
+    return result
