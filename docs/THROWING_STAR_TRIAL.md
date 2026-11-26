@@ -29,14 +29,14 @@ python -m maple_vision lab reinfer artifacts/star-trial
 
 | 类别 | 本轮实际证据 | 不能推出的结论 |
 |---|---|---|
-| 用户实录 | 用户提供的死亡之林Ⅰ MP4 为 910×512、30 FPS、73.233 秒，SHA-256 `274efc91aa9bb0d63d0c3546bc2ef1810189ccabe9bb217a7f22ef6e9c901d8f`。两个受限窗口按原视频 PTS 连续覆盖全部 2197 帧（源帧 0–2196）；首段绑定接绳、层位变化、攻击动作和伤害反馈，尾段另绑定持续伤害反馈及一段攻击动作 | 稀疏复核不识别技能身份、施放者、目标或键盘输入；完整帧覆盖也不等于逐帧完整标注，不能生成双飞斩距离、命中段数或耗镖参数 |
+| 用户实录 | 用户提供的死亡之林Ⅰ MP4 为 910×512、30 FPS、73.233 秒，SHA-256 `274efc91aa9bb0d63d0c3546bc2ef1810189ccabe9bb217a7f22ef6e9c901d8f`。两个受限窗口按原视频 PTS 连续覆盖全部 2197 帧（源帧 0–2196）；现有 6 个事件区间并集覆盖 178 帧（8.101957%），全片另切为 15 个待审段 | 15 段均未完成逐帧复核，区间外 2019 帧不是负样本。稀疏复核不识别技能身份、施放者、目标或键盘输入，不能生成双飞斩距离、命中段数或耗镖参数 |
 | 合成机制 | 自写两图、平台图、梯子物理、目标视觉重识别、离开上层平台、地面/空中施放和两段结算均进入同一结构化任务链 | 不代表国服地图坐标、绳索容差、怪物位置或技能物理准确 |
 | 角色键位 | 演示档案把 `S` 绑定到 `lucky_seven`；四次施放逐次保存键、技能、档案 ID 与 `bound_skill` 回执 | `S` 是自写演示键，不是从用户截图或录像自动读出的真实键位 |
 | 耗镖 | 四次成功施放，每次 `ammo_cost=2`，模拟弹药从 200 降至 192；错误档案的 12 次请求均未产生攻击 | 每次两枚是当前合成职业包规则，仍需国服资料或实录独立校准 |
 
 目标仍生成在自建练习图的地面。换层后任务会根据画面重新找到目标，再离开上层平台进行攻击；本轮没有伪造上层怪物。真实实录首段的四个区间分别为源帧 1540–1598（接绳可见）、1540–1600（层位变化可见）、1605–1610（攻击动作可见）和 1611–1669（伤害反馈可见）。尾段窗口为源帧 2145–2196，确认覆盖至解码结束；窗口内 0–51 帧有可见伤害反馈，35–45 帧有攻击动作。各报告均保存精确 PTS 时基、边界 RGB 哈希和完整 MP4 哈希。时间相邻不等于因果，也不能把攻击动作自动命名为双飞斩。真实地图绳索坐标、上层刷怪、双飞斩距离、时序、键位和耗镖仍待完整标注与独立校准。
 
-可提交复核的摘要与原始离线证据分别保存在 `reports/release-0.10.0/throwing-star-layered-two-map-acceptance.json`、同名归档和 `throwing-star-layered-wrong-binding.tar.gz`。归档可直接交给 `lab replay` 与 `lab reinfer` 复验。真实画面边界报告为 `reports/release-0.10.0/throwing-star-real-visible-events.json` 和 `throwing-star-real-tail-visible-events.json`；两段连续性另由 `throwing-star-real-window-coverage.json` 绑定，覆盖哈希为 `0b2c6165e350838cce0c00263cdabb9f01efeff57aee5fc74ceea6e2c402c21f`。原 MP4 和导入帧不进入仓库，持有原文件时可按[录像命令](RECORDINGS.md)重建验证。
+可提交复核的摘要与原始离线证据分别保存在 `reports/release-0.10.0/throwing-star-layered-two-map-acceptance.json`、同名归档和 `throwing-star-layered-wrong-binding.tar.gz`。归档可直接交给 `lab replay` 与 `lab reinfer` 复验。真实画面边界报告为 `reports/release-0.10.0/throwing-star-real-visible-events.json` 和 `throwing-star-real-tail-visible-events.json`；两段连续性另由 `throwing-star-real-window-coverage.json` 绑定，覆盖哈希为 `0b2c6165e350838cce0c00263cdabb9f01efeff57aee5fc74ceea6e2c402c21f`。全片待审分母保存在 `throwing-star-real-review-queue.json`，15 段均为待审，队列哈希为 `84e4ed96bda7811492af9965cd8a023840b7c690269635210483be79b79cfc24`。原 MP4 和导入帧不进入仓库，持有原文件时可按[录像命令](RECORDINGS.md)重建验证。
 
 四类证据的机器可复验索引为 `reports/release-0.10.0/throwing-star-trial-evidence-ledger.json`。运行 `python -m maple_vision lab verify-trial-evidence reports/release-0.10.0/throwing-star-trial-evidence-ledger.json --root .` 会重新核对全部引用文件哈希、实录覆盖与事件报告的来源关系、合成输入、正反键位归档，并实际执行两份归档的动作重放和完整重推理。返回值仍将真实录像、合成机制、键位与耗镖分栏；仓库没有原 MP4 和导入帧，因此真实栏只复验持久报告及其交叉关系，明确返回 `raw_pixels_reverified=false`。文本证据校验会先把 CRLF 规范化为 LF，以保持 Windows 与 Linux Git checkout 一致；二进制运行归档仍按原始字节严格校验。
 

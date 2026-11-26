@@ -488,7 +488,10 @@ def test_reviewed_event_replay_renders_verified_windows_without_inventing_action
 
     sessions = []
     reports = []
-    for start, kind in [(0, "rope_contact_visible"), (2, "attack_motion_visible")]:
+    for start, kind, event_end in [
+        (0, "rope_contact_visible", 1),
+        (2, "attack_motion_visible", 0),
+    ]:
         session = tmp_path / f"window-{start}"
         import_recording(
             source,
@@ -513,7 +516,7 @@ def test_reviewed_event_replay_renders_verified_windows_without_inventing_action
                     "--event",
                     kind,
                     "0",
-                    "1",
+                    str(event_end),
                 ]
             )
             == 0
@@ -536,6 +539,62 @@ def test_reviewed_event_replay_renders_verified_windows_without_inventing_action
         )
         == 0
     )
+    queue = tmp_path / "review-queue.json"
+    queue_command = [
+        "recording",
+        "build-review-queue",
+        "--window",
+        str(sessions[1]),
+        str(reports[1]),
+        "--window",
+        str(sessions[0]),
+        str(reports[0]),
+        "--coverage",
+        str(coverage),
+        "--output",
+        str(queue),
+        "--chunk-frames",
+        "2",
+    ]
+    assert main(queue_command) == 0
+    queue_data = json.loads(queue.read_bytes())
+    assert queue_data["source"]["decoded_frame_count"] == 4
+    assert queue_data["queue_policy"] == {
+        "chunk_frames": 2,
+        "denominator": "all_decoded_source_frames",
+        "segment_count": 2,
+    }
+    assert queue_data["sparse_review"]["frames_inside_any_visible_event_interval"] == 3
+    assert queue_data["sparse_review"]["decoded_frame_fraction"] == 0.75
+    assert queue_data["exhaustive_review"] == {
+        "status": "not_started",
+        "completed_segments": 0,
+        "total_segments": 2,
+        "complete_frame_denominator": False,
+    }
+    assert all(row["review_state"] == "pending_exhaustive_review" for row in queue_data["segments"])
+    verify_queue = [
+        "recording",
+        "verify-review-queue",
+        str(queue),
+        "--window",
+        str(sessions[0]),
+        str(reports[0]),
+        "--window",
+        str(sessions[1]),
+        str(reports[1]),
+        "--coverage",
+        str(coverage),
+    ]
+    assert main(verify_queue) == 0
+
+    forged_queue = json.loads(queue.read_text())
+    forged_queue["exhaustive_review"]["completed_segments"] = 2
+    forged_queue_path = tmp_path / "forged-review-queue.json"
+    forged_queue_path.write_text(json.dumps(forged_queue))
+    verify_queue[2] = str(forged_queue_path)
+    assert main(verify_queue) == 2
+
     output = tmp_path / "replay"
     command = [
         "recording",
@@ -561,15 +620,15 @@ def test_reviewed_event_replay_renders_verified_windows_without_inventing_action
     evidence = json.loads((output / "evidence.json").read_bytes())
     assert evidence["kind"] == "reviewed_visible_event_replay"
     assert evidence["scope"] == "source_verified_reviewer_selected_visible_intervals"
-    assert evidence["render"]["frames"] == 4
-    assert [row["source_sequence"] for row in evidence["replay_frames"]] == [0, 1, 2, 3]
+    assert evidence["render"]["frames"] == 3
+    assert [row["source_sequence"] for row in evidence["replay_frames"]] == [0, 1, 2]
     assert [event["kind"] for event in evidence["reviewed_visible_events"]] == [
         "rope_contact_visible",
         "attack_motion_visible",
     ]
     assert any("do not identify a skill" in item for item in evidence["limitations"])
     with Image.open(output / "reviewed-events.gif") as replay:
-        assert replay.n_frames == 4
+        assert replay.n_frames == 3
         assert replay.size == (64, 92)
 
     assert main(command) == 2
