@@ -11,6 +11,7 @@ from maple_vision.input_bindings import load_input_profile
 from maple_vision.lab import (
     CapabilityRunConfig,
     RunConfig,
+    _execute_episode,
     run_episode,
     verify_perception,
     verify_run,
@@ -18,6 +19,7 @@ from maple_vision.lab import (
 from maple_vision.mission_program import (
     MissionProgram,
     MissionStage,
+    MissionTransition,
     NavigationObjective,
     load_mission_program,
 )
@@ -72,6 +74,119 @@ def test_navigation_mission_schema_is_explicit_and_backward_compatible():
         MissionStage("forest", ("navigate",))
     with pytest.raises(ValueError, match="first"):
         MissionStage("forest", ("fight", "navigate"), NavigationObjective("platform_1"))
+
+
+def test_conditional_mission_schema_is_a_bounded_forward_graph():
+    program = MissionProgram(
+        (
+            MissionStage(
+                "grove",
+                ("fight",),
+                transitions=(
+                    MissionTransition("loot_visible", "quarry"),
+                    MissionTransition("no_loot_visible", "ruins"),
+                ),
+            ),
+            MissionStage("quarry", ("talk",), transitions=(MissionTransition("always", "ruins"),)),
+            MissionStage("ruins", ("talk",)),
+        )
+    )
+    assert program.to_dict()["schema_version"] == 3
+    assert MissionProgram.from_dict(program.to_dict()) == program
+    assert program.transition("grove", loot_visible=True).target_map == "quarry"
+    assert program.transition("grove", loot_visible=False).target_map == "ruins"
+    assert program.transition("ruins", loot_visible=False) is None
+    with pytest.raises(ValueError, match="cover"):
+        MissionProgram(
+            (
+                MissionStage(
+                    "grove",
+                    ("talk",),
+                    transitions=(
+                        MissionTransition("always", "quarry"),
+                        MissionTransition("loot_visible", "ruins"),
+                    ),
+                ),
+                MissionStage("quarry", ("talk",)),
+                MissionStage("ruins", ("talk",)),
+            )
+        )
+    with pytest.raises(ValueError, match="later"):
+        MissionProgram(
+            (
+                MissionStage(
+                    "grove",
+                    ("talk",),
+                    transitions=(MissionTransition("always", "ruins"),),
+                ),
+                MissionStage("ruins", ("talk",)),
+                MissionStage(
+                    "quarry",
+                    ("talk",),
+                    transitions=(MissionTransition("always", "grove"),),
+                ),
+            )
+        )
+
+
+def test_one_conditional_program_selects_both_visual_branches_and_replays(tmp_path):
+    from maple_vision.map_pack import load_map_pack
+
+    pack = load_map_pack(EXAMPLES / "maps/branch-grove.json")
+    program = load_mission_program(EXAMPLES / "missions/conditional-grove.json")
+    normal_root = tmp_path / "with-loot"
+    normal = run_episode(
+        normal_root,
+        RunConfig(),
+        map_pack=pack,
+        runtime=RuntimeConfig(mission=program),
+    )
+    assert normal["status"] == "completed" and normal["independent_goal_check"]
+    assert normal["maps_visited"] == ["grove", "quarry", "ruins"]
+    branches = normal["mission_evidence"]["branches"]
+    assert [(row["source_map"], row["condition"], row["target_map"]) for row in branches] == [
+        ("grove", "loot_visible", "quarry"),
+        ("quarry", "always", "ruins"),
+    ]
+    assert [row["sequence"] for row in branches] == sorted(row["sequence"] for row in branches)
+    decisions = normal["runtime_evidence"]["terminal"]["state"]["mission_branching"]["decisions"]
+    assert [(row["condition"], row["target_map"]) for row in decisions] == [
+        ("loot_visible", "quarry"),
+        ("always", "ruins"),
+    ]
+    assert verify_run(normal_root)["verified"]
+    assert verify_perception(normal_root)["verified"]
+
+    initial = Simulator(map_id=pack.entry_map, map_pack=pack).save()
+    initial["maps"]["grove"]["monsters"] = []
+    empty = _execute_episode(
+        config=RunConfig(),
+        initial_state=initial,
+        map_pack=pack,
+        runtime=RuntimeConfig(mission=program),
+    )
+    assert empty["status"] == "completed" and empty["independent_goal_check"]
+    assert empty["maps_visited"] == ["grove", "ruins"]
+    assert [
+        (row["condition"], row["target_map"]) for row in empty["mission_evidence"]["branches"]
+    ] == [("no_loot_visible", "ruins")]
+    empty_decisions = empty["runtime_evidence"]["terminal"]["state"]["mission_branching"][
+        "decisions"
+    ]
+    assert [(row["condition"], row["target_map"]) for row in empty_decisions] == [
+        ("no_loot_visible", "ruins")
+    ]
+
+    summary_path = normal_root / "summary.json"
+    summary = json.loads(summary_path.read_bytes())
+    summary["mission_evidence"]["branches"][0]["target_map"] = "ruins"
+    summary_path.write_text(json.dumps(summary))
+    manifest_path = normal_root / "manifest.json"
+    manifest = json.loads(manifest_path.read_bytes())
+    manifest["files"]["summary.json"] = hashlib.sha256(summary_path.read_bytes()).hexdigest()
+    manifest_path.write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match="witnesses"):
+        verify_run(normal_root)
 
 
 @pytest.mark.parametrize("job", ["assassin", "dragon_knight", "cleric"])

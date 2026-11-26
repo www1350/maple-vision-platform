@@ -1199,6 +1199,8 @@ class TaskRuntime:
         first_phase = "fight" if mission is None else mission.stages[0].phases[0]
         self.phase, self.state, self.reason = first_phase, "running", "created"
         self.map_index = 0
+        self._pending_map_index: int | None = None
+        self._branch_records: list[dict[str, Any]] = []
         self.recoveries = 0
         self.scheduler = ActionScheduler(self.config)
         self.arbiter = TaskArbiter()
@@ -1273,6 +1275,13 @@ class TaskRuntime:
             evidence["capabilities"] = self._capability_state.to_dict()
         if self._navigation_records:
             evidence["navigation"] = _document(self._navigation_records)
+        if self.mission is not None and self.mission.conditional:
+            evidence["mission_branching"] = {
+                "pending_target_map": (
+                    None if self._pending_map_index is None else self.maps[self._pending_map_index]
+                ),
+                "decisions": _document(self._branch_records),
+            }
         result = RuntimeDecision(
             SimAction() if intent is None else intent.action,
             intent,
@@ -1374,7 +1383,7 @@ class TaskRuntime:
                 target_platform=record["target_platform"],
                 path_sha256=record["path_sha256"],
             )
-            self._next_objective("fight", now_ms)
+            self._next_objective("fight", now_ms, observation)
         return None
 
     def _finish(self, state: str, reason: str, now_ms: int) -> RuntimeDecision:
@@ -1455,16 +1464,56 @@ class TaskRuntime:
             self._navigation_index = 0
         self._event("mission_phase_changed", now_ms, previous=previous, following=phase)
 
-    def _next_objective(self, fallback: str, now_ms: int) -> None:
+    def _next_objective(
+        self, fallback: str, now_ms: int, observation: VisualObservation | None = None
+    ) -> None:
         phase = fallback
         if self.mission is not None:
             phases = self.mission.stages[self.map_index].phases
             index = phases.index(self.phase) + 1
             if index < len(phases):
                 phase = phases[index]
+            elif self.mission.conditional:
+                if observation is None:
+                    raise ValueError("conditional mission transition needs a visual observation")
+                loot_visible = any(
+                    item.class_id == "loot"
+                    and item.confidence >= self.config.minimum_detection_confidence
+                    for item in observation.detections
+                )
+                transition = self.mission.transition(
+                    self.maps[self.map_index], loot_visible=loot_visible
+                )
+                if transition is None:
+                    self._pending_map_index = None
+                    phase = "done"
+                else:
+                    self._pending_map_index = self.maps.index(transition.target_map)
+                    record = {
+                        "source_map": self.maps[self.map_index],
+                        "target_map": transition.target_map,
+                        "condition": transition.condition,
+                        "source_sequence": observation.sequence,
+                        "loot_visible": loot_visible,
+                    }
+                    self._branch_records.append(record)
+                    self._event("mission_branch_selected", now_ms, **record)
+                    phase = "travel"
             else:
-                phase = "done" if self.map_index + 1 == len(self.maps) else "travel"
+                if self.map_index + 1 == len(self.maps):
+                    self._pending_map_index = None
+                    phase = "done"
+                else:
+                    self._pending_map_index = self.map_index + 1
+                    phase = "travel"
         self._advance(phase, now_ms)
+
+    def _travel_target_index(self) -> int | None:
+        if self._pending_map_index is not None:
+            return self._pending_map_index
+        if self.mission is None and self.map_index + 1 < len(self.maps):
+            return self.map_index + 1
+        return None
 
     def _evaluate_effects(self, observation: VisualObservation, now_ms: int) -> None:
         retained: deque[_PendingEffect] = deque()
@@ -1601,9 +1650,10 @@ class TaskRuntime:
                 for d in observation.detections
                 if d.class_id == role and d.confidence >= self.config.minimum_detection_confidence
             )
-            if self.phase == "travel" and self.map_index + 1 < len(self.maps):
+            target_index = self._travel_target_index() if self.phase == "travel" else None
+            if target_index is not None:
                 center = self.portal_centers.get(
-                    (self.maps[self.map_index], self.maps[self.map_index + 1])
+                    (self.maps[self.map_index], self.maps[target_index])
                 )
                 if center is not None:
                     targets = tuple(t for t in targets if abs(_center(t)[0] - center) <= 10)
@@ -1729,18 +1779,18 @@ class TaskRuntime:
         if observation.hp_ratio == 0:
             return self._finish("stopped", "player_dead", now_ms)
         if observation.map_id != self.maps[self.map_index]:
+            target_index = self._travel_target_index()
             if (
                 self.phase == "travel"
-                and self.map_index + 1 < len(self.maps)
-                and observation.map_id == self.maps[self.map_index + 1]
+                and target_index is not None
+                and observation.map_id == self.maps[target_index]
             ):
                 phase = (
-                    "fight"
-                    if self.mission is None
-                    else self.mission.stages[self.map_index + 1].phases[0]
+                    "fight" if self.mission is None else self.mission.stages[target_index].phases[0]
                 )
                 self._advance(phase, now_ms)
-                self.map_index += 1
+                self.map_index = target_index
+                self._pending_map_index = None
                 self._last_position, self._last_action = None, SimAction()
                 self._stuck_steps = self._attack_attempts = self._denied_actions = 0
                 self._last_monster_count = None
@@ -1777,15 +1827,17 @@ class TaskRuntime:
                 return self._finish("failed", "combat_progress_timeout", now_ms)
             self._empty_frames = self._empty_frames + 1 if not monsters else 0
             if self._empty_frames >= self.config.clear_confirmations:
-                self._next_objective("collect", now_ms)
+                self._next_objective("collect", now_ms, observation)
         elif self.phase == "collect":
             drops = [item for item in observation.detections if item.class_id == "loot"]
             self._empty_frames = self._empty_frames + 1 if not drops else 0
             if self._empty_frames >= self.config.clear_confirmations:
-                self._next_objective("talk", now_ms)
+                self._next_objective("talk", now_ms, observation)
         elif self.phase == "talk" and observation.dialogue_visible:
             self._next_objective(
-                "done" if self.map_index + 1 == len(self.maps) else "travel", now_ms
+                "done" if self.map_index + 1 == len(self.maps) else "travel",
+                now_ms,
+                observation,
             )
         if self.phase == "done":
             return self._finish("completed", "visual_mission_conditions_met", now_ms)
@@ -1957,6 +2009,15 @@ class TaskRuntime:
         }
         if self.mission is not None:
             result["mission_sha256"] = self.mission.content_sha256
+            if self.mission.conditional:
+                result["mission_branching"] = {
+                    "pending_target_map": (
+                        None
+                        if self._pending_map_index is None
+                        else self.maps[self._pending_map_index]
+                    ),
+                    "decisions": _document(self._branch_records),
+                }
         if self._capability_state is not None:
             result["capabilities"] = self._capability_state.to_dict()
         if self.platform_graphs:

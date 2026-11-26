@@ -1,0 +1,26 @@
+{
+  "schema_version": 3,
+  "stages": [
+    {
+      "map_id": "grove",
+      "phases": ["fight"],
+      "navigation": null,
+      "transitions": [
+        {"condition": "loot_visible", "target_map": "quarry"},
+        {"condition": "no_loot_visible", "target_map": "ruins"}
+      ]
+    },
+    {
+      "map_id": "quarry",
+      "phases": ["talk"],
+      "navigation": null,
+      "transitions": [{"condition": "always", "target_map": "ruins"}]
+    },
+    {
+      "map_id": "ruins",
+      "phases": ["talk"],
+      "navigation": null,
+      "transitions": []
+    }
+  ]
+}
