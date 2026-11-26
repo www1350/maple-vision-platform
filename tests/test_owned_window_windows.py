@@ -182,6 +182,13 @@ def test_native_external_window_pixels_feed_player_visible_observation(tmp_path)
             "monster",
         }
         assert not model_result.belief.actionable
+        assert model_result.belief.reason == "fresh_detection_hypotheses"
+        assert model_result.belief.field("player_bbox").status.value == "known"
+        assert {track.class_id for track in model_result.belief.tracks} >= {
+            "player",
+            "monster",
+        }
+        assert model_result.belief.last_accepted_sequence is None
         desktop.close()
 
         output = (

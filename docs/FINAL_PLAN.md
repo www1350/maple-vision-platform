@@ -391,3 +391,5 @@ v0.2 的源代码、模型与测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a
 跨窗口帧现已接入统一 `VisualObservation → TemporalStateEstimator` 链，并提供 `maple-vision-window-observe` 输出原截图、识别框图和证据 JSON。观察、belief 与窗口帧共用序号和 RGB 哈希；未识别画面保持 unknown，320×192 fixture 模式遇到尺寸变化会暂停。Windows 原生验收使用另一个项目自有 Tk 顶层窗口的屏幕像素，不读取窗口内部对象。当前唯一可选感知模式明确命名为 `synthetic-fixture`，因此该增量只关闭跨窗口像素尚未进入状态链和玩家不可查看识别结果的工程缺口；国服检测器、真实窗口识别质量与外部输入仍未验收。
 
 跨窗口观察入口随后增加 `onnx-detector` 模式。它只接受 `OnnxDetector` 读取的本地模型与 manifest，并在证据中绑定实际模型 SHA-256、manifest、阈值和 Runtime 设置。模型检测框进入玩家可见叠加图，但地图、HP、MP 不从 fixture 颜色补齐，belief 固定不可执行；复核器拒绝把 detector-only 报告改成 actionable。仓库现有 lifecycle 模型的声明域仍是 `synthetic_fixture`，所以这一能力证明模型适配器可复用到外部窗口，不证明国服模型已具备，更不启用外部输入。
+
+状态估计随后允许 fresh detector-only 帧保留非执行性假设。唯一高置信度人物框可写入带 TTL 的 `player_bbox`，所有合格检测可进入有界关联轨迹并在连续帧形成速度；地图、资源与 accepted watermark 不随之补齐。未知地图 context 与完整地图 context 分离，重复/倒序检测帧被拒绝。该结果可支持下一步短时序录像和窗口跟踪复核，但不能令 Agent、Planner 或派发门禁把 detector-only 画面当作可行动状态。
