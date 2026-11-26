@@ -633,6 +633,17 @@ def test_input_profile_confirmation_validates_manual_source_and_image_digest(tmp
         live_receipt = http.post("/api/input-profile/confirmation", json=live)
         assert live_receipt.status_code == 200
         assert live_receipt.json()["source_image"] is None
+        large_profile = {
+            **profile,
+            "bindings": [{"skill": f"示例技能名称较长{i:03}", "key": f"K{i}"} for i in range(120)],
+        }
+        assert http.post("/api/input-profile", json=large_profile).status_code == 200
+        assert (
+            http.post(
+                "/api/input-profile/confirmation", json={**live, "profile": large_profile}
+            ).status_code
+            == 200
+        )
 
         mismatched = {**request, "comparison_source": "live_window_manual_comparison"}
         assert http.post("/api/input-profile/confirmation", json=mismatched).status_code == 422

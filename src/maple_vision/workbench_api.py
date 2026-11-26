@@ -426,7 +426,7 @@ def create_app(
                 path = request.url.path
                 if path == "/api/input-profile":
                     limit = MAX_INPUT_BINDINGS_BYTES
-                elif path == "/api/jobs" or re.fullmatch(
+                elif path in {"/api/jobs", "/api/input-profile/confirmation"} or re.fullmatch(
                     "/api/sessions/[0-9a-f]{32}/key-step", path
                 ):
                     limit = MAX_INPUT_BINDINGS_BYTES + 4096

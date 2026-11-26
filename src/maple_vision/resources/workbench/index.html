@@ -133,7 +133,11 @@
             <section class="panel"><h2>对照截图</h2>
               <p class="field-help">可直接对照游戏窗口，也可选择一张键位截图。图片仅在本页预览，不上传；确认凭证保存图片哈希和尺寸，不会把人工核对写成自动识别。</p>
               <input id="keys-image-file" type="file" accept="image/png,image/jpeg,image/webp" aria-label="选择键位截图">
-              <img id="keys-image" class="hidden" style="max-width:100%;height:auto" alt="当前角色的键位设置截图">
+              <label id="keys-detail-toggle" class="hidden"><input type="checkbox" id="keys-detail"> 原图尺寸核对键帽与技能图标</label>
+              <div style="max-width:100%;overflow:auto"><img id="keys-image" class="hidden" style="max-width:100%;height:auto" alt="当前角色的键位设置截图"></div>
+              <button id="keys-row-start" class="button subtle hidden" type="button">检查 A–L 键行</button>
+              <p id="keys-row-status" role="status"></p>
+              <div id="keys-row-crops"></div>
             </section>
           </div>
         </section>
