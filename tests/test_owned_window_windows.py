@@ -48,6 +48,7 @@ def test_player_can_export_their_own_trial(tmp_path, monkeypatch):
     output.mkdir(parents=True, exist_ok=True)
     path = output / "completed.gif"
     monkeypatch.setattr("tkinter.filedialog.asksaveasfilename", lambda **kwargs: str(path))
+    monkeypatch.setattr("tkinter.filedialog.askdirectory", lambda **kwargs: str(output))
     root = tk.Tk()
     try:
         app = OwnedWindow(root)
@@ -68,5 +69,14 @@ def test_player_can_export_their_own_trial(tmp_path, monkeypatch):
         app.save_button.invoke()
         with Image.open(path) as replay:
             assert replay.n_frames == 2
+        app.confirm_button.invoke()
+        app.route_button.invoke()
+        routes = list(output.glob("maple-layered-route-*"))
+        assert len(routes) == 1
+        review = json.loads((routes[0] / "player-review.json").read_text())
+        assert review["confirmed_key"] == "J"
+        assert len(review["navigation"]) == 2
+        assert len(review["casts"]) == 4
+        assert "换层 2 次，双飞斩 4 次" in app.feedback_label.cget("text")
     finally:
         root.destroy()

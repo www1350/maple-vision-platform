@@ -2,12 +2,20 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import string
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
 from .class_package import load_class_package
-from .input_bindings import InputBindingProfile, normalize_key, verify_input_profile_confirmation
+from .input_bindings import (
+    InputBindingProfile,
+    confirm_input_profile,
+    normalize_key,
+    verify_input_profile_confirmation,
+)
 from .map_pack import load_map_pack
 from .sim_types import SimAction
 from .simulation import Simulator
@@ -29,6 +37,7 @@ class OwnedSession:
         self.events: list[dict[str, Any]] = []
         self._profile: InputBindingProfile | None = None
         self._confirmed_source: tuple[InputBindingProfile, dict[str, Any], str] | None = None
+        self._active_confirmation: dict[str, Any] | None = None
 
     def load_confirmation(self, receipt: object) -> str:
         """Bind a verified player-confirmed profile to this owned-window trial."""
@@ -83,8 +92,9 @@ class OwnedSession:
                 "owned-window-role", {self.confirmed_key: "lucky_seven"}
             )
             profile_id = self._profile.profile_id
-            receipt_sha256 = None
-            comparison_source = None
+            self._active_confirmation = confirm_input_profile(
+                self._profile, "live_window_manual_comparison"
+            )
         else:
             profile, receipt, expected_key = self._confirmed_source
             if self.confirmed_key != expected_key:
@@ -92,8 +102,10 @@ class OwnedSession:
                 raise ValueError("visible key does not match the confirmed player profile")
             self._profile = profile
             profile_id = profile.profile_id
-            receipt_sha256 = receipt["receipt_sha256"]
-            comparison_source = receipt["comparison_source"]
+            self._active_confirmation = deepcopy(receipt)
+        assert self._active_confirmation is not None
+        receipt_sha256 = self._active_confirmation["receipt_sha256"]
+        comparison_source = self._active_confirmation["comparison_source"]
         self.simulator = self._fresh_trial()
         self.state = "confirmed"
         self._record(
@@ -144,10 +156,85 @@ class OwnedSession:
             profile_id=self._profile.profile_id,
             confirmation_receipt_sha256=(
                 None
-                if self._confirmed_source is None
-                else self._confirmed_source[1]["receipt_sha256"]
+                if self._active_confirmation is None
+                else self._active_confirmation["receipt_sha256"]
             ),
         )
+
+    def run_layered_route(self, output: Path) -> dict[str, Any]:
+        """Run the existing two-map fixture with the exact player-confirmed skill key."""
+        if self.state != "confirmed" or self._profile is None or self._active_confirmation is None:
+            raise ValueError("confirm the role key before running the layered route")
+        if output.exists():
+            raise FileExistsError(f"route output already exists: {output}")
+
+        from .lab import CapabilityRunConfig, run_episode
+        from .mission_program import load_mission_program
+        from .runtime_pipeline import RuntimeConfig
+
+        result = run_episode(
+            output,
+            CapabilityRunConfig(seed=17, job=self.package.class_id, record_stride=1),
+            map_pack=self.map_pack,
+            runtime=RuntimeConfig(
+                mission=load_mission_program(
+                    Path(__file__).with_name("resources")
+                    / "practice/missions/dead-forest-layered-hunt.json"
+                )
+            ),
+            class_package=self.package,
+            input_profile=self._profile,
+            input_confirmation=self._active_confirmation,
+        )
+        trace = [
+            json.loads(line)
+            for line in (output / "trace.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+        casts = []
+        for row in trace:
+            dispatch = row["execution"].get("input_dispatch")
+            if (
+                row["execution"]["applied_action"]["kind"] == "cast"
+                and dispatch is not None
+                and dispatch["accepted"]
+            ):
+                casts.append(
+                    {
+                        "source_sequence": row["sequence"],
+                        "map_id": row["observation"]["map_id"],
+                        "key": dispatch["key"],
+                        "skill": dispatch["action_skill"],
+                    }
+                )
+        review = {
+            "schema_version": 1,
+            "scope": "project_owned_synthetic_route",
+            "status": result["status"],
+            "input_confirmation_receipt_sha256": self._active_confirmation["receipt_sha256"],
+            "profile_id": self._profile.profile_id,
+            "confirmed_key": self.confirmed_key,
+            "navigation": [
+                witness
+                for witness in result["mission_evidence"]["witnesses"]
+                if witness["phase"] == "navigate"
+            ],
+            "casts": casts,
+            "preview": "preview.gif",
+            "source_files": {
+                name: hashlib.sha256((output / name).read_bytes()).hexdigest()
+                for name in ("summary.json", "trace.jsonl", "preview.gif")
+            },
+            "limitations": [
+                "movement and combat are simulator actions in the project-owned practice route",
+                "the result is not an official-client input or real-game effect",
+                "manual takeover is verified separately in the interactive owned window",
+            ],
+        }
+        (output / "player-review.json").write_text(
+            json.dumps(review, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        return review
 
     def release(self, key: str, *, generation: int | None = None) -> None:
         if generation is not None and generation != self.generation:
@@ -164,5 +251,6 @@ class OwnedSession:
         self.held_key = None
         self.confirmed_key = None
         self._profile = None
+        self._active_confirmation = None
         self.state = "paused"
         self._record("takeover", reason=reason, released_key=released)
