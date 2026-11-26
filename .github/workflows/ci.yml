@@ -30,6 +30,23 @@ jobs:
             requirements-runtime.txt
             requirements-dev.txt
             requirements-workbench.txt
+      - name: Stage stable Tcl/Tk runtime for native desktop tests
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $source = Join-Path $env:pythonLocation 'tcl'
+          $target = Join-Path $env:RUNNER_TEMP 'maple-tcl'
+          Copy-Item -LiteralPath $source -Destination $target -Recurse -Force
+          $tclLibrary = Join-Path $target 'tcl8.6'
+          $tkLibrary = Join-Path $target 'tk8.6'
+          if (-not (Test-Path -LiteralPath (Join-Path $tclLibrary 'init.tcl'))) {
+            throw 'staged Tcl runtime is missing init.tcl'
+          }
+          if (-not (Test-Path -LiteralPath (Join-Path $tkLibrary 'tk.tcl'))) {
+            throw 'staged Tk runtime is missing tk.tcl'
+          }
+          "TCL_LIBRARY=$tclLibrary" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "TK_LIBRARY=$tkLibrary" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Install pinned runtime and development tools
         run: python -m pip install -r requirements-dev.txt
       - name: Install package without resolving a second dependency set
