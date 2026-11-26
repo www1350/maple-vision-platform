@@ -288,7 +288,7 @@ def test_suite_uses_supplied_detector_for_normal_fault_and_failure_bundles(tmp_p
     report = run_suite(output, seeds=1, detector=detector)
     assert detector.calls > 0
     assert report["passed"] is False
-    assert report["normal_episodes"] == 3 and report["episodes"] == 7
+    assert report["normal_episodes"] == 3 and report["episodes"] == 8
     assert all(row["detector"] == "onnx" for row in report["results"])
     assert all(row["status"] == "stopped" for row in report["results"])
     assert report["perception_settings"]["verifiable_model_binding"] is False

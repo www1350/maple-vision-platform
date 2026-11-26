@@ -354,7 +354,14 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--record-stride", type=int, default=4)
     run.add_argument(
         "--fault",
-        choices=("none", "brief_dropout", "persistent_dropout", "duplicate_frames", "freeze_input"),
+        choices=(
+            "none",
+            "brief_dropout",
+            "persistent_dropout",
+            "duplicate_frames",
+            "freeze_input",
+            "loot_false_negative",
+        ),
         default="none",
     )
     run.add_argument("--model", type=Path)

@@ -89,6 +89,8 @@ Runtime 只按当前 `VisualObservation` 中达到最低置信度的 loot 框选
 
 固定种子 0 的有掉落实例实际完成 154 步，依次选择 `grove → quarry → ruins`；154 步动作重放和 155 帧完整重推理一致。无掉落实例选择 `grove → ruins`，篡改已保存的分支目标即使同步改写文件清单哈希也会被独立 Oracle 拒绝。
 
+`--fault loot_false_negative` 提供可复验的负例：合成真值仍生成掉落，但故障适配器只从画面移除掉落颜色。视觉 Runtime 因而选择 `no_loot_visible → ruins`，独立 Oracle 从模拟器掉落集合选择 `loot_visible → quarry`。运行结果必须降为 `failed/conditional_branch_check_failed`，并在 `conditional_branch_check` 中并列保存两条路径、首个不一致位置和 `matched=false`；动作 replay 重建真值分支，完整 reinfer 重新产生同一视觉误判。这个故障不用于真实素材或模型质量结论。
+
 `loot_visible` 仅表示画面检测到掉落实体，不等于背包、金币或任务物品条件；`no_loot_visible` 也可能受遮挡和感知失败影响。本增量不提供任意布尔表达式、隐藏库存读取、循环刷怪或自动恢复分支。
 
 ## 国服怀旧服地图连接核查

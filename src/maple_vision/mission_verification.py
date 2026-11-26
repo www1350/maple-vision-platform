@@ -7,6 +7,64 @@ from .mission_program import MissionProgram
 from .sim_types import SimSnapshot
 
 
+def compare_branch_decisions(runtime_decisions: object, oracle_decisions: object) -> dict[str, Any]:
+    """Compare visual-policy branch choices with simulator-truth choices.
+
+    The full runtime and oracle records remain separate evidence.  This compact
+    derived check compares only the semantic edge identity, never treating a
+    policy-reported observation as simulator truth.
+    """
+
+    def path(value: object, label: str) -> list[dict[str, str]]:
+        if not isinstance(value, list) or len(value) > 8:
+            raise ValueError(f"invalid {label} mission branch evidence")
+        result: list[dict[str, str]] = []
+        for row in value:
+            if not isinstance(row, dict):
+                raise ValueError(f"invalid {label} mission branch evidence")
+            source_map = row.get("source_map")
+            condition = row.get("condition")
+            target_map = row.get("target_map")
+            if any(
+                not isinstance(item, str) or not item
+                for item in (source_map, condition, target_map)
+            ):
+                raise ValueError(f"invalid {label} mission branch evidence")
+            assert isinstance(source_map, str)
+            assert isinstance(condition, str)
+            assert isinstance(target_map, str)
+            result.append(
+                {
+                    "source_map": source_map,
+                    "condition": condition,
+                    "target_map": target_map,
+                }
+            )
+        return result
+
+    runtime_path = path(runtime_decisions, "runtime")
+    oracle_path = path(oracle_decisions, "oracle")
+    matched = runtime_path == oracle_path
+    mismatch_index = None
+    if not matched:
+        for index in range(max(len(runtime_path), len(oracle_path))):
+            if (
+                index >= len(runtime_path)
+                or index >= len(oracle_path)
+                or runtime_path[index] != oracle_path[index]
+            ):
+                mismatch_index = index
+                break
+    return {
+        "schema_version": 1,
+        "scope": "runtime_visual_branch_vs_simulator_truth",
+        "matched": matched,
+        "mismatch_index": mismatch_index,
+        "runtime_path": runtime_path,
+        "oracle_path": oracle_path,
+    }
+
+
 class MissionOracle:
     def __init__(self, program: MissionProgram, map_pack: MapPack | None = None) -> None:
         self.program = program
