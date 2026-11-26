@@ -21,7 +21,10 @@ class OwnedWindow:
     """Generate one key pair inside one focused canvas per armed trial."""
 
     def __init__(
-        self, root: tk.Tk, examples: Path, input_confirmation: dict[str, Any] | None = None
+        self,
+        root: tk.Tk,
+        examples: Path | None = None,
+        input_confirmation: dict[str, Any] | None = None,
     ) -> None:
         self.root = root
         self.session = OwnedSession(examples)
@@ -222,7 +225,7 @@ class OwnedWindow:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--examples", type=Path, default=Path("examples"))
+    parser.add_argument("--examples", type=Path)
     parser.add_argument("--input-confirmation", type=Path)
     args = parser.parse_args()
     confirmation = None

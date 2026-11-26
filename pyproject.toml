@@ -13,6 +13,9 @@ dependencies = ["Pillow>=12,<14", "numpy>=2,<3"]
 [project.scripts]
 maple-vision = "maple_vision.cli:main"
 
+[project.gui-scripts]
+maple-vision-practice = "maple_vision.owned_window:main"
+
 [project.optional-dependencies]
 sync = ["httpx[socks]>=0.28,<1"]
 workbench = ["fastapi>=0.165,<1", "uvicorn>=0.54,<1"]
@@ -23,7 +26,7 @@ video = ["opencv-python>=4.7,<6"]
 training = ["ultralytics>=8.3,<9", "onnx>=1.17,<2", "onnxruntime>=1.32,<2"]
 
 [tool.setuptools.package-data]
-maple_vision = ["py.typed", "resources/*.yaml", "resources/workbench/*"]
+maple_vision = ["py.typed", "resources/*.yaml", "resources/workbench/*", "resources/practice/*/*.json"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

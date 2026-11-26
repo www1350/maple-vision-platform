@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "id": "dead-forest-drill",
+  "version": "1.0.0",
+  "scope": "synthetic_fixture",
+  "source_uri": "urn:maple-vision:self-authored:dead-forest-drill",
+  "permission": "self_authored",
+  "license": "CC0-1.0",
+  "width": 320,
+  "height": 192,
+  "ground": 168,
+  "route": [
+    "drill_forest_1",
+    "drill_forest_2"
+  ],
+  "maps": [
+    {
+      "id": "drill_forest_1",
+      "theme": "cavern",
+      "marker": [
+        41,
+        157,
+        131
+      ],
+      "spawn_x": 24,
+      "platforms": [
+        {
+          "x1": 0,
+          "x2": 320,
+          "y": 168
+        },
+        {
+          "x1": 68,
+          "x2": 132,
+          "y": 124
+        },
+        {
+          "x1": 184,
+          "x2": 246,
+          "y": 100
+        }
+      ],
+      "portals": [
+        {
+          "id": "to_second",
+          "x": 292,
+          "y": 132,
+          "w": 20,
+          "h": 36,
+          "destination": "drill_forest_2"
+        }
+      ],
+      "npcs": [
+        {
+          "id": "observer_1",
+          "x": 42,
+          "y": 144,
+          "w": 14,
+          "h": 24
+        }
+      ],
+      "ladders": [
+        {
+          "x": 94,
+          "y": 124,
+          "w": 10,
+          "h": 44
+        }
+      ],
+      "monster_x": [
+        165
+      ]
+    },
+    {
+      "id": "drill_forest_2",
+      "theme": "cavern",
+      "marker": [
+        151,
+        93,
+        171
+      ],
+      "spawn_x": 268,
+      "platforms": [
+        {
+          "x1": 0,
+          "x2": 320,
+          "y": 168
+        },
+        {
+          "x1": 78,
+          "x2": 148,
+          "y": 118
+        },
+        {
+          "x1": 208,
+          "x2": 276,
+          "y": 94
+        }
+      ],
+      "portals": [
+        {
+          "id": "to_first",
+          "x": 8,
+          "y": 132,
+          "w": 20,
+          "h": 36,
+          "destination": "drill_forest_1"
+        }
+      ],
+      "npcs": [
+        {
+          "id": "observer_2",
+          "x": 278,
+          "y": 144,
+          "w": 14,
+          "h": 24
+        }
+      ],
+      "ladders": [
+        {
+          "x": 110,
+          "y": 118,
+          "w": 10,
+          "h": 50
+        }
+      ],
+      "monster_x": [
+        100
+      ]
+    }
+  ]
+}
