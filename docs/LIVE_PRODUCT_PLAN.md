@@ -72,6 +72,8 @@ flowchart TD
 
 自有 Windows 入口现在会为玩家在可见图块上确认的字母生成确定性确认凭证，并把同一 profile、收据哈希和按键交给既有死亡之林双图任务。玩家可直接生成完整合成路线回放；`player-review.json` 标出两次换层和四次双飞斩的源序号，四次出手均使用确认的同一枚键。该入口复用了已验证的任务运行时，仍属于项目自有合成环境；路线计算完成后观看回放，人工接管仍由交互窗口的单次施放故障回放独立验证。
 
+双图输出现在可在同一窗口按源序号播放。播放中按 Esc、点击画面或失焦会终止后续播放并清空本轮确认状态；重新开始必须再次确认键位。`player-review.json` 只保留接管前已经显示的换层与出手事件，再追加接管源序号；`route-takeover.gif` 与独立复核函数重新核对来源摘要、GIF 哈希、帧数、事件顺序和终止事件。该接管停止的是已完成合成计算的可视回放，不等同于中断真实客户端输入。
+
 [可复验的死亡之林双图账本](https://github.com/www1350/maple-vision-platform/blob/main/docs/THROWING_STAR_TRIAL.md) · [Windows 自有窗口实现和检查](https://github.com/www1350/maple-vision-platform/pull/63)
 
 ## 五、开发顺序与玩家交付物

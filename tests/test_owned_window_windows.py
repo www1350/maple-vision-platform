@@ -41,6 +41,7 @@ def test_player_can_export_their_own_trial(tmp_path, monkeypatch):
 
     from PIL import Image
 
+    from maple_vision.owned_route_playback import verify_route_playback
     from maple_vision.owned_window import OwnedWindow
     from scripts.verify_owned_window import wait_for
 
@@ -70,13 +71,26 @@ def test_player_can_export_their_own_trial(tmp_path, monkeypatch):
         with Image.open(path) as replay:
             assert replay.n_frames == 2
         app.confirm_button.invoke()
+        app.route_playback_interval_ms = 1
         app.route_button.invoke()
         routes = list(output.glob("maple-layered-route-*"))
         assert len(routes) == 1
+        wait_for(root, lambda: (app._route_sequence or 0) >= 72, "route cast playback")
+        app.takeover_button.invoke()
         review = json.loads((routes[0] / "player-review.json").read_text())
         assert review["confirmed_key"] == "J"
         assert len(review["navigation"]) == 2
         assert len(review["casts"]) == 4
-        assert "换层 2 次，双飞斩 4 次" in app.feedback_label.cget("text")
+        assert [item["kind"] for item in review["timeline"]] == [
+            "layer_reached",
+            "skill_dispatched",
+            "takeover",
+        ]
+        assert review["playback"]["status"] == "taken_over"
+        assert (routes[0] / "route-takeover.gif").is_file()
+        assert app.session.state == "paused"
+        assert app.route_button.instate(["disabled"])
+        assert "请重新确认" in app.feedback_label.cget("text")
+        assert verify_route_playback(routes[0])["status"] == "taken_over"
     finally:
         root.destroy()

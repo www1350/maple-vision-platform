@@ -14,6 +14,11 @@ from PIL import Image, ImageDraw, ImageTk
 
 from .input_bindings import load_input_profile_confirmation
 from .owned_key_image import key_tile, read_key_tile
+from .owned_route_playback import (
+    RoutePlaybackFrame,
+    build_route_playback,
+    finalize_route_playback,
+)
 from .owned_session import OwnedSession
 from .scene import SceneRenderer
 
@@ -38,6 +43,15 @@ class OwnedWindow:
         self._emitting: tuple[str, str, int] | None = None
         self._receipt: dict[str, Any] | None = None
         self._replay: list[Image.Image] = []
+        self._route_active = False
+        self._route_timer: str | None = None
+        self._route_schedule: tuple[RoutePlaybackFrame, ...] = ()
+        self._route_index = 0
+        self._route_sequence: int | None = None
+        self._route_output: Path | None = None
+        self._route_review: dict[str, Any] | None = None
+        self._route_displayed: list[tuple[int, Image.Image]] = []
+        self.route_playback_interval_ms = 80
         self.root.title("Maple Vision · 标飞单次施放")
         frame = ttk.Frame(root, padding=12)
         frame.pack()
@@ -145,24 +159,104 @@ class OwnedWindow:
         output = Path(parent) / datetime.now().strftime("maple-layered-route-%Y%m%d-%H%M%S")
         try:
             review = self.session.run_layered_route(output)
+            schedule = build_route_playback(output, review)
         except (OSError, ValueError) as exc:
             self._feedback(f"双图路线生成失败：{exc}")
             return
+        self._route_active = True
+        self._route_schedule = schedule
+        self._route_index = 0
+        self._route_sequence = None
+        self._route_output = output
+        self._route_review = review
+        self._route_displayed.clear()
+        self.surface.focus_set()
+        self._play_route_frame()
+
+    def _play_route_frame(self) -> None:
+        self._route_timer = None
+        if not self._route_active:
+            return
+        if self._route_index >= len(self._route_schedule):
+            self._finish_route_playback("completed", None)
+            return
+        item = self._route_schedule[self._route_index]
+        with Image.open(item.path) as source:
+            image = source.convert("RGB").resize((640, 384), Image.Resampling.NEAREST)
+        draw = ImageDraw.Draw(image)
+        draw.rectangle((0, 0, 640, 28), fill=(23, 31, 47))
+        labels = " · ".join(item.labels) if item.labels else "route"
+        draw.text((8, 6), f"SEQ {item.source_sequence} · {labels}", fill="white")
+        self.photo = ImageTk.PhotoImage(image, master=self.root)
+        self.surface.itemconfigure(self._scene_item, image=self.photo)
+        self._route_sequence = item.source_sequence
+        self._route_displayed.append((item.source_sequence, image))
+        self._route_index += 1
         self._feedback(
-            f"双图路线已完成：换层 {len(review['navigation'])} 次，"
-            f"双飞斩 {len(review['casts'])} 次。回放：{output / 'preview.gif'}"
+            f"双图路线回放 {self._route_index}/{len(self._route_schedule)}　｜　"
+            "按 Esc 或切走窗口接管"
         )
+        self._route_timer = self.root.after(self.route_playback_interval_ms, self._play_route_frame)
+
+    def _cancel_route_timer(self) -> None:
+        if self._route_timer is not None:
+            self.root.after_cancel(self._route_timer)
+            self._route_timer = None
+
+    def _finish_route_playback(self, status: str, reason: str | None) -> None:
+        self._cancel_route_timer()
+        if (
+            not self._route_active
+            or self._route_output is None
+            or self._route_review is None
+            or not self._route_displayed
+        ):
+            return
+        self._route_active = False
+        try:
+            updated = finalize_route_playback(
+                self._route_output,
+                self._route_review,
+                tuple(self._route_displayed),
+                status=status,
+                reason=reason,
+            )
+        except (OSError, ValueError) as exc:
+            self._feedback(f"路线回放保存失败：{exc}")
+            return
+        playback = updated["playback"]
+        if status == "completed":
+            self._feedback(
+                f"双图路线回放完成。时间轴和回放：{self._route_output / playback['replay']}"
+            )
+        else:
+            self._feedback(
+                f"路线已接管，停止于源序号 {playback['last_source_sequence']}。"
+                f"回放：{self._route_output / playback['replay']}。重新开始须再次确认键位。"
+            )
 
     def _feedback(self, text: str) -> None:
         self.feedback_label.configure(text=text)
         can_save = self.session.state in {"completed", "paused"} and bool(self._replay)
         self.save_button.state(["!disabled" if can_save else "disabled"])
-        self.route_button.state(["!disabled" if self.session.state == "confirmed" else "disabled"])
-        self.arm_button.state(["!disabled" if self.session.state == "confirmed" else "disabled"])
+        can_start = self.session.state == "confirmed" and not self._route_active
+        self.route_button.state(["!disabled" if can_start else "disabled"])
+        self.arm_button.state(["!disabled" if can_start else "disabled"])
+        valid_key = (
+            len(self.key_var.get()) == 1 and self.key_var.get().upper() in string.ascii_uppercase
+        )
+        self.confirm_button.state(
+            ["!disabled" if valid_key and not self._route_active else "disabled"]
+        )
+        self.key_entry.state(["disabled" if self._route_active else "!disabled"])
 
     def _edited(self, *_: str) -> None:
+        route_stopped = self._route_active
+        if route_stopped:
+            self._finish_route_playback("taken_over", "binding_changed")
+            self.session.takeover("binding_changed")
         self._cancel_timer()
-        if self.session.state != "unconfirmed":
+        if self.session.state != "unconfirmed" and not route_stopped:
             self.session.takeover("binding_changed")
         self._replay.clear()
         key = self.key_var.get().upper()
@@ -276,10 +370,18 @@ class OwnedWindow:
         return "break"
 
     def _lost_focus(self, _: tk.Event[tk.Canvas]) -> None:
-        if self.session.state in {"armed", "pressed"}:
+        if self._route_active or self.session.state in {"armed", "pressed"}:
             self.takeover("focus_lost")
 
     def takeover(self, reason: str = "manual_takeover") -> None:
+        if self._route_active:
+            self._finish_route_playback("taken_over", reason)
+            self.session.takeover(reason)
+            self._feedback(
+                f"{'练习窗口已失焦' if reason == 'focus_lost' else '玩家已接管'}，"
+                "请重新确认后再开始。"
+            )
+            return
         self._cancel_timer()
         interrupted = self.session.state in {"confirmed", "armed", "pressed"}
         self.session.takeover(reason)
