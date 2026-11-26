@@ -41,3 +41,21 @@ python -m maple_vision lab reinfer artifacts/star-trial
 四类证据的机器可复验索引为 `reports/release-0.10.0/throwing-star-trial-evidence-ledger.json`。运行 `python -m maple_vision lab verify-trial-evidence reports/release-0.10.0/throwing-star-trial-evidence-ledger.json --root .` 会重新核对全部引用文件哈希、实录覆盖与事件报告的来源关系、合成输入、正反键位归档，并实际执行两份归档的动作重放和完整重推理。返回值仍将真实录像、合成机制、键位与耗镖分栏；仓库没有原 MP4 和导入帧，因此真实栏只复验持久报告及其交叉关系，明确返回 `raw_pixels_reverified=false`。文本证据校验会先把 CRLF 规范化为 LF，以保持 Windows 与 Linux Git checkout 一致；二进制运行归档仍按原始字节严格校验。
 
 可把同一账本只读挂到工作台：`python -m maple_vision workbench --workspace artifacts/workbench --examples examples --trial-evidence-root . --trial-evidence-ledger reports/release-0.10.0/throwing-star-trial-evidence-ledger.json`。服务启动时先完成全部复验，浏览器的「试用验收账本」页只展示四栏结果和限制，不能从页面改路径或提升真实域结论。
+
+## 死亡之林Ⅰ开场的局部画面复核
+
+对上表 SHA-256 对应的 910×512 原片，以原始桌面左上角为原点，逐帧查看源帧 120–149 左侧平台区域（左 187、上 205、宽 176、高 105）。共查看 30 个连续裁剪画面。核对完整源帧 149 时，右侧平台也有独立的紫色数字。视觉核验需要同时保留反馈的位置和目标归属；单凭整窗出现数字会混入另一处反馈。
+
+| 源帧（从 0 起） | 原片时间 | 左侧区域的可见变化 |
+|---|---|---|
+| 128 → 129 | 4.267 → 4.300 秒 | 角色左侧出现明亮红白弧形特效。 |
+| 136 → 137 | 4.533 → 4.567 秒 | 特效所在侧出现首个粉色数字组。 |
+| 137–149 | 4.567–4.967 秒 | 后续帧数字纵向堆叠，末帧仍有数字；第 148 帧起右边再次出现弧形特效。 |
+
+这一次两个可见起点相隔 8 帧，约 267 毫秒。按键时刻、技能身份、命中归属和库存均未知，因此只能用于核对视觉事件的先后顺序。该局部复核保留既有全片待审分母，未将任何一段标为完整审核。
+
+持有原 MP4 时可用 FFmpeg 重建本次复核图。从左到右、从上到下每格一帧，首格 120，末格 149。
+
+```sh
+ffmpeg -v error -i "Desktop 2026.11.25 - 22.50.07.01.mp4" -map 0:v:0 -vf "select='between(n,120,149)',format=rgb24,crop=176:105:187:205,tile=6x5" -frames:v 1 opening-left-platform.png
+```
