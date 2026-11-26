@@ -14,6 +14,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 from PIL import Image
 
 from .agent import AgentDecision, HybridPerception, Supervisor, VisualAgent, verify_visual_effect
@@ -22,7 +23,7 @@ from .catalog import strict_json
 from .class_package import MAX_CLASS_PACKAGE_BYTES, ClassPackage
 from .input_bindings import MAX_INPUT_BINDINGS_BYTES, InputBindingProfile
 from .map_pack import MapPack
-from .mission_verification import MissionOracle
+from .mission_verification import MissionOracle, compare_branch_decisions
 from .navigation_graph import (
     MovementCapabilities,
     PlatformGeometry,
@@ -38,7 +39,7 @@ from .runtime_evidence import (
     validate_runtime_step,
 )
 from .runtime_pipeline import MAX_RUNTIME_CONFIG_BYTES, RuntimeConfig
-from .scene import ImageFrame, SceneRenderer
+from .scene import PALETTE, ImageFrame, SceneRenderer
 from .scene_animation import MAX_SCENE_ANIMATION_BYTES, SceneAnimation, load_scene_animation
 from .sim_types import CLASS_SPECS, RULESET, ClassSpec, SimAction
 from .simulation import Simulator
@@ -48,7 +49,14 @@ from .task_runtime import RuntimeDecision, TaskRuntime
 from .validation_resources import ProcessResourceMonitor
 from .vision import Detector, PixelPerception, TerrainSource, validate_terrain_source
 
-FAULTS = ("none", "brief_dropout", "persistent_dropout", "duplicate_frames", "freeze_input")
+FAULTS = (
+    "none",
+    "brief_dropout",
+    "persistent_dropout",
+    "duplicate_frames",
+    "freeze_input",
+    "loot_false_negative",
+)
 _MAX_MAP_EVIDENCE_BYTES = 1024 * 1024
 
 
@@ -174,6 +182,21 @@ class _Frames:
             and self.frozen is not None
         ):
             return self.frozen
+        if self.fault == "loot_false_negative":
+            pixels = np.frombuffer(frame.pixels, dtype=np.uint8).reshape(
+                frame.height, frame.width, 3
+            )
+            mask = np.all(pixels == PALETTE["loot"], axis=2)
+            if np.any(mask):
+                hidden = pixels.copy()
+                hidden[mask] = (0, 0, 0)
+                return ImageFrame(
+                    frame.sequence,
+                    frame.timestamp_ms,
+                    frame.width,
+                    frame.height,
+                    hidden.tobytes(),
+                )
         return frame
 
 
@@ -594,10 +617,21 @@ def _execute_episode(
         and len(collected_drops) == expected_drops
     )
     mission_result = None if mission_oracle is None else mission_oracle.result(final)
+    branch_check = None
     if mission_result is not None:
         oracle_pass = mission_result["completed"]
+        if mission_oracle is not None and mission_oracle.program.conditional:
+            assert isinstance(policy, TaskRuntime)
+            runtime_branches = policy.snapshot()["mission_branching"]["decisions"]
+            branch_check = compare_branch_decisions(runtime_branches, mission_result["branches"])
+            oracle_pass = oracle_pass and branch_check["matched"]
     if status == "completed" and not oracle_pass:
-        status, reason = "failed", "independent_goal_check_failed"
+        status = "failed"
+        reason = (
+            "conditional_branch_check_failed"
+            if branch_check is not None and not branch_check["matched"]
+            else "independent_goal_check_failed"
+        )
     elapsed = time.perf_counter() - wall_start
     if canonical(settings) != canonical(
         _perception_settings(detector, terrain_source=terrain_source, map_pack=map_pack)
@@ -638,6 +672,8 @@ def _execute_episode(
     }
     if mission_result is not None:
         summary["mission_evidence"] = mission_result
+    if branch_check is not None:
+        summary["conditional_branch_check"] = branch_check
 
     if runtime is not None:
         assert isinstance(policy, TaskRuntime) and belief is not None
@@ -1056,8 +1092,23 @@ def verify_run(output: Path) -> dict[str, Any]:
         if canonical(summary.get("mission_evidence")) != canonical(mission_result):
             raise ValueError("mission objective witnesses disagree with action replay")
         oracle_pass = mission_result["completed"]
+        if mission_oracle.program.conditional:
+            terminal_state = summary["runtime_evidence"]["terminal"]["state"]
+            branching = terminal_state.get("mission_branching")
+            if not isinstance(branching, dict):
+                raise ValueError("conditional mission omits runtime branch evidence")
+            branch_check = compare_branch_decisions(
+                branching.get("decisions"), mission_result["branches"]
+            )
+            if canonical(summary.get("conditional_branch_check")) != canonical(branch_check):
+                raise ValueError("conditional branch check disagrees with replay evidence")
+            oracle_pass = oracle_pass and branch_check["matched"]
+        elif "conditional_branch_check" in summary:
+            raise ValueError("branch check requires a conditional mission")
     elif "mission_evidence" in summary:
         raise ValueError("mission evidence requires an embedded mission program")
+    elif "conditional_branch_check" in summary:
+        raise ValueError("branch check requires an embedded conditional mission")
 
     if summary.get("status") not in {"completed", "failed", "stopped"}:
         raise ValueError("invalid run status")
@@ -1272,6 +1323,7 @@ def verify_perception(
         "input_profile",
         "input_dispatch_summary",
         "mission_evidence",
+        "conditional_branch_check",
     ):
         if canonical(reproduced.get(key)) != canonical(summary.get(key)):
             raise ValueError(f"perception replay summary mismatch: {key}")
@@ -1450,6 +1502,7 @@ def run_suite(
         "duplicate_frames": "completed",
         "persistent_dropout": "stopped",
         "freeze_input": "failed",
+        "loot_false_negative": "failed",
     }
     passed = all(row["status"] == expected[row["config"]["fault"]] for row in rows)
     if canonical(settings) != canonical(

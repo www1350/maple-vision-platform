@@ -204,7 +204,7 @@ GuardDecision 的 state 为 running/paused/stopped，AgentDecision 包含 action
 监督检查帧身份、时间、可信度、玩家唯一性和资源；连续异常计数有上限，时钟倒退和死亡可立即停止。
 可见效果为 observed/pending/unknown/not_applicable，不能据此证明隐藏伤害或掉落归属。
 
-fault 仅支持 none/brief_dropout/persistent_dropout/duplicate_frames/freeze_input。
+fault 仅支持 none/brief_dropout/persistent_dropout/duplicate_frames/freeze_input/loot_false_negative。`loot_false_negative` 只在合成画面中遮掉掉落实体像素，模拟“真值有掉落但感知看不见”的受控反例。
 运行任务状态为 completed/failed/stopped；completed 还必须满足独立 oracle，策略自称完成但真值不符会降为 failed。
 `output=None` 只返回摘要；指定输出则保存采样图片、完整动作轨迹、状态、摘要和文件 manifest；提供 sprite_pack 时同时保存其原始图片和元数据，回放时独立验证并恢复相同渲染。
 `verify_run()` 做动作/状态/像素回放，返回 `perception_reproduced=False`；不重新执行学习模型。

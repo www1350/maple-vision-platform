@@ -189,6 +189,51 @@ def test_one_conditional_program_selects_both_visual_branches_and_replays(tmp_pa
         verify_run(normal_root)
 
 
+def test_visual_loot_false_negative_is_rejected_by_truth_branch_and_reinfers(tmp_path):
+    from maple_vision.map_pack import load_map_pack
+
+    root = tmp_path / "loot-false-negative"
+    result = run_episode(
+        root,
+        RunConfig(fault="loot_false_negative"),
+        map_pack=load_map_pack(EXAMPLES / "maps/branch-grove.json"),
+        runtime=RuntimeConfig(
+            mission=load_mission_program(EXAMPLES / "missions/conditional-grove.json")
+        ),
+    )
+    assert result["status"] == "failed"
+    assert result["reason"] == "conditional_branch_check_failed"
+    assert not result["independent_goal_check"]
+    assert result["maps_visited"] == ["grove", "ruins"]
+    assert result["mission_evidence"]["invalid_transition"]
+    check = result["conditional_branch_check"]
+    assert check == {
+        "schema_version": 1,
+        "scope": "runtime_visual_branch_vs_simulator_truth",
+        "matched": False,
+        "mismatch_index": 0,
+        "runtime_path": [
+            {
+                "source_map": "grove",
+                "condition": "no_loot_visible",
+                "target_map": "ruins",
+            }
+        ],
+        "oracle_path": [
+            {
+                "source_map": "grove",
+                "condition": "loot_visible",
+                "target_map": "quarry",
+            }
+        ],
+    }
+    replay = verify_run(root)
+    assert replay["verified"] and not replay["independent_goal_check"]
+    reinfer = verify_perception(root)
+    assert reinfer["verified"] and reinfer["policy_reproduced"]
+    assert not reinfer["independent_goal_check"]
+
+
 @pytest.mark.parametrize("job", ["assassin", "dragon_knight", "cleric"])
 def test_ordered_program_executes_and_replays_after_source_removal(tmp_path, job):
     source = tmp_path / "mission.json"
