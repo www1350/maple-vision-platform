@@ -26,6 +26,20 @@ def test_throwing_star_trial_evidence_rechecks_all_four_separate_lanes(capsys):
         "reviewed_visible_events": 6,
     }
     assert report["evidence_lanes"]["synthetic_mechanics"]["steps"] == 266
+    casts = report["evidence_lanes"]["synthetic_mechanics"]["cast_witnesses"]
+    assert [(c["sequence"], c["map_id"], c["grounded"]) for c in casts] == [
+        (71, "drill_forest_1", False),
+        (103, "drill_forest_1", True),
+        (250, "drill_forest_2", False),
+        (262, "drill_forest_2", False),
+    ]
+    assert all(c["skill"] == "lucky_seven" and c["hit_segments"] == 2 for c in casts)
+    assert [(c["ammo_before"], c["ammo_after"]) for c in casts] == [
+        (200, 198),
+        (198, 196),
+        (196, 194),
+        (194, 192),
+    ]
     assert report["evidence_lanes"]["synthetic_mechanics"]["hit_segments"] == 8
     assert report["evidence_lanes"]["synthetic_mechanics"]["replay_verified"] is True
     assert report["evidence_lanes"]["synthetic_mechanics"]["reinference_verified"] is True

@@ -14,6 +14,8 @@ from .input_bindings import load_input_profile
 from .lab import verify_perception, verify_run
 from .local_files import read_regular
 from .recording_evaluation import _event_report, _recording_window_report
+from .sim_types import SimAction
+from .simulation import Simulator
 
 MAX_TRIAL_LEDGER_BYTES = 256 * 1024
 MAX_TRIAL_FILE_BYTES = 32 * 1024 * 1024
@@ -128,12 +130,38 @@ def _extract_run(data: bytes, target: Path) -> Path:
     return run
 
 
+def _cast_witnesses(run: Path) -> list[dict[str, Any]]:
+    """Measure posture at dispatch, before physics advances the cast step."""
+    simulator = Simulator.restore(strict_json((run / "initial-state.json").read_text("utf-8")))
+    casts = []
+    with (run / "trace.jsonl").open(encoding="utf-8") as trace:
+        for line in trace:
+            execution = strict_json(line)["execution"]
+            action = SimAction(**execution["applied_action"])
+            before = simulator.snapshot()
+            outcome = simulator.step(action)
+            if action.kind == "cast" and outcome.accepted:
+                casts.append(
+                    {
+                        "sequence": before.sequence,
+                        "map_id": before.map_id,
+                        "skill": action.skill,
+                        "grounded": before.player.grounded,
+                        "hit_segments": outcome.events.count("attack_hit"),
+                        "ammo_before": before.player.ammo,
+                        "ammo_after": outcome.snapshot.player.ammo,
+                    }
+                )
+    return casts
+
+
 def _verify_run_archive(root: Path, reference: object, label: str) -> dict[str, Any]:
     _, data = _rooted_file(root, reference, label)
     with TemporaryDirectory(prefix="maple-trial-") as temporary:
         run = _extract_run(data, Path(temporary))
         replay = verify_run(run)
         reinference = verify_perception(run)
+        casts = _cast_witnesses(run)
         summary = strict_json((run / "summary.json").read_text(encoding="utf-8"))
         final_state = strict_json((run / "final-state.json").read_text(encoding="utf-8"))
     if not isinstance(summary, dict) or not isinstance(final_state, dict):
@@ -151,6 +179,7 @@ def _verify_run_archive(root: Path, reference: object, label: str) -> dict[str, 
         "events": summary.get("events"),
         "input_dispatch": summary.get("input_dispatch_summary"),
         "final_ammo": final_state.get("player", {}).get("ammo"),
+        "cast_witnesses": casts,
     }
 
 
@@ -460,6 +489,7 @@ def verify_trial_evidence(path: Path, root: Path) -> dict[str, Any]:
                 "policy_reproduced": positive_archive["policy_reproduced"],
                 "steps": expected["steps"],
                 "casts": expected["casts"],
+                "cast_witnesses": positive_archive["cast_witnesses"],
                 "hit_segments": expected["hit_segments"],
                 "kills": expected["kills"],
             },
