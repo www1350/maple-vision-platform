@@ -140,4 +140,8 @@
 .toast{right:18px;bottom:18px}
 .page-title .eyebrow{font-size:9px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+#keys-detail{width:auto;height:auto}
+#keys-row-crops{display:flex;flex-wrap:wrap;gap:6px}
+.key-review-cell{display:grid;justify-items:center;font-size:12px}
+.key-review-cell canvas{width:52px;height:52px;image-rendering:pixelated}
 

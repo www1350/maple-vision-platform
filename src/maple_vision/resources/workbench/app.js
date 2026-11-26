@@ -521,6 +521,53 @@ bind("keys-export-confirmation", "click", () => {
   catch { text("keys-status", "保存的确认凭证无效，请重新核对并保存。"); }
 });
 let keyEditRevision = 0, keyImageRevision = 0, keyImageEvidence = null, keyImageBusy = false;
+let rowAnchors = null;
+bind("keys-row-start", "click", () => {
+  rowAnchors = [];
+  el("keys-row-crops").replaceChildren();
+  text("keys-row-status", "依次点击截图中的 A、L 键中心。");
+});
+el("keys-image").addEventListener("click", event => {
+  if (!rowAnchors || !keyImageEvidence) return;
+  const image = event.currentTarget, rect = image.getBoundingClientRect();
+  rowAnchors.push({
+    x:(event.clientX - rect.left) * image.naturalWidth / rect.width,
+    y:(event.clientY - rect.top) * image.naturalHeight / rect.height
+  });
+  if (rowAnchors.length === 1) { text("keys-row-status", "现在点击 L 键中心。"); return; }
+  const [a, l] = rowAnchors;
+  rowAnchors = null;
+  const pitch = (l.x - a.x) / 8, size = Math.round(pitch * 0.9);
+  if (pitch < 8 || pitch > 160 || Math.abs(l.y - a.y) > pitch / 3 ||
+      a.x - size / 2 < 0 || l.x + size / 2 > image.naturalWidth ||
+      Math.min(a.y,l.y) - size / 2 < 0 || Math.max(a.y,l.y) + size / 2 > image.naturalHeight) {
+    text("keys-row-status", "定位超出范围，请重新选择同一行的 A、L 中心。"); return;
+  }
+  const keys = "ASDFGHJKL", marked = [];
+  for (let i = 0; i < keys.length; i++) {
+    const tile = document.createElement("canvas");
+    tile.width = tile.height = size;
+    const ctx = tile.getContext("2d");
+    ctx.drawImage(image, Math.round(a.x + pitch*i - size/2),
+      Math.round(a.y + (l.y-a.y)*i/8 - size/2), size, size, 0, 0, size, size);
+    // Sample below the printed key name, away from the keycap border.
+    const pixels = ctx.getImageData(Math.floor(size*.19), Math.floor(size*.52),
+      Math.ceil(size*.62), Math.ceil(size*.26)).data;
+    let dark = 0;
+    for (let p = 0; p < pixels.length; p += 4) {
+      if (pixels[p+3] === 255 && Math.max(pixels[p],pixels[p+1],pixels[p+2]) < 195) dark++;
+    }
+    const candidate = dark * 4 / pixels.length >= .35;
+    if (candidate) marked.push(keys[i]);
+    const label = document.createElement("span");
+    label.className = "key-review-cell";
+    tile.setAttribute("aria-hidden", "true");
+    label.append(tile, keys[i] + (candidate ? " · 待核" : ""));
+    el("keys-row-crops").append(label);
+  }
+  text("keys-row-status", "深色内容候选 " + (marked.join("、") || "0 项") +
+    "。请逐格核对图标及文字，再填写技能绑定。");
+});
 el("keys-detail").addEventListener("change", () => {
   el("keys-image").style.maxWidth = el("keys-detail").checked ? "none" : "100%";
 });
@@ -531,6 +578,10 @@ function clearKeyImage() {
   image.removeAttribute("src");
   image.style.maxWidth = "100%";
   el("keys-detail").checked = false;
+  rowAnchors = null;
+  el("keys-row-crops").replaceChildren();
+  text("keys-row-status", "");
+  show("keys-row-start", false);
   show("keys-detail-toggle", false);
   el("keys-image-file").value = "";
   show("keys-image", false);
@@ -571,6 +622,7 @@ bind("keys-image-file", "change", async () => {
       bytes:file.size, media_type:file.type, width:image.naturalWidth, height:image.naturalHeight
     };
     show("keys-detail-toggle", true);
+    show("keys-row-start", true);
     text("keys-status", "截图已在浏览器内计算哈希；请人工核对技能和键位后保存。未自动识别技能。");
   } catch (error) {
     if (revision === keyImageRevision) { clearKeyImage(); text("keys-status", "截图读取失败：" + error.message); }
