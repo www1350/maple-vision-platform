@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import string
 import tkinter as tk
+from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog, ttk
 from typing import Any
@@ -64,8 +65,12 @@ class OwnedWindow:
         actions.pack(fill="x")
         self.arm_button = ttk.Button(actions, text="施放一次", command=self.arm)
         self.arm_button.pack(side="left")
+        self.route_button = ttk.Button(
+            actions, text="生成双图离线路线", command=self.run_layered_route
+        )
+        self.route_button.pack(side="left", padx=8)
         self.takeover_button = ttk.Button(actions, text="人工接管（Esc）", command=self.takeover)
-        self.takeover_button.pack(side="left", padx=8)
+        self.takeover_button.pack(side="left")
         self.save_button = ttk.Button(actions, text="保存本次回放", command=self.save_replay)
         self.save_button.pack(side="left")
         self.feedback_label = ttk.Label(frame)
@@ -131,10 +136,28 @@ class OwnedWindow:
                 return
             self._feedback(f"已保存本次练习回放：{path}")
 
+    def run_layered_route(self) -> None:
+        if self.session.state != "confirmed":
+            return
+        parent = filedialog.askdirectory(parent=self.root, title="选择双图离线路线输出位置")
+        if not parent:
+            return
+        output = Path(parent) / datetime.now().strftime("maple-layered-route-%Y%m%d-%H%M%S")
+        try:
+            review = self.session.run_layered_route(output)
+        except (OSError, ValueError) as exc:
+            self._feedback(f"双图路线生成失败：{exc}")
+            return
+        self._feedback(
+            f"双图路线已完成：换层 {len(review['navigation'])} 次，"
+            f"双飞斩 {len(review['casts'])} 次。回放：{output / 'preview.gif'}"
+        )
+
     def _feedback(self, text: str) -> None:
         self.feedback_label.configure(text=text)
         can_save = self.session.state in {"completed", "paused"} and bool(self._replay)
         self.save_button.state(["!disabled" if can_save else "disabled"])
+        self.route_button.state(["!disabled" if self.session.state == "confirmed" else "disabled"])
         self.arm_button.state(["!disabled" if self.session.state == "confirmed" else "disabled"])
 
     def _edited(self, *_: str) -> None:

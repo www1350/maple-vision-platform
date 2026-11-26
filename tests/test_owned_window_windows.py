@@ -70,3 +70,34 @@ def test_player_can_export_their_own_trial(tmp_path, monkeypatch):
             assert replay.n_frames == 2
     finally:
         root.destroy()
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="native Windows desktop acceptance")
+def test_player_can_generate_the_confirmed_two_map_route(tmp_path, monkeypatch):
+    import tkinter as tk
+
+    from maple_vision.owned_window import OwnedWindow
+
+    parent = (
+        Path("artifacts/confirmed-layered-route")
+        if os.environ.get("GITHUB_ACTIONS") == "true"
+        else tmp_path
+    )
+    parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr("tkinter.filedialog.askdirectory", lambda **kwargs: str(parent))
+    root = tk.Tk()
+    try:
+        app = OwnedWindow(root)
+        root.update()
+        app.key_var.set("J")
+        app.confirm_button.invoke()
+        app.route_button.invoke()
+        routes = list(parent.glob("maple-layered-route-*"))
+        assert len(routes) == 1
+        review = json.loads((routes[0] / "player-review.json").read_text())
+        assert review["confirmed_key"] == "J"
+        assert len(review["navigation"]) == 2
+        assert len(review["casts"]) == 4
+        assert "换层 2 次，双飞斩 4 次" in app.feedback_label.cget("text")
+    finally:
+        root.destroy()

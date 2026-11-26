@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -8,7 +9,14 @@ from maple_vision.owned_session import OwnedSession
 EXAMPLES = Path(__file__).parents[1] / "examples"
 
 
-@pytest.mark.parametrize("asset", ["classes/throwing_star.json", "maps/dead-forest-drill.json"])
+@pytest.mark.parametrize(
+    "asset",
+    [
+        "classes/throwing_star.json",
+        "maps/dead-forest-drill.json",
+        "missions/dead-forest-layered-hunt.json",
+    ],
+)
 def test_bundled_practice_matches_authored_example(asset):
     from importlib.resources import files
 
@@ -53,6 +61,7 @@ def test_confirmed_nondefault_key_runs_one_cast_until_explicit_reconfirmation():
     assert result["accepted"] and result["skill"] == "lucky_seven"
     assert result["hit_segments"] == 2
     assert (result["key"], result["ammo_before"], result["ammo_after"]) == ("J", 200, 198)
+    assert result["confirmation_receipt_sha256"] is not None
     assert session.held_key == "J"
     after = session.simulator.save()
     assert not session.press("J", focused=True)["accepted"]
@@ -89,6 +98,29 @@ def test_interruption_releases_held_key_and_stale_callbacks_cannot_operate(inter
     assert session.held_key == "Q"
     session.release("Q", generation=current)
     assert session.held_key is None
+
+
+def test_confirmed_nondefault_key_runs_the_existing_layered_route(tmp_path):
+    session = OwnedSession(EXAMPLES)
+    session.confirm("J")
+    review = session.run_layered_route(tmp_path / "route")
+    assert review["status"] == "completed"
+    assert review["confirmed_key"] == "J"
+    assert [row["sequence"] for row in review["navigation"]] == [41, 233]
+    assert [(row["source_sequence"], row["map_id"], row["key"]) for row in review["casts"]] == [
+        (71, "drill_forest_1", "J"),
+        (103, "drill_forest_1", "J"),
+        (250, "drill_forest_2", "J"),
+        (262, "drill_forest_2", "J"),
+    ]
+    summary = json.loads((tmp_path / "route/summary.json").read_text())
+    assert (
+        summary["input_confirmation"]["receipt_sha256"]
+        == review["input_confirmation_receipt_sha256"]
+    )
+    assert summary["input_dispatch_summary"]["accepted"] == 4
+    assert (tmp_path / "route/preview.gif").is_file()
+    assert set(review["source_files"]) == {"summary.json", "trace.jsonl", "preview.gif"}
 
 
 def test_invalid_rebinding_and_focus_loss_cancel_an_unused_arm():

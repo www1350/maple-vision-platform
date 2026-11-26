@@ -144,19 +144,27 @@ def smoke(wheel: Path, checkout: Path) -> dict[str, Any]:
                     "-c",
                     """
 import json
+import tempfile
+from pathlib import Path
 from maple_vision.owned_session import OwnedSession
 session = OwnedSession()
 session.confirm("J")
+route_dir = Path(tempfile.mkdtemp()) / "route"
+route = session.run_layered_route(route_dir)
 session.arm()
 receipt = session.press("J", focused=True)
 session.release("J")
-print(json.dumps({"receipt": receipt, "state": session.state}))
+print(json.dumps({"receipt": receipt, "route": route, "state": session.state}))
 """,
                 ]
             )
         )
         require(
-            trial["state"] == "completed" and trial["receipt"]["hit_segments"] == 2,
+            trial["state"] == "completed"
+            and trial["receipt"]["hit_segments"] == 2
+            and trial["route"]["status"] == "completed"
+            and len(trial["route"]["navigation"]) == 2
+            and [item["key"] for item in trial["route"]["casts"]] == ["J"] * 4,
             "packaged practice trial failed",
         )
         checks["owned_practice_session"] = trial
