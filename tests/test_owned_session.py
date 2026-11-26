@@ -2,8 +2,14 @@ import json
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
 from maple_vision.input_bindings import InputBindingProfile, KeyBinding, confirm_input_profile
+from maple_vision.owned_route_playback import (
+    build_route_playback,
+    finalize_route_playback,
+    verify_route_playback,
+)
 from maple_vision.owned_session import OwnedSession
 
 EXAMPLES = Path(__file__).parents[1] / "examples"
@@ -121,6 +127,43 @@ def test_confirmed_nondefault_key_runs_the_existing_layered_route(tmp_path):
     assert summary["input_dispatch_summary"]["accepted"] == 4
     assert (tmp_path / "route/preview.gif").is_file()
     assert set(review["source_files"]) == {"summary.json", "trace.jsonl", "preview.gif"}
+    schedule = build_route_playback(tmp_path / "route", review)
+    assert [item.source_sequence for item in schedule if item.labels] == [
+        41,
+        71,
+        103,
+        233,
+        250,
+        262,
+    ]
+    shown = tuple(
+        (item.source_sequence, Image.open(item.path).convert("RGB"))
+        for item in schedule
+        if item.source_sequence <= 72
+    )
+    updated = finalize_route_playback(
+        tmp_path / "route",
+        review,
+        shown,
+        status="taken_over",
+        reason="manual_takeover",
+    )
+    assert [item["kind"] for item in updated["timeline"]] == [
+        "layer_reached",
+        "skill_dispatched",
+        "takeover",
+    ]
+    assert updated["playback"]["last_source_sequence"] == 72
+    assert (tmp_path / "route/route-takeover.gif").is_file()
+    assert verify_route_playback(tmp_path / "route") == {
+        "verified": True,
+        "scope": "project_owned_synthetic_route",
+        "status": "taken_over",
+        "last_source_sequence": 72,
+        "timeline_events": 3,
+        "displayed_frames": len(shown),
+        "replay_sha256": updated["playback"]["replay_sha256"],
+    }
 
 
 def test_invalid_rebinding_and_focus_loss_cancel_an_unused_arm():
