@@ -30,7 +30,7 @@ python -m maple_vision lab reinfer artifacts/custom-mission
 
 验收器按任务文件顺序记录地图、目标和帧序号。提前换图、缺少对话事件、角色死亡或目标未完成会阻止任务通过。动作重放从初始模拟状态重新收集见证记录，逐条比较报告。感知重推理再次执行视觉、时序状态和调度链。
 
-使用自定义任务时，运行配置采用 schema2，将完整任务内容和摘要纳入运行证据，删除原任务文件后仍能重放。旧配置继续用 schema1。任务的可配置范围是上述有限目标及现有顺序地图出口。分支任务图、动态避障、任意正式地图平台导航和库存任务仍需后续扩展。
+使用自定义任务时，运行配置采用 schema2，将完整任务内容和摘要纳入运行证据，删除原任务文件后仍能重放。旧配置继续用 schema1。任务的可配置范围是上述有限目标、受限条件分支及现有地图出口。任意谓词、循环任务、动态避障、任意正式地图平台导航和库存任务仍需后续扩展。
 
 ### 梯子换层阶段
 
@@ -69,6 +69,27 @@ python -m maple_vision lab reinfer artifacts/shortcut
 ```
 
 schema2 地图包允许每张图声明最多四个出口，第一个出口定义默认巡回路线，其余出口可以通向包内其他地图。每张图的出口编号和目的地唯一，相邻出口的横坐标至少相距 56 像素。两图间的任务步骤必须有直接连接。寻路命令返回最短路线，任务文件决定实际执行路线。
+
+### 可见掉落条件分支
+
+任务程序 schema 3 把阶段组织为最多八个节点的前向有向无环图。一个节点可以无后继、用 `always` 指向一个后继，或同时声明 `loot_visible` 与 `no_loot_visible` 两个完备分支。每条边必须对应地图包中的直接传送门，目标必须在任务文件中晚于来源声明；循环、缺失兜底、不可达节点和不存在的出口会在运行前拒绝。
+
+```json
+{"schema_version":3,"stages":[
+  {"map_id":"grove","phases":["fight"],"navigation":null,"transitions":[
+    {"condition":"loot_visible","target_map":"quarry"},
+    {"condition":"no_loot_visible","target_map":"ruins"}]},
+  {"map_id":"quarry","phases":["talk"],"navigation":null,"transitions":[
+    {"condition":"always","target_map":"ruins"}]},
+  {"map_id":"ruins","phases":["talk"],"navigation":null,"transitions":[]}
+]}
+```
+
+Runtime 只按当前 `VisualObservation` 中达到最低置信度的 loot 框选择分支，随后只选择通向该目标地图的传送门。选择时的来源帧、是否看见掉落、条件和目标进入运行证据。独立 MissionOracle 不读取这份决策，而从模拟真值的掉落集合重算期望边；动作重放重建 Oracle 见证，完整 reinfer 再执行视觉分支。仓库样例 `conditional-grove.json` 在同一程序下覆盖有掉落时三图路线和无掉落时直达遗迹路线。
+
+固定种子 0 的有掉落实例实际完成 154 步，依次选择 `grove → quarry → ruins`；154 步动作重放和 155 帧完整重推理一致。无掉落实例选择 `grove → ruins`，篡改已保存的分支目标即使同步改写文件清单哈希也会被独立 Oracle 拒绝。
+
+`loot_visible` 仅表示画面检测到掉落实体，不等于背包、金币或任务物品条件；`no_loot_visible` 也可能受遮挡和感知失败影响。本增量不提供任意布尔表达式、隐藏库存读取、循环刷怪或自动恢复分支。
 
 ## 国服怀旧服地图连接核查
 

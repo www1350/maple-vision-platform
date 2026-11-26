@@ -27,10 +27,13 @@ class MissionOracle:
         self.map_index = 0
         self.phase_index = 0
         self.witnesses: list[dict[str, Any]] = []
+        self.branches: list[dict[str, Any]] = []
         self.invalid_transition = False
+        self.completed = False
+        self.pending_map_index: int | None = None
 
     def observe(self, before: SimSnapshot, after: SimSnapshot, events: tuple[str, ...]) -> None:
-        if self.map_index == len(self.program.stages):
+        if self.completed:
             return
         stage = self.program.stages[self.map_index]
         if before.map_id != stage.map_id:
@@ -38,12 +41,13 @@ class MissionOracle:
             return
         if self.phase_index == len(stage.phases):
             if after.map_id != before.map_id:
-                self.map_index += 1
+                if self.pending_map_index is None:
+                    self.invalid_transition = True
+                    return
+                self.map_index = self.pending_map_index
+                self.pending_map_index = None
                 self.phase_index = 0
-                if (
-                    self.map_index >= len(self.program.stages)
-                    or after.map_id != self.program.maps[self.map_index]
-                ):
+                if after.map_id != self.program.maps[self.map_index]:
                     self.invalid_transition = True
             return
         if after.map_id != stage.map_id:
@@ -74,20 +78,40 @@ class MissionOracle:
                 witness["target_platform"] = stage.navigation.target_platform
             self.witnesses.append(witness)
             self.phase_index += 1
-            if self.phase_index == len(stage.phases) and self.map_index + 1 == len(
-                self.program.stages
-            ):
-                self.map_index += 1
+            if self.phase_index == len(stage.phases):
+                if self.program.conditional:
+                    transition = self.program.transition(
+                        stage.map_id, loot_visible=bool(after.drops)
+                    )
+                    if transition is None:
+                        self.completed = True
+                    else:
+                        self.pending_map_index = self.program.maps.index(transition.target_map)
+                        self.branches.append(
+                            {
+                                "source_map": stage.map_id,
+                                "target_map": transition.target_map,
+                                "condition": transition.condition,
+                                "sequence": after.sequence,
+                            }
+                        )
+                elif self.map_index + 1 == len(self.program.stages):
+                    self.completed = True
+                else:
+                    self.pending_map_index = self.map_index + 1
 
     def result(self, final: SimSnapshot) -> dict[str, Any]:
-        return {
+        report = {
             "program_sha256": self.program.content_sha256,
             "completed": (
-                self.map_index == len(self.program.stages)
-                and final.map_id == self.program.maps[-1]
+                self.completed
+                and final.map_id == self.program.maps[self.map_index]
                 and final.player.alive
                 and not self.invalid_transition
             ),
             "invalid_transition": self.invalid_transition,
             "witnesses": list(self.witnesses),
         }
+        if self.program.conditional:
+            report["branches"] = list(self.branches)
+        return report
