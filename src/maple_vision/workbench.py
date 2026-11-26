@@ -18,7 +18,11 @@ from uuid import uuid4
 
 from .class_package import ClassPackage, load_class_package
 from .failure_bundle import export_failure_bundle, verify_failure_bundle
-from .input_bindings import InputBindingProfile, normalize_key
+from .input_bindings import (
+    InputBindingProfile,
+    normalize_key,
+    verify_input_profile_confirmation,
+)
 from .lab import CapabilityRunConfig, RunConfig, run_episode, verify_perception, verify_run
 from .map_pack import MapPack, load_map_pack
 from .mission_program import MissionProgram, load_mission_program
@@ -147,6 +151,18 @@ class Workbench:
             self.check_selection(config["job"], config["map_id"], config["model"])
             if config.get("input_profile") is not None:
                 InputBindingProfile.from_manifest(config["input_profile"])
+            if config.get("input_confirmation") is not None:
+                confirmed, normalized = verify_input_profile_confirmation(
+                    config["input_confirmation"]
+                )
+                task_profile = (
+                    None
+                    if config.get("input_profile") is None
+                    else InputBindingProfile.from_manifest(config["input_profile"])
+                )
+                if confirmed != task_profile:
+                    raise ValueError("input confirmation profile disagrees with task profile")
+                config["input_confirmation"] = normalized
             mission_id = config.get("mission", "standard")
             if mission_id not in self.missions:
                 raise ValueError("unknown mission selection")
@@ -230,6 +246,7 @@ class Workbench:
                     input_profile=InputBindingProfile.from_manifest(config["input_profile"])
                     if config.get("input_profile") is not None
                     else None,
+                    input_confirmation=config.get("input_confirmation"),
                 )
             else:
                 source = self.job(config["source"])

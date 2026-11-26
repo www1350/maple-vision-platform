@@ -449,7 +449,13 @@ bind("run-form","submit",async()=>{
     Object.assign(body,{job:el("class-select").value,map_id:el("map-select").value,
       model:el("model-select").value,mission:el("mission-select").value,seed:+el("seed").value,max_steps:+el("max-steps").value,fault:el("fault-select").value});
     const profile = el("run-profile").value.trim();
-    if (profile) body.input_profile = storedKeyProfile(profile);
+    if (profile) {
+      body.input_profile = storedKeyProfile(profile);
+      const receipt = localStorage.getItem(keyConfirmationId(profile));
+      if (receipt === null) throw new Error("该角色缺少键位确认凭证，请在角色键位页重新核对并保存。");
+      try { body.input_confirmation = JSON.parse(receipt); }
+      catch { throw new Error("保存的键位确认凭证无效，请在角色键位页重新核对并保存。"); }
+    }
   }
   else body.source=el("source-select").value;
   el("submit-run").disabled=true;

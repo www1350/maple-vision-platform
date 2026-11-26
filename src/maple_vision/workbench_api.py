@@ -15,6 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .input_bindings import (
     MAX_INPUT_BINDINGS_BYTES,
+    MAX_INPUT_CONFIRMATION_BYTES,
     MAX_INPUT_SOURCE_IMAGE_BYTES,
     InputBindingProfile,
     confirm_input_profile,
@@ -131,6 +132,7 @@ class RunInput(SceneInput):
     fault: Name = "none"
     mission: Name = "standard"
     input_profile: InputProfileInput | None = None
+    input_confirmation: dict[str, Any] | None = None
 
 
 class VerifyInput(StrictModel):
@@ -462,7 +464,11 @@ def create_app(
                 elif path in {"/api/jobs", "/api/input-profile/confirmation"} or re.fullmatch(
                     "/api/sessions/[0-9a-f]{32}/key-step", path
                 ):
-                    limit = MAX_INPUT_BINDINGS_BYTES + 4096
+                    limit = (
+                        MAX_INPUT_BINDINGS_BYTES + MAX_INPUT_CONFIRMATION_BYTES + 4096
+                        if path == "/api/jobs"
+                        else MAX_INPUT_CONFIRMATION_BYTES
+                    )
                 else:
                     return Response(status_code=413)
                 if size > limit:

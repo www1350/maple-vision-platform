@@ -21,7 +21,12 @@ from .agent import AgentDecision, HybridPerception, Supervisor, VisualAgent, ver
 from .animation_pack import MAX_SOURCE_BYTES
 from .catalog import strict_json
 from .class_package import MAX_CLASS_PACKAGE_BYTES, ClassPackage
-from .input_bindings import MAX_INPUT_BINDINGS_BYTES, InputBindingProfile
+from .input_bindings import (
+    MAX_INPUT_BINDINGS_BYTES,
+    MAX_INPUT_CONFIRMATION_BYTES,
+    InputBindingProfile,
+    verify_input_profile_confirmation,
+)
 from .map_pack import MapPack
 from .mission_verification import MissionOracle, compare_branch_decisions
 from .navigation_graph import (
@@ -75,6 +80,19 @@ def _write_json(path: Path, value: object) -> None:
         json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + "\n",
         encoding="utf-8",
     )
+
+
+def _input_confirmation_summary(receipt: dict[str, Any]) -> dict[str, Any]:
+    source = receipt["source_image"]
+    return {
+        "schema_version": 1,
+        "receipt_sha256": receipt["receipt_sha256"],
+        "profile_sha256": receipt["profile_sha256"],
+        "comparison_source": receipt["comparison_source"],
+        "source_image_sha256": None if source is None else source["sha256"],
+        "key_grid_reviewed": "key_grid_review" in receipt,
+        "scope": "manual_visible_comparison_only",
+    }
 
 
 def runtime_identity() -> dict[str, object]:
@@ -213,6 +231,7 @@ def run_episode(
     animation: SceneAnimation | None = None,
     class_package: ClassPackage | None = None,
     input_profile: InputBindingProfile | None = None,
+    input_confirmation: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return _execute_episode(
         output,
@@ -226,6 +245,7 @@ def run_episode(
         animation=animation,
         class_package=class_package,
         input_profile=input_profile,
+        input_confirmation=input_confirmation,
     )
 
 
@@ -335,6 +355,7 @@ def _execute_episode(
     animation: SceneAnimation | None = None,
     class_package: ClassPackage | None = None,
     input_profile: InputBindingProfile | None = None,
+    input_confirmation: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if runtime is not None and type(runtime) is not RuntimeConfig:
         raise ValueError("runtime must be a structured RuntimeConfig or None")
@@ -344,6 +365,13 @@ def _execute_episode(
         raise ValueError("external class packages require structured runtime and no legacy profile")
     if input_profile is not None and type(input_profile) is not InputBindingProfile:
         raise ValueError("input profile must be a verified InputBindingProfile or None")
+    normalized_confirmation = None
+    if input_confirmation is not None:
+        confirmed_profile, normalized_confirmation = verify_input_profile_confirmation(
+            input_confirmation
+        )
+        if input_profile is None or confirmed_profile != input_profile:
+            raise ValueError("input confirmation profile disagrees with the run input profile")
     config = config or (
         RunConfig() if class_package is None else CapabilityRunConfig(job=class_package.class_id)
     )
@@ -430,6 +458,8 @@ def _execute_episode(
             _write_json(output / "class-package.json", class_package.manifest())
         if input_profile is not None:
             _write_json(output / "input-bindings.json", input_profile.manifest())
+        if normalized_confirmation is not None:
+            _write_json(output / "input-binding-confirmation.json", normalized_confirmation)
     trace: list[dict[str, Any]] = []
     previews: list[Image.Image] = []
     actions: Counter[str] = Counter()
@@ -707,6 +737,8 @@ def _execute_episode(
             "denied": attempts - input_dispatch_accepted,
             "reasons": dict(sorted(input_dispatch_reasons.items())),
         }
+    if normalized_confirmation is not None:
+        summary["input_confirmation"] = _input_confirmation_summary(normalized_confirmation)
     if map_pack is not None:
         summary["map_pack"] = map_pack.manifest()
     if output:
@@ -768,6 +800,7 @@ def _read_run_evidence(output: Path, relative: str) -> bytes:
         "scene-animation.json": MAX_SCENE_ANIMATION_BYTES,
         "class-package.json": MAX_CLASS_PACKAGE_BYTES * 2,
         "input-bindings.json": MAX_INPUT_BINDINGS_BYTES,
+        "input-binding-confirmation.json": MAX_INPUT_CONFIRMATION_BYTES,
     }
     budget = budgets.get(relative)
     if relative.startswith("animation_objects/"):
@@ -780,6 +813,7 @@ def _read_run_evidence(output: Path, relative: str) -> bytes:
         "scene-animation.json": "scene animation",
         "class-package.json": "class package",
         "input-bindings.json": "input bindings",
+        "input-binding-confirmation.json": "input binding confirmation",
     }.get(relative, "animation source")
     if (output / relative).is_symlink():
         raise ValueError(f"invalid run {label} evidence")
@@ -862,6 +896,31 @@ def _load_run_input_profile(
     return sidecar
 
 
+def _load_run_input_confirmation(
+    output: Path,
+    summary: dict[str, Any],
+    files: dict[str, Any],
+    input_profile: InputBindingProfile | None,
+) -> dict[str, Any] | None:
+    path = output / "input-binding-confirmation.json"
+    declared = summary.get("input_confirmation")
+    if declared is None:
+        if "input-binding-confirmation.json" in files or path.exists() or path.is_symlink():
+            raise ValueError("run contains unmanifested input confirmation evidence")
+        return None
+    if "input-binding-confirmation.json" not in files:
+        raise ValueError("run omits input confirmation evidence")
+    receipt = strict_json(
+        _read_run_evidence(output, "input-binding-confirmation.json").decode("utf-8")
+    )
+    confirmed_profile, normalized = verify_input_profile_confirmation(receipt)
+    if input_profile is None or confirmed_profile != input_profile:
+        raise ValueError("run input confirmation disagrees with bound profile")
+    if canonical(declared) != canonical(_input_confirmation_summary(normalized)):
+        raise ValueError("run input confirmation sidecar disagrees with summary")
+    return normalized
+
+
 def verify_run(output: Path) -> dict[str, Any]:
     """Check evidence integrity then replay every applied action and resulting state."""
     manifest = strict_json((output / "manifest.json").read_text(encoding="utf-8"))
@@ -895,6 +954,7 @@ def verify_run(output: Path) -> dict[str, Any]:
     simulator = Simulator.restore(initial)
     class_package = _load_run_class_package(output, summary, files, simulator)
     input_profile = _load_run_input_profile(output, summary, files)
+    _load_run_input_confirmation(output, summary, files, input_profile)
     if class_package is not None and runtime is None:
         raise ValueError("external class evidence requires structured runtime")
     if runtime is not None:
@@ -1247,6 +1307,9 @@ def verify_perception(
         output, summary, manifest["files"], Simulator.restore(initial)
     )
     input_profile = _load_run_input_profile(output, summary, manifest["files"])
+    input_confirmation = _load_run_input_confirmation(
+        output, summary, manifest["files"], input_profile
+    )
     count = 0
     with _run_evidence_path(output, "trace.jsonl").open(encoding="utf-8") as stream:
 
@@ -1280,6 +1343,7 @@ def verify_perception(
             animation=animation,
             class_package=class_package,
             input_profile=input_profile,
+            input_confirmation=input_confirmation,
         )
         if stream.readline():
             raise ValueError("perception replay terminated before all recorded steps")
@@ -1321,6 +1385,7 @@ def verify_perception(
         "animation",
         "class_package",
         "input_profile",
+        "input_confirmation",
         "input_dispatch_summary",
         "mission_evidence",
         "conditional_branch_check",
