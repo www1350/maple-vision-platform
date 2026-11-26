@@ -8,6 +8,14 @@ from maple_vision.owned_session import OwnedSession
 EXAMPLES = Path(__file__).parents[1] / "examples"
 
 
+@pytest.mark.parametrize("asset", ["classes/throwing_star.json", "maps/dead-forest-drill.json"])
+def test_bundled_practice_matches_authored_example(asset):
+    from importlib.resources import files
+
+    bundled = files("maple_vision").joinpath("resources", "practice", *asset.split("/"))
+    assert bundled.read_bytes() == (EXAMPLES / asset).read_bytes()
+
+
 def confirmed_profile(key: str = "J") -> tuple[InputBindingProfile, dict]:
     profile = InputBindingProfile("小白兔 / 无影人", (KeyBinding(key, "lucky_seven"),))
     return profile, confirm_input_profile(profile, "live_window_manual_comparison")

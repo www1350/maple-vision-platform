@@ -33,3 +33,40 @@ def test_windows_first_use_replay(tmp_path):
         "media_files": 7,
         "replay_frames": 5,
     }
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="native Windows desktop acceptance")
+def test_player_can_export_their_own_trial(tmp_path, monkeypatch):
+    import tkinter as tk
+
+    from PIL import Image
+
+    from maple_vision.owned_window import OwnedWindow
+    from scripts.verify_owned_window import wait_for
+
+    output = Path("artifacts/player-replays") if os.environ.get("GITHUB_ACTIONS") else tmp_path
+    output.mkdir(parents=True, exist_ok=True)
+    path = output / "completed.gif"
+    monkeypatch.setattr("tkinter.filedialog.asksaveasfilename", lambda **kwargs: str(path))
+    root = tk.Tk()
+    try:
+        app = OwnedWindow(root)
+        root.update()
+        root.focus_force()
+        app.key_var.set("J")
+        app.confirm_button.invoke()
+        app.arm_button.invoke()
+        assert app.save_button.instate(["disabled"])
+        wait_for(root, lambda: app.session.state == "completed", "user replay cast")
+        app.save_button.invoke()
+        with Image.open(path) as replay:
+            assert replay.n_frames == 3
+        path = output / "takeover.gif"
+        app.confirm_button.invoke()
+        app.arm_button.invoke()
+        app.takeover_button.invoke()
+        app.save_button.invoke()
+        with Image.open(path) as replay:
+            assert replay.n_frames == 2
+    finally:
+        root.destroy()

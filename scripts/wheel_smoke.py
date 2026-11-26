@@ -133,6 +133,33 @@ def smoke(wheel: Path, checkout: Path) -> dict[str, Any]:
         require(installed["training_not_installed"], "isolated smoke unexpectedly contains torch")
         require(installed["inference_not_installed"], "isolated smoke unexpectedly contains ORT")
         checks["installed_package"] = installed
+        practice = binaries / (
+            "maple-vision-practice.exe" if os.name == "nt" else "maple-vision-practice"
+        )
+        require(practice.is_file(), "installed practice launcher missing")
+        trial = strict_json(
+            execute(
+                [
+                    str(python),
+                    "-c",
+                    """
+import json
+from maple_vision.owned_session import OwnedSession
+session = OwnedSession()
+session.confirm("J")
+session.arm()
+receipt = session.press("J", focused=True)
+session.release("J")
+print(json.dumps({"receipt": receipt, "state": session.state}))
+""",
+                ]
+            )
+        )
+        require(
+            trial["state"] == "completed" and trial["receipt"]["hit_segments"] == 2,
+            "packaged practice trial failed",
+        )
+        checks["owned_practice_session"] = trial
         execute([str(executable), "model", "audit-terrain", "--help"])
         terrain = strict_json(
             execute(

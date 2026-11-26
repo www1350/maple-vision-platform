@@ -1,0 +1,80 @@
+{
+  "schema_version": 3,
+  "timed_effects": [],
+  "id": "synthetic-throwing-star",
+  "version": "1.0.0",
+  "scope": "synthetic_fixture",
+  "class_id": "throwing_star",
+  "source_uri": "urn:maple-vision:self-authored:throwing-star:1",
+  "permission": "self_authored",
+  "license": "CC0-1.0",
+  "resources": {
+    "max_hp": 100,
+    "max_mp": 60,
+    "initial_ammo": 200,
+    "walk_speed": 90,
+    "jump_speed": 280
+  },
+  "skills": [
+    {
+      "id": "lucky_seven",
+      "kind": "damage",
+      "shape": "directional",
+      "posture": "any",
+      "cooldown_group": "weapon",
+      "selected_level": 1,
+      "levels": [
+        {
+          "level": 1,
+          "power": 9,
+          "range_px": 92,
+          "vertical_range_px": 38,
+          "max_targets": 1,
+          "hp_cost": 0,
+          "mp_cost": 2,
+          "ammo_cost": 2,
+          "cooldown_ms": 200,
+          "duration_ms": 0,
+          "hit_count": 2
+        }
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "id": "standing_throw",
+      "steps": [
+        {
+          "op": "cast",
+          "skill": "lucky_seven",
+          "direction": "target"
+        }
+      ]
+    },
+    {
+      "id": "jump_throw",
+      "steps": [
+        {
+          "op": "jump",
+          "direction": 0
+        },
+        {
+          "op": "wait",
+          "duration_ms": 50
+        },
+        {
+          "op": "cast",
+          "skill": "lucky_seven",
+          "direction": "target"
+        }
+      ]
+    }
+  ],
+  "bindings": {
+    "combat": "standing_throw",
+    "area": null,
+    "airborne": "jump_throw",
+    "heal": null,
+    "buff": null
+  }
+}

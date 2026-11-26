@@ -16,7 +16,9 @@ from .simulation import Simulator
 class OwnedSession:
     """Route a confirmed local letter to one simulator cast per explicit arm."""
 
-    def __init__(self, examples: Path) -> None:
+    def __init__(self, examples: Path | None = None) -> None:
+        if examples is None:
+            examples = Path(__file__).with_name("resources") / "practice"
         self.package = load_class_package(examples / "classes/throwing_star.json")
         self.map_pack = load_map_pack(examples / "maps/dead-forest-drill.json")
         self.simulator = self._fresh_trial()

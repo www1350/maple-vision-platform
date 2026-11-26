@@ -1,10 +1,9 @@
 # Maple Vision Platform v0.10.0
 
-**在自己的 Windows 练习窗口试一次双飞斩**　从源码仓库根目录启动下列命令（Python 3.12，安装时包含 Tcl/Tk）。把技能键改成 J，核对显示的字母，点击「识别并确认键位」和「施放一次」。窗口将显示技能结果及模拟飞镖数量。点击施放后立即切换焦点或按 Esc，可以试人工接管；再次开始需要重新确认。
+**在自己的 Windows 练习窗口试一次双飞斩**　用带 Tcl/Tk 的 Python 3.12 安装项目（源码目录内运行 `python -m pip install .`，或安装构建出的 wheel）。在同一 Python 环境的任意目录启动：把技能键改成 J，核对显示的字母，点击「识别并确认键位」和「施放一次」。窗口将显示技能结果及模拟飞镖数量。完成或接管后，点击「保存本次回放」可导出本轮关键画面的 GIF。重新确认或编辑键位会开始新一轮。点击施放后立即切换焦点或按 Esc，可以试人工接管；再次开始需要重新确认。
 
 ```powershell
-python -m pip install -e .
-python -m maple_vision.owned_window
+maple-vision-practice
 ```
 
 也可把工作台「角色键位」页导出的确认凭证直接带入练习窗口；窗口会预填该 profile 中唯一的 `lucky_seven` 字母键，玩家仍须看清图块并点击确认。改成与凭证不同的键会被阻断，施放回执保存角色 profile 和收据哈希。
