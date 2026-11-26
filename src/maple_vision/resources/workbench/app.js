@@ -521,11 +521,33 @@ bind("keys-export-confirmation", "click", () => {
   catch { text("keys-status", "保存的确认凭证无效，请重新核对并保存。"); }
 });
 let keyEditRevision = 0, keyImageRevision = 0, keyImageEvidence = null, keyImageBusy = false;
-let rowAnchors = null;
+let rowAnchors = null, rowReviewDraft = null, keyGridReview = null;
 bind("keys-row-start", "click", () => {
-  rowAnchors = [];
+  rowAnchors = []; rowReviewDraft = null; keyGridReview = null;
   el("keys-row-crops").replaceChildren();
+  show("keys-row-confirm", false);
   text("keys-row-status", "依次点击截图中的 A、L 键中心。");
+});
+function orderedRowKeys(keys) {
+  return [..."ASDFGHJKL"].filter(key => keys.has(key));
+}
+function updateRowDraftStatus() {
+  const keys = orderedRowKeys(rowReviewDraft.confirmed);
+  text("keys-row-status", "当前选择 " + (keys.join("、") || "0 项") +
+    "。点九格可纠正，再确认复核结果。");
+}
+bind("keys-row-confirm", "click", () => {
+  if (!rowReviewDraft) return;
+  keyGridReview = {
+    schema_version:1,
+    row:"ASDFGHJKL",
+    anchors:rowReviewDraft.anchors,
+    algorithm_candidate_keys:rowReviewDraft.algorithm,
+    confirmed_content_keys:orderedRowKeys(rowReviewDraft.confirmed),
+    user_reviewed:true
+  };
+  show("keys-row-confirm", false);
+  text("keys-row-status", "九格复核已确认，将写入本次键位确认凭证。");
 });
 el("keys-image").addEventListener("click", event => {
   if (!rowAnchors || !keyImageEvidence) return;
@@ -559,14 +581,36 @@ el("keys-image").addEventListener("click", event => {
     }
     const candidate = dark * 4 / pixels.length >= .35;
     if (candidate) marked.push(keys[i]);
-    const label = document.createElement("span");
+    const label = document.createElement("button");
+    label.type = "button";
     label.className = "key-review-cell";
     tile.setAttribute("aria-hidden", "true");
     label.append(tile, keys[i] + (candidate ? " · 待核" : ""));
     el("keys-row-crops").append(label);
   }
+  rowReviewDraft = {
+    anchors:[
+      {key:"A",x:a.x,y:a.y},
+      {key:"L",x:l.x,y:l.y}
+    ],
+    algorithm:marked,
+    confirmed:new Set(marked)
+  };
+  for (const cell of el("keys-row-crops").children) {
+    const key = cell.textContent.trim()[0];
+    cell.classList.toggle("selected", rowReviewDraft.confirmed.has(key));
+    cell.addEventListener("click", () => {
+      keyGridReview = null;
+      if (rowReviewDraft.confirmed.has(key)) rowReviewDraft.confirmed.delete(key);
+      else rowReviewDraft.confirmed.add(key);
+      cell.classList.toggle("selected", rowReviewDraft.confirmed.has(key));
+      show("keys-row-confirm", true);
+      updateRowDraftStatus();
+    });
+  }
+  show("keys-row-confirm", true);
   text("keys-row-status", "深色内容候选 " + (marked.join("、") || "0 项") +
-    "。请逐格核对图标及文字，再填写技能绑定。");
+    "。点九格可纠正，再确认复核结果。");
 });
 el("keys-detail").addEventListener("change", () => {
   el("keys-image").style.maxWidth = el("keys-detail").checked ? "none" : "100%";
@@ -578,9 +622,10 @@ function clearKeyImage() {
   image.removeAttribute("src");
   image.style.maxWidth = "100%";
   el("keys-detail").checked = false;
-  rowAnchors = null;
+  rowAnchors = null; rowReviewDraft = null; keyGridReview = null;
   el("keys-row-crops").replaceChildren();
   text("keys-row-status", "");
+  show("keys-row-confirm", false);
   show("keys-row-start", false);
   show("keys-detail-toggle", false);
   el("keys-image-file").value = "";
@@ -684,17 +729,21 @@ bind("keys-form", "submit", async () => {
     return;
   }
   const imageRevision = keyImageRevision;
+  let reviewedGrid = false;
   try {
     const inputProfile = {schema_version:1, profile_id:profile, bindings};
-    const receipt = await api("input-profile/confirmation", {
-      schema_version:1,
+    const receiptRequest = {
+      schema_version:keyGridReview ? 2 : 1,
       profile:inputProfile,
       comparison_source:keyImageEvidence ? "browser_selected_image_digest" : "live_window_manual_comparison",
       source_image:keyImageEvidence,
       user_confirmed:true,
       automatic_skill_recognition:false
-    });
+    };
+    if (keyGridReview) receiptRequest.key_grid_review = keyGridReview;
+    const receipt = await api("input-profile/confirmation", receiptRequest);
     if (revision !== keyEditRevision || imageRevision !== keyImageRevision) return;
+    reviewedGrid = Boolean(receipt.key_grid_review);
     localStorage.setItem(keyProfileId(), result.join("\n"));
     localStorage.setItem(keyConfirmationId(profile), JSON.stringify(receipt));
   } catch (error) {
@@ -706,7 +755,8 @@ bind("keys-form", "submit", async () => {
       text("keys-status", messages[error.message] || "键位未保存：" + error.message);
       return;
   }
-  text("keys-status", "已确认并保存 " + result.length + " 项绑定和独立确认凭证；未自动识别技能。");
+  text("keys-status", "已确认并保存 " + result.length + " 项绑定和独立确认凭证" +
+    (reviewedGrid ? "，九格人工复核已写入" : "") + "；未自动识别技能。");
 });
 
 function keyResult(receipt) {

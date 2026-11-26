@@ -180,6 +180,26 @@ def verify(url: str, executable: str) -> dict[str, object]:
         image.click(position={"x": 170, "y": 16})
         expect(page.locator(".key-review-cell")).to_have_count(9)
         expect(page.locator("#keys-row-status")).to_contain_text("深色内容候选 G。")
+        page.locator(".key-review-cell").filter(has_text="G").click()
+        page.locator(".key-review-cell").filter(has_text="F").click()
+        page.click("#keys-row-confirm")
+        expect(page.locator("#keys-row-status")).to_contain_text("九格复核已确认")
+        page.fill("#keys-list", "示例技能 = F")
+        page.locator("#keys-form button[type=submit]").click()
+        expect(page.locator("#keys-status")).to_contain_text("保存 1 项")
+        with page.expect_download() as reviewed_download_info:
+            page.click("#keys-export-confirmation")
+        with tempfile.TemporaryDirectory() as reviewed_dir:
+            reviewed_path = Path(reviewed_dir) / "reviewed-confirmation.json"
+            reviewed_download_info.value.save_as(reviewed_path)
+            reviewed = json.loads(reviewed_path.read_text(encoding="utf-8"))
+            assert reviewed["schema_version"] == 2
+            assert reviewed["key_grid_review"]["heuristic"]["candidate_keys"] == ["G"]
+            assert reviewed["key_grid_review"]["player_review"]["content_keys"] == ["F"]
+            assert reviewed["key_grid_review"]["player_review"]["added_keys"] == ["F"]
+            assert reviewed["key_grid_review"]["player_review"]["removed_keys"] == ["G"]
+            assert reviewed["recognition"]["automatic_skill_recognition"] is False
+            assert reviewed["recognition"]["skill_candidates_generated"] is False
         screenshot = io.BytesIO()
         Image.new("RGB", (32, 16), "navy").save(screenshot, format="PNG")
         page.locator("#keys-image-file").set_input_files(
@@ -307,6 +327,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
             "keyed_two_map_task": "completed_and_evidenced",
             "confirmed_profile_export_loaded": True,
             "binding_confirmation_receipt_exported": True,
+            "reviewed_key_grid_receipt_exported": True,
             "local_key_image_preview_and_clear": True,
             "read_only_recording_replay": True,
             "separated_trial_evidence_lanes": 4,

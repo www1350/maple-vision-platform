@@ -144,4 +144,5 @@
 #keys-row-crops{display:flex;flex-wrap:wrap;gap:6px}
 .key-review-cell{display:grid;justify-items:center;font-size:12px}
 .key-review-cell canvas{width:52px;height:52px;image-rendering:pixelated}
+.key-review-cell.selected{outline:2px solid var(--accent)}
 

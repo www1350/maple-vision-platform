@@ -84,6 +84,47 @@ def test_user_confirmation_receipt_keeps_manual_comparison_separate_from_recogni
         )
 
 
+def test_user_reviewed_key_grid_is_bound_to_selected_image_receipt():
+    configured = profile(("F", "lucky_seven"))
+    image = {
+        "sha256": "c" * 64,
+        "bytes": 2048,
+        "media_type": "image/jpeg",
+        "width": 1536,
+        "height": 864,
+    }
+    review = {
+        "schema_version": 1,
+        "row": "ASDFGHJKL",
+        "anchors": [{"key": "A", "x": 641, "y": 430}, {"key": "L", "x": 831, "y": 430}],
+        "algorithm_candidate_keys": ["A", "S", "D", "G"],
+        "confirmed_content_keys": ["A", "S", "D", "F"],
+        "user_reviewed": True,
+    }
+    receipt = confirm_input_profile(configured, "browser_selected_image_digest", image, review)
+    assert receipt["schema_version"] == 2
+    assert receipt["key_grid_review"]["source_image_sha256"] == image["sha256"]
+    assert receipt["key_grid_review"]["tile_size"] == 21
+    assert receipt["key_grid_review"]["heuristic"]["candidate_keys"] == ["A", "S", "D", "G"]
+    assert receipt["key_grid_review"]["player_review"] == {
+        "user_reviewed": True,
+        "content_keys": ["A", "S", "D", "F"],
+        "added_keys": ["F"],
+        "removed_keys": ["G"],
+    }
+    assert receipt["recognition"]["automatic_skill_recognition"] is False
+    assert receipt["recognition"]["skill_candidates_generated"] is False
+    with pytest.raises(ValueError, match="selected source image"):
+        confirm_input_profile(configured, "live_window_manual_comparison", None, review)
+    with pytest.raises(ValueError, match="row order"):
+        confirm_input_profile(
+            configured,
+            "browser_selected_image_digest",
+            image,
+            {**review, "confirmed_content_keys": ["F", "A"]},
+        )
+
+
 def test_bound_dragon_knight_skill_completes_two_maps_and_reinfers(tmp_path):
     pack = load_map_pack(EXAMPLES / "maps/dead-forest-drill.json")
     mission = load_mission_program(EXAMPLES / "missions/dead-forest-hunt.json")
