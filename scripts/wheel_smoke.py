@@ -113,6 +113,19 @@ def smoke(wheel: Path, checkout: Path) -> dict[str, Any]:
             "desktop window check help is incomplete",
         )
         checks["desktop_window_entrypoint"] = {"installed": True, "read_only_help": True}
+        observation_check = binaries / (
+            "maple-vision-window-observe.exe" if os.name == "nt" else "maple-vision-window-observe"
+        )
+        require(observation_check.is_file(), "installed desktop observation launcher missing")
+        observation_help = execute([str(observation_check), "--help"])
+        require(
+            "--perception" in observation_help and "synthetic-fixture" in observation_help,
+            "desktop observation help does not expose its fixture-only scope",
+        )
+        checks["desktop_observation_entrypoint"] = {
+            "installed": True,
+            "fixture_scope_explicit": True,
+        }
         installed = strict_json(
             execute(
                 [

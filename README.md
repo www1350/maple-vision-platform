@@ -13,6 +13,12 @@ maple-vision-window-check --list
 maple-vision-window-check --title-exact "Maple Vision Capture Target" --output artifacts\window-check
 ```
 
+对项目自有的 320×192 合成目标，还可把同一张跨窗口截图接入像素基线与时序状态估计，并导出原图、`recognized-overlay.png` 和哈希绑定的 `evidence.json`。必须显式声明 `synthetic-fixture`，因为这条命令只验收“外部窗口像素→识别→状态→玩家可见证据”的接线，不代表能识别国服画面。
+
+```powershell
+maple-vision-window-observe --title-exact "Maple Vision Fixture Observation" --perception synthetic-fixture --output artifacts\window-observation
+```
+
 也可把工作台「角色键位」页导出的确认凭证直接带入练习窗口；窗口会预填该 profile 中唯一的 `lucky_seven` 字母键，玩家仍须看清图块并点击确认。改成与凭证不同的键会被阻断，施放回执保存角色 profile 和收据哈希。
 
 ```powershell

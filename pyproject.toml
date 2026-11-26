@@ -13,6 +13,7 @@ dependencies = ["Pillow>=12,<14", "numpy>=2,<3"]
 [project.scripts]
 maple-vision = "maple_vision.cli:main"
 maple-vision-window-check = "maple_vision.desktop_window_check:main"
+maple-vision-window-observe = "maple_vision.desktop_observation_check:main"
 
 [project.gui-scripts]
 maple-vision-practice = "maple_vision.owned_window:main"
