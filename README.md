@@ -1,5 +1,14 @@
 # Maple Vision Platform v0.10.0
 
+**在自己的 Windows 练习窗口试一次双飞斩**　从源码仓库根目录启动下列命令（Python 3.12，安装时包含 Tcl/Tk）。把技能键改成 J，核对显示的字母，点击「识别并确认键位」和「施放一次」。窗口将显示技能结果及模拟飞镖数量。点击施放后立即切换焦点或按 Esc，可以试人工接管；再次开始需要重新确认。
+
+```powershell
+python -m pip install -e .
+python -m maple_vision.owned_window
+```
+
+练习使用项目自绘 A–Z 图块和本窗口内的 Tk 键盘事件。图块识别、目标画布、模拟技能和持键状态都在本机。要生成可看的回放，在桌面会话运行 `python scripts/verify_owned_window.py --output artifacts/owned-window-demo`，打开输出目录里的 `replay.gif`；`evidence.json` 保存测试环境和观测结果。
+
 **产品路线更新（2026-11-26）**　最终目标是玩家登录国服、确认角色键位并选定任务后，由平台在获准的实际游戏窗口完成任务并支持人工接管。当前发行版交付离线平台；国服正式服执行仍待适用许可和实机验收。[完整产品与验收方案](docs/LIVE_PRODUCT_PLAN.md)
 
 可通过任务 JSON 和工作台「任务流程」编排每张地图上的战斗、拾取、对话。报告逐项记录实际完成顺序，并支持独立重放。[任务配置与运行](docs/MISSION_PROGRAMS.md)
