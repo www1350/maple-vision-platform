@@ -6,7 +6,7 @@ import argparse
 import string
 import tkinter as tk
 from pathlib import Path
-from tkinter import ttk
+from tkinter import filedialog, ttk
 from typing import Any
 
 from PIL import Image, ImageDraw, ImageTk
@@ -36,6 +36,7 @@ class OwnedWindow:
         self._timer: str | None = None
         self._emitting: tuple[str, str, int] | None = None
         self._receipt: dict[str, Any] | None = None
+        self._replay: list[Image.Image] = []
         self.root.title("Maple Vision · 标飞单次施放")
         frame = ttk.Frame(root, padding=12)
         frame.pack()
@@ -65,6 +66,8 @@ class OwnedWindow:
         self.arm_button.pack(side="left")
         self.takeover_button = ttk.Button(actions, text="人工接管（Esc）", command=self.takeover)
         self.takeover_button.pack(side="left", padx=8)
+        self.save_button = ttk.Button(actions, text="保存本次回放", command=self.save_replay)
+        self.save_button.pack(side="left")
         self.feedback_label = ttk.Label(frame)
         self.feedback_label.pack(anchor="w")
         self.key_var.trace_add("write", self._edited)
@@ -94,14 +97,51 @@ class OwnedWindow:
         )
         self.surface.itemconfigure(self._scene_item, image=self.photo)
 
+    def _capture(self, label: str) -> None:
+        scene = ImageTk.getimage(self.photo).convert("RGB")
+        frame = Image.new("RGB", (scene.width, scene.height + 32), "#172337")
+        frame.paste(scene, (0, 32))
+        ImageDraw.Draw(frame).text(
+            (8, 7), f"Owned practice | Lucky Seven | {label}", fill="white", font_size=16
+        )
+        self._replay.append(frame)
+
+    def save_replay(self) -> None:
+        if self.session.state not in {"completed", "paused"} or not self._replay:
+            return
+        path = filedialog.asksaveasfilename(
+            parent=self.root,
+            title="保存本次练习回放",
+            defaultextension=".gif",
+            filetypes=[("GIF 回放", "*.gif")],
+            initialfile="maple-practice.gif",
+        )
+        if path:
+            try:
+                self._replay[0].save(
+                    path,
+                    format="GIF",
+                    save_all=True,
+                    append_images=self._replay[1:],
+                    duration=1200,
+                    loop=0,
+                )
+            except OSError as exc:
+                self._feedback(f"回放保存失败：{exc}")
+                return
+            self._feedback(f"已保存本次练习回放：{path}")
+
     def _feedback(self, text: str) -> None:
         self.feedback_label.configure(text=text)
+        can_save = self.session.state in {"completed", "paused"} and bool(self._replay)
+        self.save_button.state(["!disabled" if can_save else "disabled"])
         self.arm_button.state(["!disabled" if self.session.state == "confirmed" else "disabled"])
 
     def _edited(self, *_: str) -> None:
         self._cancel_timer()
         if self.session.state != "unconfirmed":
             self.session.takeover("binding_changed")
+        self._replay.clear()
         key = self.key_var.get().upper()
         self._receipt = None
         if len(key) == 1 and key in string.ascii_uppercase:
@@ -138,6 +178,8 @@ class OwnedWindow:
             return
         self._receipt = None
         self._render()
+        self._replay.clear()
+        self._capture(f"Confirmed {self.session.confirmed_key}")
         self._feedback(f"已确认双飞斩键 {self.session.confirmed_key}。可以开始。")
 
     def arm(self) -> None:
@@ -193,6 +235,7 @@ class OwnedWindow:
         if receipt["accepted"]:
             self._receipt = receipt
             self._render()
+            self._capture(f"Pressed {key}")
             self._feedback(f"双飞斩 · {key}　命中 {receipt['hit_segments']} 段")
         return "break"
 
@@ -201,6 +244,7 @@ class OwnedWindow:
         if self._emitting == ("release", key, self.session.generation):
             self.session.release(key)
             if self._receipt is not None:
+                self._capture(f"Released {key}")
                 facts = self._receipt
                 self._feedback(
                     f"已释放 {key}　｜　命中 {facts['hit_segments']} 段　｜　"
@@ -214,7 +258,10 @@ class OwnedWindow:
 
     def takeover(self, reason: str = "manual_takeover") -> None:
         self._cancel_timer()
+        interrupted = self.session.state in {"confirmed", "armed", "pressed"}
         self.session.takeover(reason)
+        if interrupted and self._replay:
+            self._capture(f"Stopped: {reason}")
         messages = {"focus_lost": "练习窗口已失焦", "manual_takeover": "玩家已接管"}
         self._feedback(messages.get(reason, "本次操作已取消") + "，请重新确认后再开始。")
 
