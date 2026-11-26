@@ -71,11 +71,12 @@ def test_player_can_export_their_own_trial(tmp_path, monkeypatch):
         with Image.open(path) as replay:
             assert replay.n_frames == 2
         app.confirm_button.invoke()
-        app.route_playback_interval_ms = 1
+        app.route_playback_interval_ms = 50
         app.route_button.invoke()
         routes = list(output.glob("maple-layered-route-*"))
         assert len(routes) == 1
         wait_for(root, lambda: (app._route_sequence or 0) >= 72, "route cast playback")
+        assert app._route_active
         app.takeover_button.invoke()
         review = json.loads((routes[0] / "player-review.json").read_text())
         assert review["confirmed_key"] == "J"
