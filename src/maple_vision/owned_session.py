@@ -7,7 +7,7 @@ import json
 import string
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .class_package import load_class_package
 from .input_bindings import (
@@ -19,6 +19,9 @@ from .input_bindings import (
 from .map_pack import load_map_pack
 from .sim_types import SimAction
 from .simulation import Simulator
+
+if TYPE_CHECKING:
+    from .owned_live_route import OwnedLiveRouteExecution
 
 
 class OwnedSession:
@@ -235,6 +238,22 @@ class OwnedSession:
             encoding="utf-8",
         )
         return review
+
+    def start_live_layered_route(self, output: Path) -> OwnedLiveRouteExecution:
+        """Start an unplanned per-step route from the confirmed player binding."""
+        if self.state != "confirmed" or self._profile is None or self._active_confirmation is None:
+            raise ValueError("confirm the role key before running the layered route")
+        assert self.confirmed_key is not None
+        from .owned_live_route import OwnedLiveRouteExecution
+
+        return OwnedLiveRouteExecution(
+            output,
+            package=self.package,
+            map_pack=self.map_pack,
+            input_profile=self._profile,
+            input_confirmation=self._active_confirmation,
+            confirmed_key=self.confirmed_key,
+        )
 
     def release(self, key: str, *, generation: int | None = None) -> None:
         if generation is not None and generation != self.generation:

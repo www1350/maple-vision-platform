@@ -29,11 +29,24 @@ def build_route_playback(
     if type(stride) is not int or not 1 <= stride <= 60:
         raise ValueError("route playback stride must be an integer in [1, 60]")
     if (
-        review.get("scope") != "project_owned_synthetic_route"
-        or review.get("status") != "completed"
+        review.get("scope")
+        not in {
+            "project_owned_synthetic_route",
+            "project_owned_live_synthetic_route",
+        }
         or review.get("preview") != "preview.gif"
     ):
-        raise ValueError("route playback requires one completed owned-route review")
+        raise ValueError("route playback requires one owned-route review")
+    if (
+        review.get("scope") == "project_owned_synthetic_route"
+        and review.get("status") != "completed"
+    ):
+        raise ValueError("planned route playback requires a completed source route")
+    if review.get("scope") == "project_owned_live_synthetic_route" and review.get("status") not in {
+        "completed",
+        "taken_over",
+    }:
+        raise ValueError("live route playback has an invalid terminal status")
     expected = review.get("source_files")
     if not isinstance(expected, dict) or set(expected) != {
         "summary.json",
@@ -211,9 +224,14 @@ def verify_route_playback(output: Path) -> dict[str, Any]:
         raise ValueError("taken-over route is missing its terminal event")
     execution_result = None
     if "execution" in value:
-        from .owned_route_execution import verify_route_execution
+        if value.get("scope") == "project_owned_live_synthetic_route":
+            from .owned_live_route import verify_live_route_execution
 
-        execution_result = verify_route_execution(output, value)
+            execution_result = verify_live_route_execution(output, value)
+        else:
+            from .owned_route_execution import verify_route_execution
+
+            execution_result = verify_route_execution(output, value)
         if (
             execution_result["status"] != playback["status"]
             or execution_result["last_source_sequence"] != playback["last_source_sequence"]

@@ -80,8 +80,8 @@ def test_player_can_export_their_own_trial(tmp_path, monkeypatch):
         app.takeover_button.invoke()
         review = json.loads((routes[0] / "player-review.json").read_text())
         assert review["confirmed_key"] == "J"
-        assert len(review["navigation"]) == 2
-        assert len(review["casts"]) == 4
+        assert len(review["navigation"]) == 1
+        assert len(review["casts"]) == 1
         assert [item["kind"] for item in review["timeline"]] == [
             "layer_reached",
             "skill_dispatched",
@@ -90,15 +90,16 @@ def test_player_can_export_their_own_trial(tmp_path, monkeypatch):
         assert review["playback"]["status"] == "taken_over"
         assert review["execution"]["status"] == "taken_over"
         assert review["execution"]["executed_steps"] == 73
-        assert review["execution"]["planned_steps"] == 266
-        assert (routes[0] / "route-execution.jsonl").is_file()
-        assert (routes[0] / "route-execution.json").is_file()
+        assert review["execution"]["decision_cycles"] == 73
+        assert review["execution"]["remaining_steps"] == "not_precomputed"
+        assert (routes[0] / "trace.jsonl").is_file()
+        assert (routes[0] / "summary.json").is_file()
         assert (routes[0] / "route-takeover.gif").is_file()
         assert app.session.state == "paused"
         assert app.route_button.instate(["disabled"])
         assert "请重新确认" in app.feedback_label.cget("text")
         verified = verify_route_playback(routes[0])
         assert verified["status"] == "taken_over"
-        assert verified["execution"]["cancelled_steps"] == 193
+        assert verified["execution"]["remaining_steps"] == "not_precomputed"
     finally:
         root.destroy()

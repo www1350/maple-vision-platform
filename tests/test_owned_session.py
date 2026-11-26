@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from maple_vision.input_bindings import InputBindingProfile, KeyBinding, confirm_input_profile
+from maple_vision.owned_live_route import verify_live_route_execution
 from maple_vision.owned_route_execution import OwnedRouteExecution, verify_route_execution
 from maple_vision.owned_route_playback import (
     build_route_playback,
@@ -233,3 +234,101 @@ def test_stepwise_route_can_execute_the_entire_verified_plan(tmp_path):
     assert verified["timeline_events"] == 6
     assert verified["execution"]["cancelled_steps"] == 0
     assert (route / updated["playback"]["replay"]).name == "route-playback.gif"
+
+
+def test_live_route_decides_only_the_executed_prefix_before_takeover(tmp_path):
+    session = OwnedSession(EXAMPLES)
+    session.confirm("J")
+    route = tmp_path / "live-route"
+    execution = session.start_live_layered_route(route)
+    assert (route / "trace.jsonl").read_text() == ""
+    assert not (route / "summary.json").exists()
+    assert not (route / "player-review.json").exists()
+
+    shown = []
+    last = None
+    while execution.last_source_sequence != 72:
+        last = execution.step()
+        assert last is not None
+        if last.source_sequence % 4 == 0 or last.labels:
+            shown.append((last.source_sequence, last.image))
+    assert last is not None
+    if shown[-1][0] != last.source_sequence:
+        shown.append((last.source_sequence, last.image))
+    summary = execution.cancel("manual_takeover")
+    assert summary["executed_steps"] == summary["decision_cycles"] == 73
+    assert summary["remaining_steps"] == "not_precomputed"
+    cycles = execution.decision_cycles
+    with pytest.raises(ValueError, match="not active"):
+        execution.step()
+    assert execution.decision_cycles == cycles
+    assert [item["sequence"] for item in execution.navigation] == [41]
+    assert [(item["source_sequence"], item["key"]) for item in execution.casts] == [(71, "J")]
+    assert execution.review is not None
+    updated = finalize_route_playback(
+        route,
+        execution.review,
+        tuple(shown),
+        status="taken_over",
+        reason="manual_takeover",
+    )
+    assert [item["kind"] for item in updated["timeline"]] == [
+        "layer_reached",
+        "skill_dispatched",
+        "takeover",
+    ]
+    assert verify_live_route_execution(route)["executed_steps"] == 73
+    verified = verify_route_playback(route)
+    assert verified["scope"] == "project_owned_live_synthetic_route"
+    assert verified["execution"]["remaining_steps"] == "not_precomputed"
+    trace = route / "trace.jsonl"
+    trace.write_bytes(trace.read_bytes() + b"\n")
+    with pytest.raises(ValueError, match="source changed"):
+        verify_route_playback(route)
+
+
+def test_live_route_can_be_taken_over_before_its_first_decision(tmp_path):
+    session = OwnedSession(EXAMPLES)
+    session.confirm("J")
+    route = tmp_path / "zero-step-live-route"
+    execution = session.start_live_layered_route(route)
+    summary = execution.cancel("focus_lost")
+    assert summary["executed_steps"] == 0
+    assert summary["decision_cycles"] == 0
+    assert summary["last_source_sequence"] is None
+    assert summary["ammo_before"] == summary["ammo_after"] == 200
+    assert verify_live_route_execution(route)["executed_steps"] == 0
+
+
+def test_live_route_completes_from_current_frames_without_a_plan(tmp_path):
+    session = OwnedSession(EXAMPLES)
+    session.confirm("J")
+    route = tmp_path / "complete-live-route"
+    execution = session.start_live_layered_route(route)
+    shown = []
+    last = None
+    while execution.active:
+        item = execution.step()
+        if item is not None:
+            last = item
+            if item.source_sequence % 4 == 0 or item.labels:
+                shown.append((item.source_sequence, item.image))
+    assert last is not None
+    if shown[-1][0] != last.source_sequence:
+        shown.append((last.source_sequence, last.image))
+    assert execution.status == "completed"
+    assert execution.index == 266
+    assert execution.decision_cycles == 267
+    assert [item["sequence"] for item in execution.navigation] == [41, 233]
+    assert [item["key"] for item in execution.casts] == ["J"] * 4
+    assert execution.review is not None
+    finalize_route_playback(
+        route,
+        execution.review,
+        tuple(shown),
+        status="completed",
+        reason=None,
+    )
+    verified = verify_route_playback(route)
+    assert verified["timeline_events"] == 6
+    assert verified["execution"]["executed_steps"] == 266

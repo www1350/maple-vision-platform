@@ -146,23 +146,26 @@ def smoke(wheel: Path, checkout: Path) -> dict[str, Any]:
 import json
 import tempfile
 from pathlib import Path
-from maple_vision.owned_route_execution import OwnedRouteExecution
 from maple_vision.owned_route_playback import finalize_route_playback, verify_route_playback
 from maple_vision.owned_session import OwnedSession
 session = OwnedSession()
 session.confirm("J")
 route_dir = Path(tempfile.mkdtemp()) / "route"
-route = session.run_layered_route(route_dir)
-execution = OwnedRouteExecution(route_dir, route)
+execution = session.start_live_layered_route(route_dir)
+require_empty = (route_dir / "trace.jsonl").read_text() == ""
 shown = []
 while execution.last_source_sequence != 72:
     item = execution.step()
+    assert item is not None
     if item.source_sequence % 4 == 0 or item.labels:
         shown.append((item.source_sequence, item.image))
+if shown[-1][0] != item.source_sequence:
+    shown.append((item.source_sequence, item.image))
 executed = execution.cancel("manual_takeover")
+assert execution.review is not None
 finalize_route_playback(
     route_dir,
-    route | {"execution": executed},
+    execution.review,
     tuple(shown),
     status="taken_over",
     reason="manual_takeover",
@@ -173,8 +176,9 @@ receipt = session.press("J", focused=True)
 session.release("J")
 print(json.dumps({
     "receipt": receipt,
-    "route": route,
+    "route": execution.review,
     "route_playback": route_playback,
+    "started_without_plan": require_empty,
     "state": session.state,
 }))
 """,
@@ -184,12 +188,14 @@ print(json.dumps({
         require(
             trial["state"] == "completed"
             and trial["receipt"]["hit_segments"] == 2
-            and trial["route"]["status"] == "completed"
-            and len(trial["route"]["navigation"]) == 2
-            and [item["key"] for item in trial["route"]["casts"]] == ["J"] * 4
+            and trial["route"]["status"] == "taken_over"
+            and len(trial["route"]["navigation"]) == 1
+            and [item["key"] for item in trial["route"]["casts"]] == ["J"]
             and trial["route_playback"]["status"] == "taken_over"
             and trial["route_playback"]["timeline_events"] == 3
-            and trial["route_playback"]["execution"]["cancelled_steps"] == 193,
+            and trial["route_playback"]["execution"]["executed_steps"] == 73
+            and trial["route_playback"]["execution"]["remaining_steps"] == "not_precomputed"
+            and trial["started_without_plan"],
             "packaged practice trial failed",
         )
         checks["owned_practice_session"] = trial
