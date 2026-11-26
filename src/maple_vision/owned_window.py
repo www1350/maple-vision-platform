@@ -187,9 +187,7 @@ class OwnedWindow:
             else:
                 self._route_active = False
                 self.session.takeover("route_execution_failed")
-                self._feedback(
-                    f"双图实时路线停止：{execution.reason}。重新开始须再次确认键位。"
-                )
+                self._feedback(f"双图实时路线停止：{execution.reason}。重新开始须再次确认键位。")
             return
         self._route_sequence = item.source_sequence
         image = item.image.resize((640, 384), Image.Resampling.NEAREST)
@@ -202,9 +200,7 @@ class OwnedWindow:
             self.photo = ImageTk.PhotoImage(image, master=self.root)
             self.surface.itemconfigure(self._scene_item, image=self.photo)
             self._route_displayed.append((item.source_sequence, image))
-        self._feedback(
-            f"双图实时闭环已执行 {execution.index} 步　｜　按 Esc 或切走窗口接管"
-        )
+        self._feedback(f"双图实时闭环已执行 {execution.index} 步　｜　按 Esc 或切走窗口接管")
         if execution.active:
             self._route_timer = self.root.after(
                 self.route_playback_interval_ms, self._execute_route_step
@@ -219,15 +215,10 @@ class OwnedWindow:
 
     def _finish_route_playback(self, status: str, reason: str | None) -> None:
         self._cancel_route_timer()
-        if (
-            not self._route_active
-            or self._route_output is None
-            or self._route_execution is None
-        ):
+        if not self._route_active or self._route_output is None or self._route_execution is None:
             return
         if self._route_last_frame is not None and (
-            not self._route_displayed
-            or self._route_displayed[-1][0] != self._route_last_frame[0]
+            not self._route_displayed or self._route_displayed[-1][0] != self._route_last_frame[0]
         ):
             self._route_displayed.append(self._route_last_frame)
         self._route_active = False

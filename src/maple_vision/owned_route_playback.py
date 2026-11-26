@@ -28,18 +28,24 @@ def build_route_playback(
     """Select regular and exact event frames after checking the route index sources."""
     if type(stride) is not int or not 1 <= stride <= 60:
         raise ValueError("route playback stride must be an integer in [1, 60]")
-    if review.get("scope") not in {
-        "project_owned_synthetic_route",
-        "project_owned_live_synthetic_route",
-    } or review.get("preview") != "preview.gif":
+    if (
+        review.get("scope")
+        not in {
+            "project_owned_synthetic_route",
+            "project_owned_live_synthetic_route",
+        }
+        or review.get("preview") != "preview.gif"
+    ):
         raise ValueError("route playback requires one owned-route review")
-    if review.get("scope") == "project_owned_synthetic_route" and review.get(
-        "status"
-    ) != "completed":
+    if (
+        review.get("scope") == "project_owned_synthetic_route"
+        and review.get("status") != "completed"
+    ):
         raise ValueError("planned route playback requires a completed source route")
-    if review.get("scope") == "project_owned_live_synthetic_route" and review.get(
-        "status"
-    ) not in {"completed", "taken_over"}:
+    if review.get("scope") == "project_owned_live_synthetic_route" and review.get("status") not in {
+        "completed",
+        "taken_over",
+    }:
         raise ValueError("live route playback has an invalid terminal status")
     expected = review.get("source_files")
     if not isinstance(expected, dict) or set(expected) != {

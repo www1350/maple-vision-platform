@@ -177,15 +177,11 @@ class OwnedLiveRouteExecution:
         dispatch = None
         authorized = SimAction()
         if runtime_decision.intent is not None:
-            dispatch = self.policy.scheduler.dispatch(
-                runtime_decision.intent, before.timestamp_ms
-            )
+            dispatch = self.policy.scheduler.dispatch(runtime_decision.intent, before.timestamp_ms)
             if dispatch.accepted:
                 authorized = dispatch.action
             else:
-                self.policy.interrupt(
-                    f"dispatch_denied:{dispatch.reason}", before.timestamp_ms
-                )
+                self.policy.interrupt(f"dispatch_denied:{dispatch.reason}", before.timestamp_ms)
         applied, input_dispatch = self.input_profile.dispatch(
             authorized, self.package.class_id, self.package
         )
@@ -315,9 +311,9 @@ class OwnedLiveRouteExecution:
                 row["execution"]["events"].count("attack_hit")
                 for row in (
                     json.loads(line)
-                    for line in (self.output / "trace.jsonl").read_text(
-                        encoding="utf-8"
-                    ).splitlines()
+                    for line in (self.output / "trace.jsonl")
+                    .read_text(encoding="utf-8")
+                    .splitlines()
                     if line
                 )
             ),
@@ -395,16 +391,16 @@ def verify_live_route_execution(
     }:
         raise ValueError("live route source bindings are incomplete")
     for name, expected in sources.items():
-        if name not in {"summary.json", "trace.jsonl", "preview.gif"} or _sha256(
-            output / name
-        ) != expected:
+        if (
+            name not in {"summary.json", "trace.jsonl", "preview.gif"}
+            or _sha256(output / name) != expected
+        ):
             raise ValueError("live route source binding changed")
     if rows:
         if (
             summary["last_source_sequence"] != rows[-1]["sequence"]
             or summary["final_state_sha256"] != rows[-1]["after_state_sha256"]
-            or summary["decision_cycles"]
-            != len(rows) + int(summary["status"] == "completed")
+            or summary["decision_cycles"] != len(rows) + int(summary["status"] == "completed")
         ):
             raise ValueError("live route terminal denominator changed")
     elif summary["final_state_sha256"] != digest(

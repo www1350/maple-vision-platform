@@ -194,8 +194,7 @@ print(json.dumps({
             and trial["route_playback"]["status"] == "taken_over"
             and trial["route_playback"]["timeline_events"] == 3
             and trial["route_playback"]["execution"]["executed_steps"] == 73
-            and trial["route_playback"]["execution"]["remaining_steps"]
-            == "not_precomputed"
+            and trial["route_playback"]["execution"]["remaining_steps"] == "not_precomputed"
             and trial["started_without_plan"],
             "packaged practice trial failed",
         )
