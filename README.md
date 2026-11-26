@@ -6,13 +6,20 @@
 maple-vision-practice
 ```
 
+Windows 上也可先做跨窗口只读检查：列出当前可见窗口，按精确标题或 HWND 选中一个窗口；倒计时内把它切到前台后，工具绑定 HWND、进程创建时间、窗口类、标题、客户区、DPI 与焦点，截取一帧屏幕像素并保存 `capture.png` 和 `evidence.json`。这条入口不发送任何按键；窗口身份变化、标题/尺寸/DPI 变化或失焦都会使派发门禁失效，恢复必须显式确认。
+
+```powershell
+maple-vision-window-check --list
+maple-vision-window-check --title-exact "Maple Vision Capture Target" --output artifacts\window-check
+```
+
 也可把工作台「角色键位」页导出的确认凭证直接带入练习窗口；窗口会预填该 profile 中唯一的 `lucky_seven` 字母键，玩家仍须看清图块并点击确认。改成与凭证不同的键会被阻断，施放回执保存角色 profile 和收据哈希。
 
 ```powershell
 python -m maple_vision.owned_window --input-confirmation input-binding-confirmation.json
 ```
 
-练习使用项目自绘 A–Z 图块和本窗口内的 Tk 键盘事件。图块识别、目标画布、模拟技能和持键状态都在本机。要生成可看的回放，在桌面会话运行 `python scripts/verify_owned_window.py --output artifacts/owned-window-demo`，打开输出目录里的 `replay.gif`；`evidence.json` 保存测试环境、确认收据摘要、观测结果，以及每张 PNG 和 GIF 的文件/解码像素哈希。可在另一进程运行 `python scripts/verify_owned_window_evidence.py artifacts/owned-window-demo`，重新打开全部媒体并拒绝替换、软链接、路径跳转或未声明文件。该清单用于检查目录内部一致性，不是签名或正式客户端实机凭证。
+练习使用项目自绘 A–Z 图块和本窗口内的 Tk 键盘事件。图块识别、目标画布、模拟技能和持键状态都在本机。要生成可看的回放，在桌面会话运行 `python scripts/verify_owned_window.py --output artifacts/owned-window-demo`，打开输出目录里的 `replay.gif`；`evidence.json` 保存测试环境、确认收据摘要、观测结果，以及每张 PNG 和 GIF 的文件/解码像素哈希。可在另一进程运行 `python scripts/verify_owned_window_evidence.py artifacts/owned-window-demo`，重新打开全部媒体并拒绝替换、软链接、路径跳转或未声明文件。跨窗口检查捕获的是当前桌面上可见的客户区，遮挡或最小化不是后台无损采集。两类清单都只检查本机工程流程，不是签名、正式客户端许可或国服实机凭证。
 
 **产品路线更新（2026-11-26）**　最终目标是玩家登录国服、确认角色键位并选定任务后，由平台在获准的实际游戏窗口完成任务并支持人工接管。当前发行版交付离线平台；国服正式服执行仍待适用许可和实机验收。[完整产品与验收方案](docs/LIVE_PRODUCT_PLAN.md)
 

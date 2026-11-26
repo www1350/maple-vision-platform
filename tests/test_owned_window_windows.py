@@ -4,11 +4,107 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
 
 from maple_vision.owned_evidence import verify_owned_window_evidence
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="native Windows desktop acceptance")
+def test_native_external_window_capture_focus_and_resume(tmp_path):
+    import tkinter as tk
+
+    from maple_vision.desktop_window import DesktopWindowSession, NativeWindowsBackend
+
+    title = f"Maple Vision Capture Target {os.getpid()}"
+    root = tk.Tk()
+    handoff = None
+    released: list[str] = []
+    try:
+        root.title(title)
+        root.geometry("360x240+80+80")
+        canvas = tk.Canvas(root, width=320, height=192, bg="#123456", highlightthickness=0)
+        canvas.pack()
+        canvas.create_rectangle(40, 50, 280, 140, fill="#e7b44b", outline="#ffffff")
+        canvas.create_text(160, 96, text="PROJECT OWNED TARGET", fill="#102030")
+        root.update_idletasks()
+        root.deiconify()
+        root.lift()
+        root.focus_force()
+        root.update()
+        time.sleep(0.1)
+
+        backend = NativeWindowsBackend()
+        identity = next(item for item in backend.list_windows() if item.title == title)
+        session = DesktopWindowSession(backend, release_key=released.append)
+        session.select(identity.handle)
+        receipt = session.confirm()
+        frame = session.observe()
+        assert frame.image.size == (
+            identity.client_bounds[2] - identity.client_bounds[0],
+            identity.client_bounds[3] - identity.client_bounds[1],
+        )
+        session.record_key_down("UP", frame)
+
+        handoff = tk.Toplevel(root)
+        handoff.title("Maple Vision Human Handoff")
+        handoff.geometry("240x100+500+80")
+        handoff.update_idletasks()
+        handoff.lift()
+        handoff.focus_force()
+        handoff.update()
+        time.sleep(0.1)
+        with pytest.raises(ValueError, match="lost focus"):
+            session.observe()
+        assert session.state == "paused"
+        assert released == ["UP"]
+
+        root.lift()
+        root.focus_force()
+        root.update()
+        time.sleep(0.1)
+        resumed = session.resume()
+        resumed_frame = session.observe()
+        assert resumed_frame.sequence == 1
+
+        output = (
+            Path("artifacts/windows-capture-session")
+            if os.environ.get("GITHUB_ACTIONS")
+            else tmp_path / "windows-capture-session"
+        )
+        output.mkdir(parents=True, exist_ok=True)
+        frame.image.save(output / "before-focus-loss.png")
+        resumed_frame.image.save(output / "after-explicit-resume.png")
+        (output / "evidence.json").write_text(
+            json.dumps(
+                {
+                    "scope": "project_owned_external_window_capture",
+                    "receipt": receipt,
+                    "paused_reason": "focus_lost",
+                    "released_keys": released,
+                    "resume": resumed,
+                    "frames": [frame.manifest(), resumed_frame.manifest()],
+                    "limitations": [
+                        "screen pixels from a visible project-owned Tk target",
+                        "no official client and no external input dispatch",
+                    ],
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        # This native integration report has two frames and a focus timeline; the
+        # one-frame command bundle has its stricter media verifier in separate tests.
+        assert frame.rgb_sha256 != ""
+    finally:
+        if handoff is not None:
+            handoff.destroy()
+        root.destroy()
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="native Windows desktop acceptance")
