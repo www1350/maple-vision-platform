@@ -207,6 +207,22 @@ python -m maple_vision recording verify-events artifacts/pts-session artifacts/v
 
 这些名字只陈述复核者在像素中看到的现象。它们不证明按了哪个键，不把相邻的攻击画面和伤害数字自动连成因果，也不能仅凭攻击或投射物画面识别技能。截断导入报告会明确保留 `truncated=true`，未导入的尾帧不在证据范围内。要测距离、目标框或技能反馈时序，仍需使用完整逐帧物体标注及施放测量入口。
 
+### 导出可观看的复核事件回放
+
+持有原录像导入窗口时，可以把已经复验的可见事件导出为 GIF。每个窗口必须配一份由该窗口生成的事件报告，覆盖报告必须证明这些窗口从源帧 0 连续到解码停止。输出采用新目录，不覆盖原录像、导入帧或人工报告。
+
+```bash
+python -m maple_vision recording render-reviewed-events \
+  --window artifacts/recording-head artifacts/head-events.json \
+  --window artifacts/recording-tail artifacts/tail-events.json \
+  --coverage artifacts/window-coverage.json \
+  --output artifacts/reviewed-event-replay
+```
+
+输出目录包含 `reviewed-events.gif` 和 `evidence.json`。画面顶部显示源帧序号、原视频时间和当前人工复核事件；默认每三帧采一帧，并在每个区间前后保留六帧上下文。`--stride`、`--context-frames` 和 `--max-width` 可在有界范围内调整。不同事件区间之间的空白时间会压缩，源帧号保留真实跳跃，证据文件列出每一张回放帧的原始 RGB 哈希。
+
+导出前会重新验证所有窗口、完整覆盖报告和每份事件报告。回放只是原像素和人工可见事件的展示层，不新增目标框、技能名称、施放者、按键或因果结论，也不能用来证明如果平台采取另一动作会发生什么。
+
 ## 核对实录标注中的换图
 
 `python -m maple_vision recording audit-route SESSION LABELS examples/navigation/cms-east-hill.json REPORT`

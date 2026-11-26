@@ -287,6 +287,20 @@ def _parser() -> argparse.ArgumentParser:
     window_verify = recording_commands.add_parser("verify-windows")
     window_verify.add_argument("report", type=Path)
     window_verify.add_argument("--session", type=Path, action="append", required=True)
+    reviewed_replay = recording_commands.add_parser("render-reviewed-events")
+    reviewed_replay.add_argument(
+        "--window",
+        nargs=2,
+        type=Path,
+        action="append",
+        required=True,
+        metavar=("SESSION", "EVENT_REPORT"),
+    )
+    reviewed_replay.add_argument("--coverage", type=Path, required=True)
+    reviewed_replay.add_argument("--output", type=Path, required=True)
+    reviewed_replay.add_argument("--stride", type=int, default=3)
+    reviewed_replay.add_argument("--context-frames", type=int, default=6)
+    reviewed_replay.add_argument("--max-width", type=int, default=720)
     score = recording_commands.add_parser("benchmark")
     score.add_argument(
         "--case",
@@ -819,6 +833,17 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         from .recording_evaluation import verify_recording_windows
 
         return verify_recording_windows(args.session, args.report)
+    if args.command == "recording" and args.operation == "render-reviewed-events":
+        from .recording_evaluation import render_reviewed_event_replay
+
+        return render_reviewed_event_replay(
+            args.window,
+            args.coverage,
+            args.output,
+            stride=args.stride,
+            context_frames=args.context_frames,
+            max_width=args.max_width,
+        )
     if args.command == "recording" and args.operation == "audit-route":
         from .recording_evaluation import audit_route
 

@@ -467,6 +467,124 @@ def test_contiguous_recording_windows_are_source_bound_and_reverified(tmp_path):
     assert not gap_report.exists()
 
 
+def test_reviewed_event_replay_renders_verified_windows_without_inventing_actions(tmp_path):
+    from fractions import Fraction
+
+    av = pytest.importorskip("av")
+    source = tmp_path / "reviewed-replay.mp4"
+    clock = Fraction(1, 1000)
+    with av.open(str(source), "w", format="mp4") as writer:
+        stream = writer.add_stream("mpeg4", rate=25)
+        stream.width, stream.height = 64, 48
+        stream.pix_fmt = "yuv420p"
+        stream.codec_context.time_base = clock
+        for pts, shade in [(100, 20), (140, 60), (220, 100), (360, 140)]:
+            frame = av.VideoFrame.from_image(Image.new("RGB", (64, 48), (shade,) * 3))
+            frame.pts, frame.time_base = pts, clock
+            for packet in stream.encode(frame):
+                writer.mux(packet)
+        for packet in stream.encode():
+            writer.mux(packet)
+
+    sessions = []
+    reports = []
+    for start, kind in [(0, "rope_contact_visible"), (2, "attack_motion_visible")]:
+        session = tmp_path / f"window-{start}"
+        import_recording(
+            source,
+            session,
+            source_uri="urn:self:reviewed-replay",
+            permission="self_authored",
+            license="CC0",
+            presentation_time=True,
+            start_frame=start,
+            max_frames=2,
+        )
+        report = tmp_path / f"events-{start}.json"
+        assert (
+            main(
+                [
+                    "recording",
+                    "review-events",
+                    str(session),
+                    str(report),
+                    "--reviewer",
+                    "reviewer",
+                    "--event",
+                    kind,
+                    "0",
+                    "1",
+                ]
+            )
+            == 0
+        )
+        sessions.append(session)
+        reports.append(report)
+    coverage = tmp_path / "coverage.json"
+    assert (
+        main(
+            [
+                "recording",
+                "summarize-windows",
+                "--session",
+                str(sessions[0]),
+                "--session",
+                str(sessions[1]),
+                "--output",
+                str(coverage),
+            ]
+        )
+        == 0
+    )
+    output = tmp_path / "replay"
+    command = [
+        "recording",
+        "render-reviewed-events",
+        "--window",
+        str(sessions[1]),
+        str(reports[1]),
+        "--window",
+        str(sessions[0]),
+        str(reports[0]),
+        "--coverage",
+        str(coverage),
+        "--output",
+        str(output),
+        "--stride",
+        "1",
+        "--context-frames",
+        "0",
+        "--max-width",
+        "160",
+    ]
+    assert main(command) == 0
+    evidence = json.loads((output / "evidence.json").read_bytes())
+    assert evidence["kind"] == "reviewed_visible_event_replay"
+    assert evidence["scope"] == "source_verified_reviewer_selected_visible_intervals"
+    assert evidence["render"]["frames"] == 4
+    assert [row["source_sequence"] for row in evidence["replay_frames"]] == [0, 1, 2, 3]
+    assert [event["kind"] for event in evidence["reviewed_visible_events"]] == [
+        "rope_contact_visible",
+        "attack_motion_visible",
+    ]
+    assert any("do not identify a skill" in item for item in evidence["limitations"])
+    with Image.open(output / "reviewed-events.gif") as replay:
+        assert replay.n_frames == 4
+        assert replay.size == (64, 92)
+
+    assert main(command) == 2
+    forged = json.loads(reports[0].read_text())
+    forged["events"][0]["start"]["rgb_sha256"] = "0" * 64
+    forged_path = tmp_path / "forged-events.json"
+    forged_path.write_text(json.dumps(forged))
+    bad_command = command.copy()
+    bad_command[bad_command.index(str(reports[0]))] = str(forged_path)
+    bad_output = tmp_path / "bad-replay"
+    bad_command[bad_command.index(str(output))] = str(bad_output)
+    assert main(bad_command) == 2
+    assert not bad_output.exists()
+
+
 def test_measure_reviewed_strike_preserves_distinct_feedback_frame_timing(tmp_path):
     session, labels = case(tmp_path, "forest")
     data = json.loads(labels.read_text())
