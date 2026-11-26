@@ -59,8 +59,32 @@ jobs:
         run: python -m ruff check .
       - name: Types
         run: python -m mypy
+      - name: Native Windows desktop acceptance in isolated processes
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tests = @(
+            'test_native_external_window_capture_focus_and_resume',
+            'test_native_external_window_pixels_feed_player_visible_observation',
+            'test_windows_first_use_replay',
+            'test_player_can_export_their_own_trial'
+          )
+          foreach ($test in $tests) {
+            python -m pytest -q "tests/test_owned_window_windows.py::$test" `
+              "--junitxml=artifacts/pytest-$test.xml"
+            if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+            }
+          }
       - name: Tests including native ONNX adapter
+        if: runner.os != 'Windows'
         run: python -m pytest -q --junitxml=artifacts/pytest.xml
+      - name: Tests excluding separately accepted native Windows desktop cases
+        if: runner.os == 'Windows'
+        run: >-
+          python -m pytest -q
+          --ignore=tests/test_owned_window_windows.py
+          --junitxml=artifacts/pytest.xml
       - name: Build wheel
         run: python -m build --wheel --no-isolation
       - name: Isolated installed-package smoke
