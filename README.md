@@ -7,7 +7,13 @@ python -m pip install -e .
 python -m maple_vision.owned_window
 ```
 
-练习使用项目自绘 A–Z 图块和本窗口内的 Tk 键盘事件。图块识别、目标画布、模拟技能和持键状态都在本机。要生成可看的回放，在桌面会话运行 `python scripts/verify_owned_window.py --output artifacts/owned-window-demo`，打开输出目录里的 `replay.gif`；`evidence.json` 保存测试环境和观测结果。
+也可把工作台「角色键位」页导出的确认凭证直接带入练习窗口；窗口会预填该 profile 中唯一的 `lucky_seven` 字母键，玩家仍须看清图块并点击确认。改成与凭证不同的键会被阻断，施放回执保存角色 profile 和收据哈希。
+
+```powershell
+python -m maple_vision.owned_window --input-confirmation input-binding-confirmation.json
+```
+
+练习使用项目自绘 A–Z 图块和本窗口内的 Tk 键盘事件。图块识别、目标画布、模拟技能和持键状态都在本机。要生成可看的回放，在桌面会话运行 `python scripts/verify_owned_window.py --output artifacts/owned-window-demo`，打开输出目录里的 `replay.gif`；`evidence.json` 保存测试环境、确认收据摘要和观测结果。
 
 **产品路线更新（2026-11-26）**　最终目标是玩家登录国服、确认角色键位并选定任务后，由平台在获准的实际游戏窗口完成任务并支持人工接管。当前发行版交付离线平台；国服正式服执行仍待适用许可和实机验收。[完整产品与验收方案](docs/LIVE_PRODUCT_PLAN.md)
 

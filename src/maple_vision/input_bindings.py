@@ -37,6 +37,21 @@ def load_input_profile(path: Path) -> "InputBindingProfile":
         raise ValueError("input binding profile must be UTF-8 JSON") from exc
 
 
+def load_input_profile_confirmation(path: Path) -> tuple["InputBindingProfile", dict[str, Any]]:
+    """Load and verify one bounded local manual-confirmation receipt."""
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("input profile confirmation must be a regular nonsymlink file")
+    with path.open("rb") as stream:
+        raw = stream.read(MAX_INPUT_CONFIRMATION_BYTES + 1)
+    if len(raw) > MAX_INPUT_CONFIRMATION_BYTES:
+        raise ValueError("input profile confirmation exceeds byte budget")
+    try:
+        value = strict_json(raw.decode("utf-8"))
+    except UnicodeError as exc:
+        raise ValueError("input profile confirmation must be UTF-8 JSON") from exc
+    return verify_input_profile_confirmation(value)
+
+
 def normalize_key(value: str) -> str:
     if not isinstance(value, str):
         raise ValueError("key name must be text")
@@ -387,6 +402,8 @@ def verify_input_profile_confirmation(
         recorded_image = value["source_image"]
     except KeyError as exc:
         raise ValueError("input profile confirmation is incomplete") from exc
+    if not isinstance(comparison_source, str):
+        raise ValueError("input profile confirmation source is invalid")
     image = None
     if recorded_image is not None:
         if not isinstance(recorded_image, dict):
