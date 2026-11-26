@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .class_package import load_class_package
-from .input_bindings import InputBindingProfile
+from .input_bindings import InputBindingProfile, normalize_key, verify_input_profile_confirmation
 from .map_pack import load_map_pack
 from .sim_types import SimAction
 from .simulation import Simulator
@@ -26,6 +26,28 @@ class OwnedSession:
         self.generation = 0
         self.events: list[dict[str, Any]] = []
         self._profile: InputBindingProfile | None = None
+        self._confirmed_source: tuple[InputBindingProfile, dict[str, Any], str] | None = None
+
+    def load_confirmation(self, receipt: object) -> str:
+        """Bind a verified player-confirmed profile to this owned-window trial."""
+        if self.state in {"armed", "pressed"}:
+            self.takeover("binding_changed")
+        profile, normalized = verify_input_profile_confirmation(receipt)
+        matches = []
+        for item in profile.bindings:
+            skill, action = profile.action_for_key(item.key, self.package.class_id, self.package)
+            if skill == "lucky_seven" and action is not None:
+                matches.append(item)
+        if len(matches) != 1:
+            raise ValueError("confirmed profile must bind exactly one lucky_seven skill")
+        key = normalize_key(matches[0].key)
+        if len(key) != 1 or key.upper() not in string.ascii_uppercase:
+            raise ValueError("owned-window Lucky Seven key must be one letter A-Z")
+        self._confirmed_source = (profile, normalized, key.upper())
+        self.state = "unconfirmed"
+        self.confirmed_key = None
+        self._profile = None
+        return key.upper()
 
     def _fresh_trial(self) -> Simulator:
         simulator = Simulator(
@@ -54,12 +76,32 @@ class OwnedSession:
             raise ValueError("confirm one visible letter A-Z for Lucky Seven")
         self.generation += 1
         self.confirmed_key = key.upper()
-        self._profile = InputBindingProfile.from_key_map(
-            "owned-window-role", {self.confirmed_key: "lucky_seven"}
-        )
+        if self._confirmed_source is None:
+            self._profile = InputBindingProfile.from_key_map(
+                "owned-window-role", {self.confirmed_key: "lucky_seven"}
+            )
+            profile_id = self._profile.profile_id
+            receipt_sha256 = None
+            comparison_source = None
+        else:
+            profile, receipt, expected_key = self._confirmed_source
+            if self.confirmed_key != expected_key:
+                self.takeover("binding_changed")
+                raise ValueError("visible key does not match the confirmed player profile")
+            self._profile = profile
+            profile_id = profile.profile_id
+            receipt_sha256 = receipt["receipt_sha256"]
+            comparison_source = receipt["comparison_source"]
         self.simulator = self._fresh_trial()
         self.state = "confirmed"
-        self._record("confirm", key=self.confirmed_key, skill="lucky_seven")
+        self._record(
+            "confirm",
+            key=self.confirmed_key,
+            skill="lucky_seven",
+            profile_id=profile_id,
+            confirmation_receipt_sha256=receipt_sha256,
+            confirmation_comparison_source=comparison_source,
+        )
 
     def arm(self) -> int:
         if self.state != "confirmed":
@@ -97,6 +139,12 @@ class OwnedSession:
             hit_segments=outcome.events.count("attack_hit"),
             ammo_before=before.player.ammo,
             ammo_after=outcome.snapshot.player.ammo,
+            profile_id=self._profile.profile_id,
+            confirmation_receipt_sha256=(
+                None
+                if self._confirmed_source is None
+                else self._confirmed_source[1]["receipt_sha256"]
+            ),
         )
 
     def release(self, key: str, *, generation: int | None = None) -> None:

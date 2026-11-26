@@ -15,6 +15,7 @@ from maple_vision.input_bindings import (
     KeyBinding,
     confirm_input_profile,
     load_input_profile,
+    load_input_profile_confirmation,
     verify_input_profile_confirmation,
 )
 from maple_vision.lab import (
@@ -83,6 +84,21 @@ def test_user_confirmation_receipt_keeps_manual_comparison_separate_from_recogni
             "browser_selected_image_digest",
             {**image, "sha256": "A" * 64},
         )
+
+
+def test_confirmation_receipt_loader_is_bounded_and_rejects_tampering(tmp_path):
+    configured = profile(("J", "lucky_seven"))
+    receipt = confirm_input_profile(configured, "live_window_manual_comparison")
+    path = tmp_path / "confirmation.json"
+    path.write_text(json.dumps(receipt), encoding="utf-8")
+    assert load_input_profile_confirmation(path) == (configured, receipt)
+    receipt["receipt_sha256"] = "0" * 64
+    path.write_text(json.dumps(receipt), encoding="utf-8")
+    with pytest.raises(ValueError, match="modified"):
+        load_input_profile_confirmation(path)
+    path.write_bytes(b" " * (128 * 1024 + 1))
+    with pytest.raises(ValueError, match="byte budget"):
+        load_input_profile_confirmation(path)
 
 
 def test_user_reviewed_key_grid_is_bound_to_selected_image_receipt():

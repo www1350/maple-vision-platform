@@ -2,9 +2,34 @@ from pathlib import Path
 
 import pytest
 
+from maple_vision.input_bindings import InputBindingProfile, KeyBinding, confirm_input_profile
 from maple_vision.owned_session import OwnedSession
 
 EXAMPLES = Path(__file__).parents[1] / "examples"
+
+
+def confirmed_profile(key: str = "J") -> tuple[InputBindingProfile, dict]:
+    profile = InputBindingProfile("小白兔 / 无影人", (KeyBinding(key, "lucky_seven"),))
+    return profile, confirm_input_profile(profile, "live_window_manual_comparison")
+
+
+def test_player_confirmation_is_required_to_match_visible_key_and_enters_cast_receipt():
+    profile, confirmation = confirmed_profile()
+    session = OwnedSession(EXAMPLES)
+    assert session.load_confirmation(confirmation) == "J"
+    with pytest.raises(ValueError, match="does not match"):
+        session.confirm("S")
+    session.confirm("J")
+    token = session.arm()
+    result = session.press("J", focused=True, generation=token)
+    assert result["accepted"] and result["profile_id"] == profile.profile_id
+    assert result["confirmation_receipt_sha256"] == confirmation["receipt_sha256"]
+    confirmed = next(row for row in session.events if row["event"] == "confirm")
+    assert confirmed["confirmation_comparison_source"] == "live_window_manual_comparison"
+
+    changed = {**confirmation, "receipt_sha256": "0" * 64}
+    with pytest.raises(ValueError, match="modified"):
+        OwnedSession(EXAMPLES).load_confirmation(changed)
 
 
 def test_confirmed_nondefault_key_runs_one_cast_until_explicit_reconfirmation():

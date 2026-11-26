@@ -11,6 +11,7 @@ from typing import Any
 
 from PIL import Image, ImageDraw, ImageTk
 
+from .input_bindings import load_input_profile_confirmation
 from .owned_key_image import key_tile, read_key_tile
 from .owned_session import OwnedSession
 from .scene import SceneRenderer
@@ -19,9 +20,16 @@ from .scene import SceneRenderer
 class OwnedWindow:
     """Generate one key pair inside one focused canvas per armed trial."""
 
-    def __init__(self, root: tk.Tk, examples: Path) -> None:
+    def __init__(
+        self, root: tk.Tk, examples: Path, input_confirmation: dict[str, Any] | None = None
+    ) -> None:
         self.root = root
         self.session = OwnedSession(examples)
+        confirmed_key = (
+            "S"
+            if input_confirmation is None
+            else self.session.load_confirmation(input_confirmation)
+        )
         self._timer: str | None = None
         self._emitting: tuple[str, str, int] | None = None
         self._receipt: dict[str, Any] | None = None
@@ -34,7 +42,7 @@ class OwnedWindow:
         settings = ttk.Frame(frame, padding=(0, 8))
         settings.pack(fill="x")
         ttk.Label(settings, text="角色技能键（A–Z）").pack(side="left")
-        self.key_var = tk.StringVar(root, value="S")
+        self.key_var = tk.StringVar(root, value=confirmed_key)
         self.key_entry = ttk.Entry(settings, textvariable=self.key_var, width=5)
         self.key_entry.pack(side="left", padx=8)
         self.display_key = tk.Label(settings, borderwidth=0)
@@ -42,6 +50,8 @@ class OwnedWindow:
         self.key_photo: ImageTk.PhotoImage | None = None
         self.confirm_button = ttk.Button(settings, text="识别并确认键位", command=self.confirm)
         self.confirm_button.pack(side="left", padx=4)
+        if input_confirmation is not None:
+            ttk.Label(settings, text="已载入玩家确认凭证").pack(side="left", padx=4)
 
         self.surface = tk.Canvas(frame, width=640, height=384, takefocus=True, highlightthickness=1)
         self.surface.pack()
@@ -213,9 +223,13 @@ class OwnedWindow:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--examples", type=Path, default=Path("examples"))
+    parser.add_argument("--input-confirmation", type=Path)
     args = parser.parse_args()
+    confirmation = None
+    if args.input_confirmation is not None:
+        _, confirmation = load_input_profile_confirmation(args.input_confirmation)
     root = tk.Tk()
-    OwnedWindow(root, args.examples)
+    OwnedWindow(root, args.examples, confirmation)
     root.mainloop()
     return 0
 

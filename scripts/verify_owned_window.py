@@ -12,6 +12,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageTk
 
+from maple_vision.input_bindings import InputBindingProfile, KeyBinding, confirm_input_profile
 from maple_vision.owned_window import OwnedWindow
 from maple_vision.scene import ImageFrame
 from maple_vision.vision import PixelPerception
@@ -48,7 +49,9 @@ def visible_mp(image: Image.Image) -> float:
 
 
 def verify(root: tk.Tk, examples: Path, output: Path) -> dict:
-    app = OwnedWindow(root, examples)
+    profile = InputBindingProfile("小白兔 / 无影人", (KeyBinding("J", "lucky_seven"),))
+    confirmation = confirm_input_profile(profile, "live_window_manual_comparison")
+    app = OwnedWindow(root, examples, confirmation)
     root.update()
     root.focus_force()
     frames: list[Image.Image] = []
@@ -103,10 +106,12 @@ def verify(root: tk.Tk, examples: Path, output: Path) -> dict:
     if (
         cast["key"],
         cast["skill"],
+        cast["profile_id"],
+        cast["confirmation_receipt_sha256"],
         cast["hit_segments"],
         cast["ammo_before"],
         cast["ammo_after"],
-    ) != (key, "lucky_seven", 2, 200, 198):
+    ) != (key, "lucky_seven", profile.profile_id, confirmation["receipt_sha256"], 2, 200, 198):
         raise RuntimeError("unexpected simulator cast receipt")
     mp_before, mp_after = visible_mp(before), visible_mp(after)
     if mp_after >= mp_before:
@@ -173,6 +178,11 @@ def verify(root: tk.Tk, examples: Path, output: Path) -> dict:
         "input": "widget_scoped_tk_key_events",
         "capture": "mapped_canvas_photoimage_rgb",
         "visible_key": key,
+        "input_profile": profile.manifest(),
+        "input_confirmation": {
+            "receipt_sha256": confirmation["receipt_sha256"],
+            "comparison_source": confirmation["comparison_source"],
+        },
         "normal_cast_receipt": cast,
         "visible_mp_before": mp_before,
         "visible_mp_after": mp_after,
