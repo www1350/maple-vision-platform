@@ -589,7 +589,7 @@ def test_task_run_binds_confirmed_profile_and_exposes_dispatch_evidence(tmp_path
         assert run["outcome"] == "completed"
         assert run["config"]["input_profile"] == input_profile
         assert run["config"]["input_confirmation"] == confirmation
-        summary = json.loads((tmp_path / identity / "run/summary.json").read_text())
+        summary = json.loads((tmp_path / identity / "run/summary.json").read_text(encoding="utf-8"))
         assert summary["input_confirmation"]["receipt_sha256"] == confirmation["receipt_sha256"]
         rows = http.get(f"/api/jobs/{identity}/trace").json()
         assert all("input_dispatch" in row["execution"] for row in rows)

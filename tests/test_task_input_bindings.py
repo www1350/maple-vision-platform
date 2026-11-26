@@ -148,7 +148,10 @@ def test_bound_dragon_knight_skill_completes_two_maps_and_reinfers(tmp_path):
     assert report["status"] == "completed" and report["independent_goal_check"]
     assert report["input_profile"] == configured.manifest()
     assert report["input_confirmation"]["receipt_sha256"] == confirmation["receipt_sha256"]
-    assert json.loads((output / "input-binding-confirmation.json").read_text()) == confirmation
+    assert (
+        json.loads((output / "input-binding-confirmation.json").read_text(encoding="utf-8"))
+        == confirmation
+    )
     assert report["input_dispatch_summary"] == {
         "scope": "offline_simulated_skill_dispatch",
         "attempts": 4,
