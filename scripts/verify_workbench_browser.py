@@ -173,9 +173,25 @@ def verify(url: str, executable: str) -> dict[str, object]:
             {"name": "fixture.png", "mimeType": "image/png", "buffer": screenshot.getvalue()}
         )
         expect(page.locator("#keys-image")).to_have_js_property("naturalWidth", 32)
+        expect(page.locator("#keys-status")).to_contain_text("截图已在浏览器内计算哈希")
         page.fill("#keys-list", "示例技能 = Ctrl")
         page.locator("#keys-form button[type=submit]").click()
         expect(page.locator("#keys-status")).to_contain_text("保存 1 项")
+        expect(page.locator("#keys-status")).to_contain_text("未自动识别技能")
+        with page.expect_download() as confirmation_download_info:
+            page.click("#keys-export-confirmation")
+        confirmation_download = confirmation_download_info.value
+        assert confirmation_download.suggested_filename == "input-binding-confirmation.json"
+        with tempfile.TemporaryDirectory() as confirmation_dir:
+            confirmation_path = Path(confirmation_dir) / confirmation_download.suggested_filename
+            confirmation_download.save_as(confirmation_path)
+            confirmation = json.loads(confirmation_path.read_text(encoding="utf-8"))
+            assert confirmation["profile"]["profile_id"] == "示例区 / 一号"
+            assert confirmation["source_image"]["bytes"] == len(screenshot.getvalue())
+            assert confirmation["source_image"]["width"] == 32
+            assert confirmation["source_image"]["height"] == 16
+            assert confirmation["source_image"]["image_bytes_uploaded"] is False
+            assert confirmation["recognition"]["automatic_skill_recognition"] is False
         page.fill("#keys-list", "未确认技能 = X")
         with page.expect_download() as download_info:
             page.click("#keys-export")
@@ -272,6 +288,7 @@ def verify(url: str, executable: str) -> dict[str, object]:
             "single_step_restore_after_reload": True,
             "keyed_two_map_task": "completed_and_evidenced",
             "confirmed_profile_export_loaded": True,
+            "binding_confirmation_receipt_exported": True,
             "local_key_image_preview_and_clear": True,
             "read_only_recording_replay": True,
             "separated_trial_evidence_lanes": 4,

@@ -127,10 +127,11 @@
               <p id="keys-help" class="field-help">照抄键帽名称，例如 Ctrl 或 Space。只填写看清的绑定。</p>
               <button class="button primary full-width" type="submit">确认并保存此角色键位</button>
               <button class="button subtle" id="keys-export" type="button">导出已保存的键位 JSON</button>
+              <button class="button subtle" id="keys-export-confirmation" type="button">导出键位确认凭证</button>
               <p id="keys-status" role="status"></p>
             </form>
             <section class="panel"><h2>对照截图</h2>
-              <p class="field-help">可直接对照游戏窗口，也可选择一张键位截图。图片仅在本页预览，键位表保存在当前浏览器。</p>
+              <p class="field-help">可直接对照游戏窗口，也可选择一张键位截图。图片仅在本页预览，不上传；确认凭证保存图片哈希和尺寸，不会把人工核对写成自动识别。</p>
               <input id="keys-image-file" type="file" accept="image/png,image/jpeg,image/webp" aria-label="选择键位截图">
               <img id="keys-image" class="hidden" style="max-width:100%;height:auto" alt="当前角色的键位设置截图">
             </section>

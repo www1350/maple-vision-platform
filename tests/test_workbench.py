@@ -593,3 +593,54 @@ def test_input_profile_export_uses_execution_validation(tmp_path):
         profile["bindings"].append({"key": "Control", "skill": "area"})
         assert http.post("/api/input-profile", json=profile).status_code == 422
         assert http.get("/api/jobs").json() == []
+
+
+def test_input_profile_confirmation_validates_manual_source_and_image_digest(tmp_path):
+    profile = {
+        "schema_version": 1,
+        "profile_id": "小白兔 / 无影人",
+        "bindings": [{"key": "J", "skill": "lucky_seven"}],
+    }
+    request = {
+        "schema_version": 1,
+        "profile": profile,
+        "comparison_source": "browser_selected_image_digest",
+        "source_image": {
+            "sha256": "b" * 64,
+            "bytes": 2048,
+            "media_type": "image/png",
+            "width": 1536,
+            "height": 864,
+        },
+        "user_confirmed": True,
+        "automatic_skill_recognition": False,
+    }
+    with client(tmp_path) as http:
+        reply = http.post("/api/input-profile/confirmation", json=request)
+        assert reply.status_code == 200
+        receipt = reply.json()
+        assert receipt["profile"] == profile
+        assert receipt["comparison_source"] == "browser_selected_image_digest"
+        assert receipt["source_image"]["image_bytes_uploaded"] is False
+        assert receipt["recognition"]["automatic_skill_recognition"] is False
+        assert len(receipt["receipt_sha256"]) == 64
+
+        live = {
+            **request,
+            "comparison_source": "live_window_manual_comparison",
+            "source_image": None,
+        }
+        live_receipt = http.post("/api/input-profile/confirmation", json=live)
+        assert live_receipt.status_code == 200
+        assert live_receipt.json()["source_image"] is None
+
+        mismatched = {**request, "comparison_source": "live_window_manual_comparison"}
+        assert http.post("/api/input-profile/confirmation", json=mismatched).status_code == 422
+        claimed = {**request, "automatic_skill_recognition": True}
+        assert http.post("/api/input-profile/confirmation", json=claimed).status_code == 422
+        huge = {
+            **request,
+            "source_image": {**request["source_image"], "width": 8192, "height": 8192},
+        }
+        assert http.post("/api/input-profile/confirmation", json=huge).status_code == 422
+        assert http.get("/api/jobs").json() == []
