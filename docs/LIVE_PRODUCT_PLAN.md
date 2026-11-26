@@ -44,6 +44,8 @@ flowchart TD
 
 跨窗口只读入口现可把玩家确认的可见窗口截图转换为 `ImageFrame`，在同一像素哈希下运行感知和时序状态估计，并生成玩家可看的识别框图。原图、识别结果、belief 与窗口身份写入同一可复验证据目录。当前可执行模式仅为项目自有 `synthetic-fixture` 颜色基线，尺寸漂移会暂停会话；这证明数据链路已经从另一个真实 Windows 窗口接通，不证明国服画面识别率，也不发送输入。下一门禁是把经独立录像验收的国服模型接入同一接口并在获准环境做只读观察。
 
+同一入口现在也能装载本地 ONNX 与严格 manifest。模型文件哈希、声明域、类别、阈值和实际 Runtime 设置进入 schema 2 证据，识别框叠加到真实跨窗口截图；模型哈希不符会在采集前失败。该模式故意不调用 fixture HUD 解析，地图、HP、MP 与 actionability 始终未知，因此模型框不能直接触发移动或攻击。仓库随附模型仍只覆盖合成域；国服只读观察必须另有 `authorized_recordings` 模型及对应独立评测。
+
 五项长期复用资产是游戏知识库、素材索引、数据集工厂、模拟器、独立验证平台。模拟器真值只供独立评测，视觉决策只能看到当前输入源能观察到的信息。新增地图主要新增地图包与样本，新增职业主要新增能力包、角色键位和对应测试。[运行合同](https://github.com/www1350/maple-vision-platform/blob/main/docs/TASK_RUNTIME.md) · [职业包](https://github.com/www1350/maple-vision-platform/blob/main/docs/CLASS_PACKAGES.md) · [任务配置](https://github.com/www1350/maple-vision-platform/blob/main/docs/MISSION_PROGRAMS.md)
 
 ## 三、第一条路线怎样打通

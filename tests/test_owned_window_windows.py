@@ -115,10 +115,12 @@ def test_native_external_window_pixels_feed_player_visible_observation(tmp_path)
 
     from maple_vision.desktop_observation import (
         fixture_desktop_observation_session,
+        onnx_desktop_observation_session,
         verify_desktop_observation_evidence,
         write_desktop_observation_evidence,
     )
     from maple_vision.desktop_window import DesktopWindowSession, NativeWindowsBackend
+    from maple_vision.onnx_detector import OnnxDetector
     from maple_vision.scene import (
         BAR_BG,
         BAR_WIDTH,
@@ -171,6 +173,15 @@ def test_native_external_window_pixels_feed_player_visible_observation(tmp_path)
         result = fixture_desktop_observation_session(desktop).observe()
         assert result.observation.map_id == "meadow"
         assert result.belief.actionable
+        fixture_events = list(desktop.events)
+        model_root = Path(__file__).resolve().parents[1] / "examples" / "lifecycle-model"
+        detector = OnnxDetector(model_root / "model.onnx", model_root / "manifest.json")
+        model_result = onnx_desktop_observation_session(desktop, detector).observe()
+        assert {item.class_id for item in model_result.observation.detections} >= {
+            "player",
+            "monster",
+        }
+        assert not model_result.belief.actionable
         desktop.close()
 
         output = (
@@ -178,10 +189,21 @@ def test_native_external_window_pixels_feed_player_visible_observation(tmp_path)
             if os.environ.get("GITHUB_ACTIONS")
             else tmp_path / "windows-observation-session"
         )
-        write_desktop_observation_evidence(output, result, receipt=receipt, events=desktop.events)
+        write_desktop_observation_evidence(output, result, receipt=receipt, events=fixture_events)
         verified = verify_desktop_observation_evidence(output)
         assert verified["status"] == "known"
         assert verified["actionable"] is True
+        model_output = (
+            Path("artifacts/windows-onnx-observation-session")
+            if os.environ.get("GITHUB_ACTIONS")
+            else tmp_path / "windows-onnx-observation-session"
+        )
+        write_desktop_observation_evidence(
+            model_output, model_result, receipt=receipt, events=desktop.events
+        )
+        model_verified = verify_desktop_observation_evidence(model_output)
+        assert model_verified["status"] == "unknown"
+        assert model_verified["actionable"] is False
     finally:
         root.destroy()
 

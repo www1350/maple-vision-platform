@@ -19,6 +19,12 @@ maple-vision-window-check --title-exact "Maple Vision Capture Target" --output a
 maple-vision-window-observe --title-exact "Maple Vision Fixture Observation" --perception synthetic-fixture --output artifacts\window-observation
 ```
 
+安装 `inference` 依赖后，也可显式选择本地、哈希绑定的 ONNX 检测器。该模式只把模型框画到同一张跨窗口截图上；在独立地图/HUD 识别器通过前，地图、HP、MP 和动作授权固定保持未知。证据保存模型 manifest、实际加载哈希、阈值与 ONNX Runtime 设置。
+
+```powershell
+maple-vision-window-observe --title-exact "Authorized Recording Window" --perception onnx-detector --model model.onnx --manifest manifest.json --output artifacts\window-model-observation
+```
+
 也可把工作台「角色键位」页导出的确认凭证直接带入练习窗口；窗口会预填该 profile 中唯一的 `lucky_seven` 字母键，玩家仍须看清图块并点击确认。改成与凭证不同的键会被阻断，施放回执保存角色 profile 和收据哈希。
 
 ```powershell

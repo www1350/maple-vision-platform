@@ -4,23 +4,63 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Callable
-from dataclasses import dataclass, replace
+from collections.abc import Callable, Mapping
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Protocol
 
 from PIL import Image, ImageDraw
 
+from .contracts import Detection, Status
 from .desktop_window import DesktopFrame, DesktopWindowSession
+from .onnx_detector import ModelManifest, OnnxDetector
 from .scene import ImageFrame
 from .state_estimation import BeliefState, TemporalStateEstimator
-from .vision import PixelPerception, VisualObservation
+from .vision import Detector, PixelPerception, VisualObservation
 
 
 class FramePerception(Protocol):
     """Pixel-only perception surface accepted by the desktop bridge."""
 
     def observe(self, frame: ImageFrame) -> VisualObservation: ...
+
+
+class DetectorOnlyPerception:
+    """Expose detector boxes without inventing map, HUD or actionability."""
+
+    def __init__(self, detector: Detector, *, max_detections: int = 128) -> None:
+        if type(max_detections) is not int or not 1 <= max_detections <= 256:
+            raise ValueError("desktop detector limit must be in [1, 256]")
+        self.detector = detector
+        self.max_detections = max_detections
+
+    def observe(self, frame: ImageFrame) -> VisualObservation:
+        detections = self.detector.detect(frame)
+        if not isinstance(detections, tuple) or any(
+            not isinstance(detection, Detection) for detection in detections
+        ):
+            raise ValueError("desktop model detections must be immutable Detection values")
+        if len(detections) > self.max_detections:
+            raise ValueError("desktop model detections exceed the bounded state budget")
+        if any(
+            detection.bbox[2] > frame.width or detection.bbox[3] > frame.height
+            for detection in detections
+        ):
+            raise ValueError("desktop model detection box must be inside the captured frame")
+        players = tuple(item for item in detections if item.class_id == "player")
+        confidence = players[0].confidence if len(players) == 1 else 0.0
+        return VisualObservation(
+            frame.sequence,
+            frame.timestamp_ms,
+            Status.UNKNOWN,
+            confidence,
+            detections,
+            None,
+            None,
+            None,
+            False,
+            "detector-only-v1",
+        )
 
 
 @dataclass(frozen=True)
@@ -31,11 +71,14 @@ class DesktopObservation:
     observation: VisualObservation
     belief: BeliefState
     perception_mode: str
+    perception_identity: Mapping[str, object]
+    limitations: tuple[str, ...]
 
     def manifest(self) -> dict[str, object]:
         return {
             "scope": "project_owned_external_window_observation",
             "perception_mode": self.perception_mode,
+            "perception_identity": dict(self.perception_identity),
             "frame": self.frame.manifest(),
             "observation": self.belief.to_dict()["observation"],
             "belief": self.belief.to_dict(),
@@ -52,6 +95,8 @@ class DesktopObservationSession:
         *,
         estimator: TemporalStateEstimator | None = None,
         perception_mode: str,
+        perception_identity: Mapping[str, object],
+        limitations: tuple[str, ...],
         expected_size: tuple[int, int] | None = None,
         now_ms: Callable[[], int] | None = None,
     ) -> None:
@@ -71,6 +116,16 @@ class DesktopObservationSession:
         self.perception = perception
         self.estimator = estimator or TemporalStateEstimator()
         self.perception_mode = perception_mode
+        if not isinstance(perception_identity, Mapping) or not perception_identity:
+            raise ValueError("desktop perception identity must be a non-empty mapping")
+        if (
+            not isinstance(limitations, tuple)
+            or not limitations
+            or any(not isinstance(item, str) or not item for item in limitations)
+        ):
+            raise ValueError("desktop observation limitations must be non-empty text")
+        self.perception_identity = dict(perception_identity)
+        self.limitations = limitations
         self.expected_size = expected_size
         self.now_ms = now_ms or (lambda: self.desktop.clock() // 1_000_000)
 
@@ -94,7 +149,14 @@ class DesktopObservationSession:
         raw = self.perception.observe(image_frame)
         observation = replace(raw, source_id=f"external-window:{self.perception_mode}")
         belief = self.estimator.update(observation, self.now_ms())
-        result = DesktopObservation(desktop_frame, observation, belief, self.perception_mode)
+        result = DesktopObservation(
+            desktop_frame,
+            observation,
+            belief,
+            self.perception_mode,
+            self.perception_identity,
+            self.limitations,
+        )
         self.desktop.events.append(
             {
                 "kind": "observation_derived",
@@ -117,7 +179,45 @@ def fixture_desktop_observation_session(
         desktop,
         PixelPerception(),
         perception_mode="synthetic_fixture_palette_v2",
+        perception_identity={
+            "implementation": "maple_vision.vision.PixelPerception",
+            "model_manifest": None,
+        },
+        limitations=(
+            "fixture palette mode validates plumbing, not official-client perception accuracy",
+        ),
         expected_size=(320, 192),
+    )
+
+
+def onnx_desktop_observation_session(
+    desktop: DesktopWindowSession,
+    detector: OnnxDetector,
+) -> DesktopObservationSession:
+    """Hash-bound model boxes only; map and HUD domains remain explicitly unknown."""
+    if type(detector) is not OnnxDetector:
+        raise ValueError("desktop ONNX mode requires the native hash-bound OnnxDetector")
+    if detector.loaded_model_sha256 != detector.manifest.model_sha256:
+        raise ValueError("desktop ONNX model is not bound to its manifest hash")
+    return DesktopObservationSession(
+        desktop,
+        DetectorOnlyPerception(detector),
+        perception_mode="onnx_detector_only_v1",
+        perception_identity={
+            "implementation": "maple_vision.onnx_detector.OnnxDetector",
+            "model_manifest": asdict(detector.manifest),
+            "loaded_model_sha256": detector.loaded_model_sha256,
+            "inference_options": {
+                "confidence_threshold": detector.confidence_threshold,
+                "iou_threshold": detector.iou_threshold,
+                "max_detections": 128,
+            },
+            "runtime_settings": detector.runtime_settings,
+        },
+        limitations=(
+            "detector boxes are visible, but map, HP and MP remain unknown",
+            "model manifest scope is evidence, not official-client permission or accuracy",
+        ),
     )
 
 
@@ -153,7 +253,7 @@ def write_desktop_observation_evidence(
     result.frame.image.save(capture)
     _overlay(result).save(overlay)
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         **result.manifest(),
         "receipt": receipt,
         "files": {
@@ -163,7 +263,7 @@ def write_desktop_observation_evidence(
         "events": events,
         "limitations": [
             "visible pixels from a player-confirmed external window only",
-            "fixture palette mode validates plumbing, not official-client perception accuracy",
+            *result.limitations,
             "no input is sent and no official-client permission is established",
         ],
     }
@@ -193,7 +293,7 @@ def verify_desktop_observation_evidence(output: Path) -> dict[str, object]:
         raise ValueError("invalid desktop observation JSON") from exc
     if (
         not isinstance(report, dict)
-        or report.get("schema_version") != 1
+        or report.get("schema_version") not in {1, 2}
         or report.get("scope") != "project_owned_external_window_observation"
         or not isinstance(report.get("files"), dict)
         or not isinstance(report.get("frame"), dict)
@@ -201,6 +301,41 @@ def verify_desktop_observation_evidence(output: Path) -> dict[str, object]:
         or not isinstance(report.get("belief"), dict)
     ):
         raise ValueError("unsupported desktop observation evidence")
+    if report["schema_version"] == 2:
+        identity = report.get("perception_identity")
+        mode = report.get("perception_mode")
+        if not isinstance(identity, dict):
+            raise ValueError("desktop observation perception identity is missing")
+        if mode == "synthetic_fixture_palette_v2":
+            if identity != {
+                "implementation": "maple_vision.vision.PixelPerception",
+                "model_manifest": None,
+            }:
+                raise ValueError("desktop fixture perception identity changed")
+        elif mode == "onnx_detector_only_v1":
+            model = identity.get("model_manifest")
+            if (
+                set(identity)
+                != {
+                    "implementation",
+                    "model_manifest",
+                    "loaded_model_sha256",
+                    "inference_options",
+                    "runtime_settings",
+                }
+                or identity.get("implementation") != "maple_vision.onnx_detector.OnnxDetector"
+                or not isinstance(model, dict)
+                or not isinstance(model.get("class_names"), list)
+            ):
+                raise ValueError("invalid desktop ONNX perception identity")
+            try:
+                parsed = ModelManifest(**{**model, "class_names": tuple(model["class_names"])})
+            except (TypeError, ValueError) as exc:
+                raise ValueError("invalid desktop ONNX model manifest") from exc
+            if identity.get("loaded_model_sha256") != parsed.model_sha256:
+                raise ValueError("desktop ONNX loaded model hash does not match its manifest")
+        else:
+            raise ValueError("unsupported desktop observation perception mode")
     files = report["files"]
     for name in ("capture.png", "recognized-overlay.png"):
         if hashlib.sha256((output / name).read_bytes()).hexdigest() != files.get(name):
@@ -220,10 +355,23 @@ def verify_desktop_observation_evidence(output: Path) -> dict[str, object]:
         or belief.get("observation") != observation
     ):
         raise ValueError("desktop observation results are not bound to the captured frame")
+    if report["schema_version"] == 2 and observation.get("source_id") != (
+        f"external-window:{report['perception_mode']}"
+    ):
+        raise ValueError("desktop observation source does not match its perception mode")
+    if report.get("perception_mode") == "onnx_detector_only_v1" and (
+        observation.get("status") != Status.UNKNOWN.value
+        or observation.get("hp_ratio") is not None
+        or observation.get("mp_ratio") is not None
+        or observation.get("map_id") is not None
+        or belief.get("actionable") is not False
+    ):
+        raise ValueError("detector-only desktop evidence invented an actionable HUD state")
     return {
         "verified": True,
         "scope": report["scope"],
         "perception_mode": report.get("perception_mode"),
+        "perception_identity": report.get("perception_identity"),
         "frame_sequence": frame.get("sequence"),
         "rgb_sha256": frame.get("rgb_sha256"),
         "status": observation.get("status"),

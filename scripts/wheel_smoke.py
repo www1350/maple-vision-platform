@@ -119,12 +119,22 @@ def smoke(wheel: Path, checkout: Path) -> dict[str, Any]:
         require(observation_check.is_file(), "installed desktop observation launcher missing")
         observation_help = execute([str(observation_check), "--help"])
         require(
-            "--perception" in observation_help and "synthetic-fixture" in observation_help,
-            "desktop observation help does not expose its fixture-only scope",
+            all(
+                option in observation_help
+                for option in (
+                    "--perception",
+                    "synthetic-fixture",
+                    "onnx-detector",
+                    "--model",
+                    "--manifest",
+                )
+            ),
+            "desktop observation help does not expose its explicit perception scopes",
         )
         checks["desktop_observation_entrypoint"] = {
             "installed": True,
             "fixture_scope_explicit": True,
+            "onnx_detector_scope_explicit": True,
         }
         installed = strict_json(
             execute(
