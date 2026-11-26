@@ -521,11 +521,17 @@ bind("keys-export-confirmation", "click", () => {
   catch { text("keys-status", "保存的确认凭证无效，请重新核对并保存。"); }
 });
 let keyEditRevision = 0, keyImageRevision = 0, keyImageEvidence = null, keyImageBusy = false;
+el("keys-detail").addEventListener("change", () => {
+  el("keys-image").style.maxWidth = el("keys-detail").checked ? "none" : "100%";
+});
 function clearKeyImage() {
   keyImageRevision++; keyImageEvidence = null; keyImageBusy = false;
   const image = el("keys-image");
   if (image.hasAttribute("src")) URL.revokeObjectURL(image.src);
   image.removeAttribute("src");
+  image.style.maxWidth = "100%";
+  el("keys-detail").checked = false;
+  show("keys-detail-toggle", false);
   el("keys-image-file").value = "";
   show("keys-image", false);
 }
@@ -564,6 +570,7 @@ bind("keys-image-file", "change", async () => {
       sha256:[...new Uint8Array(digest)].map(value => value.toString(16).padStart(2,"0")).join(""),
       bytes:file.size, media_type:file.type, width:image.naturalWidth, height:image.naturalHeight
     };
+    show("keys-detail-toggle", true);
     text("keys-status", "截图已在浏览器内计算哈希；请人工核对技能和键位后保存。未自动识别技能。");
   } catch (error) {
     if (revision === keyImageRevision) { clearKeyImage(); text("keys-status", "截图读取失败：" + error.message); }
@@ -624,9 +631,9 @@ bind("keys-form", "submit", async () => {
     text("keys-status", "已解除此角色的全部绑定；空表不生成确认凭证。");
     return;
   }
+  const imageRevision = keyImageRevision;
   try {
     const inputProfile = {schema_version:1, profile_id:profile, bindings};
-    await api("input-profile", inputProfile);
     const receipt = await api("input-profile/confirmation", {
       schema_version:1,
       profile:inputProfile,
@@ -635,11 +642,11 @@ bind("keys-form", "submit", async () => {
       user_confirmed:true,
       automatic_skill_recognition:false
     });
-    if (revision !== keyEditRevision) return;
+    if (revision !== keyEditRevision || imageRevision !== keyImageRevision) return;
     localStorage.setItem(keyProfileId(), result.join("\n"));
     localStorage.setItem(keyConfirmationId(profile), JSON.stringify(receipt));
   } catch (error) {
-      if (revision !== keyEditRevision) return;
+      if (revision !== keyEditRevision || imageRevision !== keyImageRevision) return;
       const messages = {
         "input profile contains duplicate normalized keys":"同一个键位出现了两次，请核对。",
         "input profile contains duplicate normalized skills":"同一个技能出现了两次，请核对。"
