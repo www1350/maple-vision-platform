@@ -146,25 +146,26 @@ def smoke(wheel: Path, checkout: Path) -> dict[str, Any]:
 import json
 import tempfile
 from pathlib import Path
-from PIL import Image
-from maple_vision.owned_route_playback import (
-    build_route_playback,
-    finalize_route_playback,
-    verify_route_playback,
-)
+from maple_vision.owned_route_execution import OwnedRouteExecution
+from maple_vision.owned_route_playback import finalize_route_playback, verify_route_playback
 from maple_vision.owned_session import OwnedSession
 session = OwnedSession()
 session.confirm("J")
 route_dir = Path(tempfile.mkdtemp()) / "route"
 route = session.run_layered_route(route_dir)
-schedule = build_route_playback(route_dir, route)
-shown = tuple(
-    (item.source_sequence, Image.open(item.path).convert("RGB"))
-    for item in schedule
-    if item.source_sequence <= 72
-)
+execution = OwnedRouteExecution(route_dir, route)
+shown = []
+while execution.last_source_sequence != 72:
+    item = execution.step()
+    if item.source_sequence % 4 == 0 or item.labels:
+        shown.append((item.source_sequence, item.image))
+executed = execution.cancel("manual_takeover")
 finalize_route_playback(
-    route_dir, route, shown, status="taken_over", reason="manual_takeover"
+    route_dir,
+    route | {"execution": executed},
+    tuple(shown),
+    status="taken_over",
+    reason="manual_takeover",
 )
 route_playback = verify_route_playback(route_dir)
 session.arm()
@@ -187,7 +188,8 @@ print(json.dumps({
             and len(trial["route"]["navigation"]) == 2
             and [item["key"] for item in trial["route"]["casts"]] == ["J"] * 4
             and trial["route_playback"]["status"] == "taken_over"
-            and trial["route_playback"]["timeline_events"] == 3,
+            and trial["route_playback"]["timeline_events"] == 3
+            and trial["route_playback"]["execution"]["cancelled_steps"] == 193,
             "packaged practice trial failed",
         )
         checks["owned_practice_session"] = trial

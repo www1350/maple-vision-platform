@@ -2,9 +2,9 @@ import json
 from pathlib import Path
 
 import pytest
-from PIL import Image
 
 from maple_vision.input_bindings import InputBindingProfile, KeyBinding, confirm_input_profile
+from maple_vision.owned_route_execution import OwnedRouteExecution, verify_route_execution
 from maple_vision.owned_route_playback import (
     build_route_playback,
     finalize_route_playback,
@@ -136,14 +136,28 @@ def test_confirmed_nondefault_key_runs_the_existing_layered_route(tmp_path):
         250,
         262,
     ]
-    shown = tuple(
-        (item.source_sequence, Image.open(item.path).convert("RGB"))
-        for item in schedule
-        if item.source_sequence <= 72
-    )
+    execution = OwnedRouteExecution(tmp_path / "route", review)
+    shown_rows = []
+    while execution.last_source_sequence != 72:
+        item = execution.step()
+        if item.source_sequence % 4 == 0 or item.labels:
+            shown_rows.append((item.source_sequence, item.image))
+    executed = execution.cancel("manual_takeover")
+    assert (executed["executed_steps"], executed["planned_steps"]) == (73, 266)
+    assert executed["last_source_sequence"] == 72
+    assert verify_route_execution(tmp_path / "route", review | {"execution": executed}) == {
+        "verified": True,
+        "status": "taken_over",
+        "executed_steps": 73,
+        "planned_steps": 266,
+        "last_source_sequence": 72,
+        "cancelled_steps": 193,
+        "journal_sha256": executed["journal_sha256"],
+    }
+    shown = tuple(shown_rows)
     updated = finalize_route_playback(
         tmp_path / "route",
-        review,
+        review | {"execution": executed},
         shown,
         status="taken_over",
         reason="manual_takeover",
@@ -163,7 +177,20 @@ def test_confirmed_nondefault_key_runs_the_existing_layered_route(tmp_path):
         "timeline_events": 3,
         "displayed_frames": len(shown),
         "replay_sha256": updated["playback"]["replay_sha256"],
+        "execution": {
+            "verified": True,
+            "status": "taken_over",
+            "executed_steps": 73,
+            "planned_steps": 266,
+            "last_source_sequence": 72,
+            "cancelled_steps": 193,
+            "journal_sha256": executed["journal_sha256"],
+        },
     }
+    journal = tmp_path / "route/route-execution.jsonl"
+    journal.write_bytes(journal.read_bytes() + b"\n")
+    with pytest.raises(ValueError, match="execution summary"):
+        verify_route_playback(tmp_path / "route")
 
 
 def test_invalid_rebinding_and_focus_loss_cancel_an_unused_arm():
@@ -178,3 +205,31 @@ def test_invalid_rebinding_and_focus_loss_cancel_an_unused_arm():
     assert not session.press("s", focused=False)["accepted"]
     assert not session.press("s", focused=True)["accepted"]
     assert session.simulator.snapshot().player.ammo == 200
+
+
+def test_stepwise_route_can_execute_the_entire_verified_plan(tmp_path):
+    session = OwnedSession(EXAMPLES)
+    session.confirm("J")
+    route = tmp_path / "complete-route"
+    review = session.run_layered_route(route)
+    execution = OwnedRouteExecution(route, review)
+    shown = []
+    while execution.active:
+        item = execution.step()
+        if item.source_sequence % 4 == 0 or item.labels or not execution.active:
+            shown.append((item.source_sequence, item.image))
+    assert execution.summary is not None
+    assert execution.summary["status"] == "completed"
+    assert execution.summary["executed_steps"] == execution.summary["planned_steps"] == 266
+    updated = finalize_route_playback(
+        route,
+        review | {"execution": execution.summary},
+        tuple(shown),
+        status="completed",
+        reason=None,
+    )
+    verified = verify_route_playback(route)
+    assert verified["status"] == "completed"
+    assert verified["timeline_events"] == 6
+    assert verified["execution"]["cancelled_steps"] == 0
+    assert (route / updated["playback"]["replay"]).name == "route-playback.gif"

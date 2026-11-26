@@ -14,11 +14,8 @@ from PIL import Image, ImageDraw, ImageTk
 
 from .input_bindings import load_input_profile_confirmation
 from .owned_key_image import key_tile, read_key_tile
-from .owned_route_playback import (
-    RoutePlaybackFrame,
-    build_route_playback,
-    finalize_route_playback,
-)
+from .owned_route_execution import OwnedRouteExecution
+from .owned_route_playback import finalize_route_playback
 from .owned_session import OwnedSession
 from .scene import SceneRenderer
 
@@ -45,13 +42,12 @@ class OwnedWindow:
         self._replay: list[Image.Image] = []
         self._route_active = False
         self._route_timer: str | None = None
-        self._route_schedule: tuple[RoutePlaybackFrame, ...] = ()
-        self._route_index = 0
+        self._route_execution: OwnedRouteExecution | None = None
         self._route_sequence: int | None = None
         self._route_output: Path | None = None
         self._route_review: dict[str, Any] | None = None
         self._route_displayed: list[tuple[int, Image.Image]] = []
-        self.route_playback_interval_ms = 80
+        self.route_playback_interval_ms = 20
         self.root.title("Maple Vision · 标飞单次施放")
         frame = ttk.Frame(root, padding=12)
         frame.pack()
@@ -80,7 +76,7 @@ class OwnedWindow:
         self.arm_button = ttk.Button(actions, text="施放一次", command=self.arm)
         self.arm_button.pack(side="left")
         self.route_button = ttk.Button(
-            actions, text="生成双图离线路线", command=self.run_layered_route
+            actions, text="执行双图离线路线", command=self.run_layered_route
         )
         self.route_button.pack(side="left", padx=8)
         self.takeover_button = ttk.Button(actions, text="人工接管（Esc）", command=self.takeover)
@@ -159,44 +155,50 @@ class OwnedWindow:
         output = Path(parent) / datetime.now().strftime("maple-layered-route-%Y%m%d-%H%M%S")
         try:
             review = self.session.run_layered_route(output)
-            schedule = build_route_playback(output, review)
+            execution = OwnedRouteExecution(output, review)
         except (OSError, ValueError) as exc:
             self._feedback(f"双图路线生成失败：{exc}")
             return
         self._route_active = True
-        self._route_schedule = schedule
-        self._route_index = 0
+        self._route_execution = execution
         self._route_sequence = None
         self._route_output = output
         self._route_review = review
         self._route_displayed.clear()
         self.surface.focus_set()
-        self._play_route_frame()
+        self._execute_route_step()
 
-    def _play_route_frame(self) -> None:
+    def _execute_route_step(self) -> None:
         self._route_timer = None
-        if not self._route_active:
+        execution = self._route_execution
+        if not self._route_active or execution is None:
             return
-        if self._route_index >= len(self._route_schedule):
-            self._finish_route_playback("completed", None)
+        try:
+            item = execution.step()
+        except (OSError, ValueError) as exc:
+            self._route_active = False
+            self.session.takeover("route_execution_failed")
+            self._feedback(f"双图逐步执行失败：{exc}。重新开始须再次确认键位。")
             return
-        item = self._route_schedule[self._route_index]
-        with Image.open(item.path) as source:
-            image = source.convert("RGB").resize((640, 384), Image.Resampling.NEAREST)
-        draw = ImageDraw.Draw(image)
-        draw.rectangle((0, 0, 640, 28), fill=(23, 31, 47))
-        labels = " · ".join(item.labels) if item.labels else "route"
-        draw.text((8, 6), f"SEQ {item.source_sequence} · {labels}", fill="white")
-        self.photo = ImageTk.PhotoImage(image, master=self.root)
-        self.surface.itemconfigure(self._scene_item, image=self.photo)
         self._route_sequence = item.source_sequence
-        self._route_displayed.append((item.source_sequence, image))
-        self._route_index += 1
+        if item.source_sequence % 4 == 0 or item.labels or not execution.active:
+            image = item.image.resize((640, 384), Image.Resampling.NEAREST)
+            draw = ImageDraw.Draw(image)
+            draw.rectangle((0, 0, 640, 28), fill=(23, 31, 47))
+            labels = " · ".join(item.labels) if item.labels else "stepwise_execute"
+            draw.text((8, 6), f"SEQ {item.source_sequence} · {labels}", fill="white")
+            self.photo = ImageTk.PhotoImage(image, master=self.root)
+            self.surface.itemconfigure(self._scene_item, image=self.photo)
+            self._route_displayed.append((item.source_sequence, image))
         self._feedback(
-            f"双图路线回放 {self._route_index}/{len(self._route_schedule)}　｜　"
-            "按 Esc 或切走窗口接管"
+            f"双图逐步执行 {execution.index}/{len(execution.trace)}　｜　按 Esc 或切走窗口接管"
         )
-        self._route_timer = self.root.after(self.route_playback_interval_ms, self._play_route_frame)
+        if execution.active:
+            self._route_timer = self.root.after(
+                self.route_playback_interval_ms, self._execute_route_step
+            )
+        else:
+            self._finish_route_playback("completed", None)
 
     def _cancel_route_timer(self) -> None:
         if self._route_timer is not None:
@@ -209,14 +211,24 @@ class OwnedWindow:
             not self._route_active
             or self._route_output is None
             or self._route_review is None
+            or self._route_execution is None
             or not self._route_displayed
         ):
             return
         self._route_active = False
         try:
+            execution = (
+                self._route_execution.summary
+                if status == "completed"
+                else self._route_execution.cancel(reason or "manual_takeover")
+            )
+            if execution is None:
+                raise ValueError("stepwise execution summary is missing")
+            review = dict(self._route_review)
+            review["execution"] = execution
             updated = finalize_route_playback(
                 self._route_output,
-                self._route_review,
+                review,
                 tuple(self._route_displayed),
                 status=status,
                 reason=reason,
@@ -227,11 +239,11 @@ class OwnedWindow:
         playback = updated["playback"]
         if status == "completed":
             self._feedback(
-                f"双图路线回放完成。时间轴和回放：{self._route_output / playback['replay']}"
+                f"双图逐步执行完成。时间轴和回放：{self._route_output / playback['replay']}"
             )
         else:
             self._feedback(
-                f"路线已接管，停止于源序号 {playback['last_source_sequence']}。"
+                f"逐步执行已接管，停止于源序号 {playback['last_source_sequence']}。"
                 f"回放：{self._route_output / playback['replay']}。重新开始须再次确认键位。"
             )
 
