@@ -389,3 +389,5 @@ v0.2 的源代码、模型与测试提交 `f17e7487f5938acfaf312e05b8eecb242f06a
 随后加入的 Windows 跨窗口只读会话把“内部渲染帧”与“另一个桌面窗口的可见屏幕像素”分开。窗口选择必须精确匹配一个标题或 HWND；确认收据绑定句柄、进程创建时间、线程、窗口类、标题、客户区和 DPI。每次采集前后与每次派发授权前均重查身份和前台焦点，只接受最新且未过期的帧。失焦、身份变化、旧帧和人工接管会释放会话持键并进入暂停，恢复需要玩家明确触发。安装包提供 `maple-vision-window-check` 保存一帧 PNG 及 JSON 证据；Windows CI 只对项目自有 Tk 目标验收真实跨窗口采集、失焦释放和明确恢复，不发送外部输入，也不代表正式客户端或国服识别已通过。
 
 跨窗口帧现已接入统一 `VisualObservation → TemporalStateEstimator` 链，并提供 `maple-vision-window-observe` 输出原截图、识别框图和证据 JSON。观察、belief 与窗口帧共用序号和 RGB 哈希；未识别画面保持 unknown，320×192 fixture 模式遇到尺寸变化会暂停。Windows 原生验收使用另一个项目自有 Tk 顶层窗口的屏幕像素，不读取窗口内部对象。当前唯一可选感知模式明确命名为 `synthetic-fixture`，因此该增量只关闭跨窗口像素尚未进入状态链和玩家不可查看识别结果的工程缺口；国服检测器、真实窗口识别质量与外部输入仍未验收。
+
+跨窗口观察入口随后增加 `onnx-detector` 模式。它只接受 `OnnxDetector` 读取的本地模型与 manifest，并在证据中绑定实际模型 SHA-256、manifest、阈值和 Runtime 设置。模型检测框进入玩家可见叠加图，但地图、HP、MP 不从 fixture 颜色补齐，belief 固定不可执行；复核器拒绝把 detector-only 报告改成 actionable。仓库现有 lifecycle 模型的声明域仍是 `synthetic_fixture`，所以这一能力证明模型适配器可复用到外部窗口，不证明国服模型已具备，更不启用外部输入。
