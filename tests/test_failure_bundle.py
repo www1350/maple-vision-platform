@@ -15,6 +15,7 @@ from maple_vision.class_package import load_class_package
 from maple_vision.failure_bundle import export_failure_bundle, verify_failure_bundle
 from maple_vision.lab import CapabilityRunConfig, RunConfig, run_episode
 from maple_vision.map_pack import load_map_pack
+from maple_vision.mission_program import load_mission_program
 from maple_vision.runtime_pipeline import RuntimeConfig
 from maple_vision.scene_animation import bind_scene_animation
 from maple_vision.sim_types import SimAction
@@ -562,6 +563,26 @@ def test_actual_false_completion_keeps_policy_decision_and_independent_failure(
     assert terminal["decision"]["state"] == "completed"
     assert terminal["policy_evaluated"] is True
     assert verify_failure_bundle(bundle)["recorded_status"] == "failed"
+
+
+def test_conditional_branch_failure_exports_and_reinfers(tmp_path):
+    examples = Path(__file__).parents[1] / "examples"
+    source, bundle = tmp_path / "source", tmp_path / "bundle"
+    result = run_episode(
+        source,
+        RunConfig(fault="loot_false_negative"),
+        map_pack=load_map_pack(examples / "maps/branch-grove.json"),
+        runtime=RuntimeConfig(
+            mission=load_mission_program(examples / "missions/conditional-grove.json")
+        ),
+    )
+    assert result["reason"] == "conditional_branch_check_failed"
+    exported = export_failure_bundle(source, bundle)
+    assert exported["action_replay"]["independent_goal_check"] is False
+    assert exported["frames_reconstructed"] == result["steps"] + 1
+    verified = verify_failure_bundle(bundle, reinfer=True)
+    assert verified["recorded_status"] == "failed"
+    assert verified["reinference"]["frames_reinferred"] == result["steps"] + 1
 
 
 def test_video_sample_offsets_checked_without_any_decoder(tmp_path, video_bundle, monkeypatch):

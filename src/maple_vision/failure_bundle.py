@@ -317,10 +317,19 @@ def _source(root: Path) -> _Source:
             decision["state"],
             decision["reason"],
         ):
+            branch_check = summary.get("conditional_branch_check")
+            branch_mismatch = (
+                isinstance(branch_check, dict) and branch_check.get("matched") is False
+            )
+            expected_reason = (
+                "conditional_branch_check_failed"
+                if branch_mismatch
+                else "independent_goal_check_failed"
+            )
             completion_overridden = (
                 decision["state"] == "completed"
                 and summary.get("status") == "failed"
-                and summary.get("reason") == "independent_goal_check_failed"
+                and summary.get("reason") == expected_reason
             )
             if not completion_overridden:
                 raise ValueError("terminal policy evidence disagrees with run outcome")
