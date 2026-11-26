@@ -13,7 +13,7 @@ python -m maple_vision.owned_window
 python -m maple_vision.owned_window --input-confirmation input-binding-confirmation.json
 ```
 
-练习使用项目自绘 A–Z 图块和本窗口内的 Tk 键盘事件。图块识别、目标画布、模拟技能和持键状态都在本机。要生成可看的回放，在桌面会话运行 `python scripts/verify_owned_window.py --output artifacts/owned-window-demo`，打开输出目录里的 `replay.gif`；`evidence.json` 保存测试环境、确认收据摘要和观测结果。
+练习使用项目自绘 A–Z 图块和本窗口内的 Tk 键盘事件。图块识别、目标画布、模拟技能和持键状态都在本机。要生成可看的回放，在桌面会话运行 `python scripts/verify_owned_window.py --output artifacts/owned-window-demo`，打开输出目录里的 `replay.gif`；`evidence.json` 保存测试环境、确认收据摘要、观测结果，以及每张 PNG 和 GIF 的文件/解码像素哈希。可在另一进程运行 `python scripts/verify_owned_window_evidence.py artifacts/owned-window-demo`，重新打开全部媒体并拒绝替换、软链接、路径跳转或未声明文件。该清单用于检查目录内部一致性，不是签名或正式客户端实机凭证。
 
 **产品路线更新（2026-11-26）**　最终目标是玩家登录国服、确认角色键位并选定任务后，由平台在获准的实际游戏窗口完成任务并支持人工接管。当前发行版交付离线平台；国服正式服执行仍待适用许可和实机验收。[完整产品与验收方案](docs/LIVE_PRODUCT_PLAN.md)
 
