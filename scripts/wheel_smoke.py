@@ -103,6 +103,16 @@ def smoke(wheel: Path, checkout: Path) -> dict[str, Any]:
         )
         execute([str(python), "-m", "pip", "check"])
         execute([str(executable), "--help"])
+        window_check = binaries / (
+            "maple-vision-window-check.exe" if os.name == "nt" else "maple-vision-window-check"
+        )
+        require(window_check.is_file(), "installed desktop window check launcher missing")
+        window_help = execute([str(window_check), "--help"])
+        require(
+            "--title-exact" in window_help and "--handle" in window_help,
+            "desktop window check help is incomplete",
+        )
+        checks["desktop_window_entrypoint"] = {"installed": True, "read_only_help": True}
         installed = strict_json(
             execute(
                 [
