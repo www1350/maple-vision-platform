@@ -108,6 +108,85 @@ def test_native_external_window_capture_focus_and_resume(tmp_path):
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="native Windows desktop acceptance")
+def test_native_external_window_pixels_feed_player_visible_observation(tmp_path):
+    import tkinter as tk
+
+    from PIL import Image, ImageDraw, ImageTk
+
+    from maple_vision.desktop_observation import (
+        fixture_desktop_observation_session,
+        verify_desktop_observation_evidence,
+        write_desktop_observation_evidence,
+    )
+    from maple_vision.desktop_window import DesktopWindowSession, NativeWindowsBackend
+    from maple_vision.scene import (
+        BAR_BG,
+        BAR_WIDTH,
+        BAR_X,
+        HP_COLOR,
+        HP_Y,
+        HUD_BG,
+        MAP_MARKERS,
+        MP_COLOR,
+        MP_Y,
+        PALETTE,
+    )
+
+    image = Image.new("RGB", (320, 192), "#1e394c")
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((0, 0, 319, 24), fill=HUD_BG)
+    draw.rectangle((BAR_X, HP_Y + 2, BAR_X + BAR_WIDTH - 1, HP_Y + 2), fill=BAR_BG)
+    draw.rectangle((BAR_X, MP_Y + 2, BAR_X + BAR_WIDTH - 1, MP_Y + 2), fill=BAR_BG)
+    draw.rectangle((BAR_X, HP_Y + 2, BAR_X + 79, HP_Y + 2), fill=HP_COLOR)
+    draw.rectangle((BAR_X, MP_Y + 2, BAR_X + 69, MP_Y + 2), fill=MP_COLOR)
+    draw.rectangle((300, 6, 311, 17), fill=MAP_MARKERS["meadow"])
+    draw.rectangle((100, 90, 111, 113), fill=PALETTE["player"])
+    draw.rectangle((170, 98, 185, 117), fill=PALETTE["monster"])
+
+    title = f"Maple Vision Observation Target {os.getpid()}"
+    root = tk.Tk()
+    try:
+        root.title(title)
+        root.geometry("320x192+80+80")
+        canvas = tk.Canvas(root, width=320, height=192, borderwidth=0, highlightthickness=0)
+        canvas.pack(fill="both", expand=True)
+        photo = ImageTk.PhotoImage(image)
+        canvas.create_image(0, 0, anchor="nw", image=photo)
+        root.update_idletasks()
+        root.deiconify()
+        root.lift()
+        root.focus_force()
+        root.update()
+        time.sleep(0.15)
+
+        backend = NativeWindowsBackend()
+        identity = next(item for item in backend.list_windows() if item.title == title)
+        assert (
+            identity.client_bounds[2] - identity.client_bounds[0],
+            identity.client_bounds[3] - identity.client_bounds[1],
+        ) == (320, 192)
+        desktop = DesktopWindowSession(backend, release_key=lambda _: None)
+        desktop.select(identity.handle)
+        receipt = desktop.confirm()
+        result = fixture_desktop_observation_session(desktop).observe()
+        assert result.observation.map_id == "meadow"
+        assert result.belief.actionable
+        desktop.close()
+
+        output = (
+            Path("artifacts/windows-observation-session")
+            if os.environ.get("GITHUB_ACTIONS")
+            else tmp_path / "windows-observation-session"
+        )
+        write_desktop_observation_evidence(output, result, receipt=receipt, events=desktop.events)
+        verified = verify_desktop_observation_evidence(output)
+        assert verified["status"] == "known"
+        assert verified["actionable"] is True
+    finally:
+        root.destroy()
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="native Windows desktop acceptance")
 def test_windows_first_use_replay(tmp_path):
     root = Path(__file__).resolve().parents[1]
     parent = root / "artifacts" if os.environ.get("GITHUB_ACTIONS") == "true" else tmp_path
