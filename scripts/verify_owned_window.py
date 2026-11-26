@@ -13,6 +13,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageTk
 
 from maple_vision.input_bindings import InputBindingProfile, KeyBinding, confirm_input_profile
+from maple_vision.owned_evidence import seal_owned_window_evidence, verify_owned_window_evidence
 from maple_vision.owned_window import OwnedWindow
 from maple_vision.scene import ImageFrame
 from maple_vision.vision import PixelPerception
@@ -93,7 +94,7 @@ def verify(root: tk.Tk, examples: Path, output: Path) -> dict:
     root.update()
     if app.read_display_key() != key:
         raise RuntimeError("visible rebound key was not recognized")
-    ImageTk.getimage(app.key_photo).save(output / "confirmed-key.png")
+    ImageTk.getimage(app.key_photo).convert("RGB").save(output / "confirmed-key.png")
     confirm()
     before = capture("1. Role binding confirmed: J")
     app.arm_button.invoke()
@@ -169,7 +170,7 @@ def verify(root: tk.Tk, examples: Path, output: Path) -> dict:
         if replay.n_frames != len(captures):
             raise RuntimeError("incomplete replay")
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "verified": True,
         "platform": platform.system(),
         "platform_release": platform.release(),
@@ -214,9 +215,14 @@ def main() -> None:
             report = verify(root, args.examples, staged)
         finally:
             root.destroy()
+        report = seal_owned_window_evidence(report, staged)
         (staged / "evidence.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        verification = verify_owned_window_evidence(staged)
         staged.rename(output)
-    print(f"Verified {report['scope']} on {report['platform']}: {output}")
+    print(
+        f"Verified {report['scope']} on {report['platform']} "
+        f"({verification['manifest_sha256']}): {output}"
+    )
 
 
 if __name__ == "__main__":
