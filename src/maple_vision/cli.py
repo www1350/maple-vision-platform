@@ -196,6 +196,11 @@ def _parser() -> argparse.ArgumentParser:
     label_command = recording_commands.add_parser("label-template")
     label_command.add_argument("path", type=Path)
     label_command.add_argument("output", type=Path)
+    movement_labels = recording_commands.add_parser(
+        "movement-labels", help="create source-bound, initially unreviewed movement labels"
+    )
+    movement_labels.add_argument("path", type=Path)
+    movement_labels.add_argument("--output", type=Path, required=True)
     audit = recording_commands.add_parser("audit-route")
     for name in ("path", "labels", "graph", "output"):
         audit.add_argument(name, type=Path)
@@ -369,6 +374,16 @@ def _parser() -> argparse.ArgumentParser:
     tracking_check.add_argument("replay", type=Path)
     tracking_check.add_argument("--model", type=Path)
     tracking_check.add_argument("--manifest", type=Path)
+    movement_score = recording_commands.add_parser(
+        "benchmark-movement", help="compare recomputed movement candidates with reviewed labels"
+    )
+    movement_score.add_argument("path", type=Path)
+    movement_score.add_argument("replay", type=Path)
+    movement_score.add_argument("--labels", type=Path, required=True)
+    movement_score.add_argument("--output", type=Path, required=True)
+    movement_score.add_argument("--model", type=Path)
+    movement_score.add_argument("--manifest", type=Path)
+    movement_score.add_argument("--actor-iou-threshold", type=float, default=0.5)
     model = commands.add_parser("model", help="local-only CPU YOLO training and ONNX export")
     model_commands = model.add_subparsers(dest="operation", required=True)
     train = model_commands.add_parser("train")
@@ -815,6 +830,10 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 else None,
             )
         return validate_dataset(args.path)
+    if args.command == "recording" and args.operation == "movement-labels":
+        from .recording_movement_evaluation import create_movement_label_template
+
+        return create_movement_label_template(args.path, args.output)
     if args.command == "recording" and args.operation == "measure-strike":
         from .input_bindings import load_input_profile
         from .recording_evaluation import measure_strike
@@ -916,6 +935,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         "benchmark",
         "track",
         "verify-tracking",
+        "benchmark-movement",
     }:
         from .recordings import import_recording, validate_recording
 
@@ -1011,6 +1031,17 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 development_datasets=args.development_dataset,
             )
         if args.command == "recording":
+            if args.operation == "benchmark-movement":
+                from .recording_movement_evaluation import benchmark_movement_recording
+
+                return benchmark_movement_recording(
+                    args.path,
+                    args.replay,
+                    args.labels,
+                    args.output,
+                    detector=detector,
+                    actor_iou_threshold=args.actor_iou_threshold,
+                )
             if args.operation == "track":
                 from .catalog import strict_json
                 from .local_files import read_regular
