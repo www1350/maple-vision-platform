@@ -1,0 +1,88 @@
+{
+  "verified": true,
+  "trial_id": "dead-forest-ii-recording-20261127-with-historical-synthetic-reference",
+  "scope": "synthetic_fixture_and_separate_read_only_recording",
+  "evidence_lanes": {
+    "real_recording": {
+      "persistent_reports_verified": true,
+      "raw_pixels_reverified": false,
+      "coverage_sha256": "b961de914d0abbb05845a0545e315faefe5e555d7ead56b00e85e43542ddc247",
+      "frames": 3032,
+      "reviewed_visible_events": 7
+    },
+    "synthetic_mechanics": {
+      "replay_verified": true,
+      "steps_replayed": 266,
+      "goal_verified": true,
+      "reinference_verified": true,
+      "frames_reinferred": 267,
+      "perception_reproduced": true,
+      "policy_reproduced": true,
+      "steps": 266,
+      "casts": 4,
+      "cast_witnesses": [
+        {
+          "sequence": 71,
+          "map_id": "drill_forest_1",
+          "skill": "lucky_seven",
+          "grounded": false,
+          "hit_segments": 2,
+          "ammo_before": 200,
+          "ammo_after": 198
+        },
+        {
+          "sequence": 103,
+          "map_id": "drill_forest_1",
+          "skill": "lucky_seven",
+          "grounded": true,
+          "hit_segments": 2,
+          "ammo_before": 198,
+          "ammo_after": 196
+        },
+        {
+          "sequence": 250,
+          "map_id": "drill_forest_2",
+          "skill": "lucky_seven",
+          "grounded": false,
+          "hit_segments": 2,
+          "ammo_before": 196,
+          "ammo_after": 194
+        },
+        {
+          "sequence": 262,
+          "map_id": "drill_forest_2",
+          "skill": "lucky_seven",
+          "grounded": false,
+          "hit_segments": 2,
+          "ammo_before": 194,
+          "ammo_after": 192
+        }
+      ],
+      "hit_segments": 8,
+      "kills": 2
+    },
+    "role_binding": {
+      "profile_id": "synthetic-star-throw-demo",
+      "key": "S",
+      "skill": "lucky_seven",
+      "accepted_dispatches": 4,
+      "wrong_profile_denials": 12,
+      "wrong_run_replay_verified": true,
+      "wrong_run_reinference_verified": true
+    },
+    "ammunition": {
+      "scope": "synthetic_fixture_rule",
+      "initial": 200,
+      "per_cast": 2,
+      "successful_casts": 4,
+      "final": 192
+    }
+  },
+  "limitations": [
+    "This ledger adds the second real recording and reuses historical synthetic mechanics, demo role binding and ammunition references; those references were not calibrated by this recording.",
+    "The real-recording lane verifies persistent report identity and cross-references. Full raw-pixel verification requires the owner-held source MP4 and complete imported sessions.",
+    "owner-context.json records the owner-confirmed map, primary skill and unchanged keyboard layout separately; the four-lane verifier does not treat it as a recognized skill or physical input profile.",
+    "The existing S demo binding remains synthetic. No real physical key, individual hit, attack attribution or ammunition cost is inferred from the user confirmation.",
+    "Visual sampling and the 85 consecutive reviewed climb frames are not exhaustive object labels, detector acceptance or real-client task success."
+  ]
+}

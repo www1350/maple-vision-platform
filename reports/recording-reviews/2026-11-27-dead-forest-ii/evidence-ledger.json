@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "kind": "offline_trial_evidence_ledger",
+  "trial_id": "dead-forest-ii-recording-20261127-with-historical-synthetic-reference",
+  "scope": "synthetic_fixture_and_separate_read_only_recording",
+  "evidence": {
+    "real_recording": {
+      "coverage": {
+        "path": "reports/recording-reviews/2026-11-27-dead-forest-ii/window-coverage.json",
+        "sha256": "4ae72c07103ccc50b85e8e27edfe311d56d7a8377f2dc7558a444f283e2c6e00"
+      },
+      "event_reports": [
+        {
+          "path": "reports/recording-reviews/2026-11-27-dead-forest-ii/visible-events-0000.json",
+          "sha256": "6d59edc9f43231f93d32c0e422490ba8ed71e3dc204996b096148333c2718b34"
+        },
+        {
+          "path": "reports/recording-reviews/2026-11-27-dead-forest-ii/visible-events-1200.json",
+          "sha256": "a72aef90d22f670bf69d2752733d8453764e647341efbe5d14e3c2b7084ab19d"
+        },
+        {
+          "path": "reports/recording-reviews/2026-11-27-dead-forest-ii/visible-events-2400.json",
+          "sha256": "85c1a10f1691575b34d71913407c091ab1a1ac8ce0bdc89c37a1c57f866ce95c"
+        }
+      ],
+      "expected_coverage_sha256": "b961de914d0abbb05845a0545e315faefe5e555d7ead56b00e85e43542ddc247",
+      "expected_frames": 3032,
+      "expected_events": 7
+    },
+    "synthetic_mechanics": {
+      "acceptance_report": {
+        "path": "reports/release-0.10.0/throwing-star-layered-two-map-acceptance.json",
+        "sha256": "ca99a4453a16b2a9736d08dd2242c795bdc55a696fdfc5a5831a7f4d0cd77384"
+      },
+      "successful_run_archive": {
+        "path": "reports/release-0.10.0/throwing-star-layered-two-map-acceptance.tar.gz",
+        "sha256": "b7f7d1644fe4584992509965d6dac1ca00ea6fee766cb94eb779f111782c97cc"
+      },
+      "wrong_binding_archive": {
+        "path": "reports/release-0.10.0/throwing-star-layered-wrong-binding.tar.gz",
+        "sha256": "222fed7861edffb75759a2a8814addde91f8bc7ad1832c7aa3828015d3c9c1ae"
+      },
+      "class_package": {
+        "path": "examples/classes/throwing_star.json",
+        "sha256": "7874319aaf9ecbe9853162557f201caf7ab95fb419cc4d66e8798150c79f4456"
+      },
+      "map_package": {
+        "path": "examples/maps/dead-forest-drill.json",
+        "sha256": "36179d6266f05fd6458bdcaa4c342db5ce0c5290a916abdea72f1cd7d38e1805"
+      },
+      "mission_program": {
+        "path": "examples/missions/dead-forest-layered-hunt.json",
+        "sha256": "b0ebce51757bb09a7036187b4e8da50091b6090f8165a9937af1498762a9b556"
+      },
+      "expected": {
+        "steps": 266,
+        "climbs": 32,
+        "casts": 4,
+        "hit_segments": 8,
+        "kills": 2,
+        "reinferred_frames": 267
+      }
+    },
+    "role_binding": {
+      "profile": {
+        "path": "examples/input-bindings/throwing-star.json",
+        "sha256": "c729700df2933a37888862f59fb6282d3a31462236ab140e71a751cd81d7c7fa"
+      },
+      "profile_id": "synthetic-star-throw-demo",
+      "key": "S",
+      "skill": "lucky_seven",
+      "accepted_dispatches": 4,
+      "denied_dispatches": 12
+    },
+    "ammunition": {
+      "scope": "synthetic_fixture_rule",
+      "initial": 200,
+      "per_cast": 2,
+      "successful_casts": 4,
+      "final": 192
+    }
+  },
+  "limitations": [
+    "This ledger adds the second real recording and reuses historical synthetic mechanics, demo role binding and ammunition references; those references were not calibrated by this recording.",
+    "The real-recording lane verifies persistent report identity and cross-references. Full raw-pixel verification requires the owner-held source MP4 and complete imported sessions.",
+    "owner-context.json records the owner-confirmed map, primary skill and unchanged keyboard layout separately; the four-lane verifier does not treat it as a recognized skill or physical input profile.",
+    "The existing S demo binding remains synthetic. No real physical key, individual hit, attack attribution or ammunition cost is inferred from the user confirmation.",
+    "Visual sampling and the 85 consecutive reviewed climb frames are not exhaustive object labels, detector acceptance or real-client task success."
+  ]
+}

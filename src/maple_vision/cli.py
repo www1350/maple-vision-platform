@@ -346,6 +346,23 @@ def _parser() -> argparse.ArgumentParser:
     recording_observe.add_argument("--output", type=Path, required=True)
     recording_observe.add_argument("--model", type=Path)
     recording_observe.add_argument("--manifest", type=Path)
+    recording_track = recording_commands.add_parser(
+        "track", help="replay one imported window with read-only temporal tracks"
+    )
+    recording_track.add_argument("path", type=Path)
+    recording_track.add_argument("--output", type=Path, required=True)
+    recording_track.add_argument("--model", type=Path)
+    recording_track.add_argument("--manifest", type=Path)
+    recording_track.add_argument("--state-config", type=Path)
+    recording_track.add_argument("--preview-stride", type=int, default=3)
+    recording_track.add_argument("--preview-max-frames", type=int, default=120)
+    tracking_check = recording_commands.add_parser(
+        "verify-tracking", help="recompute tracked frames and verify their review replay"
+    )
+    tracking_check.add_argument("path", type=Path)
+    tracking_check.add_argument("replay", type=Path)
+    tracking_check.add_argument("--model", type=Path)
+    tracking_check.add_argument("--manifest", type=Path)
     model = commands.add_parser("model", help="local-only CPU YOLO training and ONNX export")
     model_commands = model.add_subparsers(dest="operation", required=True)
     train = model_commands.add_parser("train")
@@ -888,7 +905,12 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         from .recording_evaluation import create_label_template
 
         return create_label_template(args.path, args.output)
-    if args.command == "recording" and args.operation not in {"observe", "benchmark"}:
+    if args.command == "recording" and args.operation not in {
+        "observe",
+        "benchmark",
+        "track",
+        "verify-tracking",
+    }:
         from .recordings import import_recording, validate_recording
 
         if args.operation == "import":
@@ -983,6 +1005,33 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 development_datasets=args.development_dataset,
             )
         if args.command == "recording":
+            if args.operation == "track":
+                from .catalog import strict_json
+                from .local_files import read_regular
+                from .recording_tracking import track_recording
+                from .state_estimation import StateConfig
+
+                tracking_config = (
+                    StateConfig.from_dict(
+                        strict_json(
+                            read_regular(args.state_config, 64 * 1024, "state config").decode()
+                        )
+                    )
+                    if args.state_config is not None
+                    else None
+                )
+                return track_recording(
+                    args.path,
+                    args.output,
+                    detector=detector,
+                    state_config=tracking_config,
+                    preview_stride=args.preview_stride,
+                    preview_max_frames=args.preview_max_frames,
+                )
+            if args.operation == "verify-tracking":
+                from .recording_tracking import verify_recording_tracking
+
+                return verify_recording_tracking(args.path, args.replay, detector=detector)
             from .recordings import observe_recording
 
             return observe_recording(args.path, args.output, detector=detector)
