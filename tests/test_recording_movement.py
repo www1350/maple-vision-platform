@@ -151,7 +151,8 @@ def test_forged_movement_state_rejected_even_after_trace_hashes_are_refreshed(tm
     rows = trace(output)
     rows[-1]["movement"]["state"] = "unknown"
     encoded = "".join(json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n" for row in rows)
-    (output / "tracks.jsonl").write_text(encoded, encoding="utf-8")
+    # Preserve the exact hashed bytes across platforms before checking semantic tampering.
+    (output / "tracks.jsonl").write_bytes(encoded.encode("utf-8"))
     report_path = output / "report.json"
     report = json.loads(report_path.read_text())
     digest = hashlib.sha256(encoded.encode()).hexdigest()
