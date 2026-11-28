@@ -162,6 +162,8 @@ python -m maple_vision recording verify-tracking artifacts/window-1200 artifacts
 
 `recording movement-labels` 可生成绑定全部源帧身份的空白运动复核表；`recording benchmark-movement` 在完整重推理后，将候选与独立的人工攀爬／到达标签对照。它分别统计误报、漏报、程序未知、人物不匹配，以及未审／人工不确定帧，输出逐帧原片时间和原因。未知正例保留在召回分母中，未审帧不能当作负例；详见[运动候选评测](MOVEMENT_EVALUATION.md)。
 
+多人同屏可先通过 `recording select-actor` 为一个实际源帧保存人工选定的人物框，再在 `track` 中传入 `--actor-selection`。该模式同时保留所有玩家的轨迹，单独跟踪目标，并在叠加回放中标出 `TARGET`；其他玩家存在不会导致全局弃权。目标丢失或关联歧义会使这次选择持续失效，避免自动跟到另一个人。复验重新计算完整选择链路，评测也保留选择配置；详见[多人目标选择](ACTOR_SELECTION.md)。
+
 ## 本地 OCR
 
 ```python

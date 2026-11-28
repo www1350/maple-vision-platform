@@ -441,7 +441,7 @@ def benchmark_movement_recording(
         raise ValueError("recording source changed during movement scoring")
     _unchanged(recording, replay, labels, **snapshot)
     metrics = {name: _metrics(counter) for name, counter in counters.items()}
-    report = {
+    report: dict[str, Any] = {
         "schema_version": 1,
         "kind": "recording_movement_benchmark",
         "scope": "single_imported_recording_window",
@@ -505,6 +505,8 @@ def benchmark_movement_recording(
             "hashes establish input consistency, not permission or an authenticated review",
         ],
     }
+    if "actor_selection_analysis" in tracking_report:
+        report["bindings"]["actor_selection_analysis"] = tracking_report["actor_selection_analysis"]
     publish_new(
         output,
         (canonical_json(report) + "\n").encode("utf-8"),
