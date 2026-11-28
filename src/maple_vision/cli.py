@@ -201,6 +201,11 @@ def _parser() -> argparse.ArgumentParser:
     )
     movement_labels.add_argument("path", type=Path)
     movement_labels.add_argument("--output", type=Path, required=True)
+    actor_labels = recording_commands.add_parser(
+        "actor-labels", help="create source-bound, initially unreviewed target identity labels"
+    )
+    actor_labels.add_argument("path", type=Path)
+    actor_labels.add_argument("--output", type=Path, required=True)
     select_actor = recording_commands.add_parser(
         "select-actor", help="bind an explicitly reviewed player box to one source frame"
     )
@@ -397,6 +402,16 @@ def _parser() -> argparse.ArgumentParser:
     movement_score.add_argument("--model", type=Path)
     movement_score.add_argument("--manifest", type=Path)
     movement_score.add_argument("--actor-iou-threshold", type=float, default=0.5)
+    actor_score = recording_commands.add_parser(
+        "benchmark-actor", help="compare recomputed target selection with independent reviews"
+    )
+    actor_score.add_argument("path", type=Path)
+    actor_score.add_argument("replay", type=Path)
+    actor_score.add_argument("--labels", type=Path, required=True)
+    actor_score.add_argument("--output", type=Path, required=True)
+    actor_score.add_argument("--model", type=Path)
+    actor_score.add_argument("--manifest", type=Path)
+    actor_score.add_argument("--actor-iou-threshold", type=float, default=0.5)
     model = commands.add_parser("model", help="local-only CPU YOLO training and ONNX export")
     model_commands = model.add_subparsers(dest="operation", required=True)
     train = model_commands.add_parser("train")
@@ -847,6 +862,10 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         from .recording_movement_evaluation import create_movement_label_template
 
         return create_movement_label_template(args.path, args.output)
+    if args.command == "recording" and args.operation == "actor-labels":
+        from .recording_actor_evaluation import create_actor_label_template
+
+        return create_actor_label_template(args.path, args.output)
     if args.command == "recording" and args.operation == "select-actor":
         from .actor_selection import ActorSelectionConfig
         from .catalog import strict_json
@@ -975,6 +994,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         "track",
         "verify-tracking",
         "benchmark-movement",
+        "benchmark-actor",
     }:
         from .recordings import import_recording, validate_recording
 
@@ -1070,6 +1090,17 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                 development_datasets=args.development_dataset,
             )
         if args.command == "recording":
+            if args.operation == "benchmark-actor":
+                from .recording_actor_evaluation import benchmark_actor_recording
+
+                return benchmark_actor_recording(
+                    args.path,
+                    args.replay,
+                    args.labels,
+                    args.output,
+                    detector=detector,
+                    actor_iou_threshold=args.actor_iou_threshold,
+                )
             if args.operation == "benchmark-movement":
                 from .recording_movement_evaluation import benchmark_movement_recording
 

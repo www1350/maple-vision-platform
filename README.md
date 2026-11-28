@@ -41,6 +41,8 @@ python -m maple_vision.owned_window --input-confirmation input-binding-confirmat
 
 本地录像现可逐帧标注，按地图、会话、遮挡和目标大小统计漏检。评测报告记录原始像素、标注与检测器身份，可检查与指定训练集的像素重合。[录像评测用法](docs/RECORDINGS.md#逐帧标注与评测)
 
+多人录像可在工作台原画面上框选观察目标，确认后导出源绑定的选择文件。独立身份评测分别记录选对目标、错跟他人、目标丢失和弃权，按已复核的连续帧查看身份变化；运动是否可判另行评分。[图形选人](docs/ACTOR_SELECTION.md) · [目标身份评测](docs/ACTOR_EVALUATION.md)
+
 一个可在本机运行、训练和验证的**离线视觉研究平台与独立模拟器**。它包含本地知识目录、素材登记、合成数据集、YOLO 训练与 ONNX 推理、多职业/多地图任务，以及可重放的验证证据。
 
 支持从明确获准的 HTTPS JSON 导出预取静态知识，审查后离线应用至 SQLite。[知识同步](docs/KNOWLEDGE_SYNC.md)

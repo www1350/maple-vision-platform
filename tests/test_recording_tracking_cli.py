@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from maple_vision.movement_hypotheses import MovementConfig
+from maple_vision.recording_tracking import create_recording_actor_selection, track_recording
 from maple_vision.recordings import import_recording
 from maple_vision.scene import SceneRenderer
 from maple_vision.sim_types import SimAction
@@ -232,13 +233,14 @@ def test_cli_movement_review_keeps_unreviewed_and_uncertain_frames_unscored(
 
 
 @pytest.mark.parametrize("option", ["--model", "--manifest"])
-def test_cli_movement_benchmark_requires_complete_model_identity(
-    recording: Path, tmp_path: Path, option: str
+@pytest.mark.parametrize("operation", ["benchmark-movement", "benchmark-actor"])
+def test_cli_recording_benchmark_requires_complete_model_identity(
+    recording: Path, tmp_path: Path, option: str, operation: str
 ) -> None:
     output = tmp_path / "invalid-benchmark.json"
     checked = run_cli(
         tmp_path,
-        "benchmark-movement",
+        operation,
         str(recording),
         str(tmp_path / "replay"),
         "--labels",
@@ -251,6 +253,69 @@ def test_cli_movement_benchmark_requires_complete_model_identity(
     assert checked.returncode == 2
     assert "--model and --manifest must be supplied together" in checked.stderr
     assert not output.exists()
+
+
+def test_cli_actor_review_scores_selected_target_without_movement(
+    recording: Path, tmp_path: Path
+) -> None:
+    labels_path = tmp_path / "actor-labels.json"
+    created = run_cli(tmp_path, "actor-labels", str(recording), "--output", str(labels_path))
+    assert created.returncode == 0, created.stderr
+    labels = json.loads(created.stdout)
+    assert labels == json.loads(labels_path.read_text(encoding="utf-8"))
+    assert all(row["review"] is None for row in labels["frames"])
+    labels.update(domain="authored_fixture", reviewer="independent CLI review", subject="actor A")
+    simulator = Simulator(seed=9)
+    for row in labels["frames"]:
+        player = simulator.snapshot().player
+        row["review"] = {
+            "visibility": "visible",
+            "actor_bbox": [
+                int(player.x),
+                int(player.y),
+                int(player.x + player.w),
+                int(player.y + player.h),
+            ],
+            "other_actors": [],
+            "note": "Independent source fixture geometry, not a prediction.",
+        }
+        simulator.step(SimAction("move", direction=1))
+    labels_path.write_text(json.dumps(labels), encoding="utf-8")
+    selection = create_recording_actor_selection(
+        recording,
+        tmp_path / "selection.json",
+        source_sequence=0,
+        bbox=tuple(labels["frames"][0]["review"]["actor_bbox"]),
+        reviewer="CLI fixture anchor",
+        subject="actor A",
+    )
+    replay = tmp_path / "actor-replay"
+    tracked = track_recording(recording, replay, actor_selection=selection)
+    assert "movement_analysis" not in tracked
+    output = tmp_path / "actor-benchmark.json"
+    arguments = (
+        "benchmark-actor",
+        str(recording),
+        str(replay),
+        "--labels",
+        str(labels_path),
+        "--output",
+        str(output),
+        "--actor-iou-threshold",
+        "0.75",
+    )
+    scored = run_cli(tmp_path, *arguments)
+    assert scored.returncode == 0, scored.stderr
+    report = json.loads(scored.stdout)
+    assert report["kind"] == "recording_actor_benchmark"
+    assert report["verification"]["actor_selection_recomputed"] is True
+    assert report["frames"] == 5
+    assert [row["outcome"] for row in report["diagnostics"]] == ["correct_target"] * 5
+    assert report["action_execution"] == "none"
+    assert json.loads(output.read_text(encoding="utf-8")) == report
+    previous = output.read_bytes()
+    assert run_cli(tmp_path, *arguments).returncode == 2
+    assert output.read_bytes() == previous
 
 
 def test_cli_selects_a_source_bound_actor_and_reverifies_without_original_anchor_file(

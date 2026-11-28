@@ -23,6 +23,9 @@ let traceOffset = 0, activeView = "runs", sim = null, simEvidence = "observation
 let playTimer = null, selectionRevision = 0, refreshing = false, simBusy = false;
 let recordingSessions = [], recordingCoverages = [], selectedRecording = "", recordingDetail = null;
 let recordingPlayTimer = null, recordingRevision = 0, recordingsLoaded = false;
+let recordingFrameRevision = 0, recordingDisplayedFrame = null;
+let recordingTargetRevision = 0, recordingTargetDraft = null, recordingTargetPointer = null;
+let recordingTargetSelecting = false, recordingTargetRequest = null;
 let trialEvidenceLoaded = false;
 
 async function api(path, body) {
@@ -130,6 +133,7 @@ bind("route-form", "submit", queryRoute);
 function chooseView(view) {
   if (!["runs","recordings","trial","simulator","routes","keys","content"].includes(view)) view = "runs";
   activeView = view; stopPlay(); stopRecordingPlay();
+  if (view!=="recordings") clearRecordingTarget("加载画面后可选定目标。");
   document.querySelectorAll(".view").forEach(e=>e.classList.toggle("hidden", e.id !== "view-"+view));
   document.querySelectorAll("[data-view]").forEach(e=>e.classList.toggle("active", e.dataset.view===view));
   text("view-label", {runs:"任务与回放", recordings:"真实录像复核", trial:"试用验收账本", simulator:"单步模拟器", routes:"地图路线", keys:"角色键位", content:"内容与模型"}[view]);
@@ -245,6 +249,7 @@ async function drawEvidence() {
 
 function stopRecordingPlay() {
   clearTimeout(recordingPlayTimer); recordingPlayTimer=null; text("recording-play","▷");
+  updateRecordingTargetControls();
 }
 function recordingLabel(session) {
   const start=session.source_start_frame || 0;
@@ -296,8 +301,190 @@ function updateRecordingEventNavigation(current) {
     text("recording-event-status","当前帧无已复核事件 · 共 "+events.length+" 条");
   }
 }
+function updateRecordingTargetControls() {
+  const ready=!!recordingDisplayedFrame && !recordingPlayTimer;
+  const draft=recordingTargetDraft && recordingTargetDraft.frame===recordingDisplayedFrame;
+  el("recording-target-start").disabled=!ready;
+  el("recording-target-zoom").disabled=!ready || !!recordingTargetPointer;
+  el("recording-target-clear").disabled=!draft && !recordingTargetSelecting && !recordingTargetRequest;
+  el("recording-target-confirm").disabled=!draft || !!recordingTargetRequest;
+  el("recording-target-export").disabled=!ready || !draft || !!recordingTargetRequest ||
+    !el("recording-target-confirm").checked || !el("recording-target-reviewer").value.trim() ||
+    !el("recording-target-subject").value.trim();
+}
+function clearRecordingTarget(message="尚未选定目标。") {
+  recordingTargetRevision++;
+  const pointer=recordingTargetPointer;
+  recordingTargetDraft=null; recordingTargetPointer=null; recordingTargetSelecting=false;
+  recordingTargetRequest=null;
+  if (pointer && pointer.image.hasPointerCapture(pointer.id)) pointer.image.releasePointerCapture(pointer.id);
+  el("recording-target-confirm").checked=false;
+  el("recording-frame-viewport").classList.remove("target-selecting");
+  show("recording-target-box",false); show("recording-target-preview",false);
+  text("recording-target-coordinates","尚未选定目标。");
+  text("recording-target-status",message);
+  updateRecordingTargetControls();
+}
+function resetRecordingFrame(message="正在加载画面…") {
+  recordingFrameRevision++;
+  recordingDisplayedFrame=null;
+  clearRecordingTarget(message);
+  const viewport=el("recording-frame-viewport");
+  viewport.classList.remove("zoomed"); viewport.scrollLeft=0; viewport.scrollTop=0;
+  text("recording-target-zoom","放大 2×"); el("recording-target-zoom").setAttribute("aria-pressed","false");
+  show("recording-frame",false); show("recording-frame-empty",true);
+  text("recording-frame-empty",message);
+  return recordingFrameRevision;
+}
+function recordingImageGeometry(image) {
+  const rect=image.getBoundingClientRect();
+  if (!image.naturalWidth || !image.naturalHeight || !rect.width || !rect.height) return null;
+  const scale=Math.min(rect.width/image.naturalWidth,rect.height/image.naturalHeight);
+  return {scale,left:rect.left+(rect.width-image.naturalWidth*scale)/2,
+    top:rect.top+(rect.height-image.naturalHeight*scale)/2,
+    width:image.naturalWidth,height:image.naturalHeight};
+}
+function recordingImagePoint(event,clamp=false) {
+  const image=el("recording-frame"), geometry=recordingImageGeometry(image);
+  if (!geometry || recordingDisplayedFrame?.image!==image) return null;
+  const x=(event.clientX-geometry.left)/geometry.scale, y=(event.clientY-geometry.top)/geometry.scale;
+  if (!clamp && (x<0 || y<0 || x>geometry.width || y>geometry.height)) return null;
+  return {x:Math.max(0,Math.min(geometry.width,x)),y:Math.max(0,Math.min(geometry.height,y))};
+}
+function renderRecordingTargetBox() {
+  const image=el("recording-frame"), geometry=recordingImageGeometry(image);
+  const pointer=recordingTargetPointer;
+  const bbox=pointer
+    ? [Math.min(pointer.start.x,pointer.current.x),Math.min(pointer.start.y,pointer.current.y),
+      Math.max(pointer.start.x,pointer.current.x),Math.max(pointer.start.y,pointer.current.y)]
+    : recordingTargetDraft?.bbox;
+  if (!bbox || !geometry || recordingDisplayedFrame?.image!==image) return show("recording-target-box",false);
+  const stage=el("recording-frame-stage").getBoundingClientRect(), box=el("recording-target-box");
+  box.style.left=(geometry.left-stage.left+bbox[0]*geometry.scale)+"px";
+  box.style.top=(geometry.top-stage.top+bbox[1]*geometry.scale)+"px";
+  box.style.width=((bbox[2]-bbox[0])*geometry.scale)+"px";
+  box.style.height=((bbox[3]-bbox[1])*geometry.scale)+"px";
+  show("recording-target-box",true);
+}
+function previewRecordingTarget() {
+  const draft=recordingTargetDraft, image=el("recording-frame");
+  if (!draft || draft.frame!==recordingDisplayedFrame || draft.frame.image!==image) return;
+  const [x1,y1,x2,y2]=draft.bbox, width=x2-x1, height=y2-y1;
+  const canvas=el("recording-target-preview"), scale=Math.min(4,320/width,200/height);
+  canvas.width=Math.max(1,Math.round(width*scale)); canvas.height=Math.max(1,Math.round(height*scale));
+  const context=canvas.getContext("2d"); context.imageSmoothingEnabled=false;
+  context.drawImage(image,x1,y1,width,height,0,0,canvas.width,canvas.height);
+  show("recording-target-preview",true);
+  text("recording-target-coordinates","源帧 "+draft.frame.source_sequence+" · 原图 "+image.naturalWidth+"×"+
+    image.naturalHeight+" · 人物框 ["+draft.bbox.join(", ")+"]");
+  renderRecordingTargetBox();
+}
+function recordingTargetDown(event) {
+  if (!recordingTargetSelecting || !recordingDisplayedFrame || recordingTargetPointer ||
+      event.button!==0 || !event.isPrimary) return;
+  const point=recordingImagePoint(event);
+  if (!point) { text("recording-target-status","请在原图内框选，画面留白不属于源像素。"); return; }
+  event.preventDefault();
+  recordingTargetRevision++; recordingTargetRequest=null; recordingTargetDraft=null;
+  el("recording-target-confirm").checked=false; show("recording-target-preview",false);
+  recordingTargetPointer={id:event.pointerId,image:event.currentTarget,start:point,current:point};
+  event.currentTarget.setPointerCapture(event.pointerId);
+  renderRecordingTargetBox(); updateRecordingTargetControls();
+}
+function recordingTargetMove(event) {
+  if (!recordingTargetPointer || recordingTargetPointer.id!==event.pointerId) return;
+  const point=recordingImagePoint(event,true);
+  if (!point) return;
+  event.preventDefault(); recordingTargetPointer.current=point; renderRecordingTargetBox();
+}
+function recordingTargetUp(event) {
+  const pointer=recordingTargetPointer;
+  if (!pointer || pointer.id!==event.pointerId) return;
+  event.preventDefault();
+  const point=recordingImagePoint(event,true);
+  recordingTargetPointer=null;
+  if (pointer.image.hasPointerCapture(pointer.id)) pointer.image.releasePointerCapture(pointer.id);
+  if (!point || Math.abs(point.x-pointer.start.x)<1 || Math.abs(point.y-pointer.start.y)<1) {
+    show("recording-target-box",false);
+    text("recording-target-status","人物框至少需要 1×1 个源像素，请重新拖框。");
+    updateRecordingTargetControls(); return;
+  }
+  const bbox=[Math.floor(Math.min(pointer.start.x,point.x)),Math.floor(Math.min(pointer.start.y,point.y)),
+    Math.ceil(Math.max(pointer.start.x,point.x)),Math.ceil(Math.max(pointer.start.y,point.y))];
+  recordingTargetDraft={frame:recordingDisplayedFrame,bbox}; recordingTargetSelecting=false;
+  el("recording-frame-viewport").classList.remove("target-selecting");
+  previewRecordingTarget();
+  text("recording-target-status","核对人物预览和目标说明后，勾选确认并导出。");
+  updateRecordingTargetControls();
+}
+function recordingTargetCancel(event) {
+  if (recordingTargetPointer?.id===event.pointerId) clearRecordingTarget("框选已取消，可重新选定目标。");
+}
+function loadRecordingImage(url,frame,version) {
+  const image=new Image();
+  image.alt="已校验录像的原始导入帧"; image.draggable=false;
+  image.onload=()=>{
+    if (version!==recordingFrameRevision || selectedRecording!==frame.viewer) return;
+    if (!image.naturalWidth || !image.naturalHeight || !/^[0-9a-f]{64}$/.test(frame.rgb_sha256)) {
+      text("recording-target-status","画面或源帧身份不完整，无法选定目标。"); return;
+    }
+    image.onload=null; image.id="recording-frame";
+    for (const [name,handler] of [["pointerdown",recordingTargetDown],["pointermove",recordingTargetMove],
+      ["pointerup",recordingTargetUp],["pointercancel",recordingTargetCancel],["lostpointercapture",recordingTargetCancel]]) {
+      image.addEventListener(name,handler);
+    }
+    el("recording-frame").replaceWith(image);
+    recordingDisplayedFrame={...frame,image};
+    show("recording-frame-empty",false);
+    text("recording-target-status","源帧 "+frame.source_sequence+" 已加载，可框选观察目标。");
+    updateRecordingTargetControls();
+  };
+  image.onerror=()=>{
+    if (version!==recordingFrameRevision || selectedRecording!==frame.viewer) return;
+    text("recording-frame-empty","画面加载失败，请重新选择帧。");
+    text("recording-target-status","当前画面不可用，不能选定目标。");
+  };
+  image.src=url;
+}
+function recordingTargetEdited() {
+  recordingTargetRevision++; recordingTargetRequest=null;
+  el("recording-target-confirm").checked=false;
+  if (recordingTargetDraft) text("recording-target-status","目标说明已变更，请重新核对并确认。");
+  updateRecordingTargetControls();
+}
+async function exportRecordingTarget() {
+  updateRecordingTargetControls();
+  if (el("recording-target-export").disabled) return;
+  const draft=recordingTargetDraft, frame=recordingDisplayedFrame, revision=recordingTargetRevision;
+  const body={source_sequence:frame.source_sequence,rgb_sha256:frame.rgb_sha256,bbox:[...draft.bbox],
+    reviewer:el("recording-target-reviewer").value.trim(),subject:el("recording-target-subject").value.trim(),user_confirmed:true};
+  const request={revision,draft,frame}; recordingTargetRequest=request;
+  const current=()=>recordingTargetRequest===request && revision===recordingTargetRevision &&
+    draft===recordingTargetDraft && frame===recordingDisplayedFrame && frame.viewer===selectedRecording &&
+    el("recording-target-confirm").checked && el("recording-target-reviewer").value.trim()===body.reviewer &&
+    el("recording-target-subject").value.trim()===body.subject;
+  text("recording-target-status","正在核对源像素并生成目标选择…"); updateRecordingTargetControls();
+  try {
+    const document=await api("recordings/"+frame.session_id+"/actor-selection",body);
+    if (!current()) return;
+    if (document.source?.session_id!==frame.session_id || document.anchor?.source_sequence!==body.source_sequence ||
+        document.anchor.rgb_sha256!==body.rgb_sha256 || JSON.stringify(document.anchor.bbox)!==JSON.stringify(body.bbox) ||
+        document.anchor.reviewer!==body.reviewer || document.anchor.subject!==body.subject) {
+      throw new Error("返回的目标选择与当前画面不符，请重新核对。");
+    }
+    downloadJson(document,"actor-selection.json");
+    text("recording-target-status","目标选择已导出，可用于录像跟踪。本页尚未运行跟踪。");
+  } catch (error) {
+    if (!current()) return;
+    el("recording-target-confirm").checked=false;
+    text("recording-target-status","导出失败："+(error.message || String(error)));
+  } finally {
+    if (recordingTargetRequest===request) { recordingTargetRequest=null; updateRecordingTargetControls(); }
+  }
+}
 async function loadRecordings() {
   const version=++recordingRevision;
+  resetRecordingFrame("正在加载录像列表…");
   [recordingSessions,recordingCoverages]=await Promise.all([api("recordings"),api("recording-coverages")]);
   if (version!==recordingRevision) return;
   recordingsLoaded=true;
@@ -319,6 +506,7 @@ async function loadRecordings() {
 async function loadRecording() {
   const identity=selectedRecording, version=++recordingRevision;
   stopRecordingPlay(); recordingDetail=null;
+  resetRecordingFrame("正在加载录像窗口…");
   const coverage=identity.startsWith("coverage:"), key=identity.slice(identity.indexOf(":")+1);
   const data=await api((coverage?"recording-coverages/":"recordings/")+key);
   if (identity!==selectedRecording || version!==recordingRevision) return;
@@ -340,7 +528,7 @@ async function loadRecording() {
 }
 function drawRecordingFrame() {
   const range=el("recording-range"), frame=recordingDetail?.frames[Number(range.value)];
-  show("recording-frame",!!frame); show("recording-frame-empty",!frame);
+  const version=resetRecordingFrame(frame?"正在加载画面…":"选择录像窗口以查看画面");
   for (const id of ["recording-prev","recording-play","recording-range","recording-next"]) el(id).disabled=!frame;
   if (!frame) {
     el("recording-event-prev").disabled=true; el("recording-event-next").disabled=true;
@@ -350,9 +538,11 @@ function drawRecordingFrame() {
   const coverage=recordingDetail.viewer_kind==="coverage";
   const source=coverage?frame.source_sequence:(recordingDetail.source_start_frame || 0)+frame.sequence;
   text("recording-frame-caption","源帧 "+source+" · 窗口帧 "+frame.sequence+" · "+frame.timestamp_ms+" ms");
-  el("recording-frame").src=coverage
+  const url=coverage
     ? "/api/recording-coverages/"+recordingDetail.viewer_key+"/frames/"+source
     : "/api/recordings/"+recordingDetail.viewer_key+"/frames/"+frame.sequence;
+  loadRecordingImage(url,{viewer:selectedRecording,source_sequence:source,rgb_sha256:frame.rgb_sha256,
+    session_id:coverage?frame.session_id:recordingDetail.session_id},version);
   if (coverage) {
     const visibleNow=recordingDetail.reviewed_visible_events
       .filter(event=>event.start_source_sequence<=source && source<=event.end_source_sequence)
@@ -473,7 +663,7 @@ bind("frame-play","click",()=>{
   playTimer=setInterval(()=>{ if(+range.value>=+range.max) stopPlay(); else moveFrame(1); },200);
 });
 bind("recording-select","change",async()=>{selectedRecording=el("recording-select").value; await loadRecording();});
-bind("recording-range","input",drawRecordingFrame);
+bind("recording-range","input",()=>{stopRecordingPlay(); drawRecordingFrame();});
 bind("recording-seek","submit",()=>{
   if (!recordingDetail) return;
   const source=el("recording-source-frame").valueAsNumber;
@@ -484,8 +674,8 @@ bind("recording-seek","submit",()=>{
   if (!Number.isSafeInteger(index) || !recordingDetail.frames[index]) return;
   stopRecordingPlay(); el("recording-range").value=index; drawRecordingFrame();
 });
-bind("recording-prev","click",()=>moveRecordingFrame(-1));
-bind("recording-next","click",()=>moveRecordingFrame(1));
+bind("recording-prev","click",()=>{stopRecordingPlay(); moveRecordingFrame(-1);});
+bind("recording-next","click",()=>{stopRecordingPlay(); moveRecordingFrame(1);});
 bind("recording-event-prev","click",()=>moveRecordingEvent(-1));
 bind("recording-event-next","click",()=>moveRecordingEvent(1));
 bind("recording-play","click",()=>{
@@ -493,6 +683,32 @@ bind("recording-play","click",()=>{
   const range=el("recording-range"); if(+range.value===+range.max) range.value=0;
   drawRecordingFrame(); text("recording-play","Ⅱ"); playRecordingFrame();
 });
+bind("recording-target-start","click",()=>{
+  if (!recordingDisplayedFrame) return;
+  stopRecordingPlay(); clearRecordingTarget("请在原图中拖框包住目标人物，可从任意方向开始。");
+  recordingTargetSelecting=true;
+  el("recording-frame-viewport").classList.add("target-selecting");
+  updateRecordingTargetControls();
+});
+bind("recording-target-clear","click",()=>clearRecordingTarget("选择已清空，可重新框选人物。"));
+bind("recording-target-zoom","click",()=>{
+  if (!recordingDisplayedFrame || recordingTargetPointer) return;
+  const viewport=el("recording-frame-viewport"), zoomed=viewport.classList.toggle("zoomed");
+  text("recording-target-zoom",zoomed?"还原大小":"放大 2×");
+  el("recording-target-zoom").setAttribute("aria-pressed",String(zoomed));
+  if (!zoomed) { viewport.scrollLeft=0; viewport.scrollTop=0; }
+  requestAnimationFrame(renderRecordingTargetBox);
+});
+bind("recording-target-reviewer","input",recordingTargetEdited);
+bind("recording-target-subject","input",recordingTargetEdited);
+bind("recording-target-confirm","change",()=>{
+  recordingTargetRevision++; recordingTargetRequest=null;
+  if (recordingTargetDraft) text("recording-target-status",el("recording-target-confirm").checked
+    ? "已确认当前人物框和说明，可导出目标选择。":"请核对人物框和目标说明后确认。");
+  updateRecordingTargetControls();
+});
+bind("recording-target-form","submit",exportRecordingTarget);
+new ResizeObserver(renderRecordingTargetBox).observe(el("recording-frame-stage"));
 bind("trace-next","click",async()=>{traceOffset+=4; await drawEvidence();});
 bind("trace-prev","click",async()=>{traceOffset=Math.max(0,traceOffset-4); await drawEvidence();});
 bind("sim-form","submit",async()=>drawSim(await api("sessions",{job:el("sim-class").value,map_id:el("sim-map").value,seed:+el("sim-seed").value})));

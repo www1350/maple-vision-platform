@@ -27,6 +27,7 @@ from .recording_evaluation import (
     _verify_event_report,
     _verify_recording_window_report,
 )
+from .recording_tracking import _source_identity, build_recording_actor_selection
 from .recordings import _load_frame, _validated_manifest
 from .sim_types import SimAction
 from .trial_evidence import verify_trial_evidence
@@ -133,6 +134,25 @@ class RunInput(SceneInput):
     mission: Name = "standard"
     input_profile: InputProfileInput | None = None
     input_confirmation: dict[str, Any] | None = None
+
+
+class ActorSelectionInput(StrictModel):
+    source_sequence: Annotated[int, Field(ge=0, le=2**53)]
+    rgb_sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
+    bbox: Annotated[
+        list[Annotated[int | float, Field(ge=0, allow_inf_nan=False)]],
+        Field(min_length=4, max_length=4),
+    ]
+    reviewer: Annotated[str, Field(min_length=1, max_length=128)]
+    subject: Annotated[str, Field(min_length=1, max_length=128)]
+    user_confirmed: Literal[True]
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_confirmation(cls, value: Any) -> Any:
+        if isinstance(value, dict) and value.get("user_confirmed") is not True:
+            raise ValueError("user_confirmed must be true")
+        return value
 
 
 class VerifyInput(StrictModel):
@@ -253,8 +273,10 @@ def _recording_summary(entry: dict[str, Any], *, frames: bool = False) -> dict[s
         summary["frames"] = [
             {
                 "sequence": item["sequence"],
+                "source_sequence": manifest.get("source_start_frame", 0) + item["sequence"],
                 "timestamp_ms": item["timestamp_ms"],
                 "source_name": item["source_name"],
+                "rgb_sha256": item["rgb_sha256"],
             }
             for item in manifest["frames"]
         ]
@@ -344,6 +366,7 @@ def _coverage_summary(entry: dict[str, Any], *, frames: bool = False) -> dict[st
                 "sequence": item["sequence"],
                 "session_id": manifest["session_id"],
                 "source_name": item["source_name"],
+                "rgb_sha256": item["rgb_sha256"],
                 "pts": item["pts"],
                 "timestamp_ms": round((item["pts"] - first_pts) * timebase * 1000),
             }
@@ -589,6 +612,32 @@ def create_app(
     @api.get("/api/recordings/{identity}")
     def recording_detail(identity: RecordingIdentifier) -> dict[str, Any]:
         return _recording_summary(recording(identity), frames=True)
+
+    @api.post("/api/recordings/{identity}/actor-selection")
+    def recording_actor_selection(
+        identity: RecordingIdentifier, config: ActorSelectionInput
+    ) -> dict[str, Any]:
+        entry = recording(identity)
+        root_path: Path = entry["root"]
+        if root_path.is_symlink():
+            raise ValueError("registered recording root changed")
+        specification = build_recording_actor_selection(
+            root_path,
+            source_sequence=config.source_sequence,
+            bbox=(
+                float(config.bbox[0]),
+                float(config.bbox[1]),
+                float(config.bbox[2]),
+                float(config.bbox[3]),
+            ),
+            reviewer=config.reviewer,
+            subject=config.subject,
+        )
+        if specification["source"] != _source_identity(entry["manifest"]):
+            raise ValueError("recording source changed after workbench registration")
+        if specification["anchor"]["rgb_sha256"] != config.rgb_sha256:
+            raise ValueError("selected frame RGB differs from the displayed recording frame")
+        return specification
 
     @api.get("/api/recordings/{identity}/frames/{sequence}")
     def recording_frame(
