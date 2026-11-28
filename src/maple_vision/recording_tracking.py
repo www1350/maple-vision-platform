@@ -21,6 +21,11 @@ from PIL import __version__ as pillow_version
 from .catalog import canonical_json, strict_json
 from .desktop_observation import DetectorOnlyPerception, FramePerception
 from .evaluation import _detector_metadata
+from .movement_hypotheses import (
+    MOVEMENT_ALGORITHM_VERSION,
+    MovementConfig,
+    MovementHypothesisEstimator,
+)
 from .onnx_detector import OnnxDetector
 from .recordings import (
     _file_hash,
@@ -64,7 +69,10 @@ def _canonical_bytes(value: object) -> bytes:
 
 
 def _identity(
-    manifest: dict[str, Any], config: StateConfig, detector: Detector | None
+    manifest: dict[str, Any],
+    config: StateConfig,
+    detector: Detector | None,
+    movement_config: MovementConfig | None = None,
 ) -> tuple[FramePerception, dict[str, object], str]:
     implementation = PixelPerception() if detector is None else detector
     metadata = _detector_metadata(implementation, include_runtime=True)
@@ -80,16 +88,18 @@ def _identity(
     if len(encoded) > 64 * 1024:
         raise ValueError("detector metadata exceeds its bounded identity budget")
     metadata = strict_json(encoded.decode("utf-8"))
-    window_id = _sha(
-        _canonical_bytes(
-            {
-                "recording_manifest": manifest,
-                "state_config": config.to_dict(),
-                "detector_metadata": metadata,
-                "retain_detection_hypotheses": detector is not None,
-            }
-        )
-    )
+    identity: dict[str, object] = {
+        "recording_manifest": manifest,
+        "state_config": config.to_dict(),
+        "detector_metadata": metadata,
+        "retain_detection_hypotheses": detector is not None,
+    }
+    if movement_config is not None:
+        identity["movement_hypotheses"] = {
+            "algorithm_version": MOVEMENT_ALGORITHM_VERSION,
+            "config": movement_config.to_dict(),
+        }
+    window_id = _sha(_canonical_bytes(identity))
     perception: FramePerception = (
         implementation
         if isinstance(implementation, PixelPerception) and detector is None
@@ -153,8 +163,10 @@ def _tracked_frames(
     window_id: str,
     *,
     detector_only: bool,
+    movement_config: MovementConfig | None = None,
 ) -> Iterator[tuple[dict[str, object], ImageFrame, BeliefState]]:
     estimator = TemporalStateEstimator(config, retain_detection_hypotheses=detector_only)
+    movement = MovementHypothesisEstimator(movement_config) if movement_config is not None else None
     source_start = manifest.get("source_start_frame", 0)
     for item in manifest["frames"]:
         frame = _load_frame(root, item)
@@ -183,6 +195,8 @@ def _tracked_frames(
             "source_frame_sha256": item["source_sha256"],
             "belief": belief.to_dict(),
         }
+        if movement is not None:
+            row["movement"] = movement.update(belief).to_dict()
         yield row, frame, belief
 
 
@@ -264,14 +278,20 @@ def _overlay(
     mode = "DETECTOR HYPOTHESES" if detector_only else "SYNTHETIC FIXTURE"
     players = sum(item.class_id == "player" for item in belief.observation.detections)
     player_note = f" | {players} player boxes: identity ambiguous" if players > 1 else ""
+    movement = row.get("movement")
+    detail_limit = 5 if isinstance(movement, dict) else 6
     lines = [
         f"{mode} | READ ONLY | window {str(row['tracking_window_id'])[:12]} | local IDs",
         f"source frame {row['source_sequence']} | local {frame.sequence} | "
         f"local {frame.timestamp_ms} ms | source {row['source_timestamp_ms']} ms",
         f"PTS {row['pts']} | {belief.observation.status.value}: {belief.reason}{player_note}",
-        f"{len(belief.tracks)} tracks (details <=6) | green=current, gray=retained, "
+        f"{len(belief.tracks)} tracks (details <={detail_limit}) | green=current, gray=retained, "
         "amber=ambiguous, white=raw",
     ]
+    if isinstance(movement, dict):
+        reasons = movement.get("reasons", [])
+        reason = ", ".join(str(value) for value in reasons) if isinstance(reasons, list) else ""
+        lines.append(f"Movement: {movement['state']} | {reason}")
     # Keep the preview readable and bounded; the JSONL contains every full track.
     detailed = sorted(
         belief.tracks,
@@ -281,7 +301,7 @@ def _overlay(
             track.track_id,
         ),
     )
-    for track in detailed[:6]:
+    for track in detailed[:detail_limit]:
         velocity = track.velocity_px_per_second
         motion = "unknown" if velocity is None else f"({velocity[0]:.1f}, {velocity[1]:.1f})"
         lines.append(
@@ -291,10 +311,15 @@ def _overlay(
         )
     if not belief.tracks:
         lines.append("No track hypotheses; missing detections do not establish absence or death.")
-    lines.append(
-        "Full hypotheses: tracks.jsonl | Screen motion only; "
-        "climbing/platform occupancy unclassified"
-    )
+    if isinstance(movement, dict):
+        lines.append(
+            "Geometry candidates only | Owner identity, rope grip and action success unverified"
+        )
+    else:
+        lines.append(
+            "Full hypotheses: tracks.jsonl | Screen motion only; "
+            "climbing/platform occupancy unclassified"
+        )
     for index, text in enumerate(lines):
         draw.text(
             (8, PREVIEW_IMAGE_HEIGHT + 5 + index * 15), _short(text), fill="#edf2f7", font=font
@@ -312,6 +337,7 @@ class _Summary:
     statuses: Counter[str] = field(default_factory=Counter)
     classes: Counter[str] = field(default_factory=Counter)
     associations: Counter[str] = field(default_factory=Counter)
+    movement_states: Counter[str] = field(default_factory=Counter)
     preview_images: list[Image.Image] = field(default_factory=list)
     preview_mapping: list[dict[str, object]] = field(default_factory=list)
 
@@ -330,6 +356,9 @@ class _Summary:
         self.statuses[belief.observation.status.value] += 1
         self.classes.update(item.class_id for item in belief.observation.detections)
         self.associations.update(item.association for item in belief.tracks)
+        movement = row.get("movement")
+        if isinstance(movement, dict):
+            self.movement_states[str(movement["state"])] += 1
         if sample:
             image = _overlay(frame, belief, row, detector_only=detector_only)
             self.preview_images.append(image)
@@ -404,8 +433,9 @@ def _report(
     sequences: list[int],
     tracks_sha256: str,
     preview_sha256: str,
+    movement_config: MovementConfig | None = None,
 ) -> dict[str, object]:
-    return {
+    result: dict[str, object] = {
         "schema_version": 1,
         "kind": "recording_tracking_replay",
         "mode": "read_only",
@@ -436,7 +466,11 @@ def _report(
             "width": PREVIEW_WIDTH,
             "height": PREVIEW_IMAGE_HEIGHT + PREVIEW_CAPTION_HEIGHT,
             "timing": "source_intervals_centisecond_quantized_capped_10_to_655350_ms",
-            "renderer": "recording_tracking_overlay_v1",
+            "renderer": (
+                "recording_movement_overlay_v1"
+                if movement_config is not None
+                else "recording_tracking_overlay_v1"
+            ),
             "pillow_version": pillow_version,
         },
         "tracks_sha256": tracks_sha256,
@@ -452,6 +486,20 @@ def _report(
         ),
         "limitations": list(_LIMITATIONS),
     }
+    if movement_config is not None:
+        result["movement_analysis"] = {
+            "schema_version": 1,
+            "algorithm_version": MOVEMENT_ALGORITHM_VERSION,
+            "config": movement_config.to_dict(),
+            "frames_processed": sum(summary.movement_states.values()),
+            "state_counts": dict(sorted(summary.movement_states.items())),
+            "scope": "read_only_geometric_candidates",
+            "owner_identity_verified": False,
+            "rope_grip_verified": False,
+            "real_domain_accuracy_available": False,
+            "actionable": False,
+        }
+    return result
 
 
 def _line(row: dict[str, object]) -> bytes:
@@ -467,6 +515,7 @@ def track_recording(
     detector: Detector | None = None,
     *,
     state_config: StateConfig | None = None,
+    movement_config: MovementConfig | None = None,
     preview_stride: int = 3,
     preview_max_frames: int = 120,
 ) -> dict[str, object]:
@@ -475,9 +524,14 @@ def track_recording(
     manifest = _validated_manifest(root)
     if state_config is not None and not isinstance(state_config, StateConfig):
         raise ValueError("state_config must be a StateConfig")
+    if movement_config is not None and not isinstance(movement_config, MovementConfig):
+        raise ValueError("movement_config must be a MovementConfig")
+    movement_config = (
+        MovementConfig.from_dict(movement_config.to_dict()) if movement_config is not None else None
+    )
     config = StateConfig.from_dict((state_config or StateConfig()).to_dict())
     effective, sequences = _sampling(manifest["frame_count"], preview_stride, preview_max_frames)
-    perception, metadata, window_id = _identity(manifest, config, detector)
+    perception, metadata, window_id = _identity(manifest, config, detector, movement_config)
     samples = set(sequences)
     summary = _Summary()
     try:
@@ -491,6 +545,7 @@ def track_recording(
                     perception,
                     window_id,
                     detector_only=detector is not None,
+                    movement_config=movement_config,
                 ):
                     encoded = _line(row)
                     size += len(encoded)
@@ -504,7 +559,7 @@ def track_recording(
                         sample=frame.sequence in samples,
                         detector_only=detector is not None,
                     )
-            if _identity(manifest, config, detector)[1] != metadata:
+            if _identity(manifest, config, detector, movement_config)[1] != metadata:
                 raise ValueError("detector identity changed during tracking")
             preview = summary.preview(manifest)
             (stage / "preview.gif").write_bytes(preview)
@@ -521,6 +576,7 @@ def track_recording(
                 sequences=sequences,
                 tracks_sha256=_file_hash(stage / "tracks.jsonl"),
                 preview_sha256=_sha(preview),
+                movement_config=movement_config,
             )
             if len(_canonical_bytes(report)) + 1 > MAX_REPORT_BYTES:
                 raise ValueError("tracking report exceeds its encoded-byte budget")
@@ -560,11 +616,17 @@ def verify_recording_tracking(
     manifest = _validated_manifest(root)
     report = _read_report(replay)
     config = StateConfig.from_dict(report.get("state_config"))
+    movement_config = None
+    if "movement_analysis" in report:
+        movement_spec = report["movement_analysis"]
+        if not isinstance(movement_spec, dict):
+            raise ValueError("invalid movement analysis specification")
+        movement_config = MovementConfig.from_dict(movement_spec.get("config"))
     preview_spec = report["preview"]
     stride = _integer(preview_spec.get("requested_stride"), "preview_stride", 1, 10000)
     maximum = _integer(preview_spec.get("max_frames"), "preview_max_frames", 2, MAX_PREVIEW_FRAMES)
     effective, sequences = _sampling(manifest["frame_count"], stride, maximum)
-    perception, metadata, window_id = _identity(manifest, config, detector)
+    perception, metadata, window_id = _identity(manifest, config, detector, movement_config)
     if (
         _canonical_bytes(report.get("detector_metadata")) != _canonical_bytes(metadata)
         or report.get("tracking_window_id") != window_id
@@ -580,7 +642,13 @@ def verify_recording_tracking(
     try:
         with (replay / "tracks.jsonl").open("rb") as stream:
             for row, frame, belief in _tracked_frames(
-                root, manifest, config, perception, window_id, detector_only=detector is not None
+                root,
+                manifest,
+                config,
+                perception,
+                window_id,
+                detector_only=detector is not None,
+                movement_config=movement_config,
             ):
                 actual = stream.readline(MAX_TRACK_LINE_BYTES + 1)
                 if len(actual) > MAX_TRACK_LINE_BYTES or not actual:
@@ -604,7 +672,7 @@ def verify_recording_tracking(
                 )
             if stream.read(1):
                 raise ValueError("tracking trajectory contains extra rows")
-        if _identity(manifest, config, detector)[1] != metadata:
+        if _identity(manifest, config, detector, movement_config)[1] != metadata:
             raise ValueError("detector identity changed during verification")
         preview = summary.preview(manifest)
         if _sha(preview) != _file_hash(replay / "preview.gif"):
@@ -622,6 +690,7 @@ def verify_recording_tracking(
             sequences=sequences,
             tracks_sha256=digest.hexdigest(),
             preview_sha256=_sha(preview),
+            movement_config=movement_config,
         )
         if _canonical_bytes(report) != _canonical_bytes(expected):
             raise ValueError("tracking report differs from independently recomputed evidence")
@@ -633,7 +702,7 @@ def verify_recording_tracking(
             raise ValueError("tracking replay changed during verification")
     finally:
         summary.close()
-    return {
+    result: dict[str, object] = {
         "verified": True,
         "scope": "single_imported_recording_window",
         "identity_scope": "window_local_only",
@@ -653,3 +722,7 @@ def verify_recording_tracking(
         "accuracy_metrics_available": False,
         "effect_success_rate": None,
     }
+    if movement_config is not None:
+        result["movement_recomputed"] = True
+        result["movement_state_counts"] = dict(sorted(summary.movement_states.items()))
+    return result

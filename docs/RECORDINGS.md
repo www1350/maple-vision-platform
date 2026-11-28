@@ -158,6 +158,8 @@ python -m maple_vision recording verify-tracking artifacts/window-1200 artifacts
 
 `verify-tracking` 会重新读取源像素、运行同一感知和新的估计器、重建完整轨迹及预览，核对每帧状态和输出身份。仅修改 `tracks.jsonl` 后重算文件哈希也不会使篡改的轨迹通过。这证明既有输入、模型和配置下的结果可重现，不提供未标注录像的准确率，也不验证攀绳、站上平台或实机输入成功。记录始终写明 `action_execution=none`、`accuracy_metrics_available=false` 和 `effect_success_rate=null`。
 
+可以用 `--movement` 开启[运动状态候选](MOVEMENT_HYPOTHESES.md)，或通过 `--movement-config path.json` 使用完整的自定义配置。它增加近绳、攀爬候选、平台到达候选及未知原因，使用当前地形一致平移补偿镜头，并保留多人、姿态变化和失配时的未知状态。候选结果进入逐帧记录、叠加回放和完整重推理核验；默认不开启，旧输出保持兼容。该功能尚未通过真实录像的识别／状态准确率验收。
+
 ## 本地 OCR
 
 ```python
