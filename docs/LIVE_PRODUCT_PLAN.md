@@ -46,6 +46,8 @@ flowchart TD
 
 同一入口现在也能装载本地 ONNX 与严格 manifest。模型文件哈希、声明域、类别、阈值和实际 Runtime 设置进入 schema 2 证据，识别框叠加到真实跨窗口截图；模型哈希不符会在采集前失败。该模式故意不调用 fixture HUD 解析，地图、HP、MP 与 actionability 始终未知，因此模型框不能直接触发移动或攻击。仓库随附模型仍只覆盖合成域；国服只读观察必须另有 `authorized_recordings` 模型及对应独立评测。
 
+detector-only 帧中的高置信度框现在会作为只读假设进入时序状态：唯一人物框更新带来源和有效期的 `player_bbox`，人物与怪物框建立有界轨迹，连续帧可产生匹配关系和像素速度。该路径有独立的序号水位，重复或倒序帧不能重复推进；地图未知使用独立 context，后续取得完整地图/HUD 时会重建状态，不能沿用未知地图轨迹。整体 observation、地图、HP、MP 与动作授权仍保持未知，`last_accepted_sequence` 不会因只读假设前移，因此这一步只为录像/窗口校准保留位置与目标，不授权选敌攻击。
+
 五项长期复用资产是游戏知识库、素材索引、数据集工厂、模拟器、独立验证平台。模拟器真值只供独立评测，视觉决策只能看到当前输入源能观察到的信息。新增地图主要新增地图包与样本，新增职业主要新增能力包、角色键位和对应测试。[运行合同](https://github.com/www1350/maple-vision-platform/blob/main/docs/TASK_RUNTIME.md) · [职业包](https://github.com/www1350/maple-vision-platform/blob/main/docs/CLASS_PACKAGES.md) · [任务配置](https://github.com/www1350/maple-vision-platform/blob/main/docs/MISSION_PROGRAMS.md)
 
 ## 三、第一条路线怎样打通

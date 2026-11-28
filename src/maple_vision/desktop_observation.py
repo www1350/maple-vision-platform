@@ -202,6 +202,7 @@ def onnx_desktop_observation_session(
     return DesktopObservationSession(
         desktop,
         DetectorOnlyPerception(detector),
+        estimator=TemporalStateEstimator(retain_detection_hypotheses=True),
         perception_mode="onnx_detector_only_v1",
         perception_identity={
             "implementation": "maple_vision.onnx_detector.OnnxDetector",

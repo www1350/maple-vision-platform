@@ -28,6 +28,7 @@ from maple_vision.scene import (
     MP_Y,
     PALETTE,
 )
+from maple_vision.state_estimation import TemporalStateEstimator
 
 IDENTITY = WindowIdentity(
     71, 72, 73, 74, "OwnedFixture", "Fixture Observation", (0, 0, 320, 192), 96
@@ -108,6 +109,7 @@ def test_detector_boxes_are_visible_but_never_invent_hud_or_actionability() -> N
     result = DesktopObservationSession(
         desktop,
         DetectorOnlyPerception(Detector()),
+        estimator=TemporalStateEstimator(retain_detection_hypotheses=True),
         perception_mode="detector_test",
         perception_identity={"implementation": "test.Detector"},
         limitations=("test detector only",),
@@ -118,6 +120,11 @@ def test_detector_boxes_are_visible_but_never_invent_hud_or_actionability() -> N
     assert result.observation.hp_ratio is None
     assert result.observation.mp_ratio is None
     assert not result.belief.actionable
+    assert result.belief.reason == "fresh_detection_hypotheses"
+    assert result.belief.field("player_bbox").value == (10, 20, 30, 60)
+    assert len(result.belief.tracks) == 1
+    assert result.belief.tracks[0].class_id == "player"
+    assert result.belief.last_accepted_sequence is None
 
 
 def test_shipped_hash_bound_onnx_model_can_observe_external_pixels() -> None:
@@ -128,6 +135,8 @@ def test_shipped_hash_bound_onnx_model_can_observe_external_pixels() -> None:
     assert result.perception_identity["loaded_model_sha256"] == detector.loaded_model_sha256
     assert result.observation.status is Status.UNKNOWN
     assert not result.belief.actionable
+    assert result.belief.reason == "fresh_detection_hypotheses"
+    assert {track.class_id for track in result.belief.tracks} >= {"player", "monster"}
 
 
 def test_fixture_mode_rejects_dimension_drift_and_pauses() -> None:

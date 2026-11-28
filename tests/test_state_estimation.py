@@ -116,6 +116,8 @@ def test_configuration_rejects_missing_keys_and_nonobjects():
             StateConfig.from_dict(invalid)
     with pytest.raises(ValueError):
         TemporalStateEstimator(config={})
+    with pytest.raises(ValueError, match="retain_detection_hypotheses"):
+        TemporalStateEstimator(retain_detection_hypotheses=1)
 
 
 def test_actual_pixel_observation_is_preserved_without_reordering_or_synthetic_fields():
@@ -135,6 +137,66 @@ def test_actual_pixel_observation_is_preserved_without_reordering_or_synthetic_f
         assert field.status is Status.UNKNOWN
     with pytest.raises(KeyError):
         result.field("hidden_monster_hp")
+
+
+def test_unknown_detector_frames_retain_nonactionable_position_and_tracks() -> None:
+    state = TemporalStateEstimator(retain_detection_hypotheses=True)
+    first = observation(
+        0,
+        0,
+        status=Status.UNKNOWN,
+        hp_ratio=None,
+        mp_ratio=None,
+        map_id=None,
+        source_id="external-window:onnx_detector_only_v1",
+    )
+    result = state.update(first, 0)
+    assert not result.actionable
+    assert result.reason == "fresh_detection_hypotheses"
+    assert result.last_accepted_sequence is None
+    assert result.field("player_bbox").value == (20, 146, 34, 168)
+    assert result.field("map_id").status is Status.UNKNOWN
+    assert result.field("hp_ratio").status is Status.UNKNOWN
+    assert {track.class_id for track in result.tracks} == {"player", "monster"}
+
+    second = replace(
+        first,
+        sequence=1,
+        timestamp_ms=50,
+        detections=(
+            Detection("player", (22, 146, 36, 168), 0.95),
+            Detection("monster", (84, 152, 94, 168), 0.9),
+        ),
+    )
+    moved = state.update(second, 50)
+    assert not moved.actionable
+    assert all(track.association == "matched" for track in moved.tracks)
+    assert all(track.velocity_px_per_second is not None for track in moved.tracks)
+    duplicate = state.update(second, 50)
+    assert not duplicate.actionable
+    assert duplicate.reason == "duplicate_or_reordered_observation"
+    assert duplicate.last_accepted_sequence is None
+
+
+def test_known_map_after_detection_only_frames_requires_a_newer_frame_and_resets_context() -> None:
+    state = TemporalStateEstimator(retain_detection_hypotheses=True)
+    partial = observation(
+        3,
+        150,
+        status=Status.UNKNOWN,
+        hp_ratio=None,
+        mp_ratio=None,
+        map_id=None,
+        source_id="external-window:onnx_detector_only_v1",
+    )
+    assert state.update(partial, 150).reason == "fresh_detection_hypotheses"
+    same_sequence = observation(3, 150, source_id=partial.source_id)
+    assert state.update(same_sequence, 150).reason == "duplicate_or_reordered_observation"
+    accepted = state.update(observation(4, 200, source_id=partial.source_id), 200)
+    assert accepted.actionable
+    assert accepted.last_accepted_sequence == 4
+    assert accepted.field("map_id").value == "meadow"
+    assert all(track.source_sequence == 4 for track in accepted.tracks)
 
 
 def test_export_does_not_share_mutable_containers_and_is_deterministic():
