@@ -183,3 +183,71 @@ def test_existing_observe_command_keeps_its_original_output(
     assert report["frames_processed"] == 5
     assert (output / "observations.jsonl").is_file()
     assert not (output / "tracks.jsonl").exists()
+
+
+def test_cli_movement_review_keeps_unreviewed_and_uncertain_frames_unscored(
+    recording: Path, tmp_path: Path
+) -> None:
+    labels_path = tmp_path / "movement-labels.json"
+    created = run_cli(tmp_path, "movement-labels", str(recording), "--output", str(labels_path))
+    assert created.returncode == 0, created.stderr
+    labels = json.loads(labels_path.read_text(encoding="utf-8"))
+    assert all(frame["review"] is None for frame in labels["frames"])
+    labels.update(domain="authored_fixture", reviewer="CLI independent review", subject="actor A")
+    labels["frames"][0]["review"] = {
+        "actor_bbox": None,
+        "rope_climb_visible": None,
+        "arrival_after_climb_visible": None,
+        "note": "State cannot be determined from this frame.",
+    }
+    labels_path.write_text(json.dumps(labels), encoding="utf-8")
+    replay = tmp_path / "movement-replay"
+    tracked = run_cli(tmp_path, "track", str(recording), "--movement", "--output", str(replay))
+    assert tracked.returncode == 0, tracked.stderr
+    output = tmp_path / "movement-benchmark.json"
+    scored = run_cli(
+        tmp_path,
+        "benchmark-movement",
+        str(recording),
+        str(replay),
+        "--labels",
+        str(labels_path),
+        "--output",
+        str(output),
+        "--actor-iou-threshold",
+        "0.75",
+    )
+    assert scored.returncode == 0, scored.stderr
+    report = json.loads(scored.stdout)
+    assert report["verification"]["movement_recomputed"] is True
+    assert report["frames"] == report["verification"]["frames_verified"] == 5
+    assert report["coverage"]["unreviewed"] == 4
+    assert report["coverage"]["reviewed_uncertain"] == 1
+    for metric in report["predicates"].values():
+        assert metric["positives"] == metric["negatives"] == 0
+        assert metric["precision"] is metric["recall"] is None
+        assert metric["decision_coverage"] is None
+    assert report["action_execution"] == "none"
+    assert json.loads(output.read_text(encoding="utf-8")) == report
+
+
+@pytest.mark.parametrize("option", ["--model", "--manifest"])
+def test_cli_movement_benchmark_requires_complete_model_identity(
+    recording: Path, tmp_path: Path, option: str
+) -> None:
+    output = tmp_path / "invalid-benchmark.json"
+    checked = run_cli(
+        tmp_path,
+        "benchmark-movement",
+        str(recording),
+        str(tmp_path / "replay"),
+        "--labels",
+        str(tmp_path / "labels.json"),
+        "--output",
+        str(output),
+        option,
+        "missing-model-file",
+    )
+    assert checked.returncode == 2
+    assert "--model and --manifest must be supplied together" in checked.stderr
+    assert not output.exists()
