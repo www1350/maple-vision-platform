@@ -199,9 +199,8 @@ def _actor_selection_spec(manifest: dict[str, Any], value: object) -> dict[str, 
     }
 
 
-def create_recording_actor_selection(
+def build_recording_actor_selection(
     recording: Path,
-    output: Path,
     *,
     source_sequence: int,
     bbox: tuple[float, float, float, float],
@@ -209,12 +208,8 @@ def create_recording_actor_selection(
     subject: str,
     config: ActorSelectionConfig | None = None,
 ) -> dict[str, Any]:
-    """Bind an explicitly reviewed target box to one actual source frame."""
-    recording, output = Path(recording), Path(output)
-    if output.exists() or output.is_symlink():
-        raise FileExistsError(f"actor selection already exists: {output}")
-    if output.resolve().is_relative_to(recording.resolve()):
-        raise ValueError("write actor selection outside the recording")
+    """Build a source-bound target selection without writing to the recording."""
+    recording = Path(recording)
     manifest = _validated_manifest(recording)
     _integer(source_sequence, "source_sequence", 0, 2**53)
     local = source_sequence - manifest.get("source_start_frame", 0)
@@ -237,6 +232,33 @@ def create_recording_actor_selection(
         },
     )
     _assert_source_unchanged(recording, manifest)
+    return specification
+
+
+def create_recording_actor_selection(
+    recording: Path,
+    output: Path,
+    *,
+    source_sequence: int,
+    bbox: tuple[float, float, float, float],
+    reviewer: str,
+    subject: str,
+    config: ActorSelectionConfig | None = None,
+) -> dict[str, Any]:
+    """Bind an explicitly reviewed target box to one actual source frame."""
+    recording, output = Path(recording), Path(output)
+    if output.exists() or output.is_symlink():
+        raise FileExistsError(f"actor selection already exists: {output}")
+    if output.resolve().is_relative_to(recording.resolve()):
+        raise ValueError("write actor selection outside the recording")
+    specification = build_recording_actor_selection(
+        recording,
+        source_sequence=source_sequence,
+        bbox=bbox,
+        reviewer=reviewer,
+        subject=subject,
+        config=config,
+    )
     publish_new(output, _canonical_bytes(specification) + b"\n", 64 * 1024, "actor selection")
     return specification
 

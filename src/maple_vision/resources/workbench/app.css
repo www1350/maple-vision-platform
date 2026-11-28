@@ -69,6 +69,22 @@
 .frame-placeholder{font-size:11px;color:#899e91;text-align:center;padding:30px;line-height:1.9}
 .frame-caption{position:absolute;left:8px;bottom:8px;font:9px ui-monospace,monospace;color:#d2d9c9;background:#16241dcc;border-radius:3px;padding:3px 5px}
 .frame-caption:empty{display:none}
+.recording-frame-viewport{max-height:65vh;overflow:auto;border-radius:6px;background:#202d2a;overscroll-behavior:contain}
+.recording-frame-viewport .frame-stage{width:100%;min-width:100%;border-radius:0}
+.recording-frame-viewport.zoomed .frame-stage{width:200%}
+.recording-frame-viewport.target-selecting img{touch-action:none;cursor:crosshair}
+.recording-frame-viewport .frame-caption{pointer-events:none}
+.recording-target-box{position:absolute;pointer-events:none;border:2px solid #66bfff;background:#66bfff20;box-shadow:0 0 0 1px #182e4b}
+.recording-target-form{border-top:1px solid var(--line);margin-top:20px;padding-top:16px}
+.recording-target-form h3{font-size:12px;margin:0}
+.recording-target-form label{font-size:11px;color:#5a6f5d}
+.recording-target-form .field-row{margin:14px 0}
+.recording-target-form .field-row input{display:block;margin-top:5px}
+.recording-target-preview{display:block;max-width:100%;height:auto;margin-top:10px;border:1px solid #becbbe;border-radius:4px;image-rendering:pixelated;background:#202d2a}
+.recording-target-confirmation{display:flex;gap:8px;align-items:flex-start;margin:14px 0;line-height:1.7}
+#recording-target-confirm{width:16px;height:16px;min-width:16px;margin:2px 0 0;padding:0;accent-color:var(--green)}
+.recording-target-form .button-row{margin-top:12px}
+.recording-target-form .button-row .button{white-space:normal;min-width:76px}
 .timeline-controls{display:flex;align-items:center;gap:8px;margin-top:12px}
 .timeline-controls input{flex:1;min-width:0;accent-color:var(--green);height:4px}
 .result-area{min-width:0}

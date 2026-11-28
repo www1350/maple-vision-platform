@@ -13,8 +13,8 @@ import time
 from pathlib import Path
 from urllib.request import urlopen
 
-from PIL import Image
-from playwright.sync_api import expect, sync_playwright
+from PIL import Image, ImageDraw
+from playwright.sync_api import Download, Page, Route, expect, sync_playwright
 
 from maple_vision.catalog import canonical_json
 from maple_vision.input_bindings import load_input_profile
@@ -28,8 +28,15 @@ def recording_window(root: Path, name: str, start: int, pts: list[int], truncate
     frames.mkdir(parents=True)
     rows = []
     for sequence, timestamp in enumerate(pts):
-        pixels = bytes([50 + 20 * (start + sequence), 80, 120]) * (64 * 36)
-        frame = ImageFrame(sequence, timestamp - pts[0], 64, 36, pixels)
+        picture = Image.new("RGB", (160, 90), (50 + 20 * (start + sequence), 80, 120))
+        drawing = ImageDraw.Draw(picture)
+        # Independent visible figures; the browser selects a region, not a model prediction.
+        drawing.rectangle((34, 24, 41, 33), fill=(50, 210, 240))
+        drawing.rectangle((32, 34, 43, 51), fill=(50, 210, 240))
+        drawing.rectangle((111, 20, 118, 31), fill=(240, 90, 180))
+        drawing.rectangle((108, 32, 121, 51), fill=(240, 90, 180))
+        pixels = picture.tobytes()
+        frame = ImageFrame(sequence, timestamp - pts[0], 160, 90, pixels)
         data = frame.png_bytes()
         file = f"frames/{sequence:06d}.png"
         (session / file).write_bytes(data)
@@ -42,8 +49,8 @@ def recording_window(root: Path, name: str, start: int, pts: list[int], truncate
                 "rgb_sha256": hashlib.sha256(pixels).hexdigest(),
                 "source_name": f"video-frame-{start + sequence:06d}",
                 "source_sha256": None,
-                "width": 64,
-                "height": 36,
+                "width": 160,
+                "height": 90,
                 "pts": timestamp,
             }
         )
@@ -61,8 +68,8 @@ def recording_window(root: Path, name: str, start: int, pts: list[int], truncate
         "fps": None,
         "timebase": "video_presentation_ticks",
         "frame_count": len(rows),
-        "width": 64,
-        "height": 36,
+        "width": 160,
+        "height": 90,
         "max_frames": len(rows),
         "total_source_frames": None,
         "truncated": truncated,
@@ -77,7 +84,183 @@ def recording_window(root: Path, name: str, start: int, pts: list[int], truncate
     return session
 
 
-def verify(url: str, executable: str) -> dict[str, object]:
+def actor_image_geometry(page: Page) -> dict[str, float]:
+    """Measure rendered pixels independently of the application's selection code."""
+    return page.locator("#recording-frame").evaluate(
+        """image => {
+          const bounds = image.getBoundingClientRect();
+          const scale = Math.min(bounds.width / image.naturalWidth,
+                                 bounds.height / image.naturalHeight);
+          return {left: bounds.left + (bounds.width - image.naturalWidth * scale) / 2,
+                  top: bounds.top + (bounds.height - image.naturalHeight * scale) / 2,
+                  scale, width: image.naturalWidth * scale,
+                  height: image.naturalHeight * scale};
+        }"""
+    )
+
+
+def draw_actor_box(page: Page, box: list[int], *, reverse: bool = False) -> None:
+    expect(page.locator("#recording-target-start")).to_be_enabled()
+    if page.locator("#recording-target-clear").is_enabled():
+        page.click("#recording-target-clear")
+    page.click("#recording-target-start")
+    viewport = page.locator("#recording-frame-viewport")
+    viewport.scroll_into_view_if_needed()
+    geometry = actor_image_geometry(page)
+    center = {
+        "x": geometry["left"] + (box[0] + box[2]) / 2 * geometry["scale"],
+        "y": geometry["top"] + (box[1] + box[3]) / 2 * geometry["scale"],
+    }
+    viewport.evaluate(
+        """(element, center) => {
+          const bounds = element.getBoundingClientRect();
+          element.scrollBy(center.x - bounds.left - bounds.width / 2,
+                           center.y - bounds.top - bounds.height / 2);
+        }""",
+        center,
+    )
+    geometry = actor_image_geometry(page)
+    # Land inside the boundary pixels to avoid ambiguous fractional display edges.
+    points = [(box[0] + 0.2, box[1] + 0.2), (box[2] - 0.2, box[3] - 0.2)]
+    if reverse:
+        points.reverse()
+    first, last = [
+        (
+            geometry["left"] + x * geometry["scale"],
+            geometry["top"] + y * geometry["scale"],
+        )
+        for x, y in points
+    ]
+    page.mouse.move(*first)
+    page.mouse.down()
+    page.mouse.move(*last, steps=5)
+    page.mouse.up()
+    expect(page.locator("#recording-target-preview")).to_be_visible()
+
+
+def confirm_actor_box(page: Page) -> None:
+    page.locator("#recording-target-reviewer").fill("independent browser review")
+    page.locator("#recording-target-subject").fill("left cyan figure")
+    expect(page.locator("#recording-target-export")).to_be_disabled()
+    page.locator("#recording-target-confirm").check()
+    expect(page.locator("#recording-target-export")).to_be_enabled()
+
+
+def download_actor_box(page: Page) -> dict[str, object]:
+    with page.expect_download() as downloaded:
+        page.click("#recording-target-export")
+    download = downloaded.value
+    assert download.suggested_filename == "actor-selection.json"
+    with tempfile.TemporaryDirectory(prefix="maple-actor-download-") as folder:
+        path = Path(folder) / download.suggested_filename
+        download.save_as(path)
+        return json.loads(path.read_text(encoding="utf-8"))
+
+
+def verify_actor_selection_ui(page: Page, url: str, screenshots: Path | None) -> None:
+    """Exercise real pointer events, downloads, source clocks and stale responses."""
+    expected_box = [32, 24, 44, 52]
+    sessions = page.request.get(url + "/api/recordings").json()
+    second = next(session for session in sessions if session.get("source_start_frame", 0) == 2)
+    detail = page.request.get(url + "/api/recordings/" + second["session_id"]).json()
+    draw_actor_box(page, expected_box)
+    confirm_actor_box(page)
+    if screenshots is not None:
+        screenshots.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(screenshots / "actor-selection-desktop.png"), full_page=True)
+    selection = download_actor_box(page)
+    assert selection["kind"] == "recording_actor_selection"
+    assert selection["source"]["session_id"] == second["session_id"]
+    assert selection["anchor"]["source_sequence"] == 3
+    assert selection["anchor"]["timestamp_ms"] == 140  # Local clock, not coverage's 260 ms.
+    assert selection["anchor"]["bbox"] == expected_box
+    assert selection["anchor"]["rgb_sha256"] == detail["frames"][1]["rgb_sha256"]
+
+    # Delay a previously requested image, then select a different frame before it arrives.
+    pending_images: list[Route] = []
+    pattern = "**/api/recording-coverages/*/frames/2"
+    page.route(pattern, lambda route: pending_images.append(route))
+    seek = page.locator("#recording-source-frame")
+    seek.fill("2")
+    seek.press("Enter")
+    expect(page.locator("#recording-frame-caption")).to_contain_text("源帧 2")
+    expect(page.locator("#recording-target-start")).to_be_disabled()
+    deadline = time.monotonic() + 5
+    while not pending_images and time.monotonic() < deadline:
+        page.wait_for_timeout(20)
+    assert pending_images, "frame request was not intercepted"
+    seek.fill("3")
+    seek.press("Enter")
+    expect(page.locator("#recording-target-start")).to_be_enabled()
+    draw_actor_box(page, expected_box)
+    held_image = pending_images.pop()
+    image_response = page.request.get(held_image.request.url)
+    held_image.fulfill(response=image_response)
+    page.wait_for_timeout(100)
+    page.unroute(pattern)
+    expect(page.locator("#recording-frame-caption")).to_contain_text("源帧 3")
+    assert page.locator("#recording-frame").evaluate(
+        """image => {
+          const canvas = document.createElement('canvas'); canvas.width=1; canvas.height=1;
+          const context = canvas.getContext('2d'); context.drawImage(image, 0, 0);
+          return Array.from(context.getImageData(0, 0, 1, 1).data).slice(0, 3);
+        }"""
+    ) == [110, 80, 120]
+
+    # Finish a real API response only after the user has changed the selected frame.
+    pending_exports = []
+    export_pattern = "**/api/recordings/*/actor-selection"
+
+    def hold_export(route: Route) -> None:
+        pending_exports.append((route, route.fetch()))
+
+    page.route(export_pattern, hold_export)
+    stale_downloads = []
+
+    def record_stale_download(download: Download) -> None:
+        stale_downloads.append(download)
+
+    page.on("download", record_stale_download)
+    confirm_actor_box(page)
+    page.click("#recording-target-export")
+    deadline = time.monotonic() + 5
+    while not pending_exports and time.monotonic() < deadline:
+        page.wait_for_timeout(20)
+    assert pending_exports, "selection request was not intercepted"
+    seek.fill("2")
+    seek.press("Enter")
+    expect(page.locator("#recording-target-confirm")).not_to_be_checked()
+    held_export, response = pending_exports.pop()
+    assert response.status == 200
+    held_export.fulfill(response=response)
+    page.wait_for_timeout(150)
+    assert not stale_downloads, "a stale actor selection was downloaded"
+    page.remove_listener("download", record_stale_download)
+    page.unroute(export_pattern)
+    expect(page.locator("#recording-target-export")).to_be_disabled()
+
+    # Repeat the exact source-pixel choice in a narrow viewport, in reverse drag order.
+    page.set_viewport_size({"width": 390, "height": 844})
+    draw_actor_box(page, expected_box, reverse=True)
+    confirm_actor_box(page)
+    if screenshots is not None:
+        page.screenshot(path=str(screenshots / "actor-selection-mobile.png"), full_page=True)
+    mobile_selection = download_actor_box(page)
+    assert mobile_selection["anchor"]["bbox"] == expected_box
+    assert mobile_selection["anchor"]["source_sequence"] == 2
+    assert mobile_selection["anchor"]["timestamp_ms"] == 0
+    assert not page.evaluate("document.documentElement.scrollWidth > window.innerWidth")
+    page.click("#recording-target-zoom")
+    draw_actor_box(page, expected_box)
+    confirm_actor_box(page)
+    zoomed_selection = download_actor_box(page)
+    assert zoomed_selection["anchor"]["bbox"] == expected_box
+    assert zoomed_selection["anchor"]["rgb_sha256"] == detail["frames"][0]["rgb_sha256"]
+    page.click("#recording-target-zoom")
+    page.set_viewport_size({"width": 1280, "height": 850})
+
+
+def verify(url: str, executable: str, screenshots: Path | None = None) -> dict[str, object]:
     with sync_playwright() as p:
         browser = p.chromium.launch(
             headless=True,
@@ -106,6 +289,15 @@ def verify(url: str, executable: str) -> dict[str, object]:
         seek.fill("3")
         seek.press("Enter")
         expect(page.locator("#recording-frame-caption")).to_contain_text("源帧 3 · 窗口帧 1")
+        try:
+            verify_actor_selection_ui(page, url, screenshots)
+        except Exception:
+            if screenshots is not None:
+                screenshots.mkdir(parents=True, exist_ok=True)
+                page.screenshot(
+                    path=str(screenshots / "actor-selection-failure.png"), full_page=True
+                )
+            raise
         tail = (
             page.locator("#recording-select option")
             .filter(has_text="单窗口")
@@ -350,6 +542,9 @@ def verify(url: str, executable: str) -> dict[str, object]:
             "reviewed_key_grid_receipt_exported": True,
             "local_key_image_preview_and_clear": True,
             "read_only_recording_replay": True,
+            "source_bound_actor_selection_download": True,
+            "actor_selection_stale_image_and_response_rejected": True,
+            "actor_selection_mobile_and_zoom_coordinates": True,
             "separated_trial_evidence_lanes": 4,
             "mobile_width": 390,
             "horizontal_overflow": overflow,
@@ -365,6 +560,7 @@ def main() -> None:
         "--browser", default=shutil.which("google-chrome") or shutil.which("chromium")
     )
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--screenshots", type=Path)
     args = parser.parse_args()
     if not args.browser:
         parser.error("a local Chromium or Chrome executable is required")
@@ -431,7 +627,7 @@ def main() -> None:
                         time.sleep(0.1)
                 else:
                     raise RuntimeError("workbench did not start")
-                report = verify(url, args.browser)
+                report = verify(url, args.browser, args.screenshots)
             finally:
                 service.terminate()
                 service.wait(timeout=30)

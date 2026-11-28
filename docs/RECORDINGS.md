@@ -164,6 +164,8 @@ python -m maple_vision recording verify-tracking artifacts/window-1200 artifacts
 
 多人同屏可先通过 `recording select-actor` 为一个实际源帧保存人工选定的人物框，再在 `track` 中传入 `--actor-selection`。该模式同时保留所有玩家的轨迹，单独跟踪目标，并在叠加回放中标出 `TARGET`；其他玩家存在不会导致全局弃权。目标丢失或关联歧义会使这次选择持续失效，避免自动跟到另一个人。复验重新计算完整选择链路，评测也保留选择配置；详见[多人目标选择](ACTOR_SELECTION.md)。
 
+也可在工作台录像页直接拖框、放大检查并确认后导出同格式的 `actor-selection.json`，原图坐标和源帧绑定由界面与服务端共同核对。`recording actor-labels` 与 `recording benchmark-actor` 提供独立身份复核和评分：明确区分选对目标、错跟其他玩家、定位不匹配、参考歧义、可见目标漏选、不可见时误选，以及未审／人工不确定。身份评分直接使用选人结果，不依赖运动是否可判；详见[身份评测与连续性分母](ACTOR_EVALUATION.md)。
+
 ## 本地 OCR
 
 ```python

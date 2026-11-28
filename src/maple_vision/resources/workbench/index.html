@@ -77,7 +77,25 @@
             <section class="panel recording-panel" aria-labelledby="recording-detail-heading">
               <div class="panel-heading"><h2 id="recording-detail-heading">逐帧证据</h2><span id="recording-verified" class="badge success">已校验</span></div>
               <div class="detail-grid">
-                <div class="replay-area"><div class="frame-stage"><img id="recording-frame" alt="已校验录像的原始导入帧" class="hidden"><div id="recording-frame-empty" class="frame-placeholder">选择录像窗口以查看画面</div><span id="recording-frame-caption" class="frame-caption"></span></div><div class="timeline-controls"><button id="recording-prev" class="icon-button" type="button" aria-label="上一录像帧">‹</button><button id="recording-play" class="icon-button" type="button" aria-label="播放录像帧">▷</button><input id="recording-range" type="range" min="0" max="0" value="0" aria-label="录像帧时间轴"><button id="recording-next" class="icon-button" type="button" aria-label="下一录像帧">›</button></div><form class="button-row" id="recording-seek"><label for="recording-source-frame">源帧号</label><input id="recording-source-frame" type="number" step="1" required><button class="button subtle" type="submit">跳转</button></form><div class="button-row"><button id="recording-event-prev" class="button subtle" type="button">上一个可见事件</button><button id="recording-event-next" class="button subtle" type="button">下一个可见事件</button></div><p id="recording-event-status" class="field-help" role="status">当前帧无已复核事件。</p><p class="field-help">画面来自固定录像，只能证明已保存像素中可见的现象。</p></div>
+                <div class="replay-area">
+                  <div id="recording-frame-viewport" class="recording-frame-viewport"><div id="recording-frame-stage" class="frame-stage"><img id="recording-frame" alt="已校验录像的原始导入帧" class="hidden" draggable="false"><div id="recording-frame-empty" class="frame-placeholder">选择录像窗口以查看画面</div><div id="recording-target-box" class="recording-target-box hidden" aria-hidden="true"></div><span id="recording-frame-caption" class="frame-caption"></span></div></div>
+                  <div class="timeline-controls"><button id="recording-prev" class="icon-button" type="button" aria-label="上一录像帧">‹</button><button id="recording-play" class="icon-button" type="button" aria-label="播放录像帧">▷</button><input id="recording-range" type="range" min="0" max="0" value="0" aria-label="录像帧时间轴"><button id="recording-next" class="icon-button" type="button" aria-label="下一录像帧">›</button></div>
+                  <form class="button-row" id="recording-seek"><label for="recording-source-frame">源帧号</label><input id="recording-source-frame" type="number" step="1" required><button class="button subtle" type="submit">跳转</button></form>
+                  <div class="button-row"><button id="recording-event-prev" class="button subtle" type="button">上一个可见事件</button><button id="recording-event-next" class="button subtle" type="button">下一个可见事件</button></div><p id="recording-event-status" class="field-help" role="status">当前帧无已复核事件。</p>
+                  <form id="recording-target-form" class="recording-target-form">
+                    <h3>选定观察目标</h3>
+                    <p class="field-help">暂停在能分清人物的一帧，用鼠标或手指拖框选定目标。放大后可在画面内滚动查看。</p>
+                    <div class="button-row"><button id="recording-target-start" class="button subtle" type="button" disabled>框选人物</button><button id="recording-target-clear" class="button subtle" type="button" disabled>清空选择</button><button id="recording-target-zoom" class="button subtle" type="button" aria-pressed="false" disabled>放大 2×</button></div>
+                    <p id="recording-target-coordinates" class="field-help">尚未选定目标。</p>
+                    <canvas id="recording-target-preview" class="recording-target-preview hidden" aria-label="选中人物的局部放大预览"></canvas>
+                    <div class="field-row"><label for="recording-target-reviewer">复核人<input id="recording-target-reviewer" maxlength="128" value="local-reviewer" required></label><label for="recording-target-subject">目标说明<input id="recording-target-subject" maxlength="128" placeholder="例如：黑帽人物" required></label></div>
+                    <label class="recording-target-confirmation" for="recording-target-confirm"><input id="recording-target-confirm" type="checkbox" disabled>我已核对当前源帧、人物框和目标说明。</label>
+                    <button id="recording-target-export" class="button primary" type="submit" disabled>导出目标选择</button>
+                    <p id="recording-target-status" class="field-help" role="status">加载画面后可选定目标。</p>
+                    <p class="field-help">导出文件可供录像跟踪使用。这里记录人工选择，不运行跟踪，也不证明角色身份或归属。</p>
+                  </form>
+                  <p class="field-help">画面来自固定录像，只能证明已保存像素中可见的现象。</p>
+                </div>
                 <div class="result-area"><dl id="recording-metrics" class="result-metrics"></dl><div class="evidence-tabs"><span class="tab active">会话、事件与限制</span></div><pre id="recording-evidence" class="json-view" tabindex="0"></pre></div>
               </div>
             </section>

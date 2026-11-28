@@ -92,8 +92,10 @@ jobs:
       - name: Verify real Chromium workbench interactions
         if: runner.os == 'Linux'
         run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk
           python -m pip install playwright==1.62.0
-          python scripts/verify_workbench_browser.py --output artifacts/workbench-browser.json
+          python scripts/verify_workbench_browser.py --output artifacts/workbench-browser.json --screenshots artifacts/workbench-browser
       - name: Test evidence
         if: always()
         uses: actions/upload-artifact@v4
