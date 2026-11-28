@@ -400,14 +400,24 @@ def _predicted_box(track: TrackBelief, timestamp_ms: int) -> Box:
 
 
 class TemporalStateEstimator:
-    def __init__(self, config: StateConfig | None = None) -> None:
+    def __init__(
+        self,
+        config: StateConfig | None = None,
+        *,
+        retain_detection_hypotheses: bool = False,
+    ) -> None:
         if config is not None and type(config) is not StateConfig:
             raise ValueError("state config must be StateConfig")
+        if type(retain_detection_hypotheses) is not bool:
+            raise ValueError("retain_detection_hypotheses must be boolean")
         self.config = config or StateConfig()
+        self.retain_detection_hypotheses = retain_detection_hypotheses
         self._fields = {name: FieldBelief(name) for name in _FIELD_NAMES}
         self._tracks: dict[str, TrackBelief] = {}
         self._last_sequence: int | None = None
         self._last_timestamp_ms: int | None = None
+        self._last_hypothesis_sequence: int | None = None
+        self._last_hypothesis_timestamp_ms: int | None = None
         self._last_now_ms: int | None = None
         self._clock_failed = False
         self._context: tuple[str, str] | None = None
@@ -426,6 +436,11 @@ class TemporalStateEstimator:
         self._age(now_ms)
         reason, status = self._rejection(observation, now_ms)
         if reason:
+            if reason == "unknown_observation" and self._has_detection_hypotheses(observation):
+                self._measure_detection_hypotheses(observation)
+                return self._result(
+                    observation, now_ms, "fresh_detection_hypotheses", Status.UNKNOWN
+                )
             return self._result(observation, now_ms, reason, status)
         assert observation.map_id is not None
         context = (observation.source_id, observation.map_id)
@@ -440,6 +455,8 @@ class TemporalStateEstimator:
         self._associate(observation)
         self._last_sequence = observation.sequence
         self._last_timestamp_ms = observation.timestamp_ms
+        self._last_hypothesis_sequence = observation.sequence
+        self._last_hypothesis_timestamp_ms = observation.timestamp_ms
         return self._result(observation, now_ms, "fresh_observation", None)
 
     def _validate_input(self, observation: VisualObservation, now_ms: int) -> None:
@@ -464,11 +481,14 @@ class TemporalStateEstimator:
             return "future_observation", Status.UNKNOWN
         if now_ms - observation.timestamp_ms > self.config.max_age_ms:
             return "stale_observation", Status.STALE
-        if self._last_sequence is not None and observation.sequence <= self._last_sequence:
+        if (
+            self._last_hypothesis_sequence is not None
+            and observation.sequence <= self._last_hypothesis_sequence
+        ):
             return "duplicate_or_reordered_observation", Status.STALE
         if (
-            self._last_timestamp_ms is not None
-            and observation.timestamp_ms < self._last_timestamp_ms
+            self._last_hypothesis_timestamp_ms is not None
+            and observation.timestamp_ms < self._last_hypothesis_timestamp_ms
         ):
             return "observation_timestamp_rollback", Status.STALE
         if observation.status is not Status.KNOWN:
@@ -487,6 +507,49 @@ class TemporalStateEstimator:
         if observation.hp_ratio <= 0:
             return "player_dead", Status.UNKNOWN
         return "", Status.KNOWN
+
+    def _has_detection_hypotheses(self, observation: VisualObservation) -> bool:
+        if not self.retain_detection_hypotheses:
+            return False
+        usable = tuple(
+            detection
+            for detection in observation.detections
+            if detection.confidence >= self.config.min_confidence
+        )
+        players = tuple(item for item in usable if item.class_id == "player")
+        return bool(usable) and len(players) <= 1
+
+    def _measure_detection_hypotheses(self, observation: VisualObservation) -> None:
+        """Retain visible boxes without upgrading an incomplete frame to actionable state."""
+        context = (observation.source_id, "<unknown-map>")
+        if context != self._context:
+            self._epoch += 1
+            _clock(self._epoch, "state epoch")
+            self._context = context
+            self._tracks.clear()
+            self._fields = {name: FieldBelief(name) for name in _FIELD_NAMES}
+            self._next_track = 1
+        players = tuple(
+            detection
+            for detection in observation.detections
+            if detection.class_id == "player" and detection.confidence >= self.config.min_confidence
+        )
+        if len(players) == 1:
+            player = players[0]
+            self._fields["player_bbox"] = FieldBelief(
+                name="player_bbox",
+                value=player.bbox,
+                status=Status.KNOWN,
+                confidence=player.confidence,
+                source_id=observation.source_id,
+                source_sequence=observation.sequence,
+                observed_at_ms=observation.timestamp_ms,
+                expires_at_ms=observation.timestamp_ms + self.config.field_ttl_ms,
+                observed_this_frame=True,
+            )
+        self._associate(observation)
+        self._last_hypothesis_sequence = observation.sequence
+        self._last_hypothesis_timestamp_ms = observation.timestamp_ms
 
     def _age(self, now_ms: int) -> None:
         for name, field in self._fields.items():
