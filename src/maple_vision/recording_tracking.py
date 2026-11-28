@@ -18,9 +18,16 @@ from typing import Any
 from PIL import Image, ImageDraw, ImageFont
 from PIL import __version__ as pillow_version
 
+from .actor_selection import (
+    ACTOR_SELECTION_ALGORITHM_VERSION,
+    ActorAnchor,
+    ActorSelectionConfig,
+    ActorSelector,
+)
 from .catalog import canonical_json, strict_json
 from .desktop_observation import DetectorOnlyPerception, FramePerception
 from .evaluation import _detector_metadata
+from .local_files import publish_new
 from .movement_hypotheses import (
     MOVEMENT_ALGORITHM_VERSION,
     MovementConfig,
@@ -73,11 +80,13 @@ def _identity(
     config: StateConfig,
     detector: Detector | None,
     movement_config: MovementConfig | None = None,
+    actor_selection: dict[str, Any] | None = None,
 ) -> tuple[FramePerception, dict[str, object], str]:
     implementation = PixelPerception() if detector is None else detector
+    detector_only = detector is not None or actor_selection is not None
     metadata = _detector_metadata(implementation, include_runtime=True)
     metadata["observation_adapter"] = (
-        "PixelPerception.observe" if detector is None else "DetectorOnlyPerception.observe"
+        "DetectorOnlyPerception.observe" if detector_only else "PixelPerception.observe"
     )
     metadata["max_detections"] = config.max_detections
     metadata["model_identity_bound"] = isinstance(implementation, OnnxDetector)
@@ -92,17 +101,23 @@ def _identity(
         "recording_manifest": manifest,
         "state_config": config.to_dict(),
         "detector_metadata": metadata,
-        "retain_detection_hypotheses": detector is not None,
+        "retain_detection_hypotheses": detector_only,
     }
     if movement_config is not None:
         identity["movement_hypotheses"] = {
             "algorithm_version": MOVEMENT_ALGORITHM_VERSION,
             "config": movement_config.to_dict(),
         }
+    if actor_selection is not None:
+        identity["actor_selection"] = {
+            "algorithm_version": ACTOR_SELECTION_ALGORITHM_VERSION,
+            "specification": actor_selection,
+            "retain_multiple_player_hypotheses": True,
+        }
     window_id = _sha(_canonical_bytes(identity))
     perception: FramePerception = (
         implementation
-        if isinstance(implementation, PixelPerception) and detector is None
+        if isinstance(implementation, PixelPerception) and not detector_only
         else DetectorOnlyPerception(implementation, max_detections=config.max_detections)
     )
     return perception, metadata, window_id
@@ -155,6 +170,77 @@ def _assert_source_unchanged(root: Path, manifest: dict[str, Any]) -> None:
         raise ValueError("recording source identity changed during tracking or verification")
 
 
+def _actor_selection_spec(manifest: dict[str, Any], value: object) -> dict[str, Any]:
+    if (
+        not isinstance(value, dict)
+        or set(value) != {"schema_version", "kind", "source", "anchor", "config"}
+        or type(value["schema_version"]) is not int
+        or value["schema_version"] != 1
+        or value["kind"] != "recording_actor_selection"
+        or _canonical_bytes(value["source"]) != _canonical_bytes(_source_identity(manifest))
+    ):
+        raise ValueError("actor selection source or format differs from the recording")
+    anchor = ActorAnchor.from_dict(value["anchor"])
+    config = ActorSelectionConfig.from_dict(value["config"])
+    local = anchor.source_sequence - manifest.get("source_start_frame", 0)
+    if not 0 <= local < manifest["frame_count"]:
+        raise ValueError("actor selection anchor is outside the recording window")
+    item = manifest["frames"][local]
+    if anchor.timestamp_ms != item["timestamp_ms"] or anchor.rgb_sha256 != item["rgb_sha256"]:
+        raise ValueError("actor selection anchor frame identity differs from source pixels")
+    if anchor.bbox[2] > manifest["width"] or anchor.bbox[3] > manifest["height"]:
+        raise ValueError("actor selection bbox exceeds source dimensions")
+    return {
+        "schema_version": 1,
+        "kind": "recording_actor_selection",
+        "source": _source_identity(manifest),
+        "anchor": anchor.to_dict(),
+        "config": config.to_dict(),
+    }
+
+
+def create_recording_actor_selection(
+    recording: Path,
+    output: Path,
+    *,
+    source_sequence: int,
+    bbox: tuple[float, float, float, float],
+    reviewer: str,
+    subject: str,
+    config: ActorSelectionConfig | None = None,
+) -> dict[str, Any]:
+    """Bind an explicitly reviewed target box to one actual source frame."""
+    recording, output = Path(recording), Path(output)
+    if output.exists() or output.is_symlink():
+        raise FileExistsError(f"actor selection already exists: {output}")
+    if output.resolve().is_relative_to(recording.resolve()):
+        raise ValueError("write actor selection outside the recording")
+    manifest = _validated_manifest(recording)
+    _integer(source_sequence, "source_sequence", 0, 2**53)
+    local = source_sequence - manifest.get("source_start_frame", 0)
+    if not 0 <= local < manifest["frame_count"]:
+        raise ValueError("actor selection anchor is outside the recording window")
+    if config is not None and type(config) is not ActorSelectionConfig:
+        raise ValueError("actor selection config must be ActorSelectionConfig")
+    item = manifest["frames"][local]
+    anchor = ActorAnchor(
+        source_sequence, item["timestamp_ms"], item["rgb_sha256"], bbox, reviewer, subject
+    )
+    specification = _actor_selection_spec(
+        manifest,
+        {
+            "schema_version": 1,
+            "kind": "recording_actor_selection",
+            "source": _source_identity(manifest),
+            "anchor": anchor.to_dict(),
+            "config": (config or ActorSelectionConfig()).to_dict(),
+        },
+    )
+    _assert_source_unchanged(recording, manifest)
+    publish_new(output, _canonical_bytes(specification) + b"\n", 64 * 1024, "actor selection")
+    return specification
+
+
 def _tracked_frames(
     root: Path,
     manifest: dict[str, Any],
@@ -164,9 +250,23 @@ def _tracked_frames(
     *,
     detector_only: bool,
     movement_config: MovementConfig | None = None,
+    actor_selection: dict[str, Any] | None = None,
 ) -> Iterator[tuple[dict[str, object], ImageFrame, BeliefState]]:
-    estimator = TemporalStateEstimator(config, retain_detection_hypotheses=detector_only)
+    estimator = TemporalStateEstimator(
+        config,
+        retain_detection_hypotheses=detector_only,
+        retain_multiple_player_hypotheses=actor_selection is not None,
+    )
     movement = MovementHypothesisEstimator(movement_config) if movement_config is not None else None
+    selector = (
+        ActorSelector(
+            ActorAnchor.from_dict(actor_selection["anchor"]),
+            ActorSelectionConfig.from_dict(actor_selection["config"]),
+            state_config=config,
+        )
+        if actor_selection is not None
+        else None
+    )
     source_start = manifest.get("source_start_frame", 0)
     for item in manifest["frames"]:
         frame = _load_frame(root, item)
@@ -195,8 +295,11 @@ def _tracked_frames(
             "source_frame_sha256": item["source_sha256"],
             "belief": belief.to_dict(),
         }
+        selected = selector.update(belief, rgb_sha256=item["rgb_sha256"]) if selector else None
+        if selected is not None:
+            row["actor_selection"] = selected.to_dict()
         if movement is not None:
-            row["movement"] = movement.update(belief).to_dict()
+            row["movement"] = movement.update(belief, actor_selection=selected).to_dict()
         yield row, frame, belief
 
 
@@ -230,6 +333,12 @@ def _overlay(
     draw = ImageDraw.Draw(canvas)
     font = ImageFont.load_default(size=12)
     small = ImageFont.load_default(size=10)
+    selection = row.get("actor_selection")
+    selected_id = (
+        selection.get("actor_track_id")
+        if isinstance(selection, dict) and selection.get("status") == "selected"
+        else None
+    )
     measured = {
         (track.class_id, track.bbox) for track in belief.tracks if track.observed_this_frame
     }
@@ -252,7 +361,9 @@ def _overlay(
         )
     for track in belief.tracks:
         color = (
-            "#f1b255"
+            "#66bfff"
+            if track.track_id == selected_id
+            else "#f1b255"
             if track.identity_uncertain
             else "#53e3a6"
             if track.observed_this_frame
@@ -269,6 +380,8 @@ def _overlay(
         state = "current" if track.observed_this_frame else "retained"
         uncertainty = " ambiguous" if track.identity_uncertain else ""
         label = _short(f"{track.track_id} {track.association} {state}{uncertainty}", 72)
+        if track.track_id == selected_id:
+            label = "TARGET " + label
         label_y = (
             max(0, box[1] - 11)
             if track.observed_this_frame
@@ -278,8 +391,10 @@ def _overlay(
     mode = "DETECTOR HYPOTHESES" if detector_only else "SYNTHETIC FIXTURE"
     players = sum(item.class_id == "player" for item in belief.observation.detections)
     player_note = f" | {players} player boxes: identity ambiguous" if players > 1 else ""
+    if isinstance(selection, dict):
+        player_note = f" | {players} visible player boxes"
     movement = row.get("movement")
-    detail_limit = 5 if isinstance(movement, dict) else 6
+    detail_limit = 6 - int(isinstance(movement, dict)) - int(isinstance(selection, dict))
     lines = [
         f"{mode} | READ ONLY | window {str(row['tracking_window_id'])[:12]} | local IDs",
         f"source frame {row['source_sequence']} | local {frame.sequence} | "
@@ -288,6 +403,14 @@ def _overlay(
         f"{len(belief.tracks)} tracks (details <={detail_limit}) | green=current, gray=retained, "
         "amber=ambiguous, white=raw",
     ]
+    if isinstance(selection, dict):
+        lines[3] = (
+            f"{len(belief.tracks)} tracks (details <={detail_limit}) | blue=target, "
+            "green=current, gray=retained, amber=ambiguous"
+        )
+        lines.append(
+            f"Target: {selection['status']} | {selection['actor_track_id']} | {selection['reason']}"
+        )
     if isinstance(movement, dict):
         reasons = movement.get("reasons", [])
         reason = ", ".join(str(value) for value in reasons) if isinstance(reasons, list) else ""
@@ -338,6 +461,8 @@ class _Summary:
     classes: Counter[str] = field(default_factory=Counter)
     associations: Counter[str] = field(default_factory=Counter)
     movement_states: Counter[str] = field(default_factory=Counter)
+    selection_statuses: Counter[str] = field(default_factory=Counter)
+    selection_reasons: Counter[str] = field(default_factory=Counter)
     preview_images: list[Image.Image] = field(default_factory=list)
     preview_mapping: list[dict[str, object]] = field(default_factory=list)
 
@@ -359,6 +484,10 @@ class _Summary:
         movement = row.get("movement")
         if isinstance(movement, dict):
             self.movement_states[str(movement["state"])] += 1
+        selection = row.get("actor_selection")
+        if isinstance(selection, dict):
+            self.selection_statuses[str(selection["status"])] += 1
+            self.selection_reasons[str(selection["reason"])] += 1
         if sample:
             image = _overlay(frame, belief, row, detector_only=detector_only)
             self.preview_images.append(image)
@@ -434,6 +563,7 @@ def _report(
     tracks_sha256: str,
     preview_sha256: str,
     movement_config: MovementConfig | None = None,
+    actor_selection: dict[str, Any] | None = None,
 ) -> dict[str, object]:
     result: dict[str, object] = {
         "schema_version": 1,
@@ -467,7 +597,9 @@ def _report(
             "height": PREVIEW_IMAGE_HEIGHT + PREVIEW_CAPTION_HEIGHT,
             "timing": "source_intervals_centisecond_quantized_capped_10_to_655350_ms",
             "renderer": (
-                "recording_movement_overlay_v1"
+                "recording_selected_actor_overlay_v1"
+                if actor_selection is not None
+                else "recording_movement_overlay_v1"
                 if movement_config is not None
                 else "recording_tracking_overlay_v1"
             ),
@@ -499,6 +631,19 @@ def _report(
             "real_domain_accuracy_available": False,
             "actionable": False,
         }
+    if actor_selection is not None:
+        result["retain_multiple_player_hypotheses"] = True
+        result["actor_selection_analysis"] = {
+            "schema_version": 1,
+            "algorithm_version": ACTOR_SELECTION_ALGORITHM_VERSION,
+            "specification": actor_selection,
+            "frames_processed": sum(summary.selection_statuses.values()),
+            "status_counts": dict(sorted(summary.selection_statuses.items())),
+            "reason_counts": dict(sorted(summary.selection_reasons.items())),
+            "identity_scope": "explicit_anchor_then_uninterrupted_geometric_track",
+            "owner_identity_verified": False,
+            "actionable": False,
+        }
     return result
 
 
@@ -516,6 +661,7 @@ def track_recording(
     *,
     state_config: StateConfig | None = None,
     movement_config: MovementConfig | None = None,
+    actor_selection: dict[str, Any] | None = None,
     preview_stride: int = 3,
     preview_max_frames: int = 120,
 ) -> dict[str, object]:
@@ -529,9 +675,15 @@ def track_recording(
     movement_config = (
         MovementConfig.from_dict(movement_config.to_dict()) if movement_config is not None else None
     )
+    actor_selection = (
+        _actor_selection_spec(manifest, actor_selection) if actor_selection is not None else None
+    )
+    detector_only = detector is not None or actor_selection is not None
     config = StateConfig.from_dict((state_config or StateConfig()).to_dict())
     effective, sequences = _sampling(manifest["frame_count"], preview_stride, preview_max_frames)
-    perception, metadata, window_id = _identity(manifest, config, detector, movement_config)
+    perception, metadata, window_id = _identity(
+        manifest, config, detector, movement_config, actor_selection
+    )
     samples = set(sequences)
     summary = _Summary()
     try:
@@ -544,8 +696,9 @@ def track_recording(
                     config,
                     perception,
                     window_id,
-                    detector_only=detector is not None,
+                    detector_only=detector_only,
                     movement_config=movement_config,
+                    actor_selection=actor_selection,
                 ):
                     encoded = _line(row)
                     size += len(encoded)
@@ -557,9 +710,12 @@ def track_recording(
                         frame,
                         belief,
                         sample=frame.sequence in samples,
-                        detector_only=detector is not None,
+                        detector_only=detector_only,
                     )
-            if _identity(manifest, config, detector, movement_config)[1] != metadata:
+            if (
+                _identity(manifest, config, detector, movement_config, actor_selection)[1]
+                != metadata
+            ):
                 raise ValueError("detector identity changed during tracking")
             preview = summary.preview(manifest)
             (stage / "preview.gif").write_bytes(preview)
@@ -569,7 +725,7 @@ def track_recording(
                 metadata,
                 window_id,
                 summary,
-                detector_only=detector is not None,
+                detector_only=detector_only,
                 stride=preview_stride,
                 maximum=preview_max_frames,
                 effective=effective,
@@ -577,6 +733,7 @@ def track_recording(
                 tracks_sha256=_file_hash(stage / "tracks.jsonl"),
                 preview_sha256=_sha(preview),
                 movement_config=movement_config,
+                actor_selection=actor_selection,
             )
             if len(_canonical_bytes(report)) + 1 > MAX_REPORT_BYTES:
                 raise ValueError("tracking report exceeds its encoded-byte budget")
@@ -622,11 +779,20 @@ def verify_recording_tracking(
         if not isinstance(movement_spec, dict):
             raise ValueError("invalid movement analysis specification")
         movement_config = MovementConfig.from_dict(movement_spec.get("config"))
+    actor_selection = None
+    if "actor_selection_analysis" in report:
+        analysis = report["actor_selection_analysis"]
+        if not isinstance(analysis, dict):
+            raise ValueError("invalid actor selection analysis")
+        actor_selection = _actor_selection_spec(manifest, analysis.get("specification"))
+    detector_only = detector is not None or actor_selection is not None
     preview_spec = report["preview"]
     stride = _integer(preview_spec.get("requested_stride"), "preview_stride", 1, 10000)
     maximum = _integer(preview_spec.get("max_frames"), "preview_max_frames", 2, MAX_PREVIEW_FRAMES)
     effective, sequences = _sampling(manifest["frame_count"], stride, maximum)
-    perception, metadata, window_id = _identity(manifest, config, detector, movement_config)
+    perception, metadata, window_id = _identity(
+        manifest, config, detector, movement_config, actor_selection
+    )
     if (
         _canonical_bytes(report.get("detector_metadata")) != _canonical_bytes(metadata)
         or report.get("tracking_window_id") != window_id
@@ -647,8 +813,9 @@ def verify_recording_tracking(
                 config,
                 perception,
                 window_id,
-                detector_only=detector is not None,
+                detector_only=detector_only,
                 movement_config=movement_config,
+                actor_selection=actor_selection,
             ):
                 actual = stream.readline(MAX_TRACK_LINE_BYTES + 1)
                 if len(actual) > MAX_TRACK_LINE_BYTES or not actual:
@@ -668,11 +835,11 @@ def verify_recording_tracking(
                     frame,
                     belief,
                     sample=frame.sequence in samples,
-                    detector_only=detector is not None,
+                    detector_only=detector_only,
                 )
             if stream.read(1):
                 raise ValueError("tracking trajectory contains extra rows")
-        if _identity(manifest, config, detector, movement_config)[1] != metadata:
+        if _identity(manifest, config, detector, movement_config, actor_selection)[1] != metadata:
             raise ValueError("detector identity changed during verification")
         preview = summary.preview(manifest)
         if _sha(preview) != _file_hash(replay / "preview.gif"):
@@ -683,7 +850,7 @@ def verify_recording_tracking(
             metadata,
             window_id,
             summary,
-            detector_only=detector is not None,
+            detector_only=detector_only,
             stride=stride,
             maximum=maximum,
             effective=effective,
@@ -691,6 +858,7 @@ def verify_recording_tracking(
             tracks_sha256=digest.hexdigest(),
             preview_sha256=_sha(preview),
             movement_config=movement_config,
+            actor_selection=actor_selection,
         )
         if _canonical_bytes(report) != _canonical_bytes(expected):
             raise ValueError("tracking report differs from independently recomputed evidence")
@@ -725,4 +893,7 @@ def verify_recording_tracking(
     if movement_config is not None:
         result["movement_recomputed"] = True
         result["movement_state_counts"] = dict(sorted(summary.movement_states.items()))
+    if actor_selection is not None:
+        result["actor_selection_recomputed"] = True
+        result["actor_selection_status_counts"] = dict(sorted(summary.selection_statuses.items()))
     return result

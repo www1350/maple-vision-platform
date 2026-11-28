@@ -251,3 +251,82 @@ def test_cli_movement_benchmark_requires_complete_model_identity(
     assert checked.returncode == 2
     assert "--model and --manifest must be supplied together" in checked.stderr
     assert not output.exists()
+
+
+def test_cli_selects_a_source_bound_actor_and_reverifies_without_original_anchor_file(
+    recording: Path, tmp_path: Path
+) -> None:
+    # Bounds come from the independently rendered fixture, not a prediction row.
+    player = Simulator(seed=9).snapshot().player
+    bbox = (player.x, player.y, player.x + player.w, player.y + player.h)
+    selection = tmp_path / "actor-selection.json"
+    created = run_cli(
+        tmp_path,
+        "select-actor",
+        str(recording),
+        "--source-frame",
+        "0",
+        "--bbox",
+        *(str(value) for value in bbox),
+        "--reviewer",
+        "independent CLI fixture review",
+        "--subject",
+        "visible cyan actor",
+        "--output",
+        str(selection),
+    )
+    assert created.returncode == 0, created.stderr
+    specification = json.loads(created.stdout)
+    assert specification["kind"] == "recording_actor_selection"
+    assert specification["anchor"]["source_sequence"] == 0
+    replay = tmp_path / "selected-replay"
+    tracked = run_cli(
+        tmp_path,
+        "track",
+        str(recording),
+        "--actor-selection",
+        str(selection),
+        "--movement",
+        "--output",
+        str(replay),
+    )
+    assert tracked.returncode == 0, tracked.stderr
+    report = json.loads(tracked.stdout)
+    assert report["actor_selection_analysis"]["specification"] == specification
+    assert report["actor_selection_analysis"]["status_counts"] == {"selected": 5}
+    assert report["retain_multiple_player_hypotheses"] is True
+    assert report["perception_mode"] == "detector_only"
+    assert report["detector_metadata"]["observation_adapter"] == "DetectorOnlyPerception.observe"
+    selection.unlink()
+    verified = run_cli(tmp_path, "verify-tracking", str(recording), str(replay))
+    assert verified.returncode == 0, verified.stderr
+    result = json.loads(verified.stdout)
+    assert result["actor_selection_recomputed"] is True
+    assert result["actor_selection_status_counts"] == {"selected": 5}
+
+
+@pytest.mark.parametrize("source_frame", [-1, 5])
+def test_cli_actor_anchor_cannot_select_a_frame_outside_the_source_window(
+    recording: Path, tmp_path: Path, source_frame: int
+) -> None:
+    output = tmp_path / "invalid-selection.json"
+    result = run_cli(
+        tmp_path,
+        "select-actor",
+        str(recording),
+        "--source-frame",
+        str(source_frame),
+        "--bbox",
+        "20",
+        "146",
+        "34",
+        "168",
+        "--reviewer",
+        "fixture reviewer",
+        "--subject",
+        "fixture player",
+        "--output",
+        str(output),
+    )
+    assert result.returncode == 2
+    assert not output.exists()

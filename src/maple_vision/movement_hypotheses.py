@@ -10,6 +10,7 @@ from dataclasses import dataclass, fields
 from math import fsum, hypot, isfinite
 from typing import Literal
 
+from .actor_selection import ActorSelection, validate_actor_selection
 from .contracts import Detection, Status
 from .state_estimation import BeliefState, Box, TrackBelief
 
@@ -217,9 +218,10 @@ class MovementHypothesis:
     relative_motion: _Motion | None
     evidence_frames: tuple[_Frame, ...]
     reasons: tuple[str, ...]
+    actor_selection: ActorSelection | None = None
 
     def to_dict(self) -> dict[str, object]:
-        return {
+        result: dict[str, object] = {
             "schema_version": 1,
             "algorithm_version": MOVEMENT_ALGORITHM_VERSION,
             "state": self.state,
@@ -237,6 +239,9 @@ class MovementHypothesis:
             "reasons": list(self.reasons),
             "limitations": list(_LIMITATIONS),
         }
+        if self.actor_selection is not None:
+            result["actor_selection"] = self.actor_selection.to_dict()
+        return result
 
 
 def _center(box: Box) -> Pair:
@@ -293,6 +298,8 @@ class MovementHypothesisEstimator:
         self._last_climb_relative: Pair | None = None
         self._climb_direction = 0
         self._arrival_platform_id: str | None = None
+        self._selection_id: str | None = None
+        self._selection_invalidated = False
 
     def _reset_chain(self) -> None:
         self._motion.clear()
@@ -480,10 +487,22 @@ class MovementHypothesisEstimator:
             return "frame_time_gap"
         return ""
 
-    def update(self, belief: BeliefState) -> MovementHypothesis:
+    def update(
+        self, belief: BeliefState, *, actor_selection: ActorSelection | None = None
+    ) -> MovementHypothesis:
         if type(belief) is not BeliefState:
             raise ValueError("movement input must be BeliefState")
         belief.__post_init__()
+        selected_actor: TrackBelief | None = None
+        if actor_selection is not None:
+            selected_actor = validate_actor_selection(actor_selection, belief)
+            if self._selection_id not in (None, actor_selection.selection_id):
+                raise ValueError("a changed actor selection requires a fresh movement estimator")
+            if self._selection_invalidated and actor_selection.status == "selected":
+                raise ValueError("an invalidated actor selection cannot resume movement")
+            self._selection_id = actor_selection.selection_id
+            if actor_selection.status == "invalidated":
+                self._selection_invalidated = True
         observation = belief.observation
         if len(observation.detections) > 512:
             raise ValueError("movement input exceeds the detection budget")
@@ -512,6 +531,7 @@ class MovementHypothesisEstimator:
                 motion,
                 evidence or (frame,),
                 reasons,
+                actor_selection,
             )
 
         invalid = ""
@@ -527,7 +547,17 @@ class MovementHypothesisEstimator:
             self._reset_chain()
             self._previous = None
             return result("unknown", (invalid,))
-        actor, actor_reason = self._actor(belief)
+        if self._selection_id is not None:
+            actor = selected_actor
+            actor_reason = (
+                "actor_selection_required"
+                if actor_selection is None
+                else "actor_selection_" + actor_selection.reason
+            )
+            if actor is not None and actor.confidence < self.config.min_actor_confidence:
+                actor, actor_reason = None, "low_confidence_selected_actor"
+        else:
+            actor, actor_reason = self._actor(belief)
         if actor is None:
             self._reset_chain()
             self._previous = None

@@ -45,7 +45,9 @@ record = belief.to_dict()
 
 重复帧、未来帧、过期帧、UNKNOWN、低置信度、玩家缺失或歧义、资源缺失等仍生成不可行动的 BeliefState。这些输入保留自身序号、时刻和测量内容，不能冒充旧的有效帧；也不会用一个极大序号阻止之后正常帧恢复。
 
-带合格检测框的 fresh UNKNOWN 帧只进入**非执行性检测假设**：至多一个高置信度人物框可刷新 `player_bbox`，高置信度对象框可刷新轨迹及几何速度；整体 `observation` 仍是 UNKNOWN，地图、HP、MP 不补值，`actionable=false`，`last_accepted_sequence` 不前移。检测假设使用自己的内部序号水位，重复/倒序帧不能再次推进；未知地图 context 与随后完整地图 context 分离并重建，不能把跨图身份接起来。没有合格框的 UNKNOWN 仍不刷新历史测量，也不消耗该水位。
+默认检测假设路径中，带合格检测框的 fresh UNKNOWN 帧只进入**非执行性检测假设**：至多一个高置信度人物框可刷新 `player_bbox`，高置信度对象框可刷新轨迹及几何速度；整体 `observation` 仍是 UNKNOWN，地图、HP、MP 不补值，`actionable=false`，`last_accepted_sequence` 不前移。检测假设使用自己的内部序号水位，重复/倒序帧不能再次推进；未知地图 context 与随后完整地图 context 分离并重建，不能把跨图身份接起来。没有合格框的 UNKNOWN 仍不刷新历史测量，也不消耗该水位。
+
+可额外开启 `retain_multiple_player_hypotheses=True`，要求同时开启 `retain_detection_hypotheses=True`。该模式在同一 fresh UNKNOWN 路径中保留所有高置信度玩家的独立轨迹，不会任取一个当主角；当前原始人物检测不是唯一高置信度玩家时，单一 `player_bbox` 清空，包括低置信度竞争框和空帧。来源、时间、乱序和可行动条件保持原约束。录像的[明确目标选择](ACTOR_SELECTION.md)启用此模式，再由独立选择器跟随一个人工锚点对应的几何轨迹。
 
 字段到期后清空值与置信度，状态标为 STALE；轨迹到期后移除。到期依据测量时刻，重复读取不会延长有效期。只读检测假设用于录像和窗口校准；任务层不能因为人物或怪物框存在就跳过地图、资源、焦点与权限门禁。
 

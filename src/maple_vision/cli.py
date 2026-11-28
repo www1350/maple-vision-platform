@@ -201,6 +201,16 @@ def _parser() -> argparse.ArgumentParser:
     )
     movement_labels.add_argument("path", type=Path)
     movement_labels.add_argument("--output", type=Path, required=True)
+    select_actor = recording_commands.add_parser(
+        "select-actor", help="bind an explicitly reviewed player box to one source frame"
+    )
+    select_actor.add_argument("path", type=Path)
+    select_actor.add_argument("--source-frame", type=int, required=True)
+    select_actor.add_argument("--bbox", type=float, nargs=4, required=True)
+    select_actor.add_argument("--reviewer", required=True)
+    select_actor.add_argument("--subject", required=True)
+    select_actor.add_argument("--selection-config", type=Path)
+    select_actor.add_argument("--output", type=Path, required=True)
     audit = recording_commands.add_parser("audit-route")
     for name in ("path", "labels", "graph", "output"):
         audit.add_argument(name, type=Path)
@@ -359,6 +369,9 @@ def _parser() -> argparse.ArgumentParser:
     recording_track.add_argument("--model", type=Path)
     recording_track.add_argument("--manifest", type=Path)
     recording_track.add_argument("--state-config", type=Path)
+    recording_track.add_argument(
+        "--actor-selection", type=Path, help="source-bound target anchor; enables all-player tracks"
+    )
     recording_track.add_argument(
         "--movement", action="store_true", help="include read-only geometric movement candidates"
     )
@@ -834,6 +847,32 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
         from .recording_movement_evaluation import create_movement_label_template
 
         return create_movement_label_template(args.path, args.output)
+    if args.command == "recording" and args.operation == "select-actor":
+        from .actor_selection import ActorSelectionConfig
+        from .catalog import strict_json
+        from .local_files import read_regular
+        from .recording_tracking import create_recording_actor_selection
+
+        selection_config = (
+            ActorSelectionConfig.from_dict(
+                strict_json(
+                    read_regular(
+                        args.selection_config, 64 * 1024, "actor selection config"
+                    ).decode()
+                )
+            )
+            if args.selection_config is not None
+            else None
+        )
+        return create_recording_actor_selection(
+            args.path,
+            args.output,
+            source_sequence=args.source_frame,
+            bbox=(args.bbox[0], args.bbox[1], args.bbox[2], args.bbox[3]),
+            reviewer=args.reviewer,
+            subject=args.subject,
+            config=selection_config,
+        )
     if args.command == "recording" and args.operation == "measure-strike":
         from .input_bindings import load_input_profile
         from .recording_evaluation import measure_strike
@@ -1077,6 +1116,15 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                     detector=detector,
                     state_config=tracking_config,
                     movement_config=movement_config,
+                    actor_selection=(
+                        strict_json(
+                            read_regular(
+                                args.actor_selection, 64 * 1024, "actor selection"
+                            ).decode()
+                        )
+                        if args.actor_selection is not None
+                        else None
+                    ),
                     preview_stride=args.preview_stride,
                     preview_max_frames=args.preview_max_frames,
                 )

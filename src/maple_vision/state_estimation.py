@@ -405,13 +405,21 @@ class TemporalStateEstimator:
         config: StateConfig | None = None,
         *,
         retain_detection_hypotheses: bool = False,
+        retain_multiple_player_hypotheses: bool = False,
     ) -> None:
         if config is not None and type(config) is not StateConfig:
             raise ValueError("state config must be StateConfig")
         if type(retain_detection_hypotheses) is not bool:
             raise ValueError("retain_detection_hypotheses must be boolean")
+        if type(retain_multiple_player_hypotheses) is not bool:
+            raise ValueError("retain_multiple_player_hypotheses must be boolean")
+        if retain_multiple_player_hypotheses and not retain_detection_hypotheses:
+            raise ValueError(
+                "retain_multiple_player_hypotheses requires retain_detection_hypotheses"
+            )
         self.config = config or StateConfig()
         self.retain_detection_hypotheses = retain_detection_hypotheses
+        self.retain_multiple_player_hypotheses = retain_multiple_player_hypotheses
         self._fields = {name: FieldBelief(name) for name in _FIELD_NAMES}
         self._tracks: dict[str, TrackBelief] = {}
         self._last_sequence: int | None = None
@@ -436,6 +444,11 @@ class TemporalStateEstimator:
         self._age(now_ms)
         reason, status = self._rejection(observation, now_ms)
         if reason:
+            if reason == "unknown_observation" and self.retain_multiple_player_hypotheses:
+                # This mode retains every visible actor, not a previously assumed
+                # self. Only a unique current raw player may remeasure this field.
+                # Clear it even if this frame has no usable detections at all.
+                self._fields["player_bbox"] = FieldBelief("player_bbox")
             if reason == "unknown_observation" and self._has_detection_hypotheses(observation):
                 self._measure_detection_hypotheses(observation)
                 return self._result(
@@ -517,7 +530,7 @@ class TemporalStateEstimator:
             if detection.confidence >= self.config.min_confidence
         )
         players = tuple(item for item in usable if item.class_id == "player")
-        return bool(usable) and len(players) <= 1
+        return bool(usable) and (self.retain_multiple_player_hypotheses or len(players) <= 1)
 
     def _measure_detection_hypotheses(self, observation: VisualObservation) -> None:
         """Retain visible boxes without upgrading an incomplete frame to actionable state."""
@@ -529,12 +542,17 @@ class TemporalStateEstimator:
             self._tracks.clear()
             self._fields = {name: FieldBelief(name) for name in _FIELD_NAMES}
             self._next_track = 1
+        raw_players = tuple(
+            detection for detection in observation.detections if detection.class_id == "player"
+        )
         players = tuple(
             detection
-            for detection in observation.detections
-            if detection.class_id == "player" and detection.confidence >= self.config.min_confidence
+            for detection in raw_players
+            if detection.confidence >= self.config.min_confidence
         )
-        if len(players) == 1:
+        if len(players) == 1 and (
+            not self.retain_multiple_player_hypotheses or len(raw_players) == 1
+        ):
             player = players[0]
             self._fields["player_bbox"] = FieldBelief(
                 name="player_bbox",

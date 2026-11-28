@@ -48,6 +48,8 @@ flowchart TD
 
 detector-only 帧中的高置信度框现在会作为只读假设进入时序状态：唯一人物框更新带来源和有效期的 `player_bbox`，人物与怪物框建立有界轨迹，连续帧可产生匹配关系和像素速度。该路径有独立的序号水位，重复或倒序帧不能重复推进；地图未知使用独立 context，后续取得完整地图/HUD 时会重建状态，不能沿用未知地图轨迹。整体 observation、地图、HP、MP 与动作授权仍保持未知，`last_accepted_sequence` 不会因只读假设前移，因此这一步只为录像/窗口校准保留位置与目标，不授权选敌攻击。
 
+多人本来就是实录的正常场景。录像现可使用[明确目标选择](ACTOR_SELECTION.md)：在实际源帧上选定一个人物框，同时跟踪所有玩家，再将该目标的连续测量交给运动判断。远处其他玩家不会让全局弃权；目标丢失、交叉歧义或时间／来源不连续时使本次选择持续失效，不自动改跟旁边的人。选人状态、原因及配置进入叠加回放和完整复验，仍是人工锚点约束的几何身份，自动姓名／外观识别与真实连续身份验证尚未交付。
+
 五项长期复用资产是游戏知识库、素材索引、数据集工厂、模拟器、独立验证平台。模拟器真值只供独立评测，视觉决策只能看到当前输入源能观察到的信息。新增地图主要新增地图包与样本，新增职业主要新增能力包、角色键位和对应测试。[运行合同](https://github.com/www1350/maple-vision-platform/blob/main/docs/TASK_RUNTIME.md) · [职业包](https://github.com/www1350/maple-vision-platform/blob/main/docs/CLASS_PACKAGES.md) · [任务配置](https://github.com/www1350/maple-vision-platform/blob/main/docs/MISSION_PROGRAMS.md)
 
 ## 三、第一条路线怎样打通
