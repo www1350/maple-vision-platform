@@ -1,0 +1,270 @@
+{
+  "schema_version": 1,
+  "kind": "recording_visual_assessment",
+  "assessment_date": "2026-11-28",
+  "timezone": "Asia/Shanghai",
+  "source": {
+    "file_name": "Desktop 2026.11.27 - 00.29.27.02.mp4",
+    "sha256": "dd4ccde5c8c05bcfda4823c8b4b818b52b35e56e000694ecdefde90dccc33040",
+    "bytes": 62898077,
+    "width": 910,
+    "height": 512,
+    "fps": 30,
+    "frame_count": 3032,
+    "duration_seconds": 101.066667,
+    "video_stream_index": 1,
+    "video_clock": {
+      "numerator": 1,
+      "denominator": 600
+    },
+    "source_frame_numbering": "zero_based"
+  },
+  "review_scope": {
+    "method": "assistant_visual_review",
+    "full_video_sampling": {
+      "first_source_frame": 0,
+      "last_source_frame": 3030,
+      "stride": 30
+    },
+    "dense_samples": [
+      {
+        "first_source_frame": 1020,
+        "last_source_frame": 1140,
+        "stride": 6
+      },
+      {
+        "first_source_frame": 2160,
+        "last_source_frame": 2460,
+        "stride": 6
+      }
+    ],
+    "continuous_frame_review": [
+      {
+        "first_source_frame": 2220,
+        "last_source_frame": 2304,
+        "stride": 1
+      }
+    ],
+    "additional_frames": [
+      3031
+    ],
+    "unique_reviewed_frame_count": 229,
+    "all_source_frames_visually_reviewed": false,
+    "object_boxes_annotated": false,
+    "detector_evaluated_on_video": false,
+    "game_inputs_executed": false
+  },
+  "confirmed_visible_findings": [
+    {
+      "name": "接绳转换",
+      "source_frame_range": [
+        2228,
+        2231
+      ],
+      "source_seconds_range": [
+        74.26666666666667,
+        74.36666666666666
+      ],
+      "evidence": "黑帽侧身外观转为浅色背向攀爬姿态；角色下方音符、名字及长条标记连续。"
+    },
+    {
+      "name": "稳定攀绳",
+      "source_frame_range": [
+        2231,
+        2294
+      ],
+      "source_seconds_range": [
+        74.36666666666666,
+        76.46666666666667
+      ],
+      "evidence": "目标沿同一绳索持续上移，视口上移。与另一个绳上人物的标记可区分。"
+    },
+    {
+      "name": "到达上层",
+      "source_frame_range": [
+        2295,
+        2304
+      ],
+      "source_seconds_range": [
+        76.5,
+        76.8
+      ],
+      "evidence": "n2295 首个明确到达上层的帧；恢复黑帽侧身外观并向右移动，另一浅色人物仍在下方绳上。"
+    },
+    {
+      "name": "上层返回下层",
+      "source_frame_range": [
+        2400,
+        2430
+      ],
+      "source_seconds_range": [
+        80,
+        81
+      ],
+      "evidence": "5 Hz 抽样可见从上层附近下落至下层；精确下落和落地边界尚未逐帧标注。"
+    },
+    {
+      "name": "近绳腾空对照片段",
+      "source_frame_range": [
+        1020,
+        1140
+      ],
+      "source_seconds_range": [
+        34,
+        38
+      ],
+      "evidence": "5 Hz 抽样可见腾空、落地及绳附近活动，没有观察到持续攀爬；保留为近绳状态混淆的复核候选。"
+    }
+  ],
+  "unknowns": {
+    "input_bindings": null,
+    "input_timestamps": null,
+    "damage_attacker_target_assignment": null
+  },
+  "use_in_project": [
+    "主角与其他玩家身份连续性验证",
+    "接绳/稳定攀绳/到达上层状态边界验证",
+    "上下层转换与视口运动的联合识别",
+    "靠近绳索的跳跃与持续攀爬的区分"
+  ],
+  "limits": [
+    "画面复核结果不是自动识别器的测试通过记录。",
+    "视频本身不提供按键日志；不能由动画推断具体输入。",
+    "连续帧复核只覆盖 n2220–2304；其余结论基于已注明的抽样。",
+    "未对整段录像完成逐帧目标框标注，也没有开展模型训练或实机输入测试。",
+    "地图与主攻技能由玩家于 2026-11-28 确认，不是自动视觉识别结果；键位沿用 2026-11-25 截图，具体物理键未在本报告转写。"
+  ],
+  "preview": {
+    "file_name": "maple-recording-20261127-review.mp4",
+    "segments": [
+      {
+        "source_frames_inclusive": [
+          1020,
+          1139
+        ],
+        "label": "近绳腾空候选"
+      },
+      {
+        "source_frames_inclusive": [
+          2160,
+          2459
+        ],
+        "label": "接绳、攀爬与上下换层"
+      }
+    ],
+    "source_crop_xywh": [
+      172,
+      89,
+      568,
+      332
+    ],
+    "scale": 2,
+    "audio_included": false,
+    "annotations": "由助手选取的画面复核片段；没有叠加自动检测输出",
+    "context_update": "既有复核视频制作于本次用户确认之前；其中地图、技能、键位待确认的字幕已由 owner-context.json 补齐。"
+  },
+  "repository_used": {
+    "url": "https://github.com/www1350/maple-vision-platform",
+    "commit": "4ee0e47f7e6e42275002c704f631c42ea820a5bf"
+  },
+  "next_user_confirmation": [],
+  "import_result": {
+    "windows": [
+      {
+        "source_start_frame": 0,
+        "schema_version": 2,
+        "session_id": "fffc7ae11fddaa7a5becfa1a0169bd3320c7ef760eb8f135a178fe4d6e50e5cd",
+        "scope": "user_supplied_recording",
+        "source_kind": "mp4",
+        "frame_count": 1200,
+        "fps": null,
+        "timebase": "video_presentation_ticks",
+        "width": 910,
+        "height": 512,
+        "truncated": true,
+        "completion_reason": "frame_limit",
+        "validated": true,
+        "timing_accuracy": "source_pts"
+      },
+      {
+        "source_start_frame": 1200,
+        "schema_version": 3,
+        "session_id": "0d1052e04734414056512a49d2e8762fc5dd1b47f3988f625f32fb5dc06a2be6",
+        "scope": "user_supplied_recording",
+        "source_kind": "mp4",
+        "frame_count": 1200,
+        "fps": null,
+        "timebase": "video_presentation_ticks",
+        "width": 910,
+        "height": 512,
+        "truncated": true,
+        "completion_reason": "frame_limit",
+        "validated": true,
+        "timing_accuracy": "source_pts"
+      },
+      {
+        "source_start_frame": 2400,
+        "schema_version": 3,
+        "session_id": "e8ad56c1abe871a809eb0ccb6008be117aa5649311cae858b7c89e517d2e757e",
+        "scope": "user_supplied_recording",
+        "source_kind": "mp4",
+        "frame_count": 632,
+        "fps": null,
+        "timebase": "video_presentation_ticks",
+        "width": 910,
+        "height": 512,
+        "truncated": false,
+        "completion_reason": "decoder_stopped",
+        "validated": true,
+        "timing_accuracy": "source_pts"
+      }
+    ],
+    "coverage_report": "window-coverage.json",
+    "full_source_frame_count": 3032
+  },
+  "user_confirmed_context": {
+    "schema_version": 1,
+    "kind": "recording_owner_context",
+    "source_sha256": "dd4ccde5c8c05bcfda4823c8b4b818b52b35e56e000694ecdefde90dccc33040",
+    "confirmed_on": "2026-11-28",
+    "timezone": "Asia/Shanghai",
+    "evidence_type": "user_statement",
+    "user_response": "1 是 2 是 3没改过",
+    "confirmation_questions": [
+      {
+        "number": 1,
+        "question": "这段地图是死亡之林Ⅱ吗？",
+        "answer": true
+      },
+      {
+        "number": 2,
+        "question": "主要攻击技能是双飞斩吗？",
+        "answer": true
+      },
+      {
+        "number": 3,
+        "question": "键位相对之前 2026-11-25 的截图有没有改过？",
+        "answer": "未改过"
+      }
+    ],
+    "map_name": "死亡之林Ⅱ",
+    "primary_attack": {
+      "name": "双飞斩",
+      "skill_id": "lucky_seven"
+    },
+    "key_bindings": {
+      "changed_since_reference": false,
+      "reference_date": "2026-11-25",
+      "reference_image_sha256": "3553b751dd7e2caee8ad16b78081422801b27f6acbca55ba1b6e8f7ad692656b",
+      "physical_bindings": null,
+      "physical_binding_transcription_status": "not_transcribed_in_this_record"
+    },
+    "scope": "Context for this source recording, confirmed by its owner; not a detector output or input dispatch profile.",
+    "limitations": [
+      "The primary skill confirmation does not identify every visible attack effect or assign damage to an actor or target.",
+      "Unchanged key bindings refer to the earlier screenshot and do not imply a physical key such as the synthetic S or J examples.",
+      "This context does not change live input permissions, actionability, training labels, detector accuracy, or task acceptance."
+    ]
+  },
+  "context_updated_on": "2026-11-28"
+}

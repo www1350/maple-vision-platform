@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "kind": "recording_owner_context",
+  "source_sha256": "dd4ccde5c8c05bcfda4823c8b4b818b52b35e56e000694ecdefde90dccc33040",
+  "confirmed_on": "2026-11-28",
+  "timezone": "Asia/Shanghai",
+  "evidence_type": "user_statement",
+  "user_response": "1 是 2 是 3没改过",
+  "confirmation_questions": [
+    {
+      "number": 1,
+      "question": "这段地图是死亡之林Ⅱ吗？",
+      "answer": true
+    },
+    {
+      "number": 2,
+      "question": "主要攻击技能是双飞斩吗？",
+      "answer": true
+    },
+    {
+      "number": 3,
+      "question": "键位相对之前 2026-11-25 的截图有没有改过？",
+      "answer": "未改过"
+    }
+  ],
+  "map_name": "死亡之林Ⅱ",
+  "primary_attack": {
+    "name": "双飞斩",
+    "skill_id": "lucky_seven"
+  },
+  "key_bindings": {
+    "changed_since_reference": false,
+    "reference_date": "2026-11-25",
+    "reference_image_sha256": "3553b751dd7e2caee8ad16b78081422801b27f6acbca55ba1b6e8f7ad692656b",
+    "physical_bindings": null,
+    "physical_binding_transcription_status": "not_transcribed_in_this_record"
+  },
+  "scope": "Context for this source recording, confirmed by its owner; not a detector output or input dispatch profile.",
+  "limitations": [
+    "The primary skill confirmation does not identify every visible attack effect or assign damage to an actor or target.",
+    "Unchanged key bindings refer to the earlier screenshot and do not imply a physical key such as the synthetic S or J examples.",
+    "This context does not change live input permissions, actionability, training labels, detector accuracy, or task acceptance."
+  ]
+}

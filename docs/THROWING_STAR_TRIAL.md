@@ -48,6 +48,22 @@ python -m maple_vision lab reinfer artifacts/star-trial
 
 可把同一账本只读挂到工作台：`python -m maple_vision workbench --workspace artifacts/workbench --examples examples --trial-evidence-root . --trial-evidence-ledger reports/release-0.10.0/throwing-star-trial-evidence-ledger.json`。服务启动时先完成全部复验，浏览器的「试用验收账本」页只展示四栏结果和限制，不能从页面改路径或提升真实域结论。
 
+## 死亡之林Ⅱ独立实录与玩家确认
+
+2026 年 11 月 27 日的第二段实录已单独登记在 [Ⅱ实录记录](../reports/recording-reviews/2026-11-27-dead-forest-ii/README.md)，保留上述Ⅰ的来源、账本和待审分母。新原片共 3,032 帧、101.067 秒；三个窗口按原始 PTS 连续覆盖，7 个可见事件区间绑定来源帧。助手共查看 229 个不同源帧，其中 2,220–2,304 是全部 85 个连续帧。可见接绳转换位于 2,228–2,231，稳定攀绳位于 2,231–2,294，首个明确到达上层的帧为 2,295（76.5 秒）。这些区间没有替代全片目标框或状态标签。
+
+玩家于 2026 年 11 月 28 日确认：**地图为死亡之林Ⅱ，主要攻击是双飞斩，键位相对 11 月 25 日截图未改变**。独立的 `owner-context.json` 将确认与原片 SHA-256、键位截图 SHA-256 绑定。它不把每个可见攻击动作都命名为双飞斩，也不推断某个物理键、伤害归属或耗镖量。合成演示的 S、J 不会据此成为真实键位。
+
+新账本复用现有校验器及历史合成归档，真实录像一栏改为Ⅱ；其余三栏继续表示历史合成规则。可从仓库根目录运行：
+
+```sh
+python -m maple_vision lab verify-trial-evidence reports/recording-reviews/2026-11-27-dead-forest-ii/evidence-ledger.json --root .
+```
+
+它核对持久报告及交叉关系，仍明确返回 `raw_pixels_reverified=false`。原视频、桌面画面及边界 PNG 保留在用户材料中，不进入本仓库。新增资料不改变输入权限或实机任务验收状态。
+
+接下来的实现缺口是给录像观察入口接入跨帧人物跟踪，保留多人重叠时的未知状态，再用这段接绳与到达平台边界检查预测。当前 `observe_recording()` 只输出逐帧观测，PR #83 的检测假设更新仅接入跨窗口观察；登记新样本不等于该跟踪或状态分类已经实现。
+
 ## 死亡之林Ⅰ开场的局部画面复核
 
 对上表 SHA-256 对应的 910×512 原片，以原始桌面左上角为原点，逐帧查看源帧 120–149 左侧平台区域（左 187、上 205、宽 176、高 105）。共查看 30 个连续裁剪画面。核对完整源帧 149 时，右侧平台也有独立的紫色数字。视觉核验需要同时保留反馈的位置和目标归属；单凭整窗出现数字会混入另一处反馈。
