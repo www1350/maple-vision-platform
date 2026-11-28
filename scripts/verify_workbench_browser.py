@@ -14,7 +14,7 @@ from pathlib import Path
 from urllib.request import urlopen
 
 from PIL import Image, ImageDraw
-from playwright.sync_api import Page, Route, expect, sync_playwright
+from playwright.sync_api import Download, Page, Route, expect, sync_playwright
 
 from maple_vision.catalog import canonical_json
 from maple_vision.input_bindings import load_input_profile
@@ -216,7 +216,11 @@ def verify_actor_selection_ui(page: Page, url: str, screenshots: Path | None) ->
 
     page.route(export_pattern, hold_export)
     stale_downloads = []
-    page.on("download", stale_downloads.append)
+
+    def record_stale_download(download: Download) -> None:
+        stale_downloads.append(download)
+
+    page.on("download", record_stale_download)
     confirm_actor_box(page)
     page.click("#recording-target-export")
     deadline = time.monotonic() + 5
@@ -231,7 +235,7 @@ def verify_actor_selection_ui(page: Page, url: str, screenshots: Path | None) ->
     held_export.fulfill(response=response)
     page.wait_for_timeout(150)
     assert not stale_downloads, "a stale actor selection was downloaded"
-    page.remove_listener("download", stale_downloads.append)
+    page.remove_listener("download", record_stale_download)
     page.unroute(export_pattern)
     expect(page.locator("#recording-target-export")).to_be_disabled()
 
