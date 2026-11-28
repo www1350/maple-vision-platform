@@ -133,6 +133,31 @@ observe_recording(Path("artifacts/recording-session"), Path("artifacts/model-rep
 
 项目在导入可选 ONNX Runtime 前设置禁用遥测环境变量，推理适配器另行调用对应禁用接口。嵌入其他程序时，仍须在该程序首次导入原生 ORT 前设置环境；录制文件的本地路径不能代替这一初始化顺序。
 
+## 连续人物跟踪与可复核回放
+
+`recording track` 在一个已导入窗口的每一帧上重新运行感知和 `TemporalStateEstimator`，生成连续轨迹、完整状态记录及可看的叠加 GIF。旧 `recording observe` 的输出保持兼容。已有本地模型时可以运行：
+
+```sh
+python -m maple_vision recording track artifacts/window-1200 --model artifacts/my-model/model.onnx --manifest artifacts/my-model/manifest.json --output artifacts/window-1200-tracking
+python -m maple_vision recording verify-tracking artifacts/window-1200 artifacts/window-1200-tracking --model artifacts/my-model/model.onnx --manifest artifacts/my-model/manifest.json
+```
+
+`--model` 与 `--manifest` 必须一起提供，复验使用相同模型及推理参数。模型模式只提供检测框，不调用合成 HUD 或地图解析器。人物框可以参与跨帧关联并产生屏幕像素速度；地图、HP/MP 和可行动状态仍保持未知。轨迹编号代表当前窗口内的几何关联假设，不是已验证的玩家身份。多人、遮挡、失配、保留旧轨迹与重新出现的状态会进入记录。
+
+不提供模型时明确使用项目色块基线，仅用于工程检查。仓库随附合成模型也不代表国服识别准确率。使用者不能将玩家确认的地图或技能名称填进预测结果，再把它作为自动识别通过的依据。
+
+输出目录包含：
+
+- `tracks.jsonl`：每帧的源文件与像素身份、源帧号、原始 PTS/时钟、观测和完整 belief。
+- `report.json`：单窗口范围、模型身份、状态配置、实际处理帧数、轨迹关联计数、预览抽样及文件哈希。
+- `preview.gif`：轨迹编号、关联/不确定状态、像素速度及源帧时间的可视回放。
+
+所有源帧都会更新跟踪器；只有 GIF 抽样。`--preview-stride` 默认为 3，`--preview-max-frames` 默认为 120；较长窗口会加大预览间隔并保留首末帧，不能用预览帧数替代实际跟踪分母。需要改变关联门槛或 TTL 时，用 `--state-config path.json` 提供完整的 [StateConfig](STATE_ESTIMATION.md) 文档。复验从报告读取该配置，不能另传一个新配置来让旧结果通过。
+
+**跟踪身份仅在一次调用的单个导入窗口内连续。** 例如原片 1,200–2,399 帧的窗口仍保留这些源帧号与原始 PTS，内部以窗口起点计算经过时间。第二次调用会使用新的估计器，不把不同窗口的本地零点或相同 `track-*` 字符串当成同一人物；跨窗口连续跟踪尚需独立实现。
+
+`verify-tracking` 会重新读取源像素、运行同一感知和新的估计器、重建完整轨迹及预览，核对每帧状态和输出身份。仅修改 `tracks.jsonl` 后重算文件哈希也不会使篡改的轨迹通过。这证明既有输入、模型和配置下的结果可重现，不提供未标注录像的准确率，也不验证攀绳、站上平台或实机输入成功。记录始终写明 `action_execution=none`、`accuracy_metrics_available=false` 和 `effect_success_rate=null`。
+
 ## 本地 OCR
 
 ```python

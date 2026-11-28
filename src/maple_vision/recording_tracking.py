@@ -1,0 +1,655 @@
+"""Read-only, window-local tracking of imported pixels with independent reinference.
+
+Track identities are hypotheses within one imported window. A replay proves
+reproducibility against those pixels, not detection accuracy or action success.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import io
+from collections import Counter
+from collections.abc import Iterator
+from dataclasses import dataclass, field, replace
+from fractions import Fraction
+from pathlib import Path
+from typing import Any
+
+from PIL import Image, ImageDraw, ImageFont
+from PIL import __version__ as pillow_version
+
+from .catalog import canonical_json, strict_json
+from .desktop_observation import DetectorOnlyPerception, FramePerception
+from .evaluation import _detector_metadata
+from .onnx_detector import OnnxDetector
+from .recordings import (
+    _file_hash,
+    _integer,
+    _load_frame,
+    _new_output,
+    _sha,
+    _timestamp,
+    _validated_manifest,
+    _write_json,
+)
+from .scene import ImageFrame
+from .state_estimation import BeliefState, StateConfig, TemporalStateEstimator
+from .vision import Detector, PixelPerception
+
+MAX_TRACK_BYTES = 256 * 1024 * 1024
+MAX_TRACK_LINE_BYTES = 2 * 1024 * 1024
+MAX_REPORT_BYTES = 1024 * 1024
+MAX_PREVIEW_BYTES = 64 * 1024 * 1024
+MAX_PREVIEW_FRAMES = 120
+PREVIEW_WIDTH = 720
+PREVIEW_IMAGE_HEIGHT = 480
+PREVIEW_CAPTION_HEIGHT = 176
+_OUTPUT_FILES = {"tracks.jsonl", "report.json", "preview.gif"}
+_LIMITATIONS = [
+    "identities are window-local geometric hypotheses; windows are never stitched",
+    "screen-pixel velocity does not establish world velocity or climbing/platform state",
+    "state timing uses imported integer milliseconds; raw source PTS and clock are retained",
+    "retained boxes are last measurements, not detections in the current frame",
+    "fixture palette and HUD parsing are synthetic-fixture behavior only",
+    "detector-only map, HP, MP and actionability remain unknown/unavailable",
+    "no ground-truth labels: reproducible inference is not measured detection accuracy",
+    "fixed recordings cannot verify counterfactual action outcomes",
+    "custom detector identity binds implementation and reproduced outputs, not arbitrary code",
+    "hashes establish bundle consistency, not an authenticated source or permission grant",
+]
+
+
+def _canonical_bytes(value: object) -> bytes:
+    return canonical_json(value).encode("utf-8")
+
+
+def _identity(
+    manifest: dict[str, Any], config: StateConfig, detector: Detector | None
+) -> tuple[FramePerception, dict[str, object], str]:
+    implementation = PixelPerception() if detector is None else detector
+    metadata = _detector_metadata(implementation, include_runtime=True)
+    metadata["observation_adapter"] = (
+        "PixelPerception.observe" if detector is None else "DetectorOnlyPerception.observe"
+    )
+    metadata["max_detections"] = config.max_detections
+    metadata["model_identity_bound"] = isinstance(implementation, OnnxDetector)
+    if isinstance(implementation, PixelPerception):
+        metadata["map_markers"] = dict(implementation.map_markers)
+    # Normalize tuples to their JSON representation before comparing fresh reports.
+    encoded = _canonical_bytes(metadata)
+    if len(encoded) > 64 * 1024:
+        raise ValueError("detector metadata exceeds its bounded identity budget")
+    metadata = strict_json(encoded.decode("utf-8"))
+    window_id = _sha(
+        _canonical_bytes(
+            {
+                "recording_manifest": manifest,
+                "state_config": config.to_dict(),
+                "detector_metadata": metadata,
+                "retain_detection_hypotheses": detector is not None,
+            }
+        )
+    )
+    perception: FramePerception = (
+        implementation
+        if isinstance(implementation, PixelPerception) and detector is None
+        else DetectorOnlyPerception(implementation, max_detections=config.max_detections)
+    )
+    return perception, metadata, window_id
+
+
+def _original_time(manifest: dict[str, Any], item: dict[str, Any]) -> int:
+    if manifest["timebase"] == "video_presentation_ticks":
+        clock = manifest["video_clock"]
+        return round(
+            Fraction(item["pts"]) * Fraction(clock["numerator"], clock["denominator"]) * 1000
+        )
+    sequence = manifest.get("source_start_frame", 0) + item["sequence"]
+    return _timestamp(sequence, manifest["fps"])
+
+
+def _source_identity(manifest: dict[str, Any]) -> dict[str, object]:
+    return {
+        **{
+            key: manifest[key]
+            for key in (
+                "session_id",
+                "source_kind",
+                "source_name",
+                "source_uri",
+                "permission",
+                "license",
+                "source_sha256",
+                "source_hash_basis",
+                "frame_count",
+                "width",
+                "height",
+                "fps",
+                "timebase",
+                "truncated",
+                "completion_reason",
+            )
+        },
+        "manifest_sha256": _sha(_canonical_bytes(manifest)),
+        "source_start_frame": manifest.get("source_start_frame", 0),
+        "source_end_frame": manifest.get("source_start_frame", 0) + manifest["frame_count"] - 1,
+        "source_start_timestamp_ms": _original_time(manifest, manifest["frames"][0]),
+        "video_clock": manifest.get("video_clock"),
+    }
+
+
+def _assert_source_unchanged(root: Path, manifest: dict[str, Any]) -> None:
+    # A detector can take time or consume an externally changing directory.
+    # Recheck earlier frames too, not only the most recently loaded PNG.
+    if _canonical_bytes(_validated_manifest(root)) != _canonical_bytes(manifest):
+        raise ValueError("recording source identity changed during tracking or verification")
+
+
+def _tracked_frames(
+    root: Path,
+    manifest: dict[str, Any],
+    config: StateConfig,
+    perception: FramePerception,
+    window_id: str,
+    *,
+    detector_only: bool,
+) -> Iterator[tuple[dict[str, object], ImageFrame, BeliefState]]:
+    estimator = TemporalStateEstimator(config, retain_detection_hypotheses=detector_only)
+    source_start = manifest.get("source_start_frame", 0)
+    for item in manifest["frames"]:
+        frame = _load_frame(root, item)
+        observation = replace(
+            perception.observe(frame),
+            sequence=source_start + frame.sequence,
+            source_id=f"recording-window:{window_id}",
+        )
+        belief = estimator.update(observation, now_ms=frame.timestamp_ms)
+        row: dict[str, object] = {
+            "schema_version": 1,
+            "session_id": manifest["session_id"],
+            "tracking_window_id": window_id,
+            "sequence": frame.sequence,
+            "source_sequence": source_start + frame.sequence,
+            "source_start_frame": source_start,
+            "timestamp_ms": frame.timestamp_ms,
+            "source_timestamp_ms": _original_time(manifest, item),
+            "pts": item.get("pts"),
+            "video_clock": manifest.get("video_clock"),
+            "timebase": manifest["timebase"],
+            "frame_sha256": item["sha256"],
+            "frame_rgb_sha256": item["rgb_sha256"],
+            "source_name": item["source_name"],
+            "source_sha256": manifest["source_sha256"],
+            "source_frame_sha256": item["source_sha256"],
+            "belief": belief.to_dict(),
+        }
+        yield row, frame, belief
+
+
+def _sampling(count: int, stride: int, maximum: int) -> tuple[int, list[int]]:
+    _integer(stride, "preview_stride", 1, 10000)
+    _integer(maximum, "preview_max_frames", 2, MAX_PREVIEW_FRAMES)
+    effective = max(stride, (count - 2 + maximum - 1) // (maximum - 1))
+    sequences = list(range(0, count, effective))
+    if sequences[-1] != count - 1:
+        sequences.append(count - 1)
+    return effective, sequences
+
+
+def _short(text: str, maximum: int = 104) -> str:
+    return text if len(text) <= maximum else text[: maximum - 3] + "..."
+
+
+def _overlay(
+    frame: ImageFrame, belief: BeliefState, row: dict[str, object], *, detector_only: bool
+) -> Image.Image:
+    scale = min(PREVIEW_WIDTH / frame.width, PREVIEW_IMAGE_HEIGHT / frame.height)
+    size = (max(1, round(frame.width * scale)), max(1, round(frame.height * scale)))
+    canvas = Image.new(
+        "RGB", (PREVIEW_WIDTH, PREVIEW_IMAGE_HEIGHT + PREVIEW_CAPTION_HEIGHT), "#101620"
+    )
+    with Image.frombytes("RGB", (frame.width, frame.height), frame.pixels) as original:
+        resized = original.resize(size, Image.Resampling.BILINEAR)
+    offset = ((PREVIEW_WIDTH - size[0]) // 2, (PREVIEW_IMAGE_HEIGHT - size[1]) // 2)
+    canvas.paste(resized, offset)
+    resized.close()
+    draw = ImageDraw.Draw(canvas)
+    font = ImageFont.load_default(size=12)
+    small = ImageFont.load_default(size=10)
+    measured = {
+        (track.class_id, track.bbox) for track in belief.tracks if track.observed_this_frame
+    }
+    for detection in belief.observation.detections:
+        if (detection.class_id, detection.bbox) in measured:
+            continue
+        x1, y1, x2, y2 = detection.bbox
+        raw_box = (
+            offset[0] + x1 * scale,
+            offset[1] + y1 * scale,
+            offset[0] + x2 * scale,
+            offset[1] + y2 * scale,
+        )
+        draw.rectangle(raw_box, outline="#ffffff", width=1)
+        draw.text(
+            (raw_box[0] + 2, max(0, raw_box[1] - 11)),
+            _short(f"raw {detection.class_id} (unassigned)", 56),
+            fill="#ffffff",
+            font=small,
+        )
+    for track in belief.tracks:
+        color = (
+            "#f1b255"
+            if track.identity_uncertain
+            else "#53e3a6"
+            if track.observed_this_frame
+            else "#a0aec0"
+        )
+        x1, y1, x2, y2 = track.bbox
+        box = (
+            offset[0] + x1 * scale,
+            offset[1] + y1 * scale,
+            offset[0] + x2 * scale,
+            offset[1] + y2 * scale,
+        )
+        draw.rectangle(box, outline=color, width=2)
+        state = "current" if track.observed_this_frame else "retained"
+        uncertainty = " ambiguous" if track.identity_uncertain else ""
+        label = _short(f"{track.track_id} {track.association} {state}{uncertainty}", 72)
+        label_y = (
+            max(0, box[1] - 11)
+            if track.observed_this_frame
+            else min(PREVIEW_IMAGE_HEIGHT - 12, box[3] + 2)
+        )
+        draw.text((box[0] + 2, label_y), label, fill=color, font=small)
+    mode = "DETECTOR HYPOTHESES" if detector_only else "SYNTHETIC FIXTURE"
+    players = sum(item.class_id == "player" for item in belief.observation.detections)
+    player_note = f" | {players} player boxes: identity ambiguous" if players > 1 else ""
+    lines = [
+        f"{mode} | READ ONLY | window {str(row['tracking_window_id'])[:12]} | local IDs",
+        f"source frame {row['source_sequence']} | local {frame.sequence} | "
+        f"local {frame.timestamp_ms} ms | source {row['source_timestamp_ms']} ms",
+        f"PTS {row['pts']} | {belief.observation.status.value}: {belief.reason}{player_note}",
+        f"{len(belief.tracks)} tracks (details <=6) | green=current, gray=retained, "
+        "amber=ambiguous, white=raw",
+    ]
+    # Keep the preview readable and bounded; the JSONL contains every full track.
+    detailed = sorted(
+        belief.tracks,
+        key=lambda track: (
+            track.class_id != "player",
+            not track.observed_this_frame,
+            track.track_id,
+        ),
+    )
+    for track in detailed[:6]:
+        velocity = track.velocity_px_per_second
+        motion = "unknown" if velocity is None else f"({velocity[0]:.1f}, {velocity[1]:.1f})"
+        lines.append(
+            f"{track.track_id} {track.class_id} | {track.association} | "
+            f"{'current' if track.observed_this_frame else 'retained'} | "
+            f"ambiguous={track.identity_uncertain} | v={motion} px/s"
+        )
+    if not belief.tracks:
+        lines.append("No track hypotheses; missing detections do not establish absence or death.")
+    lines.append(
+        "Full hypotheses: tracks.jsonl | Screen motion only; "
+        "climbing/platform occupancy unclassified"
+    )
+    for index, text in enumerate(lines):
+        draw.text(
+            (8, PREVIEW_IMAGE_HEIGHT + 5 + index * 15), _short(text), fill="#edf2f7", font=font
+        )
+    palette = canvas.quantize(colors=256, method=Image.Quantize.MEDIANCUT)
+    canvas.close()
+    return palette
+
+
+@dataclass
+class _Summary:
+    frames_processed: int = 0
+    frames_with_detections: int = 0
+    frames_with_tracks: int = 0
+    statuses: Counter[str] = field(default_factory=Counter)
+    classes: Counter[str] = field(default_factory=Counter)
+    associations: Counter[str] = field(default_factory=Counter)
+    preview_images: list[Image.Image] = field(default_factory=list)
+    preview_mapping: list[dict[str, object]] = field(default_factory=list)
+
+    def add(
+        self,
+        row: dict[str, object],
+        frame: ImageFrame,
+        belief: BeliefState,
+        *,
+        sample: bool,
+        detector_only: bool,
+    ) -> None:
+        self.frames_processed += 1
+        self.frames_with_detections += bool(belief.observation.detections)
+        self.frames_with_tracks += bool(belief.tracks)
+        self.statuses[belief.observation.status.value] += 1
+        self.classes.update(item.class_id for item in belief.observation.detections)
+        self.associations.update(item.association for item in belief.tracks)
+        if sample:
+            image = _overlay(frame, belief, row, detector_only=detector_only)
+            self.preview_images.append(image)
+            with image.convert("RGB") as rgb:
+                rgb_sha256 = _sha(rgb.tobytes())
+            self.preview_mapping.append(
+                {
+                    **{
+                        key: row[key]
+                        for key in (
+                            "sequence",
+                            "source_sequence",
+                            "timestamp_ms",
+                            "source_timestamp_ms",
+                            "pts",
+                            "frame_rgb_sha256",
+                        )
+                    },
+                    "rendered_rgb_sha256": rgb_sha256,
+                }
+            )
+
+    def preview(self, manifest: dict[str, Any]) -> bytes:
+        durations: list[int] = []
+        sequences = [
+            _integer(item["sequence"], "preview sequence", 0, 9999) for item in self.preview_mapping
+        ]
+        frames = manifest["frames"]
+        for index, sequence in enumerate(sequences):
+            if index + 1 < len(sequences):
+                elapsed = (
+                    frames[sequences[index + 1]]["timestamp_ms"] - frames[sequence]["timestamp_ms"]
+                )
+            elif sequence > 0:
+                elapsed = frames[sequence]["timestamp_ms"] - frames[sequence - 1]["timestamp_ms"]
+            else:
+                elapsed = round(1000 / manifest["fps"]) if manifest["fps"] is not None else 100
+            duration = min(655350, max(10, round(elapsed / 10) * 10))
+            durations.append(duration)
+            self.preview_mapping[index]["duration_ms"] = duration
+        stream = io.BytesIO()
+        self.preview_images[0].save(
+            stream,
+            format="GIF",
+            save_all=True,
+            append_images=self.preview_images[1:],
+            duration=durations,
+            loop=0,
+            disposal=2,
+            optimize=False,
+        )
+        if stream.tell() > MAX_PREVIEW_BYTES:
+            raise ValueError("tracking preview exceeds its encoded-byte budget")
+        return stream.getvalue()
+
+    def close(self) -> None:
+        for image in self.preview_images:
+            image.close()
+
+
+def _report(
+    manifest: dict[str, Any],
+    config: StateConfig,
+    metadata: dict[str, object],
+    window_id: str,
+    summary: _Summary,
+    *,
+    detector_only: bool,
+    stride: int,
+    maximum: int,
+    effective: int,
+    sequences: list[int],
+    tracks_sha256: str,
+    preview_sha256: str,
+) -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "kind": "recording_tracking_replay",
+        "mode": "read_only",
+        "scope": "single_imported_recording_window",
+        "perception_mode": "detector_only" if detector_only else "synthetic_fixture",
+        "session_id": manifest["session_id"],
+        "source_sha256": manifest["source_sha256"],
+        "source": _source_identity(manifest),
+        "tracking_window_id": window_id,
+        "identity_scope": "window_local_only",
+        "state_config": config.to_dict(),
+        "detector_metadata": metadata,
+        "retain_detection_hypotheses": detector_only,
+        "model_identity_bound": metadata["model_identity_bound"],
+        "frames_processed": summary.frames_processed,
+        "frames_with_detections": summary.frames_with_detections,
+        "frames_with_tracks": summary.frames_with_tracks,
+        "status_counts": dict(sorted(summary.statuses.items())),
+        "detections_by_class": dict(sorted(summary.classes.items())),
+        "association_counts": dict(sorted(summary.associations.items())),
+        "preview_frames": len(summary.preview_mapping),
+        "preview": {
+            "requested_stride": stride,
+            "max_frames": maximum,
+            "effective_stride": effective,
+            "sequences": sequences,
+            "mapping": summary.preview_mapping,
+            "width": PREVIEW_WIDTH,
+            "height": PREVIEW_IMAGE_HEIGHT + PREVIEW_CAPTION_HEIGHT,
+            "timing": "source_intervals_centisecond_quantized_capped_10_to_655350_ms",
+            "renderer": "recording_tracking_overlay_v1",
+            "pillow_version": pillow_version,
+        },
+        "tracks_sha256": tracks_sha256,
+        "preview_sha256": preview_sha256,
+        "files": {"tracks.jsonl": tracks_sha256, "preview.gif": preview_sha256},
+        "action_execution": "none",
+        "accuracy_metrics_available": False,
+        "effect_success_rate": None,
+        "timing_accuracy": (
+            "source_pts"
+            if manifest["timebase"] == "video_presentation_ticks"
+            else "nominal_fps_only"
+        ),
+        "limitations": list(_LIMITATIONS),
+    }
+
+
+def _line(row: dict[str, object]) -> bytes:
+    encoded = _canonical_bytes(row) + b"\n"
+    if len(encoded) > MAX_TRACK_LINE_BYTES:
+        raise ValueError("tracking row exceeds its encoded-byte budget")
+    return encoded
+
+
+def track_recording(
+    recording: Path,
+    output: Path,
+    detector: Detector | None = None,
+    *,
+    state_config: StateConfig | None = None,
+    preview_stride: int = 3,
+    preview_max_frames: int = 120,
+) -> dict[str, object]:
+    """Track all imported frames; sample only the bounded presentation GIF."""
+    root = Path(recording)
+    manifest = _validated_manifest(root)
+    if state_config is not None and not isinstance(state_config, StateConfig):
+        raise ValueError("state_config must be a StateConfig")
+    config = StateConfig.from_dict((state_config or StateConfig()).to_dict())
+    effective, sequences = _sampling(manifest["frame_count"], preview_stride, preview_max_frames)
+    perception, metadata, window_id = _identity(manifest, config, detector)
+    samples = set(sequences)
+    summary = _Summary()
+    try:
+        with _new_output(output, root) as (stage, destination):
+            size = 0
+            with (stage / "tracks.jsonl").open("xb") as stream:
+                for row, frame, belief in _tracked_frames(
+                    root,
+                    manifest,
+                    config,
+                    perception,
+                    window_id,
+                    detector_only=detector is not None,
+                ):
+                    encoded = _line(row)
+                    size += len(encoded)
+                    if size > MAX_TRACK_BYTES:
+                        raise ValueError("tracking trace exceeds its encoded-byte budget")
+                    stream.write(encoded)
+                    summary.add(
+                        row,
+                        frame,
+                        belief,
+                        sample=frame.sequence in samples,
+                        detector_only=detector is not None,
+                    )
+            if _identity(manifest, config, detector)[1] != metadata:
+                raise ValueError("detector identity changed during tracking")
+            preview = summary.preview(manifest)
+            (stage / "preview.gif").write_bytes(preview)
+            report = _report(
+                manifest,
+                config,
+                metadata,
+                window_id,
+                summary,
+                detector_only=detector is not None,
+                stride=preview_stride,
+                maximum=preview_max_frames,
+                effective=effective,
+                sequences=sequences,
+                tracks_sha256=_file_hash(stage / "tracks.jsonl"),
+                preview_sha256=_sha(preview),
+            )
+            if len(_canonical_bytes(report)) + 1 > MAX_REPORT_BYTES:
+                raise ValueError("tracking report exceeds its encoded-byte budget")
+            _write_json(stage / "report.json", report)
+            _assert_source_unchanged(root, manifest)
+    finally:
+        summary.close()
+    return {**report, "output": str(destination)}
+
+
+def _read_report(replay: Path) -> dict[str, Any]:
+    if replay.is_symlink() or not replay.is_dir():
+        raise ValueError("tracking replay must be a real local directory")
+    entries = list(replay.iterdir())
+    if {path.name for path in entries} != _OUTPUT_FILES or any(
+        path.is_symlink() or not path.is_file() for path in entries
+    ):
+        raise ValueError("tracking replay has symlinks, extra files, or missing files")
+    for name, maximum in (
+        ("report.json", MAX_REPORT_BYTES),
+        ("tracks.jsonl", MAX_TRACK_BYTES),
+        ("preview.gif", MAX_PREVIEW_BYTES),
+    ):
+        if not 0 < (replay / name).stat().st_size <= maximum:
+            raise ValueError(f"tracking {name} exceeds its encoded-byte budget or is empty")
+    report = strict_json((replay / "report.json").read_text(encoding="utf-8"))
+    if not isinstance(report, dict) or not isinstance(report.get("preview"), dict):
+        raise ValueError("invalid tracking report")
+    return report
+
+
+def verify_recording_tracking(
+    recording: Path, replay: Path, detector: Detector | None = None
+) -> dict[str, object]:
+    """Recompute the whole trajectory and GIF; never trust the stored beliefs."""
+    root, replay = Path(recording), Path(replay)
+    manifest = _validated_manifest(root)
+    report = _read_report(replay)
+    config = StateConfig.from_dict(report.get("state_config"))
+    preview_spec = report["preview"]
+    stride = _integer(preview_spec.get("requested_stride"), "preview_stride", 1, 10000)
+    maximum = _integer(preview_spec.get("max_frames"), "preview_max_frames", 2, MAX_PREVIEW_FRAMES)
+    effective, sequences = _sampling(manifest["frame_count"], stride, maximum)
+    perception, metadata, window_id = _identity(manifest, config, detector)
+    if (
+        _canonical_bytes(report.get("detector_metadata")) != _canonical_bytes(metadata)
+        or report.get("tracking_window_id") != window_id
+        or _canonical_bytes(report.get("source")) != _canonical_bytes(_source_identity(manifest))
+    ):
+        raise ValueError("tracking source, detector or configuration identity mismatch")
+    for name, key in (("tracks.jsonl", "tracks_sha256"), ("preview.gif", "preview_sha256")):
+        if _file_hash(replay / name) != report.get(key):
+            raise ValueError(f"tracking {name} SHA256 mismatch")
+    samples = set(sequences)
+    summary = _Summary()
+    digest = hashlib.sha256()
+    try:
+        with (replay / "tracks.jsonl").open("rb") as stream:
+            for row, frame, belief in _tracked_frames(
+                root, manifest, config, perception, window_id, detector_only=detector is not None
+            ):
+                actual = stream.readline(MAX_TRACK_LINE_BYTES + 1)
+                if len(actual) > MAX_TRACK_LINE_BYTES or not actual:
+                    raise ValueError("tracking trajectory has an oversized or missing row")
+                try:
+                    stored = strict_json(actual.decode("utf-8"))
+                except (UnicodeError, ValueError) as exc:
+                    raise ValueError("invalid tracking trajectory JSON") from exc
+                encoded = _line(row)
+                if _canonical_bytes(stored) != _canonical_bytes(row):
+                    raise ValueError(
+                        f"tracking trajectory mismatch at local frame {frame.sequence}"
+                    )
+                digest.update(encoded)
+                summary.add(
+                    row,
+                    frame,
+                    belief,
+                    sample=frame.sequence in samples,
+                    detector_only=detector is not None,
+                )
+            if stream.read(1):
+                raise ValueError("tracking trajectory contains extra rows")
+        if _identity(manifest, config, detector)[1] != metadata:
+            raise ValueError("detector identity changed during verification")
+        preview = summary.preview(manifest)
+        if _sha(preview) != _file_hash(replay / "preview.gif"):
+            raise ValueError("tracking preview differs from independently reproduced pixels")
+        expected = _report(
+            manifest,
+            config,
+            metadata,
+            window_id,
+            summary,
+            detector_only=detector is not None,
+            stride=stride,
+            maximum=maximum,
+            effective=effective,
+            sequences=sequences,
+            tracks_sha256=digest.hexdigest(),
+            preview_sha256=_sha(preview),
+        )
+        if _canonical_bytes(report) != _canonical_bytes(expected):
+            raise ValueError("tracking report differs from independently recomputed evidence")
+        _assert_source_unchanged(root, manifest)
+        if _canonical_bytes(_read_report(replay)) != _canonical_bytes(report) or any(
+            _file_hash(replay / name) != expected[key]
+            for name, key in (("tracks.jsonl", "tracks_sha256"), ("preview.gif", "preview_sha256"))
+        ):
+            raise ValueError("tracking replay changed during verification")
+    finally:
+        summary.close()
+    return {
+        "verified": True,
+        "scope": "single_imported_recording_window",
+        "identity_scope": "window_local_only",
+        "session_id": manifest["session_id"],
+        "tracking_window_id": window_id,
+        "frames_verified": summary.frames_processed,
+        "preview_frames": len(summary.preview_mapping),
+        "source_identity_verified": True,
+        "original_source_file_redecoded": False,
+        "detector_metadata_verified": True,
+        "model_identity_bound": metadata["model_identity_bound"],
+        "trajectory_recomputed": True,
+        "preview_verified": True,
+        "preview_recomputed": True,
+        "mode": "read_only",
+        "action_execution": "none",
+        "accuracy_metrics_available": False,
+        "effect_success_rate": None,
+    }
