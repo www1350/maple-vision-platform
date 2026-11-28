@@ -354,6 +354,12 @@ def _parser() -> argparse.ArgumentParser:
     recording_track.add_argument("--model", type=Path)
     recording_track.add_argument("--manifest", type=Path)
     recording_track.add_argument("--state-config", type=Path)
+    recording_track.add_argument(
+        "--movement", action="store_true", help="include read-only geometric movement candidates"
+    )
+    recording_track.add_argument(
+        "--movement-config", type=Path, help="movement configuration JSON; also enables candidates"
+    )
     recording_track.add_argument("--preview-stride", type=int, default=3)
     recording_track.add_argument("--preview-max-frames", type=int, default=120)
     tracking_check = recording_commands.add_parser(
@@ -1008,6 +1014,7 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
             if args.operation == "track":
                 from .catalog import strict_json
                 from .local_files import read_regular
+                from .movement_hypotheses import MovementConfig
                 from .recording_tracking import track_recording
                 from .state_estimation import StateConfig
 
@@ -1020,11 +1027,25 @@ def _extended(args: argparse.Namespace) -> dict[str, Any]:
                     if args.state_config is not None
                     else None
                 )
+                movement_config = (
+                    MovementConfig.from_dict(
+                        strict_json(
+                            read_regular(
+                                args.movement_config, 64 * 1024, "movement config"
+                            ).decode()
+                        )
+                    )
+                    if args.movement_config is not None
+                    else MovementConfig()
+                    if args.movement
+                    else None
+                )
                 return track_recording(
                     args.path,
                     args.output,
                     detector=detector,
                     state_config=tracking_config,
+                    movement_config=movement_config,
                     preview_stride=args.preview_stride,
                     preview_max_frames=args.preview_max_frames,
                 )

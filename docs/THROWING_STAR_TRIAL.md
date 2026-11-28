@@ -62,7 +62,7 @@ python -m maple_vision lab verify-trial-evidence reports/recording-reviews/2026-
 
 它核对持久报告及交叉关系，仍明确返回 `raw_pixels_reverified=false`。原视频、桌面画面及边界 PNG 保留在用户材料中，不进入本仓库。新增资料不改变输入权限或实机任务验收状态。
 
-现在可以通过 [`recording track` 与 `verify-tracking`](RECORDINGS.md#连续人物跟踪与可复核回放) 在单个导入窗口里运行跨帧关联、保存完整 belief，并独立重建叠加回放；旧 `observe_recording()` 保持逐帧输出。检测模型模式保留地图、HP/MP 与可行动状态的未知值，轨迹编号不等于玩家身份已经核实。这完成了录像跟踪的工程入口，Ⅱ实录仍需对应的检测标注和模型评测，随后才用上述接绳、到达平台边界验收状态预测。当前没有攀绳或平台状态分类的真实准确率。
+现在可以通过 [`recording track` 与 `verify-tracking`](RECORDINGS.md#连续人物跟踪与可复核回放) 在单个导入窗口里运行跨帧关联、保存完整 belief，并独立重建叠加回放；旧 `observe_recording()` 保持逐帧输出。检测模型模式保留未知地图、HP/MP 和 `actionable=false`，轨迹编号不等于玩家身份已经核实。可选的 [`--movement`](MOVEMENT_HYPOTHESES.md) 增加镜头补偿后的近绳、攀爬候选、平台到达候选及未知原因，仍只读。Ⅱ实录还需对应的连续检测标注和独立模型评测，再用上述接绳、到达平台边界验收候选状态。当前没有攀绳或平台状态分类的真实准确率。
 
 ## 死亡之林Ⅰ开场的局部画面复核
 

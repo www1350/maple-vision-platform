@@ -1,0 +1,338 @@
+{
+  "schema_version": 1,
+  "kind": "partial_selected_geometry_draft",
+  "review_date": "2026-11-28",
+  "coordinate_space": "original_desktop_pixels_910x512",
+  "source": {
+    "name": "Desktop 2026.11.27 - 00.29.27.02.mp4",
+    "sha256": "dd4ccde5c8c05bcfda4823c8b4b818b52b35e56e000694ecdefde90dccc33040",
+    "frame_count": 3032,
+    "source_window_start_frame": 1200
+  },
+  "materialization_evidence": {
+    "archive_name": "maple-recording-20261127-evidence.zip",
+    "archive_sha256": "ff6ee912b6d25215c8c66f2f7c240a6eb51ec1b6567e35ce66e1eac3aeff993a",
+    "restored_frame_count": 4,
+    "all_restored_png_and_rgb_hashes_match_prior_manifest": true,
+    "original_video_redecoded": false
+  },
+  "annotation_scope": {
+    "draft_geometry_frames": [
+      2228,
+      2231,
+      2294,
+      2295
+    ],
+    "continuous_review_target": [
+      2220,
+      2304
+    ],
+    "target_frame_count": 85,
+    "remaining_target_frames_without_geometry_draft": 81,
+    "exhaustive_object_labels": false,
+    "usable_for_detector_benchmark": false,
+    "automatic_predictions": false,
+    "method": "assistant visual inspection of four original PNGs with independent coordinate review; approximate selected sprite envelopes, exposed rope and snow surface only"
+  },
+  "frames": [
+    {
+      "source_sequence": 2228,
+      "pts": 44560,
+      "timebase": "video_presentation_ticks",
+      "video_clock": {
+        "denominator": 600,
+        "numerator": 1,
+        "stream_index": 1
+      },
+      "image_size": [
+        910,
+        512
+      ],
+      "frame_png_sha256": "0c5d6b9403cda9cd584c77e7c8f38154e14c6a20f3066daba8d453ce4cb874db",
+      "frame_rgb_sha256": "17168bad45b3203fd9696f59e1c0d79bc740c0a10eda8675103e3ca60711f437",
+      "figures": [
+        {
+          "label": "A",
+          "role": "provisional_blue_note_cue_correspondence",
+          "sprite_core_bbox_xyxy": [
+            451,
+            222,
+            473,
+            253
+          ],
+          "boundary_tolerance_px": 3,
+          "ownership_verified": false,
+          "continuous_identity_verified": false
+        },
+        {
+          "label": "B",
+          "role": "other_central_figure",
+          "sprite_core_bbox_xyxy": [
+            451,
+            138,
+            473,
+            166
+          ],
+          "boundary_tolerance_px": 3,
+          "partly_occluded": false,
+          "clearest_body_y_interval": null,
+          "hidden_extent_inferred": false
+        }
+      ],
+      "rope": {
+        "axis_x_estimate": 461,
+        "visible_width_x_interval": [
+          460,
+          462
+        ],
+        "exposed_y_interval": [
+          192,
+          222
+        ],
+        "complete_endpoints_known": false,
+        "occlusion": "sprites_nameplates_effects; late frames also clipped by chat panel"
+      },
+      "target_platform": {
+        "sample_x_interval": [
+          440,
+          480
+        ],
+        "visible_snow_top_y_band": [
+          125,
+          130
+        ],
+        "representative_surface_y": 128,
+        "collision_boundary_verified": false
+      }
+    },
+    {
+      "source_sequence": 2231,
+      "pts": 44620,
+      "timebase": "video_presentation_ticks",
+      "video_clock": {
+        "denominator": 600,
+        "numerator": 1,
+        "stream_index": 1
+      },
+      "image_size": [
+        910,
+        512
+      ],
+      "frame_png_sha256": "8c4e7c5017eff1a0064801b26969e363390367bd3481ac2fdcbb5fb670287382",
+      "frame_rgb_sha256": "c76665472b76f95bc5093340290941a27620f1d1518d7ce1eeac95e04854d79d",
+      "figures": [
+        {
+          "label": "A",
+          "role": "provisional_blue_note_cue_correspondence",
+          "sprite_core_bbox_xyxy": [
+            451,
+            222,
+            473,
+            252
+          ],
+          "boundary_tolerance_px": 3,
+          "ownership_verified": false,
+          "continuous_identity_verified": false
+        },
+        {
+          "label": "B",
+          "role": "other_central_figure",
+          "sprite_core_bbox_xyxy": [
+            451,
+            141,
+            473,
+            168
+          ],
+          "boundary_tolerance_px": 3,
+          "partly_occluded": false,
+          "clearest_body_y_interval": null,
+          "hidden_extent_inferred": false
+        }
+      ],
+      "rope": {
+        "axis_x_estimate": 461,
+        "visible_width_x_interval": [
+          460,
+          462
+        ],
+        "exposed_y_interval": [
+          195,
+          219
+        ],
+        "complete_endpoints_known": false,
+        "occlusion": "sprites_nameplates_effects; late frames also clipped by chat panel"
+      },
+      "target_platform": {
+        "sample_x_interval": [
+          440,
+          480
+        ],
+        "visible_snow_top_y_band": [
+          127,
+          132
+        ],
+        "representative_surface_y": 130,
+        "collision_boundary_verified": false
+      }
+    },
+    {
+      "source_sequence": 2294,
+      "pts": 45880,
+      "timebase": "video_presentation_ticks",
+      "video_clock": {
+        "denominator": 600,
+        "numerator": 1,
+        "stream_index": 1
+      },
+      "image_size": [
+        910,
+        512
+      ],
+      "frame_png_sha256": "e2d0ebf720320a39f5dc7ea741b9d18bd526c4921d029ac4085eceb561c0ecfc",
+      "frame_rgb_sha256": "c04c67bdd72eaa7aeb1ecbe407c011b21bc0add5610158f3a50551ee6a3d13ae",
+      "figures": [
+        {
+          "label": "A",
+          "role": "provisional_blue_note_cue_correspondence",
+          "sprite_core_bbox_xyxy": [
+            450,
+            205,
+            474,
+            238
+          ],
+          "boundary_tolerance_px": 3,
+          "ownership_verified": false,
+          "continuous_identity_verified": false
+        },
+        {
+          "label": "B",
+          "role": "other_central_figure",
+          "sprite_core_bbox_xyxy": [
+            451,
+            244,
+            473,
+            274
+          ],
+          "boundary_tolerance_px": 5,
+          "partly_occluded": true,
+          "clearest_body_y_interval": [
+            260,
+            274
+          ],
+          "hidden_extent_inferred": true
+        }
+      ],
+      "rope": {
+        "axis_x_estimate": 461,
+        "visible_width_x_interval": [
+          460,
+          462
+        ],
+        "exposed_y_interval": [
+          298,
+          359
+        ],
+        "complete_endpoints_known": false,
+        "occlusion": "sprites_nameplates_effects; late frames also clipped by chat panel"
+      },
+      "target_platform": {
+        "sample_x_interval": [
+          440,
+          480
+        ],
+        "visible_snow_top_y_band": [
+          229,
+          234
+        ],
+        "representative_surface_y": 232,
+        "collision_boundary_verified": false
+      }
+    },
+    {
+      "source_sequence": 2295,
+      "pts": 45900,
+      "timebase": "video_presentation_ticks",
+      "video_clock": {
+        "denominator": 600,
+        "numerator": 1,
+        "stream_index": 1
+      },
+      "image_size": [
+        910,
+        512
+      ],
+      "frame_png_sha256": "0a0dde2ee78c3e59ed90571c96f69efb69a9e8587b98c20b7174774cb375f1b9",
+      "frame_rgb_sha256": "e1062a07a3fdfba3bb18c03300920ac3c1b496defe71f3a3c5625dd60ab0e55c",
+      "figures": [
+        {
+          "label": "A",
+          "role": "provisional_blue_note_cue_correspondence",
+          "sprite_core_bbox_xyxy": [
+            447,
+            206,
+            474,
+            234
+          ],
+          "boundary_tolerance_px": 3,
+          "ownership_verified": false,
+          "continuous_identity_verified": false
+        },
+        {
+          "label": "B",
+          "role": "other_central_figure",
+          "sprite_core_bbox_xyxy": [
+            451,
+            246,
+            473,
+            277
+          ],
+          "boundary_tolerance_px": 5,
+          "partly_occluded": true,
+          "clearest_body_y_interval": [
+            262,
+            277
+          ],
+          "hidden_extent_inferred": true
+        }
+      ],
+      "rope": {
+        "axis_x_estimate": 461,
+        "visible_width_x_interval": [
+          460,
+          462
+        ],
+        "exposed_y_interval": [
+          301,
+          361
+        ],
+        "complete_endpoints_known": false,
+        "occlusion": "sprites_nameplates_effects; late frames also clipped by chat panel"
+      },
+      "target_platform": {
+        "sample_x_interval": [
+          440,
+          480
+        ],
+        "visible_snow_top_y_band": [
+          231,
+          236
+        ],
+        "representative_surface_y": 234,
+        "collision_boundary_verified": false
+      }
+    }
+  ],
+  "observations": {
+    "same_platform_screen_y_shift_between_2228_and_2294_px": 104,
+    "same_platform_screen_y_shift_between_2231_and_2295_px": 104,
+    "interpretation": "camera translation is substantial; selected-frame screen motion alone does not establish climbing"
+  },
+  "limitations": [
+    "Only four isolated frames were inspected for this geometry draft; historical continuous visual review of 85 frames is not upgraded into 85 geometry labels.",
+    "Figure A/B correspondence is provisional visual interpretation of the blue-note/nameplate cue, not verified ownership or continuous identity tracking.",
+    "Boxes exclude nameplates and detached effects when visually separable; dark or white trailing silhouettes have uncertain attachment.",
+    "Figure B in 2294/2295 includes an occluded upper portion inferred from visible fragments; uncertainty may exceed 5 pixels.",
+    "The irregular snow surface is not an independently measured collision boundary; rope termination and covered sections remain unknown.",
+    "No model was evaluated on these drafts and no climbing, arrival, attack or action success rate is asserted."
+  ]
+}
